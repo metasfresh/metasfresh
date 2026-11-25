@@ -8,17 +8,15 @@ import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScre
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabel, buildCULabelFormat, defaultBestBefore, uniqueGTIN, uniqueLot, uniqueProductValue } from "../../utils/cuLabel";
 import { MSG_FORMAT_MISMATCH } from "../../utils/cuQtyEntryScanEach";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
+import { MESSAGES } from "../../utils/cuQtyEntryMessages";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, MODE_SCAN_ONCE, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
 /** CU quantity entry */
-const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 const LINE_QTY = 20;
 const BEST_BEFORE = defaultBestBefore();
 
-const MSG_NO_FORMAT = 'No label format set on the picking profile';
-const MSG_DIFFERENT_PRODUCT = 'The scanned QR Product does not match';
 
 const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
     return await createMasterdataRememberingSysconfigs({
@@ -143,7 +141,7 @@ test('no effective format on the line, another active format that reads the labe
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
     await PickLineScanScreen.openTU();
-    await PickLineScanScreen.scanCULabelRefused(label, MSG_NO_FORMAT);
+    await PickLineScanScreen.scanCULabelRefused(label, MESSAGES.noFormat.en);
 
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } },
@@ -188,7 +186,7 @@ test('label of the line product opens the quantity block, books lot and best-bef
     await test.step('Label of another product: refused with the app message, the block stays, nothing more is booked', async () => {
         await PickLineScanScreen.rescanCULabelRefused(
             buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, bestBefore: BEST_BEFORE, packId: 2 }),
-            MSG_DIFFERENT_PRODUCT
+            MESSAGES.differentProduct.en
         );
         await GetQuantityDialog.expectQtyTarget(LINE_QTY - 5);
     });
@@ -230,7 +228,7 @@ test('product match uses the label product part against M_Product.Value, the GTI
     await test.step('(2) product part = P2 value: refused, the block stays, nothing more is booked', async () => {
         await PickLineScanScreen.rescanCULabelRefused(
             buildCULabel({ gtin, productValue: masterdata.products.P2.productCode, lot, packId: 2 }),
-            MSG_DIFFERENT_PRODUCT
+            MESSAGES.differentProduct.en
         );
         await GetQuantityDialog.expectQtyTarget(LINE_QTY - 1);
     });

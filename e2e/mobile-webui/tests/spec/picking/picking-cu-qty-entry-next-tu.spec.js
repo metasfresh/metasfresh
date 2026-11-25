@@ -11,16 +11,15 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
-import { allureMeta, book, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_TU, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, book, graiTuType, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_TU, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
+import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
 /** CU quantity entry */
-const MSG_NO_CAPACITY = 'has no capacity configured for this product';
-const MSG_GRAI_COUNT = 'TUs have a GRAI';
-
-const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
+const MSG_NO_CAPACITY = MESSAGES.noCapacity.en;
+const MSG_GRAI_COUNT = MESSAGES.graiCount.en;
 
 // noinspection JSUnusedLocalSymbols
 test('GRAI scan with a TU open (customer GRAI not required): the open TU is closed with its 5, the next TU carries the GRAI', async ({ page }) => {

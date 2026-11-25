@@ -1,6 +1,4 @@
 import { test } from "../../../playwright.config";
-import { expect } from "@playwright/test";
-import { page } from "../../utils/common";
 import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -31,7 +29,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 // above the open quantity
                 await GetQuantityDialog.typeQtyEntered(13);
                 await GetQuantityDialog.expectDoneDisabled();
-                await expect(page.getByTestId('qty-validation-error')).toBeVisible();
+                await GetQuantityDialog.expectQtyValidationErrorVisible();
                 await layout('Once quantity block, count above the open quantity (validation text)');
 
                 // smaller than open, no rejection prompt
@@ -57,18 +55,14 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once quantity block reopened by "HU verpacken" (remembered count)');
                 await GetQuantityDialog.clickCancel();
                 await GetQuantityDialog.waitToClose();
-                await page.locator('#PickLineScreen, #PickLineScanScreen').first().waitFor();
-                if (await page.locator('#PickLineScanScreen').count() > 0) {
-                    await PickLineScanScreen.goBack();
-                }
-                await PickingJobLineScreen.waitForScreen();
+                await PickingJobLineScreen.waitForScreen(); // cancel leads back to the line screen the block was opened from
 
                 // close short, no reject reason asked; reopen
                 await PickingJobLineScreen.clickCloseButton();
                 await PickingJobLineScreen.expectReOpenButtonVisible();
                 await GetQuantityDialog.expectNotShown();
                 await layout('Once line screen, line closed short ("Wieder oeffnen" shown)');
-                await expectReachable(page.getByTestId('reOpenText-button'), 'Reopen button', viewport);
+                await expectReachable(PickingJobLineScreen.reOpenButton(), 'Reopen button', viewport);
                 await PickingJobLineScreen.clickReOpenButton();
                 await PickingJobLineScreen.expectCloseButtonVisible();
                 await layout('Once line screen, line reopened');

@@ -1,57 +1,24 @@
 import { test } from "../../../playwright.config";
-import { expect } from "@playwright/test";
-import { expectErrorToast, page } from "../../utils/common";
-import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
+import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { YesNoDialog } from "../../utils/dialogs/YesNoDialog";
 import { SelectPickTargetTUScreen } from "../../utils/screens/picking/SelectPickTargetTUScreen";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import {
-    allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine,
-    restoreSysconfigsAfterEach, scanLabel, setPalletTarget, startJob, unpackFirstBooking,
+    allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, graiTuType, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, login, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine,
+    restoreSysconfigsAfterEach, scanLabel, setPalletTarget, startJob,
 } from "../../utils/cuQtyEntryCommon";
+import { txt } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
 const MODES = [MODE_SCAN_EACH, MODE_SCAN_ONCE];
 const modeName = (mode) => (mode === MODE_SCAN_EACH ? 'Each' : 'Once');
-
-/** Text of a refusal in the session language */
-const txt = (lang, { en, de }) => (lang === 'en_US' ? en : de ?? '');
-const TEXT = {
-    noFormat: { en: 'No label format set on the picking profile', de: 'Kein Etikettenformat im Kommissionierprofil' },
-    differentProduct: { en: 'The scanned QR Product does not match', de: 'Das gescannte QR Produkt stimmt nicht mit dem' },
-    graiCount: { en: 'TUs have a GRAI' },
-    eachOnlyPieces: { en: "'Scan each CU' works only for lines counted in pieces", de: 'funktioniert nur für Zeilen, die in Stück geführt werden' },
-    overPick: { en: 'Cannot pick more than the ordered quantity for this line.' },
-};
-
-const graiTuType = (key) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true } });
-
-/** Presses "Fertigstellen" on the job screen and confirms */
-const completeRefusedWithLayout = async (expectedText, whileToastShown) => {
-    await expectErrorToast(
-        'complete refusal',
-        async () => {
-            await page.locator('#last-confirm-button').tap();
-            await page.locator('.prompt-dialog').first().waitFor();
-            await YesNoDialog.clickYesButton();
-        },
-        async ({ textContent }) => {
-            expect(textContent).toContain(expectedText);
-            await whileToastShown?.();
-        }
-    );
-    await PickingJobScreen.waitForScreen();
-};
 
 const openModeLine = async (mode, index = 1) => {
     if (mode === MODE_SCAN_EACH) {
@@ -112,7 +79,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
                 await layout('Each job screen, line done, TUs without GRAI');
-                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Each "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)'));
+                await PickingJobScreen.completeRefused({ expectedError: txt(lang, 'graiCount'), whileToastShown: async () => await layout('Each "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)') });
             });
 
             // noinspection JSUnusedLocalSymbols
@@ -139,9 +106,8 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.tapPickHUButton();
                 await PickLineScanScreen.waitForScreen();
                 await layout('Once scan step after the TU type was chosen');
-                if (await page.locator('.get-qty-dialog').count() === 0) {
-                    await scanLabel(labelOf({ masterdata }));
-                }
+                await GetQuantityDialog.expectNotShown(); // nothing was booked on the line: no remembered label, the scan step stays
+                await scanLabel(labelOf({ masterdata }));
                 await layout('Once quantity block, TU open (opened without GRAI)');
                 await GetQuantityDialog.typeQtyEntered(4);
                 await GetQuantityDialog.clickDoneStayOpen();
@@ -150,7 +116,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
                 await layout('Once job screen, line done, TU without GRAI');
-                await completeRefusedWithLayout(txt(lang, TEXT.graiCount), async () => await layout('Once "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)'));
+                await PickingJobScreen.completeRefused({ expectedError: txt(lang, 'graiCount'), whileToastShown: async () => await layout('Once "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)') });
             });
 
             for (const mode of MODES) {
@@ -165,7 +131,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
                     await PickLineScanScreen.openTU();
-                    await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, TEXT.noFormat), {
+                    await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, 'noFormat'), {
                         whileToastShown: async () => await layout(`${M} refusal: no label format on the profile (scan screen + toast)`),
                     });
                     await layout(`${M} scan screen after the refusal`);
@@ -181,7 +147,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await openModeLine(mode);
                     await PickLineScanScreen.openTU();
                     const otherProductLabel = packLabelOf({ masterdata: { products: { P1: masterdata.products.P2 } }, packId: 1 });
-                    await PickLineScanScreen.scanCULabelRefused(otherProductLabel, txt(lang, TEXT.differentProduct), {
+                    await PickLineScanScreen.scanCULabelRefused(otherProductLabel, txt(lang, 'differentProduct'), {
                         whileToastShown: async () => await layout(`${M} refusal: label of another product (scan screen + toast)`),
                     });
                     await layout(`${M} scan screen after the refusal`);
@@ -197,7 +163,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await startJob(masterdata, { qtyToDeliver: 3 });
                 await openScanEachLine({ index: 1 });
                 await layout('Each scan screen, kg line');
-                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, TEXT.eachOnlyPieces), {
+                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, 'eachOnlyPieces'), {
                     whileToastShown: async () => await layout('Each refusal: Scan each CU works only for pieces (scan screen + toast, long text)'),
                 });
             });
@@ -225,11 +191,11 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Each line screen of a done line');
-                await expectReachable(page.locator('#step-0-button'), 'booked CU button', viewport);
+                await expectReachable(PickingJobLineScreen.stepButton({ index: 0 }), 'booked CU button', viewport);
                 await PickingJobLineScreen.tapPickHUButton();
                 await PickLineScanScreen.waitForScreen();
                 await layout('Each scan screen entered again via Pack HU on a done line');
-                await PickLineScanScreen.scanCULabelRefused(pack(lotB, 4), txt(lang, TEXT.overPick), {
+                await PickLineScanScreen.scanCULabelRefused(pack(lotB, 4), txt(lang, 'overPick'), {
                     whileToastShown: async () => await layout('Each refusal: scan on a done line (scan screen + toast)'),
                 });
 
@@ -238,8 +204,8 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.clickStepButton({ index: 0 });
                 await PickingJobStepScreen.waitForScreen();
                 await layout('Each step screen of a booked CU (unpack)');
-                await expectReachable(page.locator('#unpick-button'), 'Unpack button', viewport);
-                await page.locator('#unpick-button').tap();
+                await expectReachable(PickingJobStepScreen.unpickButton(), 'Unpack button', viewport);
+                await PickingJobStepScreen.tapUnpick();
                 await layout('Each unpack dialog');
                             });
         }
@@ -331,9 +297,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             },
         });
         const openProductJob = async (masterdata) => {
-            await LoginScreen.login(masterdata.login.user);
-            await ApplicationsListScreen.expectVisible();
-            await ApplicationsListScreen.startApplication('picking');
+            await login(masterdata);
             await PickingJobsListScreen.waitForScreen();
             await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 20, productId: masterdata.products.P1.id });
         };

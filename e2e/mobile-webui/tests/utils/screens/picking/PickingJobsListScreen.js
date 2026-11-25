@@ -26,7 +26,13 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
 
-/** Waits for a launcher that the test's own freshly created orders produce */
+/**
+ * Waits for a launcher that the test's own freshly created orders produce.
+ * Why a reload can help: the launcher list is fetched when the screen mounts and afterwards changes only by
+ * websocket push (`useLaunchers.js`), so a launcher that is missing from that fetch and whose push did not
+ * arrive is shown only by a fresh fetch. Why a push can be missed is not established, so the reload is a
+ * workaround of the test: a launcher still missing after the last round is a product defect, not test noise.
+ */
 const waitForLauncherWithReload = async (locator, { rounds = 4, roundTimeout = SLOW_ACTION_TIMEOUT } = {}) => {
     for (let round = 1; ; round++) {
         try {

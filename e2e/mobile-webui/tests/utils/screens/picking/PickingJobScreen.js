@@ -271,6 +271,9 @@ export const PickingJobScreen = {
         }
     }),
 
+    /** The Quick Pack All button; for layout checks (see utils/layout.js) */
+    pickAllButtonLocator: () => pickAllButton(),
+
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
         const button = pickAllButton();
         await button.tap();
@@ -309,7 +312,7 @@ export const PickingJobScreen = {
     }),
 
     /** Presses "Fertigstellen" and confirms; the backend must refuse */
-    completeRefused: async ({ expectedError }) => await step(`${NAME} - Complete, expect refusal '${expectedError}'`, async () => {
+    completeRefused: async ({ expectedError, whileToastShown }) => await step(`${NAME} - Complete, expect refusal '${expectedError}'`, async () => {
         await waitForJobScreenToSettle();
         await expectErrorToast(
             `${NAME} complete refusal`,
@@ -318,7 +321,10 @@ export const PickingJobScreen = {
                 await YesNoDialog.waitForDialog();
                 await YesNoDialog.clickYesButton();
             },
-            ({ textContent }) => expect(textContent).toContain(expectedError)
+            async ({ textContent }) => {
+                expect(textContent).toContain(expectedError);
+                await whileToastShown?.();
+            }
         );
         await PickingJobScreen.waitForScreen();
     }),

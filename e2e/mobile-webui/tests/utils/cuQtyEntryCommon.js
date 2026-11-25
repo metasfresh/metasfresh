@@ -9,6 +9,7 @@ import { GetQuantityDialog } from './screens/picking/GetQuantityDialog';
 import { PickingJobLineScreen } from './screens/picking/PickingJobLineScreen';
 import { PickingJobStepScreen } from './screens/picking/PickingJobStepScreen';
 import { SelectPickTargetLUScreen } from './screens/picking/SelectPickTargetLUScreen';
+import { MESSAGES } from './cuQtyEntryMessages';
 import { buildCULabel, buildCULabelFormat, defaultBestBefore, uniqueGTIN, uniqueLot, uniqueProductValue } from './cuLabel';
 
 export const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
@@ -16,7 +17,7 @@ export const MODE_MANUAL = 'MANUAL';
 export const BEST_BEFORE = defaultBestBefore();
 export const SOURCE_QTY = 80; // 20 TUs x 4 pieces
 export const GRAI_8003_PREFIX = '8003076132640030951';
-export const MSG_NO_OPEN_TU = "Please open a TU first (scan a GRAI or 'Next TU').";
+export const MSG_NO_OPEN_TU = MESSAGES.noOpenTU.en;
 
 export const LAUNCHERS_LIMIT_SYSCONFIGS = { 'WorkflowRestAPIService.LaunchersLimit': '1000' };
 
@@ -115,13 +116,31 @@ export const createMasterdata = async ({
     });
 };
 
-export const startJob = async (masterdata, { qtyToDeliver }) => {
+/** Logs the masterdata's user in and starts the application */
+export const login = async (masterdata, application = 'picking') => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
+    await ApplicationsListScreen.startApplication(application);
+};
+
+export const BP_LOCATION_ORDER = { warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00' };
+
+/** Sales-order job of SO1 (launcher found by document no) */
+export const startSalesOrderJob = async (masterdata) => {
+    await login(masterdata);
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    return await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+};
+
+/** @param {{qtyToDeliver: number, scanPickFrom?: boolean}} params `scanPickFrom: false`: the source HU ("Pick from") is not scanned */
+export const startJob = async (masterdata, { qtyToDeliver, scanPickFrom = true }) => {
+    await login(masterdata);
     await PickingJobsListScreen.waitForScreen();
     const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver, productId: masterdata.products.P1.id });
-    await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
+    if (scanPickFrom) {
+        await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
+    }
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     return { pickingJobId };
 };
@@ -175,6 +194,9 @@ export const allureMeta = (story) => {
     allure.story(story);
     allure.severity('normal');
 };
+
+/** Packing instructions of a GRAI-mapped TU type of P1 (`extra`: further packing instruction fields) */
+export const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
 
 export const qtyPickedRow = ({ qty, vhu, tu }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu, tu, lu: '-', processed: false, shipmentLineId: '-' });
 

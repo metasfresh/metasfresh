@@ -6,6 +6,7 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { allureMeta, MSG_NO_OPEN_TU, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
+import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -398,7 +399,7 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
     });
 });
 
-const MSG_EACH_ONLY_FOR_PIECES = "'Scan each CU' works only for lines counted in pieces. Please have your administrator set the CU quantity entry for this customer to 'Manual' or 'Scan once, enter quantity'.";
+const MSG_EACH_ONLY_FOR_PIECES = MESSAGES.eachOnlyPieces.en + ". Please have your administrator set the CU quantity entry for this customer to 'Manual' or 'Scan once, enter quantity'.";
 
 // noinspection JSUnusedLocalSymbols
 test('a line counted in kg: a CU scan is refused with the "pieces only" message, nothing is booked', async ({ page }) => {

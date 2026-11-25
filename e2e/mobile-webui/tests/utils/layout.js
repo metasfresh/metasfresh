@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
-import { page } from './common';
+import { page, SLOW_ACTION_TIMEOUT } from './common';
 
 const MIN_TAP_SIZE = 36; // px; Bulma's default button is 40 px high
 
@@ -122,8 +122,10 @@ export const expectLayoutSound = async (label, viewport, scope) => {
     const effectiveScope = scope ?? ((await page.locator('.prompt-dialog').count()) > 0 ? '.prompt-dialog' : '#root');
     let issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
     // a toast slides in: wait until it has settled before judging its position
-    for (let attempt = 0; attempt < 8 && issues.some((issue) => issue.startsWith('toast off the screen')); attempt++) {
-        await page.waitForTimeout(400);
+    if (issues.some((issue) => issue.startsWith('toast off the screen'))) {
+        for (const toast of await page.locator('.Toastify__toast').all()) {
+            await expect(toast).not.toHaveClass(/Toastify__bounce-enter/, { timeout: SLOW_ACTION_TIMEOUT });
+        }
         issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
     }
     // one line per checked state, for the screen inventory: LAYOUT <size> | <label> | OK or the problems
@@ -153,7 +155,7 @@ export const expectReachable = async (locator, description, viewport) => {
 
 /** Asserts that the control is on the screen as it opens, without any scrolling */
 export const expectOnScreenWithoutScrolling = async (locator, description, viewport) => {
-    await locator.first().waitFor({ state: 'visible' });
+    await locator.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     const box = await locator.first().boundingBox();
     const footer = await page.locator('.app-footer').boundingBox();
     const bottomLimit = Math.min(viewport.height, footer ? footer.y : viewport.height);
@@ -178,7 +180,7 @@ export const LAYOUT_LANGUAGES = ['en_US', 'de_DE'];
 
 /** Asserts that the element is completely inside the screen (its box lies within 0..width / 0..height) */
 export const expectInsideScreen = async (locator, description, { width, height }) => {
-    await locator.first().waitFor({ state: 'visible' });
+    await locator.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     const box = await locator.first().boundingBox();
     expect(box, `${description}: has a box`).not.toBeNull();
     expect(box.x, `${description}: left edge, box ${JSON.stringify(box)}`).toBeGreaterThanOrEqual(0);

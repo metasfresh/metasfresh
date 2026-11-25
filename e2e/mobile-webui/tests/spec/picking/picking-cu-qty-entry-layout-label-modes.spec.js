@@ -1,6 +1,7 @@
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
-import { page } from "../../utils/common";
+import { delayRequests } from "../../utils/network";
+import { LoadingSpinner, LOADING_SCOPE } from "../../utils/components/LoadingSpinner";
 import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
@@ -8,39 +9,11 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { allureMeta, labelOf, MODE_MANUAL, MSG_NO_OPEN_TU, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
-import { createScanEachMasterdata, MSG_ALREADY_PICKED, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
+import { txt } from "../../utils/cuQtyEntryMessages";
+import { allureMeta, labelOf, MODE_MANUAL, uniqueFormatName, openLine, restoreSysconfigsAfterEach, createMasterdata, scanLabel, startJob } from "../../utils/cuQtyEntryCommon";
+import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
-
-const TEXTS = {
-    en_US: {
-        noOpenTU: MSG_NO_OPEN_TU,
-        alreadyPicked: 'This CU was already picked in this job',
-        formatMismatch: 'does not match the label format',
-        pickFromRequired: "Please scan 'Pick From' first.",
-        noCapacity: 'has no capacity configured for this product',
-        nextTUBusy: 'A TU is just being opened.',
-    },
-    de_DE: {
-        noOpenTU: 'Bitte öffnen Sie zuerst eine Kiste',
-        alreadyPicked: 'Diese Packung wurde',
-        formatMismatch: 'Etikettenformat',
-    },
-};
-
-/** Like startJob, but the source HU ("Pick from") is not scanned */
-const startJobWithoutSourceHU = async (masterdata, { qtyToDeliver }) => {
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver, productId: masterdata.products.P1.id });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-};
 
 for (const viewport of PHONE_VIEWPORTS) {
     test.describe(`screen ${viewport.name}`, () => {
@@ -60,7 +33,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await openLine({ index: 1 });
                 await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
-                const dialog = page.locator('.get-qty-dialog');
+                const dialog = GetQuantityDialog.container();
                 await expectInsideScreen(dialog.locator('#qty-input'), 'Scan once quantity field', viewport);
                 await expectInsideScreen(dialog.getByTestId('lotNo'), 'Scan once lot field', viewport);
                 await expectInsideScreen(dialog.getByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
@@ -85,7 +58,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
 
-            const dialog = page.locator('.get-qty-dialog');
+            const dialog = GetQuantityDialog.container();
             await expectInsideScreen(dialog.locator('#qty-input'), 'Manual quantity field', viewport);
             await expectInsideScreen(dialog.getByTestId('done-button'), 'Manual OK button', viewport);
             await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Manual Cancel button', viewport);
@@ -114,7 +87,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
 
-            const dialog = page.locator('.get-qty-dialog');
+            const dialog = GetQuantityDialog.container();
             const tableArea = dialog.locator('.table-container');
             const packingName = dialog.locator('#packing-name');
             await expect(packingName, 'the dialog shows the packing instruction name').toBeVisible();
@@ -135,7 +108,6 @@ for (const viewport of PHONE_VIEWPORTS) {
         });
 
         for (const lang of LAYOUT_LANGUAGES) {
-            const T = TEXTS[lang];
 
             // noinspection JSUnusedLocalSymbols
             test(`Scan once walk-through [${lang}]: every screen and refusal is laid out soundly (${viewport.name})`, async ({ page: _page }) => {
@@ -148,13 +120,13 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await openLine({ index: 1 });
                 await layout('Once scan screen, no TU open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Once scan screen: Next TU button', viewport);
+                await expectOnScreenWithoutScrolling(PickLineScanScreen.nextTUButtonLocator(), 'Once scan screen: Next TU button', viewport);
 
                 await scanLabel(labelOf({ masterdata }));
                 await layout('Once quantity block, no TU open');
                 await GetQuantityDialog.typeQtyEntered(5);
                 await GetQuantityDialog.clickDoneRefused({
-                    expectedError: T.noOpenTU,
+                    expectedError: txt(lang, 'noOpenTU'),
                     whileToastShown: async () => await layout('Once refusal no open TU (quantity block + toast)'),
                 });
 
@@ -170,13 +142,13 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Once line screen with a booked TU');
-                await expectReachable(page.locator('#step-0-button'), 'booked TU button', viewport);
+                await expectReachable(PickingJobLineScreen.stepButton({ index: 0 }), 'booked TU button', viewport);
 
                 await PickingJobLineScreen.clickStepButton({ index: 0 });
                 await PickingJobStepScreen.waitForScreen();
                 await layout('Once step screen (undo)');
-                await expectReachable(page.locator('#unpick-button'), 'Unpick button', viewport);
-                await page.locator('#unpick-button').tap();
+                await expectReachable(PickingJobStepScreen.unpickButton(), 'Unpick button', viewport);
+                await PickingJobStepScreen.tapUnpick();
                 await layout('Once unpick dialog');
             });
 
@@ -192,10 +164,10 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await startJob(masterdata, { qtyToDeliver: 3 });
                 await openScanEachLine({ index: 1, openTU: false });
                 await layout('Each scan screen, no TU open');
-                await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Each scan screen: Next TU button', viewport);
-                await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Each scan screen: Close button', viewport);
+                await expectOnScreenWithoutScrolling(PickLineScanScreen.nextTUButtonLocator(), 'Each scan screen: Next TU button', viewport);
+                await expectOnScreenWithoutScrolling(PickLineScanScreen.scanEachCloseButton(), 'Each scan screen: Close button', viewport);
 
-                await PickLineScanScreen.scanCULabelRefused(pack(1), T.noOpenTU, {
+                await PickLineScanScreen.scanCULabelRefused(pack(1), txt(lang, 'noOpenTU'), {
                     whileToastShown: async () => await layout('Each refusal no open TU (scan screen + toast)'),
                 });
 
@@ -203,13 +175,13 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Each scan screen, TU open');
                 await scanPack(pack(1));
                 await layout('Each scan screen after a CU was booked');
-                await PickLineScanScreen.scanCULabelRefused(pack(1), T.alreadyPicked, {
+                await PickLineScanScreen.scanCULabelRefused(pack(1), txt(lang, 'alreadyPicked'), {
                     whileToastShown: async () => await layout('Each refusal CU already picked (scan screen + toast)'),
                 });
-                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, gtin, packId: null }), T.formatMismatch, {
+                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, gtin, packId: null }), txt(lang, 'formatMismatch'), {
                     whileToastShown: async () => await layout('Each refusal label without pack ID (scan screen + toast)'),
                 });
-                await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', T.formatMismatch, {
+                await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', txt(lang, 'formatMismatch'), {
                     whileToastShown: async () => await layout('Each refusal label does not fit the format (scan screen + toast)'),
                 });
                 await scanPack(pack(2));
@@ -225,7 +197,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
             const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], profileMode: MODE_MANUAL, allowCompletingPartialPickingJob: true });
-            await startJobWithoutSourceHU(masterdata, { qtyToDeliver: 12 });
+            await startJob(masterdata, { qtyToDeliver: 12, scanPickFrom: false });
             await layout('Manual job screen');
             await PickingJobScreen.clickLineButton({ index: 1 });
             await PickingJobLineScreen.waitForScreen();
@@ -250,7 +222,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
 
             const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }] });
-            await startJobWithoutSourceHU(masterdata, { qtyToDeliver: 12 });
+            await startJob(masterdata, { qtyToDeliver: 12, scanPickFrom: false });
             await PickingJobScreen.clickLineButton({ index: 1 });
             await PickingJobLineScreen.waitForScreen();
             await layout('Once line screen, no source HU');
@@ -260,7 +232,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await scanLabel(labelOf({ masterdata }));
             await GetQuantityDialog.typeQtyEntered(3);
             await GetQuantityDialog.clickDoneRefused({
-                expectedError: TEXTS.en_US.pickFromRequired,
+                expectedError: txt('en_US', 'pickFromRequired'),
                 whileToastShown: async () => await layout('Once refusal "scan Pick from first" (quantity block + toast)'),
             });
         });
@@ -283,21 +255,18 @@ for (const viewport of PHONE_VIEWPORTS) {
             await openLine({ index: 1 });
             await PickLineScanScreen.scanGrai(masterdata.packingInstructions.G1.grai);
             await layout('GRAI scan opens a TU: "New TU opened" toast and header "Current"');
-            await PickLineScanScreen.scanCULabelRefused(masterdata.packingInstructions.GN.grai, TEXTS.en_US.noCapacity, {
+            await PickLineScanScreen.scanCULabelRefused(masterdata.packingInstructions.GN.grai, txt('en_US', 'noCapacity'), {
                 whileToastShown: async () => await layout('GRAI refusal no capacity (scan screen + toast)'),
             });
 
             await scanLabel(labelOf({ masterdata }));
             // a TU is being opened (slow answer): a GRAI scanned meanwhile is told to wait
-            await page.route(/\/picking\/job\/[^/]+\/target/, async (route) => {
-                if (route.request().method() === 'POST') await new Promise((resolve) => setTimeout(resolve, 6000));
-                await route.continue();
-            });
-            await page.getByTestId('next-tu-button').tap();
-            await PickLineScanScreen.rescanCULabelRefused(masterdata.packingInstructions.G1.grai, TEXTS.en_US.nextTUBusy, {
+            const restoreTargetSpeed = await delayRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST', delayMs: 6000 });
+            await PickLineScanScreen.tapNextTUWithoutWaiting();
+            await PickLineScanScreen.rescanCULabelRefused(masterdata.packingInstructions.G1.grai, txt('en_US', 'nextTUBusy'), {
                 whileToastShown: async () => await layout('Once busy refusal "a TU is just being opened" (quantity block + toast)'),
             });
-            await page.unroute(/\/picking\/job\/[^/]+\/target/);
+            await restoreTargetSpeed();
         });
 
         // noinspection JSUnusedLocalSymbols
@@ -307,15 +276,12 @@ for (const viewport of PHONE_VIEWPORTS) {
             const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }] });
             await startJob(masterdata, { qtyToDeliver: 3 });
             await openScanEachLine({ index: 1 });
-            await page.route(/\/picking\/event/, async (route) => {
-                await new Promise((resolve) => setTimeout(resolve, 4000));
-                await route.continue();
-            });
+            const restoreEventSpeed = await delayRequests({ urlPattern: /\/picking\/event/, delayMs: 4000 });
             await PickLineScanScreen.typeQRCode(packLabelOf({ masterdata, packId: 1 }));
-            await page.locator('.loading').first().waitFor({ state: 'visible' });
-            await expectLayoutSound('Spinner while a booking is in flight', viewport, '.loading');
-            await expectInsideScreen(page.locator('.loading-icon').first(), 'Spinner icon', viewport);
-            await page.unroute(/\/picking\/event/);
+            await LoadingSpinner.waitToShow();
+            await expectLayoutSound('Spinner while a booking is in flight', viewport, LOADING_SCOPE);
+            await expectInsideScreen(LoadingSpinner.icon(), 'Spinner icon', viewport);
+            await restoreEventSpeed();
         });
 
         // noinspection JSUnusedLocalSymbols
@@ -326,8 +292,8 @@ for (const viewport of PHONE_VIEWPORTS) {
             await startJob(masterdata, { qtyToDeliver: 3 });
             await openScanEachLine({ index: 1, openTU: false });
 
-            await expectOnScreenWithoutScrolling(page.getByTestId('next-tu-button'), 'Scan each Next TU button', viewport);
-            await expectOnScreenWithoutScrolling(page.getByTestId('scan-each-close-button'), 'Scan each Close button', viewport);
+            await expectOnScreenWithoutScrolling(PickLineScanScreen.nextTUButtonLocator(), 'Scan each Next TU button', viewport);
+            await expectOnScreenWithoutScrolling(PickLineScanScreen.scanEachCloseButton(), 'Scan each Close button', viewport);
         });
     });
 }

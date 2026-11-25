@@ -5,7 +5,8 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryCommon';
+import { LAUNCHERS_LIMIT_SYSCONFIGS, MODE_MANUAL, MODE_SCAN_ONCE, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from '../../utils/cuQtyEntryCommon';
+import { MODE_SCAN_EACH } from '../../utils/cuQtyEntryScanEach';
 
 restoreSysconfigsAfterEach(test);
 
@@ -146,10 +147,6 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
 
     await PickingJobScreen.expectPickAllButtonHidden();
 });
-
-const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
-const MODE_SCAN_EACH = 'SCAN_EACH_CU';
-const MODE_MANUAL = 'MANUAL';
 
 const openJob = async (masterdata, { productJob = false } = {}) => {
     await LoginScreen.login(masterdata.login.user);

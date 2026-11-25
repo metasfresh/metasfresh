@@ -2,6 +2,7 @@ import { test } from "../../../../playwright.config";
 import { expectErrorToast, expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
+import { expectInsideScreen, saveScreenshot } from "../../layout";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -13,6 +14,9 @@ export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
 export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
+    /** The dialog element; for layout checks (see utils/layout.js) */
+    container: () => containerElement(),
+
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
@@ -148,6 +152,51 @@ export const GetQuantityDialog = {
 
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
+    }),
+
+    /** The OK button; for layout checks (see utils/layout.js) */
+    doneButton: () => page.getByTestId('done-button'),
+
+    /** The "OK und LU schließen" button; for layout checks */
+    doneAndCloseTargetButton: () => page.getByTestId('confirmDoneAndCloseTarget-button'),
+
+    /** The "switch to manual input" button of a catch weight product; for layout checks */
+    switchToManualInputButton: () => page.getByTestId('switchToManualInput-button'),
+
+    /** The catch weight field of the manual input; for layout checks */
+    catchWeightField: () => page.locator('#catch-weight'),
+
+    expectSwitchToManualInputVisible: async () => await test.step(`${NAME} - Expect switch to manual input button`, async () => {
+        await expect(GetQuantityDialog.switchToManualInputButton()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Taps OK without waiting for the dialog to close (a prompt or a refusal may follow) */
+    tapDone: async () => await test.step(`${NAME} - Tap OK`, async () => {
+        await GetQuantityDialog.doneButton().tap();
+    }),
+
+    /** Asserts the validation text under the quantity field is shown */
+    expectQtyValidationErrorVisible: async () => await test.step(`${NAME} - Expect qty validation error shown`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Cuts the screen height to 55 % (an on-screen keyboard is open), taps the quantity field and asserts that
+     * quantity field, OK and Cancel can still be reached
+     */
+    expectReachableWithKeyboard: async (label, viewport) => await test.step(`${NAME} - Expect ${label} reachable with keyboard`, async () => {
+        const smaller = { width: viewport.width, height: Math.round(viewport.height * 0.55) };
+        await page.setViewportSize(smaller);
+        const qtyInput = containerElement().locator('#qty-input');
+        await qtyInput.tap();
+        for (const [testId, name] of [['done-button', 'OK'], ['cancel-button', 'Cancel']]) {
+            const button = containerElement().getByTestId(testId);
+            await button.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+            await expectInsideScreen(button, `${label} ${name} button with keyboard`, smaller);
+        }
+        await qtyInput.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+        await expectInsideScreen(qtyInput, `${label} quantity field with keyboard`, smaller);
+        await saveScreenshot(`${viewport.width}x${smaller.height}-${label}-with-keyboard`);
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {

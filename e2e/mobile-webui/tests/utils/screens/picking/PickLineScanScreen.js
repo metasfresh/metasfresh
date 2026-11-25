@@ -24,6 +24,12 @@ const tapNextTU = async () => {
 };
 
 export const PickLineScanScreen = {
+    /** The Next TU button; for layout checks (see utils/layout.js) */
+    nextTUButtonLocator: () => nextTUButton(),
+
+    /** The Close button of Scan each; for layout checks */
+    scanEachCloseButton: () => page.getByTestId('scan-each-close-button'),
+
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
@@ -94,6 +100,11 @@ export const PickLineScanScreen = {
             }
         );
         await GetQuantityDialog.waitForDialog();
+    }),
+
+    /** Taps "Weitere Kiste" / "Next TU" and does not wait for the answer (to hold a slow backend answer in a test) */
+    tapNextTUWithoutWaiting: async () => await step(`${NAME} - Tap Next TU, do not wait`, async () => {
+        await nextTUButton().tap();
     }),
 
     /** Taps "Weitere Kiste" / "Next TU" */

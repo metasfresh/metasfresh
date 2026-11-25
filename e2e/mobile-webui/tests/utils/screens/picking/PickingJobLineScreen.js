@@ -54,8 +54,14 @@ export const PickingJobLineScreen = {
         await expect(page.getByTestId('reOpenText-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    /** The button of a booked step; for layout checks (see utils/layout.js) */
+    stepButton: ({ index }) => page.locator(`#step-${index}-button`),
+
+    /** The Re-open button; for layout checks */
+    reOpenButton: () => page.getByTestId('reOpenText-button'),
+
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
-        await page.locator(`#step-${index}-button`).tap();
+        await PickingJobLineScreen.stepButton({ index }).tap();
         await PickingJobStepScreen.waitForScreen();
     }),
 

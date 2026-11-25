@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -8,12 +7,11 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, MODE_SCAN_ONCE, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
+import { MODE_SCAN_EACH } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
 
-const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
-const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 
 const createMasterdata = async ({ formatName, formatNameC }) => {
     return await createMasterdataRememberingSysconfigs({
@@ -76,12 +74,7 @@ const createMasterdata = async ({ formatName, formatNameC }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('CU quantity entry mode per picking line (profile default, customer record, empty customer record)', async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('CU quantity entry mode per line');
-    allure.severity('normal');
+    allureMeta('CU quantity entry mode per line');
 
     const masterdata = await createMasterdata({ formatName: `cuqe-cfg-${uniqueProductValue()}`, formatNameC: `cuqe-cfg-c-${uniqueProductValue()}` });
 

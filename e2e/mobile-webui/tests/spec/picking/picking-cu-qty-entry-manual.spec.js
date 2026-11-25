@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -9,7 +8,7 @@ import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from "../../utils/screens/picking/GetQuantityDialog";
 import { buildCULabelFormat, uniqueProductValue } from "../../utils/cuLabel";
-import { LAUNCHERS_LIMIT_SYSCONFIGS, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
+import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysconfigs, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
@@ -103,11 +102,7 @@ const scanAndPick = async ({ qrCode, qtyEntered, expectQtyEntered, qtyNotFoundRe
 // noinspection JSUnusedLocalSymbols
 test('Manual profile, line of 10 TU is picked', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Manual mode');
-    allure.severity('normal');
+    allureMeta('Manual mode');
 
     const masterdata = await createMasterdata({ pickTo: ['LU_TU'] });
     const { pickingJobId } = await openJob(masterdata, { withLU: true });
@@ -135,11 +130,7 @@ test('Manual profile, line of 10 TU is picked', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Manual profile, partial pick asks a reason, "New TU" behaves', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105: Picking');
-    allure.tag('F00230: MobileUI Picking');
-    allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Manual mode');
-    allure.severity('normal');
+    allureMeta('Manual mode');
 
     const masterdata = await createMasterdata({ pickTo: ['TU'] });
     const { pickingJobId } = await openJob(masterdata, { withLU: false });

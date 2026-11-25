@@ -22,6 +22,12 @@ const containerElement = () => page.locator('.grai-screen');
  * "Save"/"Speichern") is enabled only when exactly N GRAIs are captured.
  */
 export const PickGraiScreen = {
+    /** The capture panel; for layout checks (see utils/layout.js) */
+    panel: () => containerElement(),
+
+    /** The Save button; for layout checks */
+    saveButton: () => page.getByTestId('grai-save-button'),
+
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),
