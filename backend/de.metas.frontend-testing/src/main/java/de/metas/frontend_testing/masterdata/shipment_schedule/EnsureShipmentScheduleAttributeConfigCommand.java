@@ -50,7 +50,7 @@ public class EnsureShipmentScheduleAttributeConfigCommand
 
 	private AttributeId getAttributeId(@NonNull final String attributeCodeStr)
 	{
-		// the attributes map also holds inactive attributes, so the active check stays
+		// getAttributeByCode also returns inactive attributes
 		final Attribute attribute = attributeDAO.getAttributeByCode(AttributeCode.ofString(attributeCodeStr));
 		if (!attribute.isActive())
 		{

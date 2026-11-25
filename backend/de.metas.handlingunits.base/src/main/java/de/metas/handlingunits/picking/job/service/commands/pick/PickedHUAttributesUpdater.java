@@ -103,7 +103,7 @@ class PickedHUAttributesUpdater
 		{
 			if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 			{
-				setBestBeforeDateFromChildren(huAttributes);
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
 			}
 		}
 		else if (pickAttributes.isSetBestBeforeDate())
@@ -125,7 +125,7 @@ class PickedHUAttributesUpdater
 		{
 			if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
-				setLotNoFromChildren(huAttributes);
+				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
 			}
 		}
 		else if (pickAttributes.isSetLotNo())
@@ -152,16 +152,6 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
 		}
-	}
-
-	private static void setBestBeforeDateFromChildren(@NonNull final IAttributeStorage huAttributes)
-	{
-		huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
-	}
-
-	private static void setLotNoFromChildren(@NonNull final IAttributeStorage huAttributes)
-	{
-		huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
 	}
 
 	@Nullable

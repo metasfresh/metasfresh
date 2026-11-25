@@ -11,6 +11,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 /**
  * Access to {@code M_ShipmentSchedule_AttributeConfig} (and the {@code M_IolCandHandler} it belongs to) for the e2e masterdata commands.
+ * <p>
+ * Repository Tables: M_ShipmentSchedule_AttributeConfig, M_IolCandHandler
+ * <p>
+ * Repository Cluster: ShipmentScheduleAttributeConfigRepository
  */
 class ShipmentScheduleAttributeConfigRepository
 {
