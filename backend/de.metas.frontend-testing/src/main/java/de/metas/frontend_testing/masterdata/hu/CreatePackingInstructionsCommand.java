@@ -554,6 +554,19 @@ public class CreatePackingInstructionsCommand
 			packingMaterialDAO.save(packingMaterialRecord);
 		}
 
+		// the TU was already created by another entry (reused by identifier) with this packing material: keep its one item, like createPIItem_Material
+		final boolean itemExists = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, tu.getPivId())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, HUItemType.PackingMaterial.getCode())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID, packingMaterialRecord.getM_HU_PackingMaterial_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+		if (itemExists)
+		{
+			return;
+		}
+
 		final I_M_HU_PI_Item packingMaterialPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		packingMaterialPIItemRecord.setM_HU_PI_Version_ID(tu.getPivId().getRepoId());
 		packingMaterialPIItemRecord.setItemType(HUItemType.PackingMaterial.getCode());

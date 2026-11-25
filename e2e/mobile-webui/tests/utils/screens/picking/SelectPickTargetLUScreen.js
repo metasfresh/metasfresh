@@ -26,10 +26,11 @@ export const SelectPickTargetLUScreen = {
     }),
 
     clickLUButton: async ({ lu }) => await test.step(`${NAME} - Click LU button`, async () => {
+        const button = luButton({ lu });
         // Capture mode only (UAT_CAPTURE): the list may still show the loading spinner on the recording;
         // wait until the offered target is rendered and hold it in view before tapping it.
-        await revealForCaptureIfEnabled(luButton({ lu }));
-        await luButton({ lu }).tap();
+        await revealForCaptureIfEnabled(button);
+        await button.tap();
     }),
 
     /** Checks the offered pallet types (LU packing instructions) by their names. */
