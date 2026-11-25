@@ -88,11 +88,10 @@ public class WarehouseRepository
 				.map(record -> WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
+		final Multimap<WarehouseId, WarehouseSourceHUConfig> configsByWarehouseId = loadWarehouseSourceHUConfigs(warehouseIds);
+
 		final ImmutableList<Warehouse> warehouses = warehouseRecords.stream()
-				.map(record -> fromRecord(
-						record,
-						loadWarehouseSourceHUConfigs(warehouseIds)
-				))
+				.map(record -> fromRecord(record, configsByWarehouseId))
 				.collect(ImmutableList.toImmutableList());
 
 		return new WarehouseMap(warehouses);
