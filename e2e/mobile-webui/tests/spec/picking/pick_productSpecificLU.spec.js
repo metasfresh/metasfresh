@@ -35,6 +35,9 @@ const createMasterdata = async ({ pickedProduct, sourceIsTU = false, withXYPalle
                     allowPickingAnyHU: true,
                     shipOnCloseLU: false,
                     pickTo: ['LU_TU'],
+                    // loosePieces picks 1 of 2 TUs per scan: without this, the quantity dialog requires a rejection reason
+                    // (the global picking profile value would otherwise be whatever an earlier test left behind)
+                    ...(loosePieces ? { allowSkippingRejectedReason: true } : {}),
                 }
             },
             bpartners: { "BP1": {} },
