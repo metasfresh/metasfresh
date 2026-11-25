@@ -108,12 +108,17 @@ class PickingJobPick_LotKeptOnSplit_Test
 
 	private HuPackingInstructionsId createKartonPI(@NonNull final I_M_Product product)
 	{
-		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("Karton", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		return HuPackingInstructionsId.ofRepoId(createTUPI("Karton", product).getM_HU_PI_ID());
+	}
+
+	private I_M_HU_PI createTUPI(@NonNull final String name, @NonNull final I_M_Product product)
+	{
+		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition(name, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item miItem = huTestHelper.createHU_PI_Item_Material(tuPI);
 		final I_M_HU_PI_Item_Product piip = huTestHelper.assignProduct(miItem, product, new BigDecimal("100"), helper.uomEach);
 		piip.setIsDefaultForProduct(true);
 		InterfaceWrapperHelper.save(piip);
-		return HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
+		return tuPI;
 	}
 
 	private IAttributeStorage attributes(@NonNull final HuId huId)
@@ -293,11 +298,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 	void secondPickIntoPreExistingLU_luLotFollowsItsCUs(final String secondLot, final String expectedLuLot, final LocalDate secondBestBefore, final LocalDate expectedLuBestBefore)
 	{
 		final ProductId productId = createProduct();
-		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("Karton-LU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		final I_M_HU_PI_Item miItem = huTestHelper.createHU_PI_Item_Material(tuPI);
-		final I_M_HU_PI_Item_Product piip = huTestHelper.assignProduct(miItem, InterfaceWrapperHelper.load(productId, I_M_Product.class), new BigDecimal("100"), helper.uomEach);
-		piip.setIsDefaultForProduct(true);
-		InterfaceWrapperHelper.save(piip);
+		final I_M_HU_PI tuPI = createTUPI("Karton-LU", InterfaceWrapperHelper.load(productId, I_M_Product.class));
 		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-LOT", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("10"));
 

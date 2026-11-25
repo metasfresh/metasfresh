@@ -196,7 +196,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
-		// Before the sales orders: the shipment-line split by attribute is read when the shipment is created later.
+		// Before createShipments(): the shipment-line split by attribute is read when a shipment is created.
 		ensureShipmentScheduleAttributeConfigs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		registerOrderIdsInContext(salesOrders);
