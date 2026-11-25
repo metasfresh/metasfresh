@@ -331,3 +331,10 @@ export const MANUFACTURING_ORDER_WINDOW_ID = 53009;
  * Window ID: 542201
  */
 export const POS_INVOICE_CARD_SETTLEMENT_WINDOW_ID = 542201;
+
+/**
+ * Physical Inventory window (Inventur)
+ * Table: M_Inventory
+ * Window ID: 168
+ */
+export const INVENTORY_WINDOW_ID = 168;

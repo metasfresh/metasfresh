@@ -50,6 +50,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.organization.OrgId;
@@ -66,6 +67,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -88,6 +90,7 @@ import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.wai
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class M_Inventory_StepDef
@@ -329,7 +332,7 @@ public class M_Inventory_StepDef
 		DataTableRows.of(dataTable).forEach(this::addSingleLineInventory);
 	}
 
-	private void addSingleLineInventory(@NonNull final DataTableRow row) throws InterruptedException
+	private I_M_InventoryLine createSingleLineInventory(@NonNull final DataTableRow row)
 	{
 		row.setAdditionalRowIdentifierColumnName(I_M_Inventory.COLUMNNAME_M_Inventory_ID);
 		final InventoryId inventoryId = createInventory(row);
@@ -338,6 +341,13 @@ public class M_Inventory_StepDef
 		row.setAdditionalRowIdentifierColumnName(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID);
 		final I_M_InventoryLine inventoryLine = addNewInventoryLine(row);
 		SharedTestContext.put("inventoryLine", inventoryLine);
+		return inventoryLine;
+	}
+
+	private void addSingleLineInventory(@NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_M_InventoryLine inventoryLine = createSingleLineInventory(row);
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
 
 		inventoryService.completeDocument(inventoryId);
 
@@ -348,6 +358,49 @@ public class M_Inventory_StepDef
 		}
 
 		waitUtilPosted(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId));
+	}
+
+	/**
+	 * Like {@code metasfresh contains single line completed inventories}, but expects the completion to fail.
+	 * Column {@code AD_Message}: the value of the AD_Message the error must carry (checked on the exception, not on its translated text).
+	 */
+	@Given("metasfresh fails to complete single line inventories")
+	public void failToCompleteSingleLineInventories(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::failToCompleteSingleLineInventory);
+	}
+
+	private void failToCompleteSingleLineInventory(@NonNull final DataTableRow row)
+	{
+		final AdMessageKey expectedAdMessage = AdMessageKey.of(row.getAsString("AD_Message"));
+
+		final I_M_InventoryLine inventoryLine = createSingleLineInventory(row);
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID());
+
+		final Throwable error = catchThrowable(() -> inventoryService.completeDocument(inventoryId));
+		assertThat(error).as("completing the inventory must fail").isNotNull();
+		assertThat(extractAdMessages(error)).as("AD_Message of the error and its causes").contains(expectedAdMessage);
+	}
+
+	/**
+	 * @return the {@code AD_Message} parameter of the error and of each of its causes that has one
+	 * (set by {@link AdempiereException#AdempiereException(String, AdMessageKey, Object...)})
+	 */
+	private static List<AdMessageKey> extractAdMessages(@NonNull final Throwable error)
+	{
+		final List<AdMessageKey> adMessages = new ArrayList<>();
+		for (Throwable current = error; current != null; current = current.getCause())
+		{
+			if (current instanceof AdempiereException)
+			{
+				final Object adMessage = ((AdempiereException)current).getParameter("AD_Message");
+				if (adMessage instanceof AdMessageKey)
+				{
+					adMessages.add((AdMessageKey)adMessage);
+				}
+			}
+		}
+		return adMessages;
 	}
 
 	private void loadInventoryLineHUs(final @NotNull DataTableRow row, final InventoryId inventoryId, final InventoryLineId inventoryLineId)

@@ -198,6 +198,11 @@ export const PickingJobScreen = {
         await SelectPickTargetLUScreen.clickLUButton({ lu });
         await PickingJobScreen.waitForScreen();
     }),
+    expectLUTargets: async ({ offered = [], notOffered = [] }) => await step(`${NAME} - Expect LU targets`, async () => {
+        await PickingJobScreen.clickLUTargetButton();
+        await SelectPickTargetLUScreen.waitForScreen();
+        await SelectPickTargetLUScreen.expectLUButtons({ offered, notOffered });
+    }),
     closeTargetLU: async () => await step(`${NAME} - Close target LU`, async () => {
         await PickingJobScreen.clickLUTargetButton();
         await SelectPickTargetLUScreen.clickCloseTargetButton();

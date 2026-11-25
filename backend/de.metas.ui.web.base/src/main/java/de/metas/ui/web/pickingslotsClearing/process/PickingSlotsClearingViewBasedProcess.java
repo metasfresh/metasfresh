@@ -206,9 +206,13 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 				.setForceQtyAllocation(false);
 	}
 
+	/**
+	 * @param sourceHUs the HUs to be moved; when {@code targetHUPI} is an LU, they decide its LU item (see {@link LUTUProducerDestination#setLUPIAndItemForSourceHUs(I_M_HU_PI, List)})
+	 */
 	protected final LUTUProducerDestination createNewHUProducer(
 			@NonNull final PickingSlotRow pickingRow,
-			@NonNull final I_M_HU_PI targetHUPI)
+			@NonNull final I_M_HU_PI targetHUPI,
+			@NonNull final List<I_M_HU> sourceHUs)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingRow.getBPartnerId());
 		final int bpartnerLocationId = pickingRow.getBPartnerLocationId();
@@ -229,7 +233,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final String targetHuType = Services.get(IHandlingUnitsBL.class).getHU_UnitType(targetHUPI);
 		if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(targetHuType))
 		{
-			lutuProducer.setLUPI(targetHUPI);
+			lutuProducer.setLUPIAndItemForSourceHUs(targetHUPI, sourceHUs);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(targetHuType))
 		{
