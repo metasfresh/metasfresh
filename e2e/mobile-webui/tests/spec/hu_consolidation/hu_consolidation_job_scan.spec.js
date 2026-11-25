@@ -1519,6 +1519,7 @@ test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate 
         }, async ({ toast, textContent }) => {
             expect(textContent).toContain(AMBIGUOUS_MESSAGES.de_DE);
             await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+            await attachScreenshot('slot-screen-duplicate-GRAI-message');
         });
         const tones = await BarcodeScannerComponent.takeBeepTones();
         expect(tones).toContain(ERROR_BEEP_HZ);
@@ -1531,6 +1532,7 @@ test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate 
         await PickingSlotScreen.goBack();
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: slot2.id });
         await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: graiAlsoInOtherJob });
+        await attachScreenshot('slot-screen-GRAI-also-outside-job-crate-moved');
         await PickingSlotScreen.goBack();
         const targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
         await Backend.expect({
@@ -1552,6 +1554,7 @@ test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate 
         }, async ({ toast, textContent }) => {
             expect(textContent).toContain('Die HU befindet sich nicht am Kommissionierplatz');
             await ErrorToast.expectToastId(toast, SCANNER_ERROR_TOAST_ID);
+            await attachScreenshot('slot-screen-GRAI-only-outside-job-not-at-slot');
         });
         await Backend.expect({
             title: 'slot1 keeps its 2 crates, the crate of BP2\'s job is still in slot3',
