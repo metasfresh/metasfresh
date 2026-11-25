@@ -11,6 +11,11 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import java.util.Objects;
+import de.metas.util.StringUtils;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
@@ -243,6 +248,45 @@ public class PickingJobHUService
 	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
 	{
 		return HuId.ofRepoId(getTU(hu).orElse(hu).getM_HU_ID());
+	}
+
+	/** @return true if one of the job's picked HUs of that product carries this lot and pack ID */
+	public boolean isAlreadyPickedInJob(
+			@NonNull final PickingJob job,
+			@NonNull final ProductId productId,
+			@Nullable final String lotNo,
+			@NonNull final String packId)
+	{
+		final ImmutableSet<HuId> pickedHUIds = job.getPickedHuIdsOfProduct(productId);
+		if (pickedHUIds.isEmpty())
+		{
+			return false;
+		}
+
+		// the picked HUs are CUs inside TUs: not top level
+		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(false)
+				.addOnlyHUIds(pickedHUIds)
+				.addOnlyWithAttribute(AttributeConstants.PackId, packId)
+				.listIds();
+		if (huIdsWithPackId.isEmpty())
+		{
+			return false;
+		}
+
+		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
+		return handlingUnitsBL.getByIds(huIdsWithPackId).stream()
+				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
+	}
+
+	private static boolean hasLotNo(@NonNull final IHUContext huContext, @NonNull final I_M_HU hu, @Nullable final String lotNoNorm)
+	{
+		final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+				? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+				: null;
+		return Objects.equals(huLotNo, lotNoNorm);
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

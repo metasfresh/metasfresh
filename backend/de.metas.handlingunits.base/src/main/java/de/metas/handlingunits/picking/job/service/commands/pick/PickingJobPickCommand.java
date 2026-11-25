@@ -463,7 +463,7 @@ public class PickingJobPickCommand
 
 		final ResolvedCULabel label = getResolvedCULabel();
 		if (cuQtyEntryPolicy.isPackIdRequired()
-				&& cuLabelService.isAlreadyPickedInJob(getPickingJob(), label.getProductId(), label.getLotNo(), Check.assumeNotNull(label.getPackId(), "packId is set in SCAN_EACH_CU")))
+				&& huService.isAlreadyPickedInJob(getPickingJob(), label.getProductId(), label.getLotNo(), Check.assumeNotNull(label.getPackId(), "packId is set in SCAN_EACH_CU")))
 		{
 			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId()).markAsUserValidationError();
 		}
