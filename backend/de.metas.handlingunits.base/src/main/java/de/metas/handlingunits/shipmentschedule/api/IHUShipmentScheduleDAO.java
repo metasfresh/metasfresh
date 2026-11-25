@@ -30,6 +30,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface IHUShipmentScheduleDAO extends ISingletonService
@@ -40,8 +41,9 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 			@NonNull I_M_HU topLevelHU,
 			@NonNull ShipmentScheduleId shipmentScheduleId);
 
-	List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUAndShipmentScheduleId(
-			@NonNull I_M_HU vhu,
+	/** One query for all given VHUs. */
+	List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUsAndShipmentScheduleId(
+			@NonNull Collection<HuId> vhuIds,
 			@NonNull ShipmentScheduleId shipmentScheduleId);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(int shipmentScheduleId, int tuHUId, String trxName);

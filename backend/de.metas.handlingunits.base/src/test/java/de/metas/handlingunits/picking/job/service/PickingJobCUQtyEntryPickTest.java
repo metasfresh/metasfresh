@@ -1174,6 +1174,24 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
+		void filterCUsInTU_twoCUsOfTheSameTU_bothAccepted()
+		{
+			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-EACH-F");
+			PickingJob job = jobWithPalletAndTU();
+			job = pickEach(job, source, LOT_A, "1");
+			job = pickEach(job, source, LOT_A, "2");
+			final HuId tuId = openTUId(job);
+			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(tuId, "1").getM_HU_ID());
+			final HuId cu2Id = HuId.ofRepoId(cuWithPackId(tuId, "2").getM_HU_ID());
+			assertThat(handlingUnitsBL.getById(cu1Id).getM_HU_Item_Parent_ID()).as("both CUs share the TU's item")
+					.isEqualTo(handlingUnitsBL.getById(cu2Id).getM_HU_Item_Parent_ID());
+
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(cu1Id, cu2Id))).containsExactlyInAnyOrder(cu1Id, cu2Id);
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(cu1Id, cu2Id, tuId))).as("the TU itself is no CU").containsExactlyInAnyOrder(cu1Id, cu2Id);
+		}
+
+		@Test
 		void scanOnce_palletAndTU_twoBookings_undoFirst_removesOnlyThatCU()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);

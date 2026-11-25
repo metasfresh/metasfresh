@@ -232,12 +232,10 @@ public class PickingJobUnPickCommand
 	private void deleteQtyPickedOfCUsInTUs(@NonNull final Collection<HUIdAndQRCode> huIdAndQRCodes, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final ImmutableSet<HuId> huIds = huIdAndQRCodes.stream().map(HUIdAndQRCode::getHuId).collect(ImmutableSet.toImmutableSet());
-		for (final I_M_HU hu : huService.getByIds(huIds))
+		final ImmutableSet<HuId> cusInTUs = huService.filterCUsInTU(huIds);
+		if (!cusInTUs.isEmpty())
 		{
-			if (huService.isCUInTU(hu))
-			{
-				shipmentScheduleService.deleteByVHUAndShipmentScheduleId(hu, shipmentScheduleId);
-			}
+			shipmentScheduleService.deleteByVHUsAndShipmentScheduleId(cusInTUs, shipmentScheduleId);
 		}
 	}
 

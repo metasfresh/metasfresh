@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -21,6 +22,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -118,12 +120,20 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUAndShipmentScheduleId(
-			@NonNull final I_M_HU vhu,
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveByVHUsAndShipmentScheduleId(
+			@NonNull final Collection<HuId> vhuIds,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return retrieveSchedsQtyPickedForVHUQuery(vhu)
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhuIds)
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
 				.list();
 	}
