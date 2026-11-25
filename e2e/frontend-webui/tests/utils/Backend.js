@@ -131,19 +131,23 @@ export const Backend = {
   /**
    * Describe HUs by id (read-only), e.g. pallets built by a WebUI action whose ids are known only at runtime.
    * @param {Object} options
-   * @param {Array<number|string>} options.huIds - M_HU_IDs to describe
+   * @param {Array<number|string>} [options.huIds] - M_HU_IDs to describe
+   * @param {number|string} [options.inventoryId] - M_Inventory_ID: also describe the HUs of its lines (e.g. the pallets built on completion)
    * @returns {Promise<Array<{huId: number, topLevelHuId: number, huUnitType: string, storages: Object<string, string>, includedTUsCount: number, tuParentPIItemQtys: number[]}>>}
    *   one entry per HU; storages map M_Product.Value to "<qty> <X12DE355>" (e.g. "160 PCE")
    */
-  describeHUs: async ({ huIds }) =>
-    await test.step(`Backend: describe HUs ${huIds}`, async () => {
+  describeHUs: async ({ huIds = [], inventoryId = null }) =>
+    await test.step(`Backend: describe HUs ${[huIds.length ? huIds : null, inventoryId ? `of inventory ${inventoryId}` : null].filter(Boolean).join(' ')}`, async () => {
       const page = getPage();
       const backendBaseUrl = await getBackendBaseUrl();
 
       const response = await page.request.post(
         `${backendBaseUrl}/frontendTesting/describeHUs`,
         {
-          data: { huIds: huIds.map((huId) => Number(huId)) },
+          data: {
+            huIds: huIds.map((huId) => Number(huId)),
+            ...(inventoryId ? { inventoryId: Number(inventoryId) } : {}),
+          },
           headers: { 'Content-Type': 'application/json' },
         }
       );

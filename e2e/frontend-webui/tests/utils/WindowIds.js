@@ -209,3 +209,10 @@ export const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
  * - ProductAttributes: M_AttributeSetInstance_ID
  */
 export const TEST_WINDOW_ID = 127;
+
+/**
+ * Physical Inventory window (Inventur)
+ * Table: M_Inventory
+ * Window ID: 168
+ */
+export const INVENTORY_WINDOW_ID = 168;
