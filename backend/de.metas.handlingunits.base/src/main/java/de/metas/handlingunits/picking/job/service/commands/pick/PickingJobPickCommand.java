@@ -403,7 +403,7 @@ public class PickingJobPickCommand
 				.setParameter("qtyOrdered", line.getQtyToPick())
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
-		final boolean isParametersAppendedToMessage = !cuQtyEntryPolicy.isLabelRequired();
+		final boolean isParametersAppendedToMessage = !cuLabelBooking.isLabelRequired();
 		if (isParametersAppendedToMessage)
 		{
 			throw exception.appendParametersToMessage();

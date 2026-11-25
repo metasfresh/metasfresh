@@ -96,7 +96,7 @@ public class MobileConfigCommand
 
 	private void updatePickingCUQtyEntryInTrx(@NonNull final JsonMobileConfigRequest.Picking picking)
 	{
-		mobilePickingConfigService.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
+		new PickingJobOptionsWriter().deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 
 		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(picking.getCuQtyEntryMode());
 		final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());

@@ -23,6 +23,7 @@ final class CustomerCUQtyEntryWriter
 	static final String JOB_OPTIONS_NAME_PREFIX = "E2E customer ";
 
 	@NonNull private final MobileUIPickingUserProfileService profileService;
+	@NonNull private final PickingJobOptionsWriter jobOptionsWriter = new PickingJobOptionsWriter();
 
 	void write(
 			@NonNull final BPartnerId customerId,
@@ -39,7 +40,7 @@ final class CustomerCUQtyEntryWriter
 		final PickingJobOptionsId existingJobOptionsId = customerConfigs.getPickingJobOptionsId(customerId).orElse(null);
 		if (existingJobOptionsId != null)
 		{
-			profileService.updatePickingJobOptionsCUQtyEntry(existingJobOptionsId, cuQtyEntryMode, cuLabelFormatId);
+			jobOptionsWriter.updatePickingJobOptionsCUQtyEntry(existingJobOptionsId, cuQtyEntryMode, cuLabelFormatId);
 		}
 		else
 		{
@@ -62,7 +63,7 @@ final class CustomerCUQtyEntryWriter
 				.cuQtyEntryMode(cuQtyEntryMode)
 				.cuLabelFormatId(cuLabelFormatId)
 				.build();
-		final PickingJobOptionsId createdJobOptionsId = profileService.createPickingJobOptions(
+		final PickingJobOptionsId createdJobOptionsId = jobOptionsWriter.createPickingJobOptions(
 				JOB_OPTIONS_NAME_PREFIX + customerId.getRepoId() + " " + System.currentTimeMillis(),
 				optionsCopy);
 

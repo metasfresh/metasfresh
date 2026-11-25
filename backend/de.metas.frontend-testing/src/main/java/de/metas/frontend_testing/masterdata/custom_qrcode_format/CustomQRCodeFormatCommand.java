@@ -2,7 +2,7 @@ package de.metas.frontend_testing.masterdata.custom_qrcode_format;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.frontend_testing.masterdata.mobile_configuration.PickingJobOptionsWriter;
 import de.metas.logging.LogManager;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
@@ -24,7 +24,6 @@ public class CustomQRCodeFormatCommand
 	@NonNull private static final Logger logger = LogManager.getLogger(CustomQRCodeFormatCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
-	@NonNull private final MobileUIPickingUserProfileService mobilePickingConfigService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final List<JsonCustomQRCodeFormatRequest> requests;
@@ -65,7 +64,7 @@ public class CustomQRCodeFormatCommand
 				.filter(CustomQRCodeFormatCommand::isGeneratedFormat)
 				.map(ScannableCodeFormat::getId)
 				.collect(ImmutableList.toImmutableList());
-		mobilePickingConfigService.unlinkCULabelFormats(generatedFormatIds);
+		new PickingJobOptionsWriter().unlinkCULabelFormats(generatedFormatIds);
 	}
 
 	private void createFormat(@NonNull final JsonCustomQRCodeFormatRequest request)

@@ -545,7 +545,6 @@ public class CreateMasterdataCommand
 
 		CustomQRCodeFormatCommand.builder()
 				.scannableCodeFormatService(services.scannableCodeFormatService)
-				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.context(context)
 				.requests(request.getCustomQRCodeFormats())
 				.build()

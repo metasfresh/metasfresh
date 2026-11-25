@@ -15,6 +15,12 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_MobileUI_UserProfile_Picking;
+import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
 import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 
@@ -64,8 +70,31 @@ class PickingJobCUQtyEntryPick_CloseTargetsTest extends CUQtyEntryPickFixture
 		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
 		final BPartnerId customerAId = customerAId();
 		helper.updateMobileProfile(profile -> {
-			final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A label-required mode", profile.getDefaultPickingJobOptions());
-			helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
+			// a job options row of the profile's options, except the CU mode and label format
+			final I_MobileUI_UserProfile_Picking profileRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MobileUI_UserProfile_Picking.class).create().firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
+			final I_MobileUI_UserProfile_Picking_Job optionsRecordA = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
+			optionsRecordA.setName("customer A label-required mode");
+			optionsRecordA.setPickingJobAggregationType(profileRecord.getPickingJobAggregationType());
+			optionsRecordA.setIsAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU());
+			optionsRecordA.setIsAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled());
+			optionsRecordA.setIsShipOnCloseLU(profileRecord.isShipOnCloseLU());
+			optionsRecordA.setAllowPickToStructure_LU_TU(StringUtils.ofBoolean(profileRecord.isAllowPickToStructure_LU_TU()));
+			optionsRecordA.setAllowPickToStructure_TU(StringUtils.ofBoolean(profileRecord.isAllowPickToStructure_TU()));
+			optionsRecordA.setAllowPickToStructure_LU_CU(StringUtils.ofBoolean(profileRecord.isAllowPickToStructure_LU_CU()));
+			optionsRecordA.setAllowPickToStructure_CU(StringUtils.ofBoolean(profileRecord.isAllowPickToStructure_CU()));
+			optionsRecordA.setIsCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled());
+			optionsRecordA.setIsConsiderSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity());
+			optionsRecordA.setIsAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason());
+			optionsRecordA.setIsShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick());
+			optionsRecordA.setIsAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob());
+			optionsRecordA.setIsShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines());
+			optionsRecordA.setIsAnonymousHuPickedOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly());
+			optionsRecordA.setIsDisplayPickingSlotSuggestions(StringUtils.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()));
+			optionsRecordA.setCreateShipmentPolicy(profileRecord.getCreateShipmentPolicy());
+			optionsRecordA.setCUQtyEntryMode(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getCode());
+			optionsRecordA.setC_ScannableCode_Format_ID(format.getId().getRepoId());
+			InterfaceWrapperHelper.saveRecord(optionsRecordA);
+			final PickingJobOptionsId optionsA = PickingJobOptionsId.ofRepoId(optionsRecordA.getMobileUI_UserProfile_Picking_Job_ID());
 			return profile.toBuilder()
 					.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
 							PickingCustomerConfig.builder().customerId(customerAId).pickingJobOptionsId(optionsA).build())))
