@@ -475,8 +475,9 @@ public class PackToHUsProducer
 					{
 						final I_M_HU lu = handlingUnitsBL.getById(luId);
 						lutuProducer.setLU(lu);
-						// the TUs join the item the LU already uses for the TU PI (also a product-specific one), like in the HU editor;
-						// if it has none, the producer's own lookup (with the fallback product) applies
+						// same lookup as the HU editor: the product-specific item the LU already uses for the TU PI (kept for any product,
+						// so loose pieces of another product join it too), else the LU's item without product;
+						// if neither exists, the producer's own lookup (with the fallback product) applies
 						final I_M_HU_PI_Item luItemInUse = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, handlingUnitsBL.getPI(tuPackingInstructionsId), InterfaceWrapperHelper.getContextAware(lu));
 						if (luItemInUse != null)
 						{
