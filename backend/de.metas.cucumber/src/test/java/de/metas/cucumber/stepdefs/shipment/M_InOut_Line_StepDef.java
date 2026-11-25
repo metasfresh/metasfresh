@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -35,11 +36,13 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -57,7 +60,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -71,9 +77,11 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,9 +96,12 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 @RequiredArgsConstructor
 public class M_InOut_Line_StepDef
 {
+	private static final String ATTRIBUTE_COLUMN_PREFIX = "attr.";
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
 	private final M_InOut_StepDefData inoutTable;
@@ -221,6 +232,138 @@ public class M_InOut_Line_StepDef
 		{
 			return lines.get(0);
 		}
+	}
+
+	/**
+	 * Asserts the complete set of lines of one shipment, ignoring their order: one expected row consumes exactly one actual line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_Product_ID</b> — (required, identifier-ref or id) the line's product<br>
+	 * <b>MovementQty</b> — (required) the line's movement quantity<br>
+	 * <b>C_OrderLine_ID</b> — (optional, identifier-ref) the line's order line<br>
+	 * <b>attr.&lt;M_Attribute.Value&gt;</b> — (optional, any number of columns) the value of that attribute on the line's attribute set instance; an empty cell expects no value<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.example <pre>
+	 * And the shipment lines of shipment are exactly, in any order:
+	 *   | M_Product_ID | MovementQty | attr.1000001 |
+	 *   | p_coo        | 2           | IT           |
+	 *   | p_coo        | 2           | DE           |
+	 * </pre>
+	 */
+	@And("^the shipment lines of (.*) are exactly, in any order:$")
+	public void validate_shipment_lines_exactly_in_any_order(@NonNull final String shipmentIdentifier, @NonNull final DataTable table)
+	{
+		final I_M_InOut shipment = StepDefDataIdentifier.ofString(shipmentIdentifier).lookupNotNullIn(inoutTable);
+		final List<I_M_InOutLine> unconsumedLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class).stream()
+				.filter(I_M_InOutLine::isActive)
+				.filter(line -> line.getMovementQty().signum() > 0)
+				.collect(Collectors.toCollection(ArrayList::new));
+		final List<DataTableRow> expectedRows = DataTableRows.of(table).stream().collect(ImmutableList.toImmutableList());
+		final List<String> unmatchedExpectedRows = new ArrayList<>();
+
+		for (final DataTableRow expectedRow : expectedRows)
+		{
+			final I_M_InOutLine matchedLine = unconsumedLines.stream()
+					.filter(line -> matchesExpectedRow(line, expectedRow))
+					.findFirst()
+					.orElse(null);
+			if (matchedLine == null)
+			{
+				unmatchedExpectedRows.add(expectedRow.getColumnNames().stream()
+						.map(column -> column + "=" + expectedRow.getAsOptionalString(column).orElse(""))
+						.collect(Collectors.joining(", ", "{", "}")));
+			}
+			else
+			{
+				unconsumedLines.remove(matchedLine);
+			}
+		}
+
+		final List<String> unconsumedActualLines = unconsumedLines.stream()
+				.map(line -> describeLine(line, expectedRows))
+				.collect(Collectors.toList());
+
+		assertThat(unmatchedExpectedRows)
+				.as("Expected shipment lines that no actual line matched (unconsumed actual lines: %s)", unconsumedActualLines)
+				.isEmpty();
+		assertThat(unconsumedActualLines)
+				.as("Actual shipment lines that no expected row consumed")
+				.isEmpty();
+	}
+
+	private boolean matchesExpectedRow(final I_M_InOutLine line, final DataTableRow expectedRow)
+	{
+		for (final String column : expectedRow.getColumnNames())
+		{
+			if (!COLUMNNAME_M_Product_ID.equals(column) && !COLUMNNAME_MovementQty.equals(column) && !COLUMNNAME_C_OrderLine_ID.equals(column) && !column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+			{
+				throw new AdempiereException("Unsupported column: " + column);
+			}
+		}
+
+		final StepDefDataIdentifier productIdentifier = expectedRow.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final ProductId expectedProductId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+		if (line.getM_Product_ID() != expectedProductId.getRepoId())
+		{
+			return false;
+		}
+
+		if (line.getMovementQty().compareTo(expectedRow.getAsBigDecimal(COLUMNNAME_MovementQty)) != 0)
+		{
+			return false;
+		}
+
+		final OrderLineId expectedOrderLineId = expectedRow.getAsOptionalIdentifier(COLUMNNAME_C_OrderLine_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(orderLineTable::getId)
+				.orElse(null);
+		if (expectedOrderLineId != null && line.getC_OrderLine_ID() != expectedOrderLineId.getRepoId())
+		{
+			return false;
+		}
+
+		for (final String column : expectedRow.getColumnNames())
+		{
+			if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+			{
+				final String expectedValue = expectedRow.getAsOptionalString(column).orElse(null);
+				final String actualValue = getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()));
+				if (!(Check.isBlank(expectedValue) ? Check.isBlank(actualValue) : expectedValue.equals(actualValue)))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private String getAttributeValueOrNull(final I_M_InOutLine line, final String attributeCodeStr)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
+		{
+			return null;
+		}
+		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+		final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
+		return asi.hasAttribute(attributeCode) ? asi.getValueAsString(attributeCode) : null;
+	}
+
+	private String describeLine(final I_M_InOutLine line, final List<DataTableRow> expectedRows)
+	{
+		final StringBuilder sb = new StringBuilder("{M_Product_ID=" + line.getM_Product_ID() + ", MovementQty=" + line.getMovementQty() + ", C_OrderLine_ID=" + line.getC_OrderLine_ID());
+		if (!expectedRows.isEmpty())
+		{
+			for (final String column : expectedRows.get(0).getColumnNames())
+			{
+				if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+				{
+					sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length())));
+				}
+			}
+		}
+		return sb.append('}').toString();
 	}
 
 	@And("^validate the created (shipment|material receipt) lines by id$")
