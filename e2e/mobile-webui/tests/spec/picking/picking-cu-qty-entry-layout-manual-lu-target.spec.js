@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen } from "../../utils/layout";
+import { expectLayoutSound, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen, DIALOG_SCOPE } from "../../utils/layout";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { YesNoDialog } from "../../utils/dialogs/YesNoDialog";
@@ -45,14 +45,14 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
                 await GetQuantityDialog.waitForDialog();
-                await layout('Manual quantity dialog with OK und LU schliessen (pallet target set)');
+                await layout('Manual quantity dialog with OK und LU schliessen (pallet target set)', DIALOG_SCOPE);
                 await expectInsideScreen(GetQuantityDialog.doneAndCloseTargetButton(), 'OK und LU schliessen button', viewport);
                 await expectInsideScreen(GetQuantityDialog.doneButton(), 'OK button', viewport);
 
                 await GetQuantityDialog.typeQtyEntered(8); // more than the 3 TUs of the line
                 await GetQuantityDialog.tapDone();
                 await YesNoDialog.waitForDialog();
-                await layout('Manual over-pick confirmation (YesNoDialog)');
+                await layout('Manual over-pick confirmation (YesNoDialog)', DIALOG_SCOPE);
                 await expectInsideScreen(YesNoDialog.yesButton(), 'Over-pick Yes button', viewport);
                 await expectInsideScreen(YesNoDialog.noButton(), 'Over-pick No button', viewport);
                 await YesNoDialog.clickNoButton();

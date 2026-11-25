@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
+import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, DIALOG_SCOPE } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -95,7 +95,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once scan screen, GRAI-required customer, no TU open');
                 await scanLabel(labelOf({ masterdata }));
                 await GetQuantityDialog.typeQtyEntered(4);
-                await layout('Once quantity block, GRAI-required customer, no TU open');
+                await layout('Once quantity block, GRAI-required customer, no TU open', DIALOG_SCOPE);
 
                 await PickLineScanScreen.nextTU();
                 await SelectPickTargetTUScreen.waitForScreen();
@@ -108,7 +108,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once scan step after the TU type was chosen');
                 await GetQuantityDialog.expectNotShown(); // nothing was booked on the line: no remembered label, the scan step stays
                 await scanLabel(labelOf({ masterdata }));
-                await layout('Once quantity block, TU open (opened without GRAI)');
+                await layout('Once quantity block, TU open (opened without GRAI)', DIALOG_SCOPE);
                 await GetQuantityDialog.typeQtyEntered(4);
                 await GetQuantityDialog.clickDoneStayOpen();
                 await PickingJobLineScreen.waitForScreen(); // entered from the line screen: the done line leads back there
@@ -206,7 +206,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Each step screen of a booked CU (unpack)');
                 await expectReachable(PickingJobStepScreen.unpickButton(), 'Unpack button', viewport);
                 await PickingJobStepScreen.tapUnpick();
-                await layout('Each unpack dialog');
+                await layout('Each unpack dialog', DIALOG_SCOPE);
                             });
         }
 
@@ -257,13 +257,13 @@ for (const viewport of PHONE_VIEWPORTS) {
                     await layout(`${M} scan screen after the second booking into the same TU`);
                 } else {
                     await scanLabel(labelOf({ masterdata, lot }));
-                    await layout(`${M} quantity block with a pallet target ("OK und LU schliessen" shown if the app offers it)`);
+                    await layout(`${M} quantity block with a pallet target ("OK und LU schliessen" shown if the app offers it)`, DIALOG_SCOPE);
                     await GetQuantityDialog.typeQtyEntered(1);
                     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 3 });
-                    await layout(`${M} quantity block after the first booking`);
+                    await layout(`${M} quantity block after the first booking`, DIALOG_SCOPE);
                     await GetQuantityDialog.typeQtyEntered(1);
                     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
-                    await layout(`${M} quantity block after the second booking into the same TU`);
+                    await layout(`${M} quantity block after the second booking into the same TU`, DIALOG_SCOPE);
                 }
             });
         }

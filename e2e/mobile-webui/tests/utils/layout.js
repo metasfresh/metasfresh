@@ -118,16 +118,19 @@ const measureLayout = ({ scope, minTapSize }) => {
     return issues;
 };
 
-export const expectLayoutSound = async (label, viewport, scope) => {
-    const effectiveScope = scope ?? ((await page.locator('.prompt-dialog').count()) > 0 ? '.prompt-dialog' : '#root');
-    if (!scope) console.log('AUTOSCOPE ' + label + ' => ' + effectiveScope);
-    let issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
-    // a toast slides in: wait until it has settled before judging its position
-    if (issues.some((issue) => issue.startsWith('toast off the screen'))) {
-        for (const toast of await page.locator('.Toastify__toast').all()) {
-            await expect(toast).not.toHaveClass(/Toastify__bounce-enter/, { timeout: SLOW_ACTION_TIMEOUT });
-        }
-        issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
+/** Scope of a layout check: the whole app, or only the dialog (the dialog states say so: whether a dialog is open is the scenario's fact, not measured here) */
+export const ROOT_SCOPE = '#root';
+export const DIALOG_SCOPE = '.prompt-dialog';
+
+export const expectLayoutSound = async (label, viewport, scope = ROOT_SCOPE) => {
+    let issues = await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });
+    // a toast slides in (and out): re-measure until it has settled or is gone; a toast that stays off the screen is reported after the timeout
+    if (issues.some((issue) => issue.startsWith('toast '))) {
+        await expect.poll(
+            async () => (await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE })).filter((issue) => issue.startsWith('toast ')),
+            { timeout: SLOW_ACTION_TIMEOUT }
+        ).toEqual([]).catch(() => {}); // the final measurement below reports what is still wrong
+        issues = await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });
     }
     // one line per checked state, for the screen inventory: LAYOUT <size> | <label> | OK or the problems
     console.log(`LAYOUT ${viewport.width}x${viewport.height} | ${label} | ${issues.length === 0 ? 'OK' : issues.join(' ; ')}`);

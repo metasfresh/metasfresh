@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, PHONE_VIEWPORTS, expectInsideScreen } from "../../utils/layout";
+import { expectLayoutSound, PHONE_VIEWPORTS, expectInsideScreen, DIALOG_SCOPE } from "../../utils/layout";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from "../../utils/screens/distribution/DistributionJobScreen";
@@ -44,7 +44,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('Product code scan step after the HU scan (shared scan component)');
             await DistributionLinePickFromScreen.typeProductCode(masterdata.products.P1.gtin);
             await GetQuantityDialog.waitForDialog();
-            await layout('Distribution quantity dialog (shared GetQuantityDialog)');
+            await layout('Distribution quantity dialog (shared GetQuantityDialog)', DIALOG_SCOPE);
             await expectInsideScreen(GetQuantityDialog.doneButton(), 'Distribution OK button', viewport);
         });
     });

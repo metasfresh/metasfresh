@@ -36,7 +36,6 @@ async function gotoWindowList(page, windowId) {
   await page.locator('.rotating, .panel-spaced-lg')
     .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
     .catch(() => {});
-  await page.waitForTimeout(500);
 }
 
 async function deleteTestRecord(page, windowId, recordId) {
@@ -52,14 +51,14 @@ async function deleteTestRecord(page, windowId, recordId) {
 
 async function createNewRecord(page) {
   await page.locator('body').click();
-  await page.waitForTimeout(200);
   await page.keyboard.press('Alt+N');
   await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
   await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
   await page.locator('.rotating, .indicator-pending')
     .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
     .catch(() => {});
-  await page.waitForTimeout(1000);
+  // the new record's form is ready when its Name field is there
+  await expect(WidgetCommon.getFieldContainer(FIELD_NAME)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
   return page.url().split('/').pop();
 }
 

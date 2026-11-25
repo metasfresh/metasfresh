@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, PHONE_VIEWPORTS, saveScreenshot } from "../../utils/layout";
+import { expectLayoutSound, PHONE_VIEWPORTS, saveScreenshot, DIALOG_SCOPE } from "../../utils/layout";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
@@ -40,7 +40,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await HUManagerScreen.scanHUQRCode({ huQRCode: masterdata.handlingUnits.HU1.qrCode });
             await layout('HU Manager HU info and action buttons');
             await HUManagerScreen.openChangeQtyDialog();
-            await layout('HU Manager change quantity dialog');
+            await layout('HU Manager change quantity dialog', DIALOG_SCOPE);
         });
 
         // noinspection JSUnusedLocalSymbols
@@ -54,7 +54,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await HUManagerScreen.openMoveScreen();
             await BarcodeScannerComponent.type(masterdata.handlingUnits.HU2.qrCode);
             await GetQuantityDialog.waitForDialog();
-            await layout('HU Manager move: number of TUs dialog');
+            await layout('HU Manager move: number of TUs dialog', DIALOG_SCOPE);
             await saveScreenshot(`${viewport.width}x${viewport.height}-HU-Manager-move-number-of-TUs-dialog`);
         });
     });

@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES } from "../../utils/layout";
+import { expectLayoutSound, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, DIALOG_SCOPE } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
@@ -30,19 +30,19 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await GetQuantityDialog.typeQtyEntered(13);
                 await GetQuantityDialog.expectDoneDisabled();
                 await GetQuantityDialog.expectQtyValidationErrorVisible();
-                await layout('Once quantity block, count above the open quantity (validation text)');
+                await layout('Once quantity block, count above the open quantity (validation text)', DIALOG_SCOPE);
 
                 // smaller than open, no rejection prompt
                 await GetQuantityDialog.typeQtyEntered(3);
                 await GetQuantityDialog.expectNoQtyRejected();
-                await layout('Once quantity block, count 3 of 12 (no reject reason asked)');
+                await layout('Once quantity block, count 3 of 12 (no reject reason asked)', DIALOG_SCOPE);
                 await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
-                await layout('Once quantity block after booking 3 of 12');
+                await layout('Once quantity block after booking 3 of 12', DIALOG_SCOPE);
 
                 // 5 needs pieces from two source TUs of 4 (one CU of 5)
                 await PickLineScanScreen.nextTU();
                 await book({ qty: 5, expectedQtyTarget: 4 });
-                await layout('Once quantity block after a count of 5 from two source TUs');
+                await layout('Once quantity block after a count of 5 from two source TUs', DIALOG_SCOPE);
 
                 // line screen, "HU verpacken" reopens the block with the remembered count
                 await GetQuantityDialog.clickCancel();
@@ -52,7 +52,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once line screen with booked TUs, before closing');
                 await PickingJobLineScreen.clickPickHUButton();
                 await GetQuantityDialog.waitForDialog();
-                await layout('Once quantity block reopened by "HU verpacken" (remembered count)');
+                await layout('Once quantity block reopened by "HU verpacken" (remembered count)', DIALOG_SCOPE);
                 await GetQuantityDialog.clickCancel();
                 await GetQuantityDialog.waitToClose();
                 await PickingJobLineScreen.waitForScreen(); // cancel leads back to the line screen the block was opened from
@@ -99,7 +99,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('mixed: Once line scan screen');
                 await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata, lot }));
-                await layout('mixed: Once quantity block');
+                await layout('mixed: Once quantity block', DIALOG_SCOPE);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
 
@@ -107,7 +107,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
                 await PickingJobScreen.clickLineButton({ index: 2 });
                 await GetQuantityDialog.waitForDialog();
-                await layout('mixed: Manual quantity dialog (looks as in a Manual-only job)');
+                await layout('mixed: Manual quantity dialog (looks as in a Manual-only job)', DIALOG_SCOPE);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
 
@@ -154,10 +154,10 @@ for (const viewport of PHONE_VIEWPORTS) {
             await scanLabel(labelOf({ masterdata, lot }));
             await book({ qty: 3, expectedQtyTarget: 11 });
             await PickLineScanScreen.rescanGrai(graiOfTU(3));
-            await layout('Once quantity block, TU opened by a GRAI scan');
+            await layout('Once quantity block, TU opened by a GRAI scan', DIALOG_SCOPE);
             await book({ qty: 5, expectedQtyTarget: 6 });
             await PickLineScanScreen.nextTU();
-            await layout('Once quantity block, TU opened by Next TU');
+            await layout('Once quantity block, TU opened by Next TU', DIALOG_SCOPE);
             await GetQuantityDialog.typeQtyEntered(6);
             await GetQuantityDialog.clickDoneStayOpen();
             await PickingJobScreen.waitForScreen();

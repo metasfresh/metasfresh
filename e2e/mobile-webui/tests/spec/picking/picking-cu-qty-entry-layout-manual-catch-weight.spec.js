@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { expectLayoutSound, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen } from "../../utils/layout";
+import { expectLayoutSound, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen, DIALOG_SCOPE } from "../../utils/layout";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
@@ -51,10 +51,10 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
                 await GetQuantityDialog.waitForDialog();
                 await GetQuantityDialog.expectSwitchToManualInputVisible();
-                await layout('Manual catch weight QR view');
+                await layout('Manual catch weight QR view', DIALOG_SCOPE);
                 await expectInsideScreen(GetQuantityDialog.switchToManualInputButton(), 'Switch to manual input button', viewport);
                 await GetQuantityDialog.clickManual();
-                await layout('Manual quantity dialog of a catch weight product (manual input)');
+                await layout('Manual quantity dialog of a catch weight product (manual input)', DIALOG_SCOPE);
                 await expectInsideScreen(GetQuantityDialog.catchWeightField(), 'Catch weight field', viewport);
                 await expectInsideScreen(GetQuantityDialog.doneButton(), 'OK button', viewport);
             });

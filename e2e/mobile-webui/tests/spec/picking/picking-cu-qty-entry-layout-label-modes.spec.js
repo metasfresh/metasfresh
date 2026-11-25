@@ -2,7 +2,7 @@ import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { delayRequests } from "../../utils/network";
 import { LoadingSpinner, LOADING_SCOPE } from "../../utils/components/LoadingSpinner";
-import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen } from "../../utils/layout";
+import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen, DIALOG_SCOPE } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -123,17 +123,17 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await expectOnScreenWithoutScrolling(PickLineScanScreen.nextTUButtonLocator(), 'Once scan screen: Next TU button', viewport);
 
                 await scanLabel(labelOf({ masterdata }));
-                await layout('Once quantity block, no TU open');
+                await layout('Once quantity block, no TU open', DIALOG_SCOPE);
                 await GetQuantityDialog.typeQtyEntered(5);
                 await GetQuantityDialog.clickDoneRefused({
                     expectedError: txt(lang, 'noOpenTU'),
-                    whileToastShown: async () => await layout('Once refusal no open TU (quantity block + toast)'),
+                    whileToastShown: async () => await layout('Once refusal no open TU (quantity block + toast)', DIALOG_SCOPE),
                 });
 
                 await PickLineScanScreen.openTU();
-                await layout('Once quantity block, TU open');
+                await layout('Once quantity block, TU open', DIALOG_SCOPE);
                 await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
-                await layout('Once quantity block after a booking');
+                await layout('Once quantity block after a booking', DIALOG_SCOPE);
 
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
@@ -149,7 +149,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('Once step screen (undo)');
                 await expectReachable(PickingJobStepScreen.unpickButton(), 'Unpick button', viewport);
                 await PickingJobStepScreen.tapUnpick();
-                await layout('Once unpick dialog');
+                await layout('Once unpick dialog', DIALOG_SCOPE);
             });
 
             // noinspection JSUnusedLocalSymbols
@@ -211,9 +211,9 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
-            await layout('Manual quantity dialog');
+            await layout('Manual quantity dialog', DIALOG_SCOPE);
             await GetQuantityDialog.typeQtyEntered(3);
-            await layout('Manual quantity dialog, less than open: reject reason asked');
+            await layout('Manual quantity dialog, less than open: reject reason asked', DIALOG_SCOPE);
         });
 
         // noinspection JSUnusedLocalSymbols
@@ -233,7 +233,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await GetQuantityDialog.typeQtyEntered(3);
             await GetQuantityDialog.clickDoneRefused({
                 expectedError: txt('en_US', 'pickFromRequired'),
-                whileToastShown: async () => await layout('Once refusal "scan Pick from first" (quantity block + toast)'),
+                whileToastShown: async () => await layout('Once refusal "scan Pick from first" (quantity block + toast)', DIALOG_SCOPE),
             });
         });
 
@@ -264,7 +264,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const restoreTargetSpeed = await delayRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST', delayMs: 6000 });
             await PickLineScanScreen.tapNextTUWithoutWaiting();
             await PickLineScanScreen.rescanCULabelRefused(masterdata.packingInstructions.G1.grai, txt('en_US', 'nextTUBusy'), {
-                whileToastShown: async () => await layout('Once busy refusal "a TU is just being opened" (quantity block + toast)'),
+                whileToastShown: async () => await layout('Once busy refusal "a TU is just being opened" (quantity block + toast)', DIALOG_SCOPE),
             });
             await restoreTargetSpeed();
         });
