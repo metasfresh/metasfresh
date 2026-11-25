@@ -165,7 +165,7 @@ const openJob = async (masterdata, { productJob = false } = {}) => {
     return await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 };
 
-const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
+const expectNoQuickPackAllButton = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
     await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
 
     await Backend.expect({
@@ -179,7 +179,7 @@ const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2',
 };
 
 // noinspection JSUnusedLocalSymbols
-test('profile mode Scan once: no Quick Pack All button, nothing is picked', async ({ page }) => {
+test('profile mode Scan once: no Quick Pack All button, job stays Drafted', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -188,11 +188,11 @@ test('profile mode Scan once: no Quick Pack All button, nothing is picked', asyn
 
     const masterdata = await createMasterdata({ allowQuickPackAll: true, cuQtyEntryMode: MODE_SCAN_ONCE });
     const { pickingJobId } = await openJob(masterdata);
-    await expectQuickPackAllRefused({ pickingJobId });
+    await expectNoQuickPackAllButton({ pickingJobId });
 });
 
 // noinspection JSUnusedLocalSymbols
-test('profile Manual, customer record Scan each CU: no Quick Pack All button, nothing is picked', async ({ page }) => {
+test('profile Manual, customer record Scan each CU: no Quick Pack All button, job stays Drafted', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -205,7 +205,7 @@ test('profile Manual, customer record Scan each CU: no Quick Pack All button, no
         customers: [{ customer: "customer1", cuQtyEntryMode: MODE_SCAN_EACH }],
     });
     const { pickingJobId } = await openJob(masterdata);
-    await expectQuickPackAllRefused({ pickingJobId });
+    await expectNoQuickPackAllButton({ pickingJobId });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -226,7 +226,7 @@ test('mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All but
         ],
     });
     const { pickingJobId } = await openJob(masterdata, { productJob: true });
-    await expectQuickPackAllRefused({ pickingJobId, products: ['P1'] });   // the product job holds the lines of P1 only
+    await expectNoQuickPackAllButton({ pickingJobId, products: ['P1'] });   // the product job holds the lines of P1 only
 });
 
 // noinspection JSUnusedLocalSymbols
