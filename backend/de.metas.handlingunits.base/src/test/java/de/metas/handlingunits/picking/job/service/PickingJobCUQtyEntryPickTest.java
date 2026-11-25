@@ -641,7 +641,7 @@ class PickingJobCUQtyEntryPickTest
 		{
 			final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
 			final HuId cuId = HuId.ofRepoId(cusOf(tuId).get(0).getM_HU_ID());
-			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the TU").isTrue();
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(cuId))).as("the CU sits in the TU").containsExactly(cuId);
 
 			assertThat(helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of()))
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
@@ -1008,7 +1008,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId tuId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 			final I_M_HU tu = handlingUnitsBL.getById(tuId);
 			assertThat(handlingUnitsBL.isTransportUnit(tu)).as("Manual: the picked HU is the TU").isTrue();
-			assertThat(helper.huService.isCUInTU(tu)).isFalse();
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(tuId))).isEmpty();
 			assertThat(countQtyPickedRowsOfTU(tuId)).isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 
@@ -1037,7 +1037,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(handlingUnitsBL.isVirtual(pickedHU)).as("the picked HU is a CU").isTrue();
 			assertThat(handlingUnitsBL.getLoadingUnitHU(pickedHU)).as("on the pallet").isNotNull();
 			assertThat(handlingUnitsBL.getTransportUnitHU(pickedHU)).as("no TU around it").satisfies(tu -> assertThat(tu == null || !handlingUnitsBL.isTransportUnit(tu)).isTrue());
-			assertThat(helper.huService.isCUInTU(pickedHU)).isFalse();
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(pickedHuId))).isEmpty();
 			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("the pick booked its QtyPicked row").isEqualTo(1);
 			assertThat(countAllQtyPickedRows()).isEqualTo(1);
 
@@ -1064,7 +1064,7 @@ class PickingJobCUQtyEntryPickTest
 			cuOnLU.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
 			InterfaceWrapperHelper.save(cuOnLU);
 
-			assertThat(helper.huService.isCUInTU(cuOnLU)).isFalse();
+			assertThat(helper.huService.filterCUsInTU(ImmutableSet.of(HuId.ofRepoId(cuOnLU.getM_HU_ID())))).isEmpty();
 		}
 	}
 

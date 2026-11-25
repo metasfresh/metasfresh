@@ -265,7 +265,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		line = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(line.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(line.getPickedHUIds())
+		helper.huService.getGraiSnapshotsOfPicked(pickingJob.getLines())
 				.assertAllGraisAssigned();
 	}
 
@@ -297,7 +297,7 @@ class PickingJobGraiScanPickEndToEndTest
 		});
 
 		final HUGraiSnapshot snapshot = CollectionUtils.singleElement(
-				ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(tuId))));
+				ImmutableList.copyOf(helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(tuId), ImmutableSet.of())));
 		assertThat(snapshot.getAllGrais().toSet())
 				.as("the scanned GRAI must be stamped on the TU and readable back")
 				.containsExactly(grai);
@@ -417,7 +417,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		final PickingJobLine pickedLine = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(pickedLine.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(pickedLine.getPickedHUIds())
+		helper.huService.getGraiSnapshotsOfPicked(ImmutableList.of(pickedLine))
 				.assertAllGraisAssigned();
 	}
 
@@ -599,7 +599,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId tuId = createTUWithCU(productId).getTuId();
 
-			assertThatThrownBy(() -> helper.huService.getGraiSnapshots(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(tuId), ImmutableSet.of()).assertAllGraisAssigned())
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
 			assertThatThrownBy(() -> graiSnapshotsOfTUs(ImmutableSet.of(tuId)).assertAllGraisAssigned())
@@ -613,7 +613,7 @@ class PickingJobGraiScanPickEndToEndTest
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createTUWithCU(productId).getCuId();
 
-			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshots(ImmutableSet.of(cuId));
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of());
 
 			assertThat(snapshots).isEmpty();
 			snapshots.assertAllGraisAssigned();

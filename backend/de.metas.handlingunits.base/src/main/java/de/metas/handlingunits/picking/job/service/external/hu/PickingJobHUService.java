@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -151,16 +150,7 @@ public class PickingJobHUService
 	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
-	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. */
-	@VisibleForTesting
-	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
-	{
-		return huGraiService.getSnapshots(huIds);
-	}
-
 	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
-	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
 	{
@@ -195,8 +185,7 @@ public class PickingJobHUService
 		return result.build();
 	}
 
-	@VisibleForTesting
-	public boolean isCUInTU(@NonNull final I_M_HU hu)
+	private boolean isCUInTU(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.isVirtual(hu)
 				&& !handlingUnitsBL.isAggregateHU(hu)
