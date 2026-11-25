@@ -201,10 +201,32 @@ export const HUConsolidationJobScreen = {
     }),
 
     complete: async () => await step(`${NAME} - Complete`, async () => {
+        await HUConsolidationJobScreen.tapCompleteAndConfirm();
+        await HUConsolidationJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * After "complete": the dialog saying the job is done although its label was not printed; returns the dialog's text.
+     * @returns {Promise<string>}
+     */
+    expectCompletedWithErrorDialog: async () => await step(`${NAME} - Expect the "completed, label not printed" dialog`, async () => {
+        const dialog = page.getByTestId('huConsolidation-completed-with-error-dialog');
+        await expect(dialog).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('#last-confirm-button')).toBeDisabled();
+        return await dialog.textContent();
+    }),
+
+    /** OK on the "completed, label not printed" dialog: shows the job list. */
+    confirmCompletedWithErrorDialog: async () => await step(`${NAME} - OK on the "completed, label not printed" dialog`, async () => {
+        await page.getByTestId('huConsolidation-completed-with-error-ok').tap();
+        await HUConsolidationJobsListScreen.waitForScreen();
+    }),
+
+    /** Taps the complete button and answers "Yes", without waiting for the next screen (e.g. when an error toast is expected). */
+    tapCompleteAndConfirm: async () => await step(`${NAME} - Tap complete and confirm`, async () => {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
-        await HUConsolidationJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
 

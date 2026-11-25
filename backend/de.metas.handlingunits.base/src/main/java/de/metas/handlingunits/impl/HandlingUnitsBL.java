@@ -40,6 +40,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.IHUBuilder;
@@ -1577,6 +1578,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull final Collection<ParentLUPIsQuery> queries,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIsForProducts(queries, bpartnerId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
@@ -1613,6 +1622,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
+	}
+
+	@Override
+	public boolean isTUTypeTakenByLUType(@NonNull final HuPackingInstructionsId luPIId, @NonNull final HuPackingInstructionsId tuPIId, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId, null).isPresent();
 	}
 
 	@Override

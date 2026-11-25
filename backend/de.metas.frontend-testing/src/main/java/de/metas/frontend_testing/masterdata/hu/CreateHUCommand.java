@@ -241,11 +241,17 @@ public class CreateHUCommand
 		return warehouseId;
 	}
 
+	private PackingInstructions getPackingInstructionsNotNull()
+	{
+		final PackingInstructions packingInstructions = context.getObjectNotNull(Check.assumeNotNull(request.getPackingInstructions(), "packingInstructions shall be set"));
+		return request.isTuOnly() ? packingInstructions.withoutLU() : packingInstructions;
+	}
+
 	private BigDecimal getTotalQtyCUs()
 	{
 		if (request.getPackingInstructions() != null)
 		{
-			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
+			final PackingInstructions packingInstructions = getPackingInstructionsNotNull();
 			if (packingInstructions.isInfiniteCapacity())
 			{
 				return Check.assumeNotNull(request.getQty(), "qty shall be set when packingInstructions has infinite capacity");
@@ -269,7 +275,7 @@ public class CreateHUCommand
 	{
 		if (request.getPackingInstructions() != null)
 		{
-			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
+			final PackingInstructions packingInstructions = getPackingInstructionsNotNull();
 			return transformCU(packingInstructions, cuId);
 		}
 		else
