@@ -132,6 +132,56 @@ class HUConsolidationScannedCodeResolversTest
 	}
 
 	@Nested
+	class IsCarriedByAnyCrate
+	{
+		private final de.metas.handlingunits.grai.GRAI grai = de.metas.handlingunits.grai.GRAI.parse(GRAI);
+
+		@Test
+		void activeTopLevelHUOutsideAnyJob_true()
+		{
+			createTopLevelHU(OTHER_GRAI);
+			createTopLevelHU(GRAI);
+
+			assertThat(graiResolver.isCarriedByAnyCrate(grai)).isTrue();
+		}
+
+		@Test
+		void severalActiveTopLevelHUs_true()
+		{
+			createTopLevelHU(GRAI);
+			createTopLevelHU(GRAI);
+
+			assertThat(graiResolver.isCarriedByAnyCrate(grai)).isTrue();
+		}
+
+		@Test
+		void onlyInactiveHU_false()
+		{
+			final I_M_HU hu = createTopLevelHU(GRAI);
+			hu.setIsActive(false);
+			save(hu);
+
+			assertThat(graiResolver.isCarriedByAnyCrate(grai)).isFalse();
+		}
+
+		@Test
+		void onlyTUInsideLU_false()
+		{
+			createTUInside(createTopLevelHU(null), GRAI);
+
+			assertThat(graiResolver.isCarriedByAnyCrate(grai)).isFalse();
+		}
+
+		@Test
+		void noHU_false()
+		{
+			createTopLevelHU(OTHER_GRAI);
+
+			assertThat(graiResolver.isCarriedByAnyCrate(grai)).isFalse();
+		}
+	}
+
+	@Nested
 	class NonGraiCode
 	{
 		@Test

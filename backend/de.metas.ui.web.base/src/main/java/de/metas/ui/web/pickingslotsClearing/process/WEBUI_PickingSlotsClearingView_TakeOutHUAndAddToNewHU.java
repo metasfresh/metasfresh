@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -154,7 +155,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 		final ProductId singleProductId = storage.getSingleProductIdOrNull();
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(singleProductId);
 
-		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI);
+		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI, ImmutableList.of(fromHU));
 		lutuProducerDestination.addCUPerTU(singleProductId, qtyCUsPerTU, uom);
 
 		return lutuProducerDestination;

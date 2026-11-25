@@ -35,6 +35,7 @@ public class WarehouseCommand
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	@NonNull private final WarehouseSourceHUConfigRepository sourceHUConfigRepository = new WarehouseSourceHUConfigRepository();
+	@NonNull private final AfterPickingLocatorRepository afterPickingLocatorRepository = new AfterPickingLocatorRepository();
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -249,8 +250,12 @@ public class WarehouseCommand
 		);
 		context.putIdentifier(identifier, locatorId);
 
-		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
+		if (locatorRequest.isAfterPickingLocatorOrFalse())
+		{
+			afterPickingLocatorRepository.markAsAfterPickingLocator(locatorId);
+		}
 
+		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
 		return toJson(locatorRecord);
 	}
 

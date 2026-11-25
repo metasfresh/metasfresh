@@ -41,6 +41,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuPackingMaterialId;
 import de.metas.handlingunits.HuUnitType;
@@ -65,7 +66,6 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -1576,6 +1576,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull final Collection<ParentLUPIsQuery> queries,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIsForProducts(queries, bpartnerId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
@@ -1673,16 +1681,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
-				.firstIdOnly();
-	}
-
-	@Override
-	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
-	{
-		return handlingUnitsRepo.createHUQueryBuilder()
-				.setOnlyActiveHUs(true)
-				.setOnlyTopLevelHUs()
-				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
 				.firstIdOnly();
 	}
 
