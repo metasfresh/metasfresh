@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import org.slf4j.LoggerFactory;
-import de.metas.handlingunits.picking.job.service.external.hu.CUBookingSpecification;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
 import java.util.Set;
 import com.google.common.collect.ImmutableList;
@@ -603,8 +602,6 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOfA).as("A booked one CU").hasSize(1);
 			assertThat(pickedJob.getLineById(lineBId).getPickedHUIds()).as("B booked one CU").hasSize(1);
 			final PickingJobHUService huServiceSpy = Mockito.spy(helper.huService);
-			final CUBookingSpecification specSpy = Mockito.spy(helper.huService.getCUBookingSpecification());
-			Mockito.doReturn(specSpy).when(huServiceSpy).getCUBookingSpecification();
 
 			assertThatThrownBy(() -> PickingJobGRAIValidator.builder()
 					.huService(huServiceSpy)
@@ -615,7 +612,7 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 
 			@SuppressWarnings("unchecked") final ArgumentCaptor<Collection<HUInfo>> lookedUp = ArgumentCaptor.forClass(Collection.class);
-			Mockito.verify(specSpy).filterBookedWithLabelScan(lookedUp.capture());
+			Mockito.verify(huServiceSpy).filterBookedWithLabelScan(lookedUp.capture());
 			assertThat(lookedUp.getValue()).extracting(HUInfo::getId).as("only the CUs of the GRAI customer are looked up").containsExactlyElementsOf(cusOfA);
 		}
 
@@ -665,7 +662,7 @@ class PickingJobCUQtyEntryPickTest
 		{
 			final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("4", productId));
 			final HuId cuId = HuId.ofRepoId(cusOf(tuId).get(0).getM_HU_ID());
-			assertThat(helper.huService.getCUBookingSpecification().isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the TU").isTrue();
+			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the TU").isTrue();
 
 			assertThat(helper.huService.getGraiSnapshotsOfTUs(ImmutableSet.of(cuId), ImmutableSet.of()))
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
@@ -1032,7 +1029,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId tuId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
 			final I_M_HU tu = handlingUnitsBL.getById(tuId);
 			assertThat(handlingUnitsBL.isTransportUnit(tu)).as("Manual: the picked HU is the TU").isTrue();
-			assertThat(helper.huService.getCUBookingSpecification().isCUInTU(tu)).isFalse();
+			assertThat(helper.huService.isCUInTU(tu)).isFalse();
 			assertThat(countQtyPickedRowsOfTU(tuId)).isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 
@@ -1071,7 +1068,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(handlingUnitsBL.isVirtual(pickedHU)).as("the picked HU is a CU").isTrue();
 			assertThat(handlingUnitsBL.getLoadingUnitHU(pickedHU)).as("on the pallet").isNotNull();
 			assertThat(handlingUnitsBL.getTransportUnitHU(pickedHU)).as("no TU around it").satisfies(tu -> assertThat(tu == null || !handlingUnitsBL.isTransportUnit(tu)).isTrue());
-			assertThat(helper.huService.getCUBookingSpecification().isCUInTU(pickedHU)).isFalse();
+			assertThat(helper.huService.isCUInTU(pickedHU)).isFalse();
 			assertThat(countQtyPickedRowsOfCU(pickedHuId)).as("the pick booked its QtyPicked row").isEqualTo(1);
 			assertThat(countAllQtyPickedRows()).isEqualTo(1);
 
@@ -1104,7 +1101,7 @@ class PickingJobCUQtyEntryPickTest
 			cuOnPallet.setM_HU_Item_Parent_ID(luHUItem.getM_HU_Item_ID());
 			InterfaceWrapperHelper.save(cuOnPallet);
 
-			assertThat(helper.huService.getCUBookingSpecification().isCUInTU(cuOnPallet)).isFalse();
+			assertThat(helper.huService.isCUInTU(cuOnPallet)).isFalse();
 		}
 	}
 
@@ -1790,6 +1787,6 @@ class PickingJobCUQtyEntryPickTest
 	/** The GRAI snapshots as the completion check sees them when every CU in a TU of {@code huIds} was booked with a label scan. */
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.getCUBookingSpecification().filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

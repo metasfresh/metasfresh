@@ -677,6 +677,6 @@ class PickingJobGraiScanPickEndToEndTest
 	/** The GRAI snapshots as the completion check sees them when every CU in a TU of {@code huIds} was booked with a label scan. */
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.getCUBookingSpecification().filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

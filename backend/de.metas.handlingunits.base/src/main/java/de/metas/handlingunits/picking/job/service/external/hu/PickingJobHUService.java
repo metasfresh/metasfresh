@@ -2,7 +2,9 @@ package de.metas.handlingunits.picking.job.service.external.hu;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUContextHolder;
@@ -49,6 +51,8 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -143,7 +147,7 @@ public class PickingJobHUService
 
 	/**
 	 * The GRAI snapshots of the picked HUs. A CU that was booked with a label scan ({@code cusBookedWithLabelScan}, see
-	 * {@link CUBookingSpecification#filterBookedWithLabelScan(Collection)}) sits in a TU which carries the GRAI and a CU has no GRAI snapshot of its own,
+	 * {@link #filterBookedWithLabelScan(Collection)}) sits in a TU which carries the GRAI and a CU has no GRAI snapshot of its own,
 	 * so it is replaced by its TU. Any other HU (TU, LU, aggregate VHU, a CU of a Manual pick, CU without a TU parent) stays as is.
 	 *
 	 * Production callers use {@link #getGraiSnapshotsOfPicked(Collection)}.
@@ -166,7 +170,7 @@ public class PickingJobHUService
 	{
 		final ImmutableSet<HuId> pickedHUIds = lines.stream().flatMap(line -> line.getPickedHUIds().stream()).collect(ImmutableSet.toImmutableSet());
 		final ImmutableList<HUInfo> pickedHUInfos = lines.stream().flatMap(line -> line.getPickedHUInfos().stream()).collect(ImmutableList.toImmutableList());
-		return getGraiSnapshotsOfTUs(pickedHUIds, getCUBookingSpecification().filterBookedWithLabelScan(pickedHUInfos));
+		return getGraiSnapshotsOfTUs(pickedHUIds, filterBookedWithLabelScan(pickedHUInfos));
 	}
 
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
@@ -189,18 +193,70 @@ public class PickingJobHUService
 		return result.build();
 	}
 
-	/** @return how a picked HU was booked: the one place that derives it from the HU's shape */
-	@NonNull
-	public CUBookingSpecification getCUBookingSpecification()
+	/** @return true for a CU in a TU; false for a top-level CU, a CU directly on an LU and an aggregated TU */
+	public boolean isCUInTU(@NonNull final I_M_HU hu)
 	{
-		return new CUBookingSpecification(handlingUnitsBL, huQRCodesService);
+		return handlingUnitsBL.isVirtual(hu)
+				&& !handlingUnitsBL.isAggregateHU(hu)
+				&& hu.getM_HU_Item_Parent_ID() > 0
+				&& getTU(hu).isPresent();
+	}
+
+	@NonNull
+	private Optional<I_M_HU> getTU(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
+		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? Optional.of(tu) : Optional.empty();
+	}
+
+	/** @return the picked CUs in a TU whose recorded QR code is their own, i.e. picked by scanning their label (a Manual pick never matches) */
+	@NonNull
+	public ImmutableSet<HuId> filterBookedWithLabelScan(@NonNull final Collection<HUInfo> pickedHUInfos)
+	{
+		return filterCUsInTU(filterAssignedToOwnQRCode(pickedHUInfos));
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> filterCUsInTU(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsBL.getByIds(huIds).stream()
+				.filter(this::isCUInTU)
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** one batch query; a QR code shared by several HUs is no error */
+	@NonNull
+	private ImmutableSet<HuId> filterAssignedToOwnQRCode(@NonNull final Collection<HUInfo> huInfos)
+	{
+		if (huInfos.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableMap<HUQRCodeUniqueId, HUQRCodeAssignment> assignmentsByQRCodeId = Maps.uniqueIndex(
+				huQRCodesService.getHUAssignmentsByQRCodeIfExist(huInfos.stream().map(HUInfo::getQrCode).collect(ImmutableSet.toImmutableSet())),
+				HUQRCodeAssignment::getId);
+
+		return huInfos.stream()
+				.filter(huInfo -> {
+					final HUQRCodeAssignment assignment = assignmentsByQRCodeId.get(huInfo.getQrCode().getId());
+					return assignment != null && assignment.isAssignedToHuId(huInfo.getId());
+				})
+				.map(HUInfo::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/** @return the id of the TU the HU is in; the HU's own id if it is not in a TU */
 	@NonNull
 	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
 	{
-		return HuId.ofRepoId(getCUBookingSpecification().getTU(hu).orElse(hu).getM_HU_ID());
+		return HuId.ofRepoId(getTU(hu).orElse(hu).getM_HU_ID());
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

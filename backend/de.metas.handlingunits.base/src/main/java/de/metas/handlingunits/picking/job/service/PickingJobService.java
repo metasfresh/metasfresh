@@ -764,7 +764,7 @@ public class PickingJobService implements PickingSlotListener
 		// only the lines the mode of their customer does not settle are checked for CUs booked in a label-based mode (that check walks each picked CU up to its TU)
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
 		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
-				? huService.getCUBookingSpecification().filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
+				? huService.filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
 				: ImmutableSet.of();
 		final List<PickingJobLine> labelBasedLines = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedLabelBased));
 		if (labelBasedLines.isEmpty())
