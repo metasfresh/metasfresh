@@ -489,7 +489,9 @@ public class LUTUProducerDestination
 
 	private static HUException newLUHasNoTUSubPackInstrException(@NonNull final I_M_HU_PI luPI, @NonNull final I_M_HU_PI tuPI)
 	{
-		return (HUException)new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, luPI.getName(), tuPI.getName()).markAsUserValidationError();
+		final HUException exception = new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, luPI.getName(), tuPI.getName());
+		exception.markAsUserValidationError();
+		return exception;
 	}
 
 	@Override
