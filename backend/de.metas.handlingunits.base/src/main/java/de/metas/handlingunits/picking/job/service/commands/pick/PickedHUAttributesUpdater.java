@@ -75,6 +75,35 @@ class PickedHUAttributesUpdater
 			}
 
 			updateHUPickAttributes(tu.toHU(), pickAttributes, true, serialNoPickingEnabled);
+			recomputeBoxLotAndBestBeforeIfNotSent(tu.toHU(), pickAttributes);
+		}
+	}
+
+	/**
+	 * When the picker did not send a lot / best-before date (the quantity dialog did not show the field), the CUs keep the value copied from the
+	 * scanned stock unit, but the box (TU) can hold CUs from earlier picks: its value has to follow all its CUs
+	 * (one common value: that value; different values: empty), not stay at what the first CU gave it.
+	 * Values that are sent are handled by {@link #updateHUPickAttributes}.
+	 */
+	private void recomputeBoxLotAndBestBeforeIfNotSent(@NonNull final I_M_HU tu, @NonNull final PickAttributes pickAttributes)
+	{
+		final boolean recomputeLotNo = !pickAttributes.isSetLotNo();
+		final boolean recomputeBestBeforeDate = !pickAttributes.isSetBestBeforeDate();
+		if (!recomputeLotNo && !recomputeBestBeforeDate)
+		{
+			return;
+		}
+
+		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(tu);
+		huAttributes.setSaveOnChange(true);
+
+		if (recomputeBestBeforeDate && huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+		{
+			huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+		}
+		if (recomputeLotNo && huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+		{
+			huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
 		}
 	}
 

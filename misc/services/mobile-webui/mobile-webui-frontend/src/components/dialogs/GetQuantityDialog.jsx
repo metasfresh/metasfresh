@@ -254,8 +254,10 @@ const GetQuantityDialog = ({
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
         catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
-        bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
-        lotNo: isLotNoEditable ? lotNo : null,
+        // A field the dialog did not show is left out (undefined), not sent as null: the caller turns every sent value,
+        // null included, into "set this attribute", which would overwrite the value of the scanned stock unit with an empty one.
+        bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : undefined,
+        lotNo: isLotNoEditable ? lotNo : undefined,
         serialNos: isShowSerialNo ? serialNos : null,
         attributeValues: hasEditableAttributes ? attributeValues : null,
         isCloseTarget: !!isCloseTarget,
