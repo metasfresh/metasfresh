@@ -1293,18 +1293,20 @@ public class M_InOut_StepDef
 
 
 	/**
-	 * Updates existing {@link I_M_InOut} records (e.g. to set a non-quantity field before reactivation).
+	 * Updates existing {@link I_M_InOut} records (e.g. to set a non-quantity field before reactivation, or after completion).
 	 * <p>
 	 * Columns:
 	 * <ul>
 	 *     <li>M_InOut_ID (required): identifier of the shipment to update.</li>
+	 *     <li>MovementDate (optional): new movement date, e.g. 2022-05-17.</li>
 	 *     <li>OPT.M_Tour_ID (optional): identifier of an {@link de.metas.tourplanning.model.I_M_Tour} to set on the shipment.</li>
+	 *     <li>POReference (optional): new PO reference.</li>
 	 * </ul>
 	 * Example:
 	 * <pre>
 	 * And update M_InOut:
-	 *   | M_InOut_ID | OPT.M_Tour_ID |
-	 *   | shipment   | tour          |
+	 *   | M_InOut_ID | OPT.M_Tour_ID | POReference |
+	 *   | shipment   | tour          | PO_4711     |
 	 * </pre>
 	 */
 	@And("update M_InOut:")
@@ -1318,6 +1320,8 @@ public class M_InOut_StepDef
 					.ifPresent(inOut::setMovementDate);
 			row.getAsOptionalIdentifier("M_Tour_ID")
 					.ifPresent(tourIdentifier -> inOut.setM_Tour_ID(tourTable.get(tourIdentifier).getM_Tour_ID()));
+			row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+					.ifPresent(inOut::setPOReference);
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 		});

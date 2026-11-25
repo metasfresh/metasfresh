@@ -1,5 +1,6 @@
 package de.metas.impex.api.impl;
 
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -47,13 +48,31 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
+/**
+ * Repository Tables: AD_InputDataSource
+ * Repository Cluster: InputDataSourceDAO (sole reader and cache owner)
+ */
 public class InputDataSourceDAO implements IInputDataSourceDAO
 {
+	private final CCache<InputDataSourceId, Boolean> isEDIChannelById = CCache.<InputDataSourceId, Boolean>newCache(I_AD_InputDataSource.Table_Name + "#by#IsEDIChannel", 10, CCache.EXPIREMINUTES_Never);
 
 	@Override
 	public I_AD_InputDataSource getById(@NonNull final InputDataSourceId id)
 	{
 		return loadOutOfTrx(id, I_AD_InputDataSource.class);
+	}
+
+	@Override
+	public boolean isEDIChannel(@NonNull final InputDataSourceId id)
+	{
+		return isEDIChannelById.getOrLoad(id, () -> {
+			final I_AD_InputDataSource dataSource = getById(id);
+			if (dataSource == null)
+			{
+				throw new AdempiereException("No AD_InputDataSource found for id=" + id.getRepoId());
+			}
+			return dataSource.isEDIChannel();
+		});
 	}
 
 	@Override

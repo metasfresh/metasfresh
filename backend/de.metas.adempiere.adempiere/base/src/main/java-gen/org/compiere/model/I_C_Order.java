@@ -1324,6 +1324,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1333,6 +1334,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1366,7 +1368,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1376,7 +1378,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -2196,6 +2198,31 @@ public interface I_C_Order
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set PO reference is customer's order no..
+	 * The PO reference is the customer's own order number (EDI RFF+ON);
+ otherwise it is our order number (RFF+VN).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPOReferenceBuyerOrderNo (boolean IsPOReferenceBuyerOrderNo);
+
+	/**
+	 * Get PO reference is customer's order no..
+	 * The PO reference is the customer's own order number (EDI RFF+ON);
+ otherwise it is our order number (RFF+VN).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPOReferenceBuyerOrderNo();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsPOReferenceBuyerOrderNo = new ModelColumn<>(I_C_Order.class, "IsPOReferenceBuyerOrderNo", null);
+	String COLUMNNAME_IsPOReferenceBuyerOrderNo = "IsPOReferenceBuyerOrderNo";
+
+	/**
 	 * Set Pre-Advice Required.
 	 *
 	 * <br>Type: YesNo
@@ -2241,7 +2268,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Reprint Order Checkup.
-	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 * Controls whether completing a reactivated order produces a new order checkup, or keeps the existing one. Work that has no order checkup yet still gets one printed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2251,7 +2278,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Reprint Order Checkup.
-	 * Controls whether the order checkup is reprinted when this order is reactivated.
+	 * Controls whether completing a reactivated order produces a new order checkup, or keeps the existing one. Work that has no order checkup yet still gets one printed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

@@ -1013,35 +1013,49 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates fields of an existing {@code C_Invoice} and saves it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) the invoice to update<br>
+	 *   <b>DateInvoiced</b> — (optional) new invoice date, e.g. 2021-04-08<br>
+	 *   <b>POReference</b> — (optional) new PO reference<br>
+	 *   <b>C_PaymentTerm_ID</b> — (optional) value of the payment term to set<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice:
+	 *   | Identifier | DateInvoiced | POReference |
+	 *   | invoice_1  | 2021-04-08   | PO_4711     |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			updateInvoice(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateInvoice);
 	}
 
-	private void updateInvoice(@NonNull final Map<String, String> row)
+	private void updateInvoice(@NonNull final DataTableRow row)
 	{
-		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier();
 
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
-		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			invoice.setDateInvoiced(dateInvoiced);
-		}
+		row.getAsOptionalLocalDateTimestamp(COLUMNNAME_DateInvoiced)
+				.ifPresent(invoice::setDateInvoiced);
+
+		row.getAsOptionalString(COLUMNNAME_POReference)
+				.ifPresent(invoice::setPOReference);
 
 		// Look up the payment term via paymentTermStepDef so identifier-based lookups (e.g. "pt_net90")
 		// resolve correctly even when the DB record has a unique timestamped Value.
-		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
+		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		InterfaceWrapperHelper.save(invoice);
 
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		invoiceIdentifier.putOrReplace(invoiceTable, invoice);
 	}
 
 	/**

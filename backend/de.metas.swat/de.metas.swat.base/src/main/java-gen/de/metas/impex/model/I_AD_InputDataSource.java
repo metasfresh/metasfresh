@@ -1,163 +1,146 @@
 package de.metas.impex.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_InputDataSource
- *  @author Adempiere (generated)
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
-public interface I_AD_InputDataSource
+@SuppressWarnings("unused")
+public interface I_AD_InputDataSource 
 {
 
-    /** TableName=AD_InputDataSource */
-    public static final String Table_Name = "AD_InputDataSource";
+	String Table_Name = "AD_InputDataSource";
 
-    /** AD_Table_ID=540273 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540273 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Eingabequelle.
+	 * Set Input Source.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Eingabequelle.
+	 * Get Input Source.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_InputDataSource_ID();
+	int getAD_InputDataSource_ID();
 
-    /** Column definition for AD_InputDataSource_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_AD_InputDataSource_ID = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "AD_InputDataSource_ID", null);
-    /** Column name AD_InputDataSource_ID */
-    public static final String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_AD_InputDataSource.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_Created = new ModelColumn<>(I_AD_InputDataSource.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_Description = new ModelColumn<>(I_AD_InputDataSource.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType (java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEntityType();
+	java.lang.String getEntityType();
 
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_InputDataSource.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set External ID.
@@ -166,7 +149,7 @@ public interface I_AD_InputDataSource
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -175,62 +158,56 @@ public interface I_AD_InputDataSource
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	@Nullable java.lang.String getExternalId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_ExternalId = new ModelColumn<>(I_AD_InputDataSource.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set Interner Name.
+	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setInternalName (java.lang.String InternalName);
+	void setInternalName (@Nullable java.lang.String InternalName);
 
 	/**
-	 * Get Interner Name.
+	 * Get Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getInternalName();
+	@Nullable java.lang.String getInternalName();
 
-    /** Column definition for InternalName */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "InternalName", null);
-    /** Column name InternalName */
-    public static final String COLUMNNAME_InternalName = "InternalName";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_InternalName = new ModelColumn<>(I_AD_InputDataSource.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_InputDataSource.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set IsDestination.
@@ -239,7 +216,7 @@ public interface I_AD_InputDataSource
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDestination (boolean IsDestination);
+	void setIsDestination (boolean IsDestination);
 
 	/**
 	 * Get IsDestination.
@@ -248,111 +225,125 @@ public interface I_AD_InputDataSource
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDestination();
+	boolean isDestination();
 
-    /** Column definition for IsDestination */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsDestination = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "IsDestination", null);
-    /** Column name IsDestination */
-    public static final String COLUMNNAME_IsDestination = "IsDestination";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsDestination = new ModelColumn<>(I_AD_InputDataSource.class, "IsDestination", null);
+	String COLUMNNAME_IsDestination = "IsDestination";
+
+	/**
+	 * Set EDI channel.
+	 * Orders from this data source come in via EDI. A new order created from such order candidates with a PO reference is marked "PO reference is customer's order no.". Does not control any EDI export.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEDIChannel (boolean IsEDIChannel);
+
+	/**
+	 * Get EDI channel.
+	 * Orders from this data source come in via EDI. A new order created from such order candidates with a PO reference is marked "PO reference is customer's order no.". Does not control any EDI export.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEDIChannel();
+
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_IsEDIChannel = new ModelColumn<>(I_AD_InputDataSource.class, "IsEDIChannel", null);
+	String COLUMNNAME_IsEDIChannel = "IsEDIChannel";
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_Name = new ModelColumn<>(I_AD_InputDataSource.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_Updated = new ModelColumn<>(I_AD_InputDataSource.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set URL.
-	 * Full URL address - e.g. http://www.adempiere.org
+	 * Full URL address - e.g. https://www.metasfresh.com
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setURL (java.lang.String URL);
+	void setURL (@Nullable java.lang.String URL);
 
 	/**
 	 * Get URL.
-	 * Full URL address - e.g. http://www.adempiere.org
+	 * Full URL address - e.g. https://www.metasfresh.com
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getURL();
+	@Nullable java.lang.String getURL();
 
-    /** Column definition for URL */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_URL = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "URL", null);
-    /** Column name URL */
-    public static final String COLUMNNAME_URL = "URL";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_URL = new ModelColumn<>(I_AD_InputDataSource.class, "URL", null);
+	String COLUMNNAME_URL = "URL";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (@Nullable java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	@Nullable java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_AD_InputDataSource, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<>(I_AD_InputDataSource.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_AD_InputDataSource, Object> COLUMN_Value = new ModelColumn<>(I_AD_InputDataSource.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }
