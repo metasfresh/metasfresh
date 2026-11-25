@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 
-/** What a {@link CUQtyEntryMode} means for a pick; the mobile app reads it via {@code JsonCUQtyEntryPolicy} instead of knowing the modes. */
+/** What a {@link CUQtyEntryMode} means for a pick. */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CUQtyEntryPolicy
 {

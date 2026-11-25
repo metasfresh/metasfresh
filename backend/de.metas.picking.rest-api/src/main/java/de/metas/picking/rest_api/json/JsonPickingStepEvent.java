@@ -74,7 +74,7 @@ public class JsonPickingStepEvent
 	boolean isCloseTarget;
 	boolean setGrais;
 	@Nullable List<String> graiCodes;
-	/** The scanned CU label; the mobile app sends it as the raw scanned string ({@code postStepPicked} in {@code src/api/picking.js}). Blank = no label. */
+	/** The scanned CU label, as the raw scanned string; blank = no label. */
 	@Nullable ScannedCode cuLabel;
 
 	// Event Type: UNPICK

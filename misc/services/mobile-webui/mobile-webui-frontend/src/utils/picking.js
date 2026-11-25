@@ -67,7 +67,7 @@ export const isCatchWeight = ({ line }) => {
   return !!line.catchWeightUOM;
 };
 
-/** Scan once */
+/** The last typed count capped by the open quantity; null when nothing was typed yet. */
 export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
   if (lastTypedQty == null) {
     return null;

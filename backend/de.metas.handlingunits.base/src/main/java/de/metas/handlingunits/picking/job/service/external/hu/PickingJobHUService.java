@@ -148,7 +148,7 @@ public class PickingJobHUService
 	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
-	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. Test convenience: the completion check uses {@link #getGraiSnapshotsOfPicked(Collection)}. */
+	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)

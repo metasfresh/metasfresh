@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,12 @@ public class MobileUIPickingUserProfileService
 	public CUQtyEntryPolicy getCUQtyEntryPolicy(@Nullable final BPartnerId customerId)
 	{
 		return getPickingJobOptions(customerId).getCUQtyEntryPolicy();
+	}
+
+	/** True if the line's customer requires a scanned CU label to book a CU. */
+	public boolean isLabelRequired(@NonNull final PickingJobLine line)
+	{
+		return getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
 	}
 
 	@NonNull

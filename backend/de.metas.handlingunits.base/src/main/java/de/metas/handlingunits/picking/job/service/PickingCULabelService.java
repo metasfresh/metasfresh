@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
@@ -130,7 +131,7 @@ public class PickingCULabelService
 		final String errorCode = msgBL.getErrorCode(messageKey);
 		return new AdempiereException(
 				TranslatableStrings.builder().append(TranslatableStrings.adMessage(messageKey)).append(" ").append(details).build(),
-				errorCode != null ? errorCode : messageKey.toAD_Message())
+				CoalesceUtil.coalesceNotNull(errorCode, messageKey.toAD_Message()))
 				.markAsUserValidationError();
 	}
 }

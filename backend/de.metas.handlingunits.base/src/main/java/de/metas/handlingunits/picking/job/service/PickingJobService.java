@@ -748,7 +748,7 @@ public class PickingJobService implements PickingSlotListener
 	/** Closes the job's targets and every line's targets; closed HUs of lines in a label-based CU quantity entry mode go to their own line's picking slot, the others to the slot scanned last. */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
-		final Predicate<PickingJobLine> isLabelRequired = line -> configService.getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
+		final Predicate<PickingJobLine> isLabelRequired = configService::isLabelRequired;
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
 		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
 				? huService.filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))

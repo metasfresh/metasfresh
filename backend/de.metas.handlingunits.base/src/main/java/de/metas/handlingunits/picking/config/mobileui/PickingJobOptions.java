@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.OptionalBoolean;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -91,7 +92,7 @@ public class PickingJobOptions
 	public Optional<PickingLineSortBy> getPickingLineSortBy() {return Optional.ofNullable(pickingLineSortBy);}
 
 	@NonNull
-	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return cuQtyEntryMode != null ? cuQtyEntryMode : CUQtyEntryMode.DEFAULT;}
+	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return CoalesceUtil.coalesceNotNull(cuQtyEntryMode, CUQtyEntryMode.DEFAULT);}
 
 	@NonNull
 	public CUQtyEntryPolicy getCUQtyEntryPolicy() {return getCUQtyEntryModeOrDefault().getPolicy();}
@@ -109,8 +110,8 @@ public class PickingJobOptions
 				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
 				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
-				.cuQtyEntryMode(this.cuQtyEntryMode != null ? this.cuQtyEntryMode : fallback.cuQtyEntryMode)
-				.cuLabelFormatId(this.cuLabelFormatId != null ? this.cuLabelFormatId : fallback.cuLabelFormatId)
+				.cuQtyEntryMode(CoalesceUtil.coalesce(this.cuQtyEntryMode, fallback.cuQtyEntryMode))
+				.cuLabelFormatId(CoalesceUtil.coalesce(this.cuLabelFormatId, fallback.cuLabelFormatId))
 				.build();
 
 		return Objects.equals(this, newValue) ? this : newValue;

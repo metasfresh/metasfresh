@@ -33,7 +33,7 @@ export default OpenNextTUButton;
 
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
-/** "Weitere Kiste" */
+/** Closes the open TU target (if any), then opens a new TU of the line's TU packing, or goes to the target selection when the line has no TU packing. */
 // @VisibleForTesting
 export const closeAndOpenNextTU = async ({
   packingTuPIId,
