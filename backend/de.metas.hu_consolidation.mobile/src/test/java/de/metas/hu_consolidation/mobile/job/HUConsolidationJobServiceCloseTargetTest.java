@@ -14,6 +14,7 @@ import de.metas.handlingunits.report.labels.HULabelPrintAction;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationGRAIScanPolicy;
+import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
 import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCodeResolvers;
 import de.metas.hu_consolidation.mobile.shipment.HUConsolidationShipmentService;
 import de.metas.user.UserId;
@@ -82,7 +83,8 @@ class HUConsolidationJobServiceCloseTargetTest
 				mock(HUConsolidationAvailableTargetsFinder.class),
 				targetCloser,
 				labelPrinter,
-				mock(HUConsolidationScannedCodeResolvers.class));
+				mock(HUConsolidationScannedCodeResolvers.class),
+				mock(GRAIScannedCodeResolver.class));
 
 		final HUConsolidationJob newJob = jobRepository.create(
 				HUConsolidationJobReference.builder()

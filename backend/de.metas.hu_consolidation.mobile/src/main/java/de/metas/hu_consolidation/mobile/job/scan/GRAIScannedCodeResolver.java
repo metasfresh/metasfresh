@@ -32,6 +32,17 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
+		return Optional.of(resolve(grai, queues));
+	}
+
+	/**
+	 * @return the one crate among the HUs of {@code queues} that carries the GRAI; a HU with that GRAI outside {@code queues} is never looked at.
+	 * @throws AdempiereException {@code HU_NOT_FOUND} if no crate matches (also when {@code queues} is empty, without any query),
+	 *                            {@code HU_AMBIGUOUS} if more than one matches.
+	 */
+	@NonNull
+	public HUConsolidationScannedCrate resolve(@NonNull final GRAI grai, @NonNull final PickingSlotQueues queues)
+	{
 		final IHUQueryBuilder cratesQuery = HUConsolidationCrateQuery.ofHuIds(handlingUnitsDAO, queues.getHuIds())
 				.orElseThrow(() -> huNotFound(grai))
 				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString());
@@ -40,7 +51,7 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 				() -> huNotFound(grai),
 				() -> new AdempiereException(MobileQRCodeMessages.HU_AMBIGUOUS).setParameter("grai", grai.toCanonicalString())
 		).getM_HU_ID());
-		return Optional.of(HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId)));
+		return HUConsolidationScannedCrate.of(huId, queues.getPickingSlotId(huId));
 	}
 
 	private static AdempiereException huNotFound(@NonNull final GRAI grai)

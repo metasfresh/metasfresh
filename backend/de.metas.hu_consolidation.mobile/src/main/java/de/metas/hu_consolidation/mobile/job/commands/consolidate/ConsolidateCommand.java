@@ -18,6 +18,7 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -38,6 +39,7 @@ public class ConsolidateCommand
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final GRAIScannedCodeResolver graiResolver;
 
 	// Params
 	@NonNull private final UserId callerId;
@@ -56,12 +58,14 @@ public class ConsolidateCommand
 			@NonNull final HUConsolidationJobRepository jobRepository,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final PickingSlotService pickingSlotService,
+			@NonNull final GRAIScannedCodeResolver graiResolver,
 			//
 			@NonNull final ConsolidateRequest request)
 	{
 		this.jobRepository = jobRepository;
 		this.huQRCodesService = huQRCodesService;
 		this.pickingSlotService = pickingSlotService;
+		this.graiResolver = graiResolver;
 
 		this.callerId = request.getCallerId();
 		this.jobId = request.getJobId();
@@ -122,9 +126,8 @@ public class ConsolidateCommand
 		}
 		else if (grai != null)
 		{
-			effectiveHuId = handlingUnitsBL.getTopLevelHuIdByGrai(grai)
-					.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
-							.setParameter("grai", grai.toCanonicalString()));
+			// among the crates of this job, as the scan screen does: two crates of the job with this GRAI are refused as ambiguous, a HU outside the job is not looked at
+			effectiveHuId = graiResolver.resolve(grai, pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds())).getHuId();
 		}
 		else
 		{
