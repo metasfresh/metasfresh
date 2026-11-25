@@ -11,16 +11,13 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
-import java.util.Objects;
-import de.metas.util.StringUtils;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -30,6 +27,7 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
@@ -75,8 +73,12 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.scannable_code.format.ScannableCodeFormat;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
@@ -101,6 +103,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -122,7 +125,8 @@ public class PickingJobHUService
 						HULabelService.newInstanceForUnitTesting(),
 						new HUReservationService(new HUReservationRepository()),
 						InventoryService.newInstanceForUnitTesting(),
-						new HUGraiService(new HUPIGraiRepository())));
+						new HUGraiService(new HUPIGraiRepository()),
+						ScannableCodeFormatService.newInstanceForUnitTesting()));
 	}
 
 	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
@@ -131,6 +135,7 @@ public class PickingJobHUService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
@@ -141,6 +146,7 @@ public class PickingJobHUService
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	/** The GRAI snapshots of the given HUs as they are, without looking for a TU. Test convenience: the completion check uses {@link #getGraiSnapshotsOfPicked(Collection)}. */
 	@VisibleForTesting
@@ -274,7 +280,7 @@ public class PickingJobHUService
 			return false;
 		}
 
-		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
 		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
 		return handlingUnitsBL.getByIds(huIdsWithPackId).stream()
 				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
@@ -287,6 +293,11 @@ public class PickingJobHUService
 				? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
 				: null;
 		return Objects.equals(huLotNo, lotNoNorm);
+	}
+
+	public Optional<ScannableCodeFormat> getScannableCodeFormat(@NonNull final ScannableCodeFormatId formatId)
+	{
+		return scannableCodeFormatService.getById(formatId);
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)

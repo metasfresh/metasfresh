@@ -88,6 +88,7 @@ import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceCreateRequest;
@@ -223,7 +224,8 @@ public class PickingJobTestHelper
 				huLabelService,
 				huReservationService,
 				inventoryService,
-				new HUGraiService(new HUPIGraiRepository()));
+				new HUGraiService(new HUPIGraiRepository()),
+				ScannableCodeFormatService.newInstanceForUnitTesting());
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,

@@ -8,12 +8,12 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.logging.LogManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
-import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -37,15 +37,16 @@ public class PickingCULabelService
 	public static final AdMessageKey MSG_CU_LABEL_ALREADY_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_ALREADY_PICKED");
 	public static final AdMessageKey MSG_CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
 
-	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
+	@NonNull private final PickingJobHUService huService;
 
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public static PickingCULabelService newInstanceForUnitTesting()
 	{
 		SpringContextHolder.assertUnitTestMode();
 		return SpringContextHolder.getBeanOrSupply(
 				PickingCULabelService.class,
-				() -> new PickingCULabelService(ScannableCodeFormatService.newInstanceForUnitTesting()));
+				() -> new PickingCULabelService(PickingJobHUService.newInstanceForUnitTesting()));
 	}
 
 	public ResolvedCULabel resolve(
@@ -74,7 +75,7 @@ public class PickingCULabelService
 	private ScannableCodeFormat getFormat(@NonNull final Optional<ScannableCodeFormatId> formatId)
 	{
 		final ScannableCodeFormatId id = formatId.orElseThrow(() -> userError(MSG_CU_LABEL_NO_FORMAT));
-		return scannableCodeFormatService.getById(id)
+		return huService.getScannableCodeFormat(id)
 				.orElseThrow(() -> {
 					logger.warn("CU label refused: label format {} not found or inactive", id.getRepoId());
 					return userError(MSG_CU_LABEL_NO_FORMAT);
@@ -128,9 +129,9 @@ public class PickingCULabelService
 		return new AdempiereException(messageKey, params).markAsUserValidationError();
 	}
 
-	private static AdempiereException userErrorWithDetails(@NonNull final AdMessageKey messageKey, @NonNull final ITranslatableString details)
+	private AdempiereException userErrorWithDetails(@NonNull final AdMessageKey messageKey, @NonNull final ITranslatableString details)
 	{
-		final String errorCode = Services.get(IMsgBL.class).getErrorCode(messageKey);
+		final String errorCode = msgBL.getErrorCode(messageKey);
 		return new AdempiereException(
 				TranslatableStrings.builder().append(TranslatableStrings.adMessage(messageKey)).append(" ").append(details).build(),
 				errorCode != null ? errorCode : messageKey.toAD_Message())
