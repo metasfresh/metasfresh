@@ -120,6 +120,7 @@ const measureLayout = ({ scope, minTapSize }) => {
 
 export const expectLayoutSound = async (label, viewport, scope) => {
     const effectiveScope = scope ?? ((await page.locator('.prompt-dialog').count()) > 0 ? '.prompt-dialog' : '#root');
+    if (!scope) console.log('AUTOSCOPE ' + label + ' => ' + effectiveScope);
     let issues = await page.evaluate(measureLayout, { scope: effectiveScope, minTapSize: MIN_TAP_SIZE });
     // a toast slides in: wait until it has settled before judging its position
     if (issues.some((issue) => issue.startsWith('toast off the screen'))) {

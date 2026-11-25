@@ -160,7 +160,7 @@ public class PickingJobHUService
 	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
 	@VisibleForTesting
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshotsOfTUs(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
+	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
 	{
 		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabelScan));
 	}
@@ -171,7 +171,7 @@ public class PickingJobHUService
 	{
 		final ImmutableSet<HuId> pickedHUIds = lines.stream().flatMap(line -> line.getPickedHUIds().stream()).collect(ImmutableSet.toImmutableSet());
 		final ImmutableList<HUInfo> pickedHUInfos = lines.stream().flatMap(line -> line.getPickedHUInfos().stream()).collect(ImmutableList.toImmutableList());
-		return getGraiSnapshotsOfTUs(pickedHUIds, filterBookedWithLabelScan(pickedHUInfos));
+		return getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(pickedHUIds, filterBookedWithLabelScan(pickedHUInfos));
 	}
 
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
@@ -194,6 +194,7 @@ public class PickingJobHUService
 		return result.build();
 	}
 
+	@VisibleForTesting
 	public boolean isCUInTU(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.isVirtual(hu)
@@ -262,13 +263,9 @@ public class PickingJobHUService
 	}
 
 	/** @return true if one of the job's picked HUs of that product carries this lot and pack ID */
-	public boolean isAlreadyPickedInJob(
-			@NonNull final PickingJob job,
-			@NonNull final ProductId productId,
-			@Nullable final String lotNo,
-			@NonNull final String packId)
+	public boolean isAlreadyPickedInJob(@NonNull final PickingJob job, @NonNull final CUPackIdentity cu)
 	{
-		final ImmutableSet<HuId> pickedHUIds = job.getPickedHuIdsOfProduct(productId);
+		final ImmutableSet<HuId> pickedHUIds = job.getPickedHuIdsOfProduct(cu.getProductId());
 		if (pickedHUIds.isEmpty())
 		{
 			return false;
@@ -278,7 +275,7 @@ public class PickingJobHUService
 		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
 				.setOnlyTopLevelHUs(false)
 				.addOnlyHUIds(pickedHUIds)
-				.addOnlyWithAttribute(AttributeConstants.PackId, packId)
+				.addOnlyWithAttribute(AttributeConstants.PackId, cu.getPackId().getValue())
 				.listIds();
 		if (huIdsWithPackId.isEmpty())
 		{
@@ -286,7 +283,7 @@ public class PickingJobHUService
 		}
 
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
-		final String lotNoNorm = StringUtils.trimBlankToNull(lotNo);
+		final String lotNoNorm = StringUtils.trimBlankToNull(cu.getLotNo());
 		return handlingUnitsBL.getByIds(huIdsWithPackId).stream()
 				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
 	}

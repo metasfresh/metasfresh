@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";

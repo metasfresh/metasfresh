@@ -663,6 +663,6 @@ class PickingJobGraiScanPickEndToEndTest
 
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

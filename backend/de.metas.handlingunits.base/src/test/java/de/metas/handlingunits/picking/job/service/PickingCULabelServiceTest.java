@@ -10,6 +10,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
+import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -247,7 +248,7 @@ class PickingCULabelServiceTest
 	@Test
 	void labelDataWithoutProductNo_logsTheDiscardedLabelData()
 	{
-		final CULabelData noProduct = CULabelData.builder().lotNo(LOT).packId("7").build();
+		final CULabelData noProduct = CULabelData.builder().lotNo(LOT).packId(CULabelPackId.ofString("7")).build();
 
 		final List<String> warnings = warningsLoggedBy(() -> service.resolve(line(PRODUCT_NO), noProduct, CUQtyEntryMode.SCAN_EACH_CU.getPolicy()));
 
@@ -310,10 +311,10 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
-	void formatWithoutPackIdMarker_labelEndingBeforeItsLastPart_isFormatMismatchNotNoPackId()
+	void formatWithConstantBeforeItsLastPart_labelEndingBeforeThatPart_isFormatMismatchNotNoPackId()
 	{
-		final ScannableCodeFormat noMarkerFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
-				.name("CU label without pack ID zone")
+		final ScannableCodeFormat constantBeforeLastPartFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+				.name("CU label with a constant before its last part")
 				.parts(ImmutableList.of(
 						constant(1, 2, "01"),
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
@@ -327,7 +328,7 @@ class PickingCULabelServiceTest
 				.build());
 		final String beforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);
 
-		assertFails(() -> resolve(beforeLot, CUQtyEntryMode.SCAN_EACH_CU, noMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
+		assertFails(() -> resolve(beforeLot, CUQtyEntryMode.SCAN_EACH_CU, constantBeforeLastPartFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
 	@Test
@@ -350,8 +351,8 @@ class PickingCULabelServiceTest
 						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 				.build());
 
-		assertThat(resolve(label(GTIN, PRODUCT_NO, "2"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo("2");
-		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo("10");
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "2"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("2"));
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("10"));
 
 		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 46); // ends before "92"
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
@@ -362,7 +363,7 @@ class PickingCULabelServiceTest
 	void formatWithoutPackIdPart_labelEndingBeforeOrInsideAConstant_isAFormatMismatch()
 	{
 		final ScannableCodeFormat gapFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
-				.name("CU label, marker 92 and a gap before the next part")
+				.name("CU label, constant 92 and a gap before the next part")
 				.parts(ImmutableList.of(
 						constant(1, 2, "01"),
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
@@ -388,7 +389,7 @@ class PickingCULabelServiceTest
 	void packIdPartWithAnotherMarker_labelEndingBeforeIt_isAFormatMismatch()
 	{
 		final ScannableCodeFormat otherMarkerFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
-				.name("CU label with PackId behind marker 93")
+				.name("CU label with PackId behind constant 93")
 				.parts(ImmutableList.of(
 						constant(1, 2, "01"),
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
@@ -452,9 +453,9 @@ class PickingCULabelServiceTest
 		@Test
 		void labelEndingBeforeThePackIdPart_isAFormatMismatch()
 		{
-			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
 
-			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+			assertFails(() -> resolve(constantOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
 
 		@Test
@@ -468,11 +469,11 @@ class PickingCULabelServiceTest
 		@Test
 		void withPackId_returnsIt()
 		{
-			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
+			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId(CULabelPackId.ofString("1")).build();
 
 			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_EACH_CU.getPolicy());
 			assertThat(resolved).isNotNull();
-			assertThat(resolved.getPackId()).isEqualTo("1");
+			assertThat(resolved.getPackId()).isEqualTo(CULabelPackId.ofString("1"));
 		}
 	}
 
@@ -482,15 +483,15 @@ class PickingCULabelServiceTest
 		@Test
 		void labelEndingBeforeThePackIdPart_isFormatMismatch()
 		{
-			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
 
-			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+			assertFails(() -> resolve(constantOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
 
 		@Test
 		void ignoresThePackId()
 		{
-			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId("1").build();
+			final CULabelData data = CULabelData.builder().productNo(PRODUCT_NO).lotNo(LOT).packId(CULabelPackId.ofString("1")).build();
 
 			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy());
 			assertThat(resolved).isNotNull();

@@ -1,7 +1,6 @@
 import { test } from "../../../playwright.config";
 import { expectLayoutSound, PHONE_VIEWPORTS, saveScreenshot } from "../../utils/layout";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
-import { HUMoveScreen } from "../../utils/screens/huManager/HUMoveScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
 import { allureMeta, createMasterdataRememberingSysconfigs, login, restoreSysconfigsAfterEach } from "../../utils/cuQtyEntryCommon";

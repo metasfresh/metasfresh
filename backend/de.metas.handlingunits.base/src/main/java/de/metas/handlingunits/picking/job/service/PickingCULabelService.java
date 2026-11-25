@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
+import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
@@ -92,11 +93,11 @@ public class PickingCULabelService
 		if (!Objects.equals(labelData.getProductNo(), line.getProductNo()))
 		{
 			logger.warn("CU label refused: other product than the line's {}: {}, line {}", line.getProductNo(), labelData, line.getId());
-			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductValueAndName().getName());
+			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductName());
 		}
 
 		final boolean isPackIdRequired = policy.isPackIdRequired();
-		final String packId = isPackIdRequired ? labelData.getPackId() : null;
+		final CULabelPackId packId = isPackIdRequired ? labelData.getPackId() : null;
 		if (isPackIdRequired && packId == null)
 		{
 			logger.warn("CU label refused: the label has no pack ID: {}, line {}", labelData, line.getId());
@@ -117,7 +118,7 @@ public class PickingCULabelService
 				.productNo(parsed.getProductNo())
 				.lotNo(parsed.getLotNo())
 				.bestBeforeDate(parsed.getBestBeforeDate())
-				.packId(parsed.getPackId())
+				.packId(CULabelPackId.ofNullable(parsed.getPackId()))
 				.build();
 	}
 

@@ -1,6 +1,9 @@
 package de.metas.handlingunits.picking.job.service;
 
+import de.metas.handlingunits.picking.job.model.CULabelPackId;
+import de.metas.handlingunits.picking.job.service.external.hu.CUPackIdentity;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -16,5 +19,11 @@ public class ResolvedCULabel
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
 	/** only set in {@code SCAN_EACH_CU} mode */
-	@Nullable String packId;
+	@Nullable CULabelPackId packId;
+
+	/** @return the identity of the CU this label stands for; only valid in {@code SCAN_EACH_CU} mode, where the pack ID is always set */
+	public CUPackIdentity toCUPackIdentity()
+	{
+		return CUPackIdentity.of(productId, lotNo, Check.assumeNotNull(packId, "packId is set in SCAN_EACH_CU"));
+	}
 }

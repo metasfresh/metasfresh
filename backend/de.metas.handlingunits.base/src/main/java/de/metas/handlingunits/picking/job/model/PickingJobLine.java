@@ -323,4 +323,10 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	{
 		return qtyToPick.subtract(qtyPicked).signum() <= 0;
 	}
+
+	@NonNull
+	public ITranslatableString getProductName()
+	{
+		return productValueAndName.getName();
+	}
 }

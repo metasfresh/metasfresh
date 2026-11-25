@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -463,7 +464,7 @@ public class PickingJobPickCommand
 
 		final ResolvedCULabel label = getResolvedCULabel();
 		if (cuQtyEntryPolicy.isPackIdRequired()
-				&& huService.isAlreadyPickedInJob(getPickingJob(), label.getProductId(), label.getLotNo(), Check.assumeNotNull(label.getPackId(), "packId is set in SCAN_EACH_CU")))
+				&& huService.isAlreadyPickedInJob(getPickingJob(), label.toCUPackIdentity()))
 		{
 			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId()).markAsUserValidationError();
 		}
@@ -1207,7 +1208,7 @@ public class PickingJobPickCommand
 		return result;
 	}
 
-	private static void setPackIdOnCreatedCUs(@NonNull final LUTUResult packedHUs, @Nullable final String packId)
+	private static void setPackIdOnCreatedCUs(@NonNull final LUTUResult packedHUs, @Nullable final CULabelPackId packId)
 	{
 		for (final TU tu : packedHUs.getAllTUs())
 		{
@@ -1215,7 +1216,7 @@ public class PickingJobPickCommand
 			{
 				final IAttributeStorage cuAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(cu.toHU());
 				cuAttributes.setSaveOnChange(true);
-				cuAttributes.setValue(AttributeConstants.PackId, packId);
+				cuAttributes.setValue(AttributeConstants.PackId, packId != null ? packId.getValue() : null);
 			}
 		}
 	}

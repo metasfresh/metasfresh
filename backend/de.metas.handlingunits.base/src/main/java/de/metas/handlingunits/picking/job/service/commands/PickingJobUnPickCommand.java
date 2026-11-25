@@ -181,7 +181,7 @@ public class PickingJobUnPickCommand
 		deleteQtyPickedOfCUsInTUs(huIdAndQRCodeList, shipmentScheduleId);
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
 		// extractToTopLevel above may have relocated/regenerated the QR codes (and the picked HU can carry

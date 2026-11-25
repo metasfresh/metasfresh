@@ -1,6 +1,5 @@
 import { test } from "../../../playwright.config";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
-import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";

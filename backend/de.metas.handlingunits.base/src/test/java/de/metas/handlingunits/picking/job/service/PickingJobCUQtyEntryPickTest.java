@@ -122,6 +122,7 @@ class PickingJobCUQtyEntryPickTest
 	private PickingJobTestHelper helper;
 	private HUTestHelper huTestHelper;
 	private IHandlingUnitsBL handlingUnitsBL;
+	private IHandlingUnitsDAO handlingUnitsDAO;
 	private ScannableCodeFormatService formatService;
 	private ScannableCodeFormat format;
 
@@ -135,6 +136,7 @@ class PickingJobCUQtyEntryPickTest
 		helper = new PickingJobTestHelper();
 		huTestHelper = helper.getHuTestHelper();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		formatService = ScannableCodeFormatService.newInstanceForUnitTesting();
 
 		final I_M_Attribute packIdAttribute = new AttributesTestHelper().createM_Attribute(AttributeConstants.PackId.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
@@ -636,9 +638,9 @@ class PickingJobCUQtyEntryPickTest
 			final HuId cuId = HuId.ofRepoId(cusOf(tuId).get(0).getM_HU_ID());
 			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the TU").isTrue();
 
-			assertThat(helper.huService.getGraiSnapshotsOfTUs(ImmutableSet.of(cuId), ImmutableSet.of()))
+			assertThat(helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of()))
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
-			assertThat(helper.huService.getGraiSnapshotsOfTUs(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
+			assertThat(helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
 					.as("CU booked with its own QR code: its TU is checked").extracting(snapshot -> snapshot.getHuId()).containsExactly(tuId);
 		}
 
@@ -1018,7 +1020,6 @@ class PickingJobCUQtyEntryPickTest
 		@Test
 		void cuDirectlyOnPallet_isNotACUInATU()
 		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-Z", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			final I_M_HU_PI_Item luItem = huTestHelper.createHU_PI_Item_IncludedHU(luPI, InterfaceWrapperHelper.load(tuPIId.getRepoId(), I_M_HU_PI.class), new BigDecimal("10"));
 			final I_M_HU lu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
@@ -1674,6 +1675,6 @@ class PickingJobCUQtyEntryPickTest
 
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsOfTUs(huIds, helper.huService.filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

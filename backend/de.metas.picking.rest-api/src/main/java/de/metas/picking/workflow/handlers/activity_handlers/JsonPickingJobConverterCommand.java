@@ -114,23 +114,26 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> {
-						final PickingJobOptions lineOptions = getLineOptions(line);
-						final CUQtyEntryMode cuQtyEntryMode = lineOptions.getCUQtyEntryModeOrDefault();
-						return JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
-							.displayGroupKey(group.getKey())
-							.cuQtyEntryMode(cuQtyEntryMode.getCode())
-							.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(cuQtyEntryMode.getPolicy()))
-							.cuLabelFormatId(lineOptions.getCULabelFormatId().orElse(null))
-							.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
-							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
-							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
-									getAdditionalHeaderProperties(line), jsonOpts))
-							.build();
-					})
+					.map(line -> toJsonPickingJobLine(line, group.getKey()))
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	@NonNull
+	private JsonPickingJobLine toJsonPickingJobLine(@NonNull final PickingJobLine line, @NonNull final String displayGroupKey)
+	{
+		final PickingJobOptions lineOptions = getLineOptions(line);
+		final CUQtyEntryMode cuQtyEntryMode = lineOptions.getCUQtyEntryModeOrDefault();
+		return JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+				.displayGroupKey(displayGroupKey)
+				.cuQtyEntryMode(cuQtyEntryMode.getCode())
+				.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(cuQtyEntryMode.getPolicy()))
+				.cuLabelFormatId(lineOptions.getCULabelFormatId().orElse(null))
+				.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
+				.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+				.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(getAdditionalHeaderProperties(line), jsonOpts))
+				.build();
 	}
 
 	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
