@@ -35,6 +35,7 @@ public class WarehouseCommand
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	@NonNull private final WarehouseSourceHUConfigRepository sourceHUConfigRepository = new WarehouseSourceHUConfigRepository();
+	@NonNull private final WarehouseLocatorMasterdataRepository locatorRepository = new WarehouseLocatorMasterdataRepository();
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -252,10 +253,7 @@ public class WarehouseCommand
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
 		if (locatorRequest.isAfterPickingLocatorOrFalse())
 		{
-			// fully qualified: the HU module's I_M_Locator (which has IsAfterPickingLocator) clashes with the imported org.compiere one
-			final de.metas.handlingunits.model.I_M_Locator huLocatorRecord = InterfaceWrapperHelper.create(locatorRecord, de.metas.handlingunits.model.I_M_Locator.class);
-			huLocatorRecord.setIsAfterPickingLocator(true);
-			saveRecord(huLocatorRecord);
+			locatorRepository.markAsAfterPickingLocator(locatorRecord);
 		}
 		return toJson(locatorRecord);
 	}
