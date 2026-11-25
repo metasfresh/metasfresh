@@ -1,5 +1,8 @@
 package de.metas.frontend_testing.masterdata.shipment_schedule;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.util.Services;
@@ -44,8 +47,24 @@ public class EnsureShipmentScheduleAttributeConfigCommand
 			return;
 		}
 
-		final int handlerId = repository.getHandlerIdByClassname(HANDLER_CLASSNAME);
+		final int handlerId = getHandlerId();
 		attributeCodes.forEach(attributeCode -> ensure(handlerId, getAttributeId(attributeCode)));
+	}
+
+	private int getHandlerId()
+	{
+		// the handler record lookup is only on the implementation, not on the interface
+		final IShipmentScheduleHandlerBL handlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		if (!(handlerBL instanceof ShipmentScheduleHandlerBL))
+		{
+			throw new AdempiereException("Unexpected IShipmentScheduleHandlerBL implementation: " + handlerBL.getClass().getName());
+		}
+		final I_M_IolCandHandler handler = ((ShipmentScheduleHandlerBL)handlerBL).retrieveHandlerRecordOrNull(HANDLER_CLASSNAME);
+		if (handler == null)
+		{
+			throw new AdempiereException("No active M_IolCandHandler with Classname=" + HANDLER_CLASSNAME);
+		}
+		return handler.getM_IolCandHandler_ID();
 	}
 
 	private AttributeId getAttributeId(@NonNull final String attributeCodeStr)

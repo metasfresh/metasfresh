@@ -40,6 +40,7 @@ const createMasterdata = async ({ readAttributes, lots, orderQty, withLU = false
                     aggregationType: "sales_order",
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
+                    allowPickingAnyCustomer: true,
                     pickTo: withLU ? ['LU_TU'] : ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     readAttributes,
                     allowCompletingPartialPickingJob: true,

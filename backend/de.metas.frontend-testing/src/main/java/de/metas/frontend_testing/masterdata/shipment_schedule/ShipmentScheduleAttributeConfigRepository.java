@@ -1,38 +1,22 @@
 package de.metas.frontend_testing.masterdata.shipment_schedule;
 
-import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 /**
- * Access to {@code M_ShipmentSchedule_AttributeConfig} (and the {@code M_IolCandHandler} it belongs to) for the e2e masterdata commands.
+ * Access to {@code M_ShipmentSchedule_AttributeConfig} for the e2e masterdata commands.
  * <p>
- * Repository Tables: M_ShipmentSchedule_AttributeConfig, M_IolCandHandler
+ * Repository Tables: M_ShipmentSchedule_AttributeConfig
  * <p>
  * Repository Cluster: ShipmentScheduleAttributeConfigRepository
  */
 class ShipmentScheduleAttributeConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	int getHandlerIdByClassname(@NonNull final String classname)
-	{
-		final I_M_IolCandHandler handler = queryBL.createQueryBuilder(I_M_IolCandHandler.class)
-				.addEqualsFilter(I_M_IolCandHandler.COLUMNNAME_Classname, classname)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnly(I_M_IolCandHandler.class);
-		if (handler == null)
-		{
-			throw new AdempiereException("No active M_IolCandHandler with Classname=" + classname);
-		}
-		return handler.getM_IolCandHandler_ID();
-	}
 
 	boolean existsActive(final int handlerId, @NonNull final AttributeId attributeId)
 	{
