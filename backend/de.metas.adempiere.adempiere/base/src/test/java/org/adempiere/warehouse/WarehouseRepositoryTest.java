@@ -3,45 +3,36 @@ package org.adempiere.warehouse;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.QueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
-import java.util.Properties;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class WarehouseRepositoryTest
 {
 	private static final ProductCategoryId CATEGORY_1 = ProductCategoryId.ofRepoId(101);
 	private static final ProductCategoryId CATEGORY_2 = ProductCategoryId.ofRepoId(102);
 
-	private int sourceHUConfigQueryCount;
+	private IQueryBL queryBLSpy;
+	private WarehouseRepository warehouseRepository;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		sourceHUConfigQueryCount = 0;
 
-		Services.registerService(IQueryBL.class, new QueryBL()
-		{
-			@Override
-			public <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass, final Properties ctx, @Nullable final String trxName)
-			{
-				if (I_M_Warehouse_SourceHUConfig.class.equals(modelClass))
-				{
-					sourceHUConfigQueryCount++;
-				}
-				return super.createQueryBuilder(modelClass, ctx, trxName);
-			}
-		});
+		// register the spy BEFORE the repository is created: its queryBL field is a plain Services.get(IQueryBL.class)
+		queryBLSpy = Mockito.spy(Services.get(IQueryBL.class));
+		Services.registerService(IQueryBL.class, queryBLSpy);
+
+		warehouseRepository = WarehouseRepository.newInstanceForUnitTesting();
 	}
 
 	private WarehouseId createWarehouse(final String name)
@@ -70,13 +61,12 @@ public class WarehouseRepositoryTest
 		createSourceHUConfig(warehouse1, CATEGORY_1);
 		createSourceHUConfig(warehouse2, CATEGORY_2);
 
-		final WarehouseRepository repository = new WarehouseRepository();
+		final Warehouse wh1 = warehouseRepository.getById(warehouse1);
+		final Warehouse wh2 = warehouseRepository.getById(warehouse2);
+		final Warehouse wh3 = warehouseRepository.getById(warehouse3NoConfigs);
 
-		final Warehouse wh1 = repository.getById(warehouse1);
-		final Warehouse wh2 = repository.getById(warehouse2);
-		final Warehouse wh3 = repository.getById(warehouse3NoConfigs);
-
-		assertThat(sourceHUConfigQueryCount).as("queries on M_Warehouse_SourceHUConfig for one cache load").isEqualTo(1);
+		// one cache load => one query on M_Warehouse_SourceHUConfig, whatever the number of warehouses
+		verify(queryBLSpy, times(1)).createQueryBuilder(I_M_Warehouse_SourceHUConfig.class);
 
 		assertThat(wh1.isConfiguredToReceiveAsSourceHU(CATEGORY_1)).isTrue();
 		assertThat(wh1.isConfiguredToReceiveAsSourceHU(CATEGORY_2)).isFalse();
