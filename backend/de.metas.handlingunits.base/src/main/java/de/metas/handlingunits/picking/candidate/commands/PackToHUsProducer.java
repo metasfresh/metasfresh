@@ -60,6 +60,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -126,8 +127,6 @@ public class PackToHUsProducer
 		@NonNull final ProductId productId = request.getProductId();
 		@NonNull final Quantity qtyPicked = request.getQtyPicked();
 		@Nullable final Quantity catchWeight = request.getCatchWeight();
-		@NonNull final TableRecordReference documentRef = request.getDocumentRef();
-		final boolean checkIfAlreadyPacked = request.isCheckIfAlreadyPacked();
 		final boolean createInventoryForMissingQty = request.isCreateInventoryForMissingQty();
 
 		final PackedHUWeightNetUpdater weightUpdater = new PackedHUWeightNetUpdater(uomConversionBL, huContext, productId, catchWeight);
@@ -191,30 +190,67 @@ public class PackToHUsProducer
 			pickFromHUs.add(pickFromHU);
 		}
 
-		final PickFromHUsList pickFromHUsToPack;
-		if (request.isBookAsSingleCUInTU())
+		final PackContext ctx = new PackContext(request, pickFromHUs, weightUpdater);
+		return request.isBookAsSingleCUInTU()
+				? packAsSingleCUInTU(ctx)
+				: packAsPickedQty(ctx);
+	}
+
+	/** What both pack flows share: the request, the HUs we pick from (before any consolidation) and the weight updater. */
+	@Value
+	private static class PackContext
+	{
+		@NonNull PackToHURequest request;
+		@NonNull PickFromHUsList pickFromHUs;
+		@NonNull PackedHUWeightNetUpdater weightUpdater;
+	}
+
+	/** CU quantity entry modes: the booked CU is the picked HU, packed as the single CU of a partial TU. */
+	private LUTUResult packAsSingleCUInTU(@NonNull final PackContext ctx)
+	{
+		final PackToHURequest request = ctx.getRequest();
+		final PickFromHUsList pickFromHUsToPack = consolidateToSingleCU(request, ctx.getPickFromHUs());
+
+		if (request.getPackToInfo().getTu().isExistingTU())
 		{
-			pickFromHUsToPack = consolidateToSingleCU(request, pickFromHUs);
+			final I_M_HU tuRecord = handlingUnitsBL.getById(request.getPackToInfo().getTu().getTuIdNotNull());
+			final I_M_HU cuRecord = pickFromHUsToPack.getSingleHU().toM_HU();
+			newHUTransformService(request.getHuContext(), request.getAllowedReservedVhuIds()).addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
+
+			ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
+			ctx.getWeightUpdater().updatePackToHU(cuRecord);
+
+			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+			return luRecord == null
+					? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
+					: toLUResultOfPreExistingTU(tuRecord, luRecord, cuRecord);
 		}
-		else
-		{
-			pickFromHUsToPack = pickFromHUs;
-		}
+
+		return loadIntoNewDestination(ctx, pickFromHUsToPack, this::toPartialTUWithItsSingleCU);
+	}
+
+	/** Manual mode: the picked quantity is split out of the source HUs into the pack-to target. */
+	private LUTUResult packAsPickedQty(@NonNull final PackContext ctx)
+	{
+		final PackToHURequest request = ctx.getRequest();
+		final PackToInfo packToInfo = request.getPackToInfo();
+		final ProductId productId = request.getProductId();
+		final Quantity qtyPicked = request.getQtyPicked();
+		final PickFromHUsList pickFromHUsToPack = ctx.getPickFromHUs();
 
 		//
 		// Case: the PickFrom HU can be considered already packed
 		// i.e. it's an HU with exactly required qty and same packing instructions
-		if (!request.isBookAsSingleCUInTU()
-				&& packToInfo.getLu() == null
+		if (packToInfo.getLu() == null
 				&& packToInfo.getTu().isNewTU()
-				&& pickFromHUsToPack.isSingleHUAlreadyPacked(checkIfAlreadyPacked, productId, qtyPicked, packToInfo.getTu().getTuPIIdNotNull()))
+				&& pickFromHUsToPack.isSingleHUAlreadyPacked(request.isCheckIfAlreadyPacked(), productId, qtyPicked, packToInfo.getTu().getTuPIIdNotNull()))
 		{
 			final I_M_HU pickFromHU = pickFromHUsToPack.getSingleHU().toM_HU();
 			if (packToInfo.isPackForShipping())
 			{
 				handlingUnitsBL.setHUStatus(pickFromHU, X_M_HU.HUSTATUS_Picked);
 			}
-			weightUpdater.updatePackToHU(pickFromHU);
+			ctx.getWeightUpdater().updatePackToHU(pickFromHU);
 
 			return LUTUResult.ofSingleTopLevelTU(pickFromHU);
 		}
@@ -224,94 +260,101 @@ public class PackToHUsProducer
 		{
 			final I_M_HU tuRecord = handlingUnitsBL.getById(packToInfo.getTu().getTuIdNotNull());
 			final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
-			final HUTransformService huTransformService = newHUTransformService(huContext, allowedReservedVhuIds);
-			final I_M_HU cuRecord = request.isBookAsSingleCUInTU()
-					? pickFromHUsToPack.getSingleHU().toM_HU()
-					: huTransformService.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-							.sourceHUs(pickFromHUsToPack.toHUsList())
-							.productId(productId)
-							.qtyCU(qtyPicked)
-							.reservedVHUsPolicy(toReservedHUsPolicy(allowedReservedVhuIds))
-							.build());
+			final HUTransformService huTransformService = newHUTransformService(request.getHuContext(), allowedReservedVhuIds);
+			final I_M_HU cuRecord = huTransformService.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
+					.sourceHUs(pickFromHUsToPack.toHUsList())
+					.productId(productId)
+					.qtyCU(qtyPicked)
+					.reservedVHUsPolicy(toReservedHUsPolicy(allowedReservedVhuIds))
+					.build());
 			huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
 
-			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
-			weightUpdater.updatePackToHU(cuRecord);
+			ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
+			ctx.getWeightUpdater().updatePackToHU(cuRecord);
 
 			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
-			if (luRecord == null)
-			{
-				return request.isBookAsSingleCUInTU()
-						? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
-						: LUTUResult.ofSingleTopLevelTU(tuRecord);
-			}
-			else if(handlingUnitsBL.isAggregateHU(tuRecord))
-			{
-				throw new AdempiereException("Loading to an aggregated TU is not supported because we won't be able to set the Weight and attributes afterwards");
-			}
-			else
-			{
-				final TU tu = TU.ofSingleTU(tuRecord, cuRecord);
-				final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
-				return LUTUResult.ofLU(lu);
-			}
+			return luRecord == null
+					? LUTUResult.ofSingleTopLevelTU(tuRecord)
+					: toLUResultOfPreExistingTU(tuRecord, luRecord, cuRecord);
 		}
 		//
 		// Case: We have to split out and pack our HU
 		else
 		{
-			final IAllocationDestination packToDestination;
-			HULoader.builder()
-					.source(HUListAllocationSourceDestination.of(pickFromHUsToPack.toHUsList()).setDestroyEmptyHUs(true))
-					.destination(packToDestination = getPackToDestination(packToInfo))
-					.load(AllocationUtils.builder()
-							.setHUContext(huContext)
-							.setProduct(productId)
-							.setQuantity(qtyPicked)
-							.setFromReferencedTableRecord(documentRef)
-							.setForceQtyAllocation(true)
-							.setDeleteEmptyAndJustCreatedAggregatedTUs(true)
-							.create());
+			return loadIntoNewDestination(ctx, pickFromHUsToPack, UnaryOperator.identity());
+		}
+	}
 
-			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
+	private LUTUResult toLUResultOfPreExistingTU(@NonNull final I_M_HU tuRecord, @NonNull final I_M_HU luRecord, @NonNull final I_M_HU cuRecord)
+	{
+		if (handlingUnitsBL.isAggregateHU(tuRecord))
+		{
+			throw new AdempiereException("Loading to an aggregated TU is not supported because we won't be able to set the Weight and attributes afterwards");
+		}
+		final TU tu = TU.ofSingleTU(tuRecord, cuRecord);
+		final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
+		return LUTUResult.ofLU(lu);
+	}
 
-			final LUTUResult result;
-			if (packToDestination instanceof ILUTUProducerAllocationDestination)
+	/**
+	 * Loads the quantity into a new pack-to destination.
+	 *
+	 * @param adaptProducedTUs what the flow makes of the TUs/LU the destination produced
+	 */
+	private LUTUResult loadIntoNewDestination(
+			@NonNull final PackContext ctx,
+			@NonNull final PickFromHUsList pickFromHUsToPack,
+			@NonNull final UnaryOperator<LUTUResult> adaptProducedTUs)
+	{
+		final PackToHURequest request = ctx.getRequest();
+		final IAllocationDestination packToDestination;
+		HULoader.builder()
+				.source(HUListAllocationSourceDestination.of(pickFromHUsToPack.toHUsList()).setDestroyEmptyHUs(true))
+				.destination(packToDestination = getPackToDestination(request.getPackToInfo()))
+				.load(AllocationUtils.builder()
+						.setHUContext(request.getHuContext())
+						.setProduct(request.getProductId())
+						.setQuantity(request.getQtyPicked())
+						.setFromReferencedTableRecord(request.getDocumentRef())
+						.setForceQtyAllocation(true)
+						.setDeleteEmptyAndJustCreatedAggregatedTUs(true)
+						.create());
+
+		ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
+
+		final LUTUResult result;
+		if (packToDestination instanceof ILUTUProducerAllocationDestination)
+		{
+			result = adaptProducedTUs.apply(((ILUTUProducerAllocationDestination)packToDestination).getResult());
+		}
+		else if (packToDestination instanceof IHUProducerAllocationDestination)
+		{
+			result = LUTUResult.ofTopLevelTUs(((IHUProducerAllocationDestination)packToDestination).getCreatedHUs());
+		}
+		else if (packToDestination instanceof HUListAllocationSourceDestination)
+		{
+			final I_M_HU tuRecord = ((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU();
+			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+			if (luRecord == null)
 			{
-				final LUTUResult producedResult = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
-				result = request.isBookAsSingleCUInTU()
-						? toPartialTUWithItsSingleCU(producedResult)
-						: producedResult;
-			}
-			else if (packToDestination instanceof IHUProducerAllocationDestination)
-			{
-				result = LUTUResult.ofTopLevelTUs(((IHUProducerAllocationDestination)packToDestination).getCreatedHUs());
-			}
-			else if (packToDestination instanceof HUListAllocationSourceDestination)
-			{
-				final I_M_HU tuRecord = ((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU();
-				final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
-				if (luRecord == null)
-				{
-					result = LUTUResult.ofSingleTopLevelTU(tuRecord);
-				}
-				else
-				{
-					final TU tu = handlingUnitsBL.isAggregateHU(tuRecord)
-							? TU.ofAggregatedTU(tuRecord, handlingUnitsBL.getTUsCount(tuRecord))
-							: TU.ofSingleTU(tuRecord);
-					final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
-					result = LUTUResult.ofLU(lu);
-				}
+				result = LUTUResult.ofSingleTopLevelTU(tuRecord);
 			}
 			else
 			{
-				throw new AdempiereException("Unknown destination type: " + packToDestination);
+				final TU tu = handlingUnitsBL.isAggregateHU(tuRecord)
+						? TU.ofAggregatedTU(tuRecord, handlingUnitsBL.getTUsCount(tuRecord))
+						: TU.ofSingleTU(tuRecord);
+				final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
+				result = LUTUResult.ofLU(lu);
 			}
-
-			weightUpdater.updatePackToHUs(result);
-			return result;
 		}
+		else
+		{
+			throw new AdempiereException("Unknown destination type: " + packToDestination);
+		}
+
+		ctx.getWeightUpdater().updatePackToHUs(result);
+		return result;
 	}
 
 	/** For CU quantity entry the booked CU must be the picked HU, so the result is the partial TU holding its single CU. */
