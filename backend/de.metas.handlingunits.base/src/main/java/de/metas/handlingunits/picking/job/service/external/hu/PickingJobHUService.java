@@ -222,8 +222,12 @@ public class PickingJobHUService
 			return ImmutableSet.of();
 		}
 
+		// CUs of the same TU share their parent item, hence the answer: walk up once per parent item, not once per CU
+		final HashMap<HuItemId, Boolean> isCUInTUByParentItemId = new HashMap<>();
 		return handlingUnitsBL.getByIds(huIds).stream()
-				.filter(this::isCUInTU)
+				.filter(hu -> handlingUnitsBL.isVirtual(hu)
+						&& hu.getM_HU_Item_Parent_ID() > 0
+						&& isCUInTUByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> isCUInTU(hu)))
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}

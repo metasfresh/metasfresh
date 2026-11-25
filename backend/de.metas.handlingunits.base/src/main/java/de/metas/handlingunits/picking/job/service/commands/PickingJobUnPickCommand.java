@@ -178,7 +178,7 @@ public class PickingJobUnPickCommand
 
 		// a picked CU in a TU leaves it as a whole: its QtyPicked rows still point to the TU, so the top-level lookup below would miss them
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
-		huIdAndQRCodeList.forEach(huIdAndQRCode -> deleteQtyPickedOfCUInTU(huIdAndQRCode.getHuId(), shipmentScheduleId));
+		deleteQtyPickedOfCUsInTUs(huIdAndQRCodeList, shipmentScheduleId);
 
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
 		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
@@ -229,11 +229,15 @@ public class PickingJobUnPickCommand
 		return huService.getByIds(topLevelHUIds);
 	}
 
-	private void deleteQtyPickedOfCUInTU(@NonNull final HuId huId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	private void deleteQtyPickedOfCUsInTUs(@NonNull final Collection<HUIdAndQRCode> huIdAndQRCodes, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		if (huService.isCUInTU(huService.getById(huId)))
+		final ImmutableSet<HuId> huIds = huIdAndQRCodes.stream().map(HUIdAndQRCode::getHuId).collect(ImmutableSet.toImmutableSet());
+		for (final I_M_HU hu : huService.getByIds(huIds))
 		{
-			shipmentScheduleService.deleteByVHUAndShipmentScheduleId(huId, shipmentScheduleId);
+			if (huService.isCUInTU(hu))
+			{
+				shipmentScheduleService.deleteByVHUAndShipmentScheduleId(hu, shipmentScheduleId);
+			}
 		}
 	}
 

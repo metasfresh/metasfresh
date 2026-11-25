@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -135,9 +134,9 @@ public class PickingJobShipmentScheduleService
 		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 	}
 
-	public void deleteByVHUAndShipmentScheduleId(@NonNull final HuId vhuId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	public void deleteByVHUAndShipmentScheduleId(@NonNull final I_M_HU vhu, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		huShipmentScheduleBL.deleteByVHUAndShipmentScheduleId(vhuId, shipmentScheduleId);
+		huShipmentScheduleBL.deleteByVHUAndShipmentScheduleId(vhu, shipmentScheduleId);
 	}
 
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)

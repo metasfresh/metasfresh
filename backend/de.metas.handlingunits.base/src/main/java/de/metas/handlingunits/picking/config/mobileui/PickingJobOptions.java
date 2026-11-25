@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.OptionalBoolean;
 import lombok.AccessLevel;
 import lombok.Builder;
