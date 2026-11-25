@@ -186,6 +186,9 @@ class DescribeHUsCommandTest extends AbstractHUTest
 		assertThat(described.getTuParentPIItemQtys()).containsExactly(30);
 	}
 
+	/**
+	 * One inventory line with one {@code M_InventoryLine_HU} per given HU; a {@code null} HU gives a record without HU.
+	 */
 	private I_M_Inventory createInventoryWithLineHUs(final I_M_HU... hus)
 	{
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
@@ -200,7 +203,7 @@ class DescribeHUsCommandTest extends AbstractHUTest
 			final I_M_InventoryLine_HU lineHU = InterfaceWrapperHelper.newInstance(I_M_InventoryLine_HU.class);
 			lineHU.setM_Inventory_ID(inventory.getM_Inventory_ID());
 			lineHU.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
-			lineHU.setM_HU_ID(hu.getM_HU_ID());
+			lineHU.setM_HU_ID(hu != null ? hu.getM_HU_ID() : -1);
 			InterfaceWrapperHelper.saveRecord(lineHU);
 		}
 		return inventory;
@@ -212,7 +215,8 @@ class DescribeHUsCommandTest extends AbstractHUTest
 		final I_M_HU lu1 = loadOnNewLU(ImmutableList.of(createTU(productP), createTU(productP)));
 		final I_M_HU lu2 = loadOnNewLU(ImmutableList.of(createTU(productQ)));
 		final I_M_HU luOfAnotherInventory = loadOnNewLU(ImmutableList.of(createTU(productQ)));
-		final I_M_Inventory inventory = createInventoryWithLineHUs(lu1, lu2);
+		// lu1 twice and a record without HU: each HU is described once, the record without HU is skipped
+		final I_M_Inventory inventory = createInventoryWithLineHUs(lu1, lu2, lu1, null);
 		createInventoryWithLineHUs(luOfAnotherInventory);
 
 		final JsonDescribeHUsResponse response = DescribeHUsCommand.builder()
@@ -222,7 +226,7 @@ class DescribeHUsCommandTest extends AbstractHUTest
 
 		assertThat(response.getHus())
 				.extracting(JsonDescribeHUsResponse.HU::getHuId, JsonDescribeHUsResponse.HU::getStorages)
-				.containsExactlyInAnyOrder(
+				.containsExactly(
 						tuple(lu1.getM_HU_ID(), ImmutableMap.of("P", "8 PCE")),
 						tuple(lu2.getM_HU_ID(), ImmutableMap.of("Q", "4 PCE")));
 	}

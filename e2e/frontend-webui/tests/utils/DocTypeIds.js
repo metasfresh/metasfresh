@@ -81,7 +81,7 @@ export const DOCTYPE_AR_CREDIT_MEMO = 1000004;
 // ============================================================================
 
 /**
- * Inventory (Inventur), one HU per inventory line
+ * Inventory (Inventur), the default inventory document type
  * DocBaseType: MMI, DocSubType: ISH
  */
 export const DOCTYPE_INVENTORY = 1000023;

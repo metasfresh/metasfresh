@@ -137,7 +137,7 @@ export const Backend = {
    *   one entry per HU; storages map M_Product.Value to "<qty> <X12DE355>" (e.g. "160 PCE")
    */
   describeHUs: async ({ huIds = [], inventoryId = null }) =>
-    await test.step(`Backend: describe HUs ${huIds}${inventoryId ? ` of inventory ${inventoryId}` : ''}`, async () => {
+    await test.step(`Backend: describe HUs ${[huIds.length ? huIds : null, inventoryId ? `of inventory ${inventoryId}` : null].filter(Boolean).join(' ')}`, async () => {
       const page = getPage();
       const backendBaseUrl = await getBackendBaseUrl();
 

@@ -434,7 +434,7 @@ public class LUTUProducerDestination
 	 * The other sources' TU packing instructions are not checked; their content is packed into the TU PI of that item.
 	 * Call it after {@link #setBPartnerId(BPartnerId)}, because the item can be partner-specific.
 	 *
-	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPI} has no item for that TU packing instruction
+	 * @throws HUException {@code ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPI} has no item for that TU packing instruction
 	 *                     (e.g. a CU or an LU without TUs as first source)
 	 */
 	public void setLUPIAndItemForSourceHUs(@NonNull final I_M_HU_PI luPI, @NonNull final List<I_M_HU> sourceHUs)
@@ -454,7 +454,7 @@ public class LUTUProducerDestination
 	 * set before ({@link #setTUPI(I_M_HU_PI)}) and that product; if there is none, the generic item.
 	 * Call it after {@link #setTUPI(I_M_HU_PI)} and after {@link #setBPartnerId(BPartnerId)}, because the item can be partner-specific.
 	 *
-	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPIId} has no item for that TU packing instruction
+	 * @throws HUException {@code ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPIId} has no item for that TU packing instruction
 	 */
 	public void setLUPIAndItemForProduct(@NonNull final HuPackingInstructionsId luPIId, @Nullable final ProductId productId)
 	{
@@ -467,7 +467,7 @@ public class LUTUProducerDestination
 
 	/**
 	 * @return the item of {@code luPI} that takes TUs of {@code tuPI}: the one for {@code productId} if there is one, else the generic one
-	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if there is none
+	 * @throws HUException {@code ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if there is none
 	 */
 	private I_M_HU_PI_Item retrieveLUItem(@NonNull final I_M_HU_PI luPI, @NonNull final I_M_HU_PI tuPI, @Nullable final ProductId productId)
 	{
