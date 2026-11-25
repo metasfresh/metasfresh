@@ -12,8 +12,8 @@ import { waitForNoInFlightXhr } from '../../inFlightXhr';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { PickGraiScreen } from './PickGraiScreen';
-import { test, testContext } from '../../../../playwright.config';
-import { getBackendBaseUrl } from '../Backend';
+import { test } from '../../../../playwright.config';
+import { getAuthToken, getBackendBaseUrl } from '../Backend';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityErrorPanel';
 
@@ -285,7 +285,7 @@ export const PickingJobScreen = {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept-Language': 'en_US',
-                'Authorization': testContext.lastMasterdata.login.user.token,
+                'Authorization': getAuthToken(),
             }
         });
         return { status: response.status(), body: await response.text() };

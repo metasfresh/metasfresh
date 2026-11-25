@@ -283,7 +283,7 @@ const assertNoErrors = ({ responseBody }) => {
     }
 };
 
-const getAuthToken = () => {
+export const getAuthToken = () => {
     const token = testContext.lastMasterdata?.login?.user?.token;
     if (!token) {
         throw new Error('No token found in masterdata:\n' + JSON.stringify(testContext.lastMasterdata, null, 2));
