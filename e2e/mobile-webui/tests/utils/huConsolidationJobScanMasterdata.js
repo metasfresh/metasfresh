@@ -13,7 +13,7 @@ export const LU_LABEL_PROCESS_WITHOUT_HU_PROCESS_ID = 584998;
 /**
  * Settings as on the customer's instance: the legacy picking label (fallback for every label without a label config) is not configured
  * (-1 takes the same code path as the inactive sysconfig), and the scanner's live timing / manual input.
- * Only the tests of the customer's setup pass them (`sysconfigs`); {@link cleanUpAfterJobScanTest} writes the previous values back after each test.
+ * Only the tests of the customer's setup pass them (`sysconfigs`); the previous values are written back after each test (by the page fixture).
  */
 export const LIVE_DEFAULT_SYSCONFIGS = {
     'de.metas.ui.web.picking.PickingLabel.AD_Process_ID': '-1',
@@ -96,16 +96,14 @@ export const createJobScanMasterdata = async ({ language = 'en_US', pickTo, pick
     return masterdata;
 };
 
-/** What the running test changed in shared settings, with the value found before (the first one seen per key), and the picking slots it created. */
-let sysconfigsToRestore = {};
+/**
+ * What the running test changed in shared settings, with the value found before (the first one seen per key), and the picking slots it created.
+ * Sysconfigs are not tracked here: `Backend.createMasterdata` / `Backend.setSysconfigs` remember the previous values and the page fixture writes them back after every test.
+ */
 let pickingProfileToRestore = {};
 const pickingSlotIdsToEmpty = new Set();
 
 const rememberWhatToRestore = ({ masterdata, pickingProfile }) => {
-    Object.entries(masterdata.previousSysconfigs ?? {}).forEach(([name, value]) => {
-        if (!(name in sysconfigsToRestore)) sysconfigsToRestore[name] = value;
-    });
-
     // the picking profile is one shared record; a field set by `pickingProfile` keeps its value until a request sets it again
     // (`customers` is not written back: it only applies with allowPickingAnyCustomer false, which is written back, and a spec that uses it sends its own list)
     const previousPicking = masterdata.mobileConfig?.picking?.previous ?? {};
@@ -119,22 +117,20 @@ const rememberWhatToRestore = ({ masterdata, pickingProfile }) => {
 };
 
 /**
- * Leaves the database as the test found it, for the next test (and the next spec or run): writes back the sysconfigs and the picking profile fields
+ * Leaves the database as the test found it, for the next test (and the next spec or run): writes back the picking profile fields
  * the test's masterdata calls changed, with the values found before, and empties the test's picking slots (each non-empty picking slot is offered as an
  * HU consolidation job to every later test). Call it in `test.afterEach` of every spec that uses this masterdata; it also runs when the test failed.
  */
 export const cleanUpAfterJobScanTest = async () => {
     const pickingProfile = { ...pickingProfileToRestore };
-    const sysconfigs = { ...sysconfigsToRestore };
     const pickingSlotIds = [...pickingSlotIdsToEmpty];
 
     // every restore runs, also when another one failed; a single error is rethrown as is, several as one AggregateError listing every failure message, after all of them ran.
-    // One after the other: the masterdata call also writes sysconfigs (the scanner defaults), so the sysconfig restore must come after it.
+    // One after the other.
     const restores = [
         Object.keys(pickingProfile).length > 0
             ? () => Backend.createMasterdata({ request: { mobileConfig: { picking: { ...JOB_SCAN_PICKING_PROFILE, ...pickingProfile } } } })
             : null,
-        Object.keys(sysconfigs).length > 0 ? () => Backend.setSysconfigs(sysconfigs) : null,
         pickingSlotIds.length > 0 ? () => Backend.emptyPickingSlots({ pickingSlotIds }) : null,
     ].filter(Boolean);
     const errors = [];
@@ -146,7 +142,6 @@ export const cleanUpAfterJobScanTest = async () => {
         }
     }
 
-    sysconfigsToRestore = {};
     pickingProfileToRestore = {};
     pickingSlotIdsToEmpty.clear();
 

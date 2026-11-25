@@ -700,8 +700,8 @@ public class HUTransformService
 				lutuProducer.setMaxTUsPerLUInfinite();
 				lutuProducer.setTUPI(effectiveTuPI);
 				// the partner is only used to find the right (possibly partner-bound) LU->TU item; it is NOT stamped onto the created TUs.
-				// An LU item given by the caller (e.g. the product-specific one the LU was created with) wins.
-				if (luPIItem == null && luItemBPartnerId != null)
+				// An LU item given by the caller (e.g. the product-specific one the LU was created with), or a product-specific one found above, wins.
+				if (luPIItemToUse == null && luItemBPartnerId != null)
 				{
 					retrieveLUItemForTU(luHU, handlingUnitsBL.getEffectivePackingInstructionsId(sourceTuHU), luItemBPartnerId)
 							.ifPresent(lutuProducer::setLUItemPI);

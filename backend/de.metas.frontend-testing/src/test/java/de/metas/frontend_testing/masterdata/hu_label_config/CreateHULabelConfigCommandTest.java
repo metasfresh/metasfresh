@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata.hu_label_config;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
@@ -35,6 +36,7 @@ public class CreateHULabelConfigCommandTest
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(new CurrencyRepository())
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(JsonCreateBPartnerRequest.builder().bpartnerCode(identifier).build())
 				.identifier(identifier)

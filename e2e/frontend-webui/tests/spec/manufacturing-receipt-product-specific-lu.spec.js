@@ -110,7 +110,8 @@ test.describe('Manufacturing receipt dialog - product-specific pallet item', () 
     expect(optionIds, `pallet entries ${JSON.stringify(options)}`).not.toContain(genericItemId);
 
     await expect.poll(() => ReceiptDialog.getSelectedLUPIItem()).toContain('(40 x ');
-    await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyCUsPerTU' }).then(Number)).toBe(PIECES_PER_TU);
+    // the dialog has no per-TU quantity field anymore: "Menge" (QtyTotalReceived) = TUs per pallet x pallets x pieces per TU
+    await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyTotalReceived' }).then(Number)).toBe(40 * 2 * PIECES_PER_TU);
     await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyTU' }).then(Number)).toBe(40);
     await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyLU' }).then(Number)).toBe(2);
 
@@ -143,7 +144,7 @@ test.describe('Manufacturing receipt dialog - product-specific pallet item', () 
     expect(optionIds, `pallet entries ${JSON.stringify(options)}`).not.toContain(xyItemId);
 
     await expect.poll(() => ReceiptDialog.getSelectedLUPIItem()).toContain('(30 x ');
-    await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyCUsPerTU' }).then(Number)).toBe(PIECES_PER_TU);
+    await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyTotalReceived' }).then(Number)).toBe(30 * 3 * PIECES_PER_TU);
     await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyTU' }).then(Number)).toBe(30);
     await expect.poll(() => ReceiptDialog.getFieldValue({ columnName: 'QtyLU' }).then(Number)).toBe(3);
 

@@ -288,20 +288,22 @@ public class HUTransformService_ProductSpecificLUItemTest
 			assertSourceAggregateHasOneTUOf40Left(aggregateTU);
 		}
 
-		/** Same, but without any product-specific item: the partial move fails as it did before (only product-specific items are added as fallback). */
+		/** Same, but without any product-specific item: the partner-bound item (found via the LU's partner) is used, so the partial move succeeds. */
 		@Test
-		public void partialMoveFromAggregate_onlyPartnerItemWithoutProduct_failsAsBefore()
+		public void partialMoveFromAggregate_onlyPartnerItemWithoutProduct_usesPartnerItem()
 		{
 			final I_M_HU aggregateTU = createAggregateTUof2_thenDeactivateGenericItem();
 			InterfaceWrapperHelper.delete(luPIItemTomato8);
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("BP").getC_BPartner_ID());
-			data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"), bpartnerId);
+			final I_M_HU_PI_Item partnerItem = data.helper.createHU_PI_Item_IncludedHU(data.piLU, data.piTU_IFCO, new BigDecimal("20"), bpartnerId);
 			final I_M_HU lu = createLUWithBagTU();
 			lu.setC_BPartner_ID(bpartnerId.getRepoId());
 			save(lu);
 
-			assertThatThrownBy(() -> huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu))
-					.hasMessageContaining("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
+			huTransformService.tuToExistingLU(aggregateTU, QtyTU.ONE, lu);
+
+			assertLUAttachedVia(lu, data.piLU_Item_Bag, partnerItem);
+			assertSourceAggregateHasOneTUOf40Left(aggregateTU);
 		}
 
 		/** Two product-specific IFCO items (tomato, then salad) and no generic one: a salad TU picks the salad item, not the lower-ID tomato item. */
