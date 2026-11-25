@@ -175,8 +175,8 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     }
   });
 
-  // same case as the backend PickingCULabelServiceTest.fallbackMarkerWithGapBeforeNextPart_labelEndingInsideTheGap_isAFormatMismatch
-  it('no PackId part, a gap between the "92" marker and the next part: the zone ends after the marker itself', () => {
+  // the zone is whatever the backend published (packIdZoneStart / packIdZoneEnd); the label length is only checked against it
+  it('a label ending inside the gap after the zone start is a format mismatch, before the zone start it has no pack ID', () => {
     const gapFormat = {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '92'), constant(52, 53, '93')],

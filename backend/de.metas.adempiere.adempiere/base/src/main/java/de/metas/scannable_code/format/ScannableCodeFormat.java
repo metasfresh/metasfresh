@@ -16,9 +16,6 @@ import java.util.Optional;
 @Value
 public class ScannableCodeFormat
 {
-	/** The constant marker in front of the pack ID; the zone falls back to it when the format has no {@link ScannableCodeFormatPartType#PackId} part. */
-	private static final String PACK_ID_MARKER = "92";
-
 	@NonNull ScannableCodeFormatId id;
 	@NonNull String name;
 	@Nullable String description;
@@ -68,20 +65,16 @@ public class ScannableCodeFormat
 	/**
 	 * The pack ID zone: the characters in front of (and including) the pack ID value, i.e. the constant marker plus the pack ID part itself.
 	 * It starts at the constant marker directly in front of the {@link ScannableCodeFormatPartType#PackId} part (or at that part itself).
-	 * A format without a pack ID part falls back to the constant "92" marker: the zone is the marker, cut short by a part starting inside it.
-	 * A format with neither has no pack ID zone.
+	 * A format without a pack ID part has no pack ID zone.
 	 * <p>
 	 * Positions are 1-based like {@link ScannableCodeFormatPart#getStartPosition()}; {@link PackIdZone#getEnd()} is the start position of the part after the zone.
 	 */
 	public Optional<PackIdZone> getPackIdZone()
 	{
-		final ScannableCodeFormatPart packIdPart = parts.stream()
+		return parts.stream()
 				.filter(part -> part.getType() == ScannableCodeFormatPartType.PackId)
 				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-				.orElse(null);
-		return packIdPart != null
-				? Optional.of(zoneBeforePackIdPart(packIdPart))
-				: zoneOfFallbackMarker();
+				.map(this::zoneBeforePackIdPart);
 	}
 
 	/**
@@ -106,23 +99,6 @@ public class ScannableCodeFormat
 				.map(ScannableCodeFormatPart::getStartPosition)
 				.orElse(packIdStart);
 		return new PackIdZone(zoneStart, packIdStart);
-	}
-
-	private Optional<PackIdZone> zoneOfFallbackMarker()
-	{
-		return parts.stream()
-				.filter(part -> part.getType() == ScannableCodeFormatPartType.Constant && PACK_ID_MARKER.equals(part.getConstantValue()))
-				.min(Comparator.comparingInt(ScannableCodeFormatPart::getStartPosition))
-				.map(marker -> {
-					final int zoneStart = marker.getStartPosition();
-					final int markerEnd = zoneStart + PACK_ID_MARKER.length();
-					final int zoneEnd = Math.min(markerEnd, parts.stream()
-							.mapToInt(ScannableCodeFormatPart::getStartPosition)
-							.filter(start -> start > zoneStart)
-							.min()
-							.orElse(markerEnd));
-					return new PackIdZone(zoneStart, zoneEnd);
-				});
 	}
 
 	private boolean isPartsBeforeReadable(@NonNull final ScannedCode scannedCode, final int zoneStart)

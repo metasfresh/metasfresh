@@ -75,7 +75,7 @@ class PickingCULabelServiceTest
 		uom.setUOMSymbol("Stk");
 		saveRecord(uom);
 
-		// the label's marker parts and data positions (pack ID part at 49; written as Ignored until the PackId part type exists)
+		// the label's marker parts and data positions (pack ID part at 49, open end)
 		format = formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name("CU label")
 				.parts(ImmutableList.of(
@@ -90,7 +90,7 @@ class PickingCULabelServiceTest
 						part(37, 45, ScannableCodeFormatPartType.LotNo),
 						part(46, 46, ScannableCodeFormatPartType.Ignored),
 						constant(47, 48, "92"),
-						part(49, 49, ScannableCodeFormatPartType.Ignored)
+						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)
 				))
 				.build());
 	}
@@ -301,10 +301,10 @@ class PickingCULabelServiceTest
 	}
 
 	/**
-	 * Parity vector with the frontend `cuLabel.test.js` ("no PackId part, a gap between the 92 marker and the next part"): the zone of the "92" marker ends after the marker itself.
+	 * A format without a PackId part has no pack ID position: a "92" constant is just a constant, so a label ending before it is a format mismatch, not "no pack ID".
 	 */
 	@Test
-	void fallbackMarkerWithGapBeforeNextPart_labelEndingInsideTheGap_isAFormatMismatch()
+	void formatWithoutPackIdPart_labelEndingBeforeOrInsideAConstant_isAFormatMismatch()
 	{
 		final ScannableCodeFormat gapFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name("CU label, marker 92 and a gap before the next part")
@@ -326,7 +326,7 @@ class PickingCULabelServiceTest
 		final String beforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
 
 		assertFails(() -> resolve(insideGap, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
-		assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
 	@Test
