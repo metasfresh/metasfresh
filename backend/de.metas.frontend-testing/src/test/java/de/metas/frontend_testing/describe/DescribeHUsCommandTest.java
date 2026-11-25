@@ -13,6 +13,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -20,6 +22,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +33,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.Assertions.tuple;
 
 /**
  * Tests {@link DescribeHUsCommand}: the read-only testing-API view of HUs that the frontend E2E tests compare as a set.
@@ -180,6 +184,47 @@ class DescribeHUsCommandTest extends AbstractHUTest
 		assertThat(described.getStorages()).isEqualTo(ImmutableMap.of("P", "4 PCE", "Q", "8 PCE"));
 		assertThat(described.getIncludedTUsCount()).isEqualTo(3);
 		assertThat(described.getTuParentPIItemQtys()).containsExactly(30);
+	}
+
+	private I_M_Inventory createInventoryWithLineHUs(final I_M_HU... hus)
+	{
+		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
+		InterfaceWrapperHelper.saveRecord(inventory);
+
+		final I_M_InventoryLine line = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+		line.setM_Inventory_ID(inventory.getM_Inventory_ID());
+		InterfaceWrapperHelper.saveRecord(line);
+
+		for (final I_M_HU hu : hus)
+		{
+			final I_M_InventoryLine_HU lineHU = InterfaceWrapperHelper.newInstance(I_M_InventoryLine_HU.class);
+			lineHU.setM_Inventory_ID(inventory.getM_Inventory_ID());
+			lineHU.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
+			lineHU.setM_HU_ID(hu.getM_HU_ID());
+			InterfaceWrapperHelper.saveRecord(lineHU);
+		}
+		return inventory;
+	}
+
+	@Test
+	void inventoryId_describesTheHUsOfItsLines()
+	{
+		final I_M_HU lu1 = loadOnNewLU(ImmutableList.of(createTU(productP), createTU(productP)));
+		final I_M_HU lu2 = loadOnNewLU(ImmutableList.of(createTU(productQ)));
+		final I_M_HU luOfAnotherInventory = loadOnNewLU(ImmutableList.of(createTU(productQ)));
+		final I_M_Inventory inventory = createInventoryWithLineHUs(lu1, lu2);
+		createInventoryWithLineHUs(luOfAnotherInventory);
+
+		final JsonDescribeHUsResponse response = DescribeHUsCommand.builder()
+				.request(JsonDescribeHUsRequest.builder().inventoryId(inventory.getM_Inventory_ID()).build())
+				.build()
+				.execute();
+
+		assertThat(response.getHus())
+				.extracting(JsonDescribeHUsResponse.HU::getHuId, JsonDescribeHUsResponse.HU::getStorages)
+				.containsExactlyInAnyOrder(
+						tuple(lu1.getM_HU_ID(), ImmutableMap.of("P", "8 PCE")),
+						tuple(lu2.getM_HU_ID(), ImmutableMap.of("Q", "4 PCE")));
 	}
 
 	@Test

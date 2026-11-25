@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -15,6 +16,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Comparator;
@@ -23,7 +25,7 @@ import java.util.TreeMap;
 
 /**
  * Read-only: describes the given HUs (unit type, top-level HU, storages, included TUs and the LU items they hang on),
- * so that a frontend test can compare HUs whose ids it learns only at runtime (e.g. pallets built by a WebUI action).
+ * so that a frontend test can compare HUs whose ids it learns only at runtime (e.g. pallets built by a WebUI action or by completing an inventory).
  */
 public class DescribeHUsCommand
 {
@@ -31,6 +33,7 @@ public class DescribeHUsCommand
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final JsonDescribeHUsRequest request;
 
@@ -47,7 +50,27 @@ public class DescribeHUsCommand
 		{
 			response.hu(describe(HuId.ofRepoId(huRepoId)));
 		}
+
+		final Integer inventoryRepoId = request.getInventoryId();
+		if (inventoryRepoId != null)
+		{
+			getInventoryLineHUIds(inventoryRepoId).forEach(huId -> response.hu(describe(huId)));
+		}
+
 		return response.build();
+	}
+
+	private List<HuId> getInventoryLineHUIds(final int inventoryRepoId)
+	{
+		return queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryRepoId)
+				.addNotNull(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID)
+				.orderBy(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_HU_ID)
+				.create()
+				.stream()
+				.map(lineHU -> HuId.ofRepoId(lineHU.getM_HU_ID()))
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private JsonDescribeHUsResponse.HU describe(@NonNull final HuId huId)
