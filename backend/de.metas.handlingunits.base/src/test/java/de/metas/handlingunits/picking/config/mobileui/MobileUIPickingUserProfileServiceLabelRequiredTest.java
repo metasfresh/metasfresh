@@ -1,14 +1,16 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.picking.job.model.PickingJobLine;
-import de.metas.handlingunits.picking.job.model.PickingJobLineId;
-import de.metas.handlingunits.picking.job.model.PickingUnit;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
@@ -18,14 +20,12 @@ import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import java.math.BigDecimal;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
 
-
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,7 +50,7 @@ class MobileUIPickingUserProfileServiceLabelRequiredTest
 		final MobileUIPickingUserProfileRepository repository = mock(MobileUIPickingUserProfileRepository.class);
 		when(repository.getPickingJobOptions(CUSTOMER_LABEL)).thenReturn(options(CUQtyEntryMode.SCAN_EACH_CU));
 		when(repository.getPickingJobOptions(CUSTOMER_MANUAL)).thenReturn(options(CUQtyEntryMode.MANUAL));
-		service = new MobileUIPickingUserProfileService(repository, mock(de.metas.handlingunits.picking.config.PickingConfigRepositoryV2.class));
+		service = new MobileUIPickingUserProfileService(repository, mock(PickingConfigRepositoryV2.class));
 	}
 
 	private static PickingJobOptions options(final CUQtyEntryMode mode)
