@@ -1,7 +1,8 @@
-import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
+import { attachScreenshot, expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ErrorToast } from '../../dialogs/ErrorToast';
 import { HUConsolidationJobScreen } from './HUConsolidationJobScreen';
 
 const NAME = 'GRAIScanScreen';
@@ -70,13 +71,18 @@ export const GRAIScanScreen = {
 
     /**
      * Scan a GRAI that the backend rejects: expects exactly one error toast containing the given message (the toast is closed).
-     * @param {{grai: string, message: string}} params message = expected text of the toast (in the user's language)
+     * @param {{grai: string, message: string, screenshotName?: string}} params message = expected text of the toast (in the user's language);
+     *   screenshotName = attach a screenshot while the toast is shown
      */
-    scanGRAIExpectError: async ({ grai, message }) => await test.step(`${NAME} - Scan GRAI ${grai}, expect error "${message}"`, async () => {
+    scanGRAIExpectError: async ({ grai, message, screenshotName }) => await test.step(`${NAME} - Scan GRAI ${grai}, expect error "${message}"`, async () => {
         await expectErrorToast(`${NAME} scan ${grai} rejected`, async () => {
             await GRAIScanScreen.scanGRAI({ grai });
-        }, ({ textContent }) => {
+        }, async ({ textContent }) => {
             expect(textContent).toContain(message);
+            if (screenshotName) {
+                await ErrorToast.expectFullyShown();
+                await attachScreenshot(screenshotName);
+            }
         });
     }),
 };

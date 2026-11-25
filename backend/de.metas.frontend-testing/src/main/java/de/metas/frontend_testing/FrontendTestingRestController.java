@@ -1,5 +1,6 @@
 package de.metas.frontend_testing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.frontend_testing.describe.DescribeHUsCommand;
 import de.metas.frontend_testing.describe.JsonDescribeHUsRequest;
@@ -21,10 +22,14 @@ import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonReverseShipmentResponse;
 import de.metas.frontend_testing.masterdata.shipment.ReverseShipmentCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.pickingslot.EmptyPickingSlotsCommand;
+import de.metas.frontend_testing.pickingslot.JsonEmptyPickingSlotsRequest;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -67,6 +72,7 @@ public class FrontendTestingRestController
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final PickingSlotService pickingSlotService;
 
 	private boolean isEnabled()
 	{
@@ -149,6 +155,19 @@ public class FrontendTestingRestController
 		callInContext(() -> {
 			SysconfigCommand.builder()
 					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
+	}
+
+	@PostMapping("emptyPickingSlots")
+	public void emptyPickingSlots(@RequestBody @NonNull final JsonEmptyPickingSlotsRequest request)
+	{
+		callInContext(() -> {
+			EmptyPickingSlotsCommand.builder()
+					.pickingSlotService(pickingSlotService)
+					.pickingSlotIds(request.getPickingSlotIds().stream().map(PickingSlotId::ofRepoId).collect(ImmutableSet.toImmutableSet()))
 					.build()
 					.execute();
 			return null;

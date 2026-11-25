@@ -44,11 +44,13 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.process.AdProcessId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.jetbrains.annotations.Contract;
@@ -213,6 +215,11 @@ public interface IPrintingDAO extends ISingletonService
 	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.
 	 */
 	I_C_Printing_Queue retrievePrintingQueue(I_AD_Archive archive);
+
+	/**
+	 * @return the number of active printing queue items of the active archives of the given record (only of archives of the given process, if set)
+	 */
+	int countPrintingQueueItems(@NonNull TableRecordReference archivedRecordRef, @Nullable AdProcessId processId);
 
 	/**
 	 * Get a list of printing package infos

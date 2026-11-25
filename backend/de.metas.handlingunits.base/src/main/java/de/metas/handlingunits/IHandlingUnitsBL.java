@@ -323,6 +323,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable BPartnerId bpartnerId);
 
+	/**
+	 * @see IHandlingUnitsDAO#retrieveParentLUPIsForProducts(Collection, BPartnerId)
+	 */
+	Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull Collection<ParentLUPIsQuery> queries,
+			@Nullable BPartnerId bpartnerId);
+
 	@NonNull
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 
@@ -356,6 +363,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Delegates to {@link IHandlingUnitsDAO#retrievePIItems(I_M_HU_PI_Version, BPartnerId)}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @return {@code true} if the LU packing instructions have an item without product for the TU packing instructions (generic, or for the given partner)
+	 */
+	boolean isTUTypeTakenByLUType(@NonNull HuPackingInstructionsId luPIId, @NonNull HuPackingInstructionsId tuPIId, @Nullable BPartnerId bpartnerId);
 
 	@Builder
 	@Value

@@ -18,6 +18,13 @@ import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../common';
 const containerElement = () => page.locator('.Toastify .Toastify__toast--error div[role="alert"].Toastify__toast-body');
 
 export const ErrorToast = {
+    /** Waits until the error toast finished its enter animation and is fully in the viewport (e.g. before a screenshot). */
+    expectFullyShown: async () => {
+        const toast = page.locator('.Toastify__toast--error').first();
+        await expect(toast).not.toHaveClass(/Toastify__bounce-enter/, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(toast).toBeInViewport({ ratio: 1, timeout: SLOW_ACTION_TIMEOUT });
+    },
+
     waitToPopup: (callback, timeout) => {
         // Wait for the FIRST error toast to attach, then hand it to the caller. The count is
         // enforced separately in closePopup (exactly one), so .first() here only picks the element

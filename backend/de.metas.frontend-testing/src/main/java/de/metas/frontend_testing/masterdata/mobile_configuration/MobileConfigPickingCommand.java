@@ -41,6 +41,8 @@ class MobileConfigPickingCommand
 
 	public JsonMobileConfigResponse.Picking execute()
 	{
+		final JsonMobileConfigResponse.Picking previous = toJson(mobilePickingConfigService.getProfile(), null);
+
 		mobilePickingConfigService.update((profile) -> {
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 					.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), request))
@@ -76,10 +78,10 @@ class MobileConfigPickingCommand
 			throw new AdempiereException("Picking profile shall have at least one pick to structure available");
 		}
 
-		return toJson(newProfile);
+		return toJson(newProfile, previous);
 	}
 
-	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile)
+	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile, @Nullable final JsonMobileConfigResponse.Picking previous)
 	{
 		return JsonMobileConfigResponse.Picking.builder()
 				.aggregationType(profile.getDefaultPickingJobOptions().getAggregationType())
@@ -98,6 +100,7 @@ class MobileConfigPickingCommand
 				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
 				.filters(profile.getFilterGroupsInOrder())
+				.previous(previous)
 				.build();
 	}
 

@@ -19,5 +19,9 @@
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All",
     "scanGRAI": "GRAI scannen, um TU auszuwählen"
+  },
+  "CompleteActivity": {
+    "ok": "OK",
+    "completed": "Abgeschlossen, Lieferung wird erstellt."
   }
 }

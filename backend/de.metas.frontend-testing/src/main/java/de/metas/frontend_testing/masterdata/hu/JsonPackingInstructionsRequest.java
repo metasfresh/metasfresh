@@ -35,6 +35,12 @@ public class JsonPackingInstructionsRequest
 	int qtyTUsPerLU;
 
 	/**
+	 * Optional product of the LU->TU item ({@link #qtyTUsPerLU}): the item is then bound to that product
+	 * ({@code M_HU_PI_Item.M_Product_ID}) instead of being generic, so the LU has no generic item. Requires {@link #lu}.
+	 */
+	@Nullable Identifier luProduct;
+
+	/**
 	 * When true, an {@code M_HU_PI_Attribute} for the {@code SSCC18} attribute is added to the LU packing instruction version,
 	 * so that LUs built from it carry an SSCC18. Requires {@link #lu}.
 	 */
