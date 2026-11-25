@@ -35,6 +35,29 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 // dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
 const EMPTY_LU_GRAIS = [];
 
+const HUScanActionButtons = ({ nextTUActions, isPackIdRequired, onCloseDialog }) => {
+  if (!nextTUActions && !isPackIdRequired) return null;
+
+  return (
+    <div className="buttons is-centered mb-4">
+      {nextTUActions}
+      {isPackIdRequired && (
+        <DialogButton
+          captionKey="general.closeText"
+          className="is-danger"
+          testId="scan-each-close-button"
+          onClick={onCloseDialog}
+        />
+      )}
+    </div>
+  );
+};
+HUScanActionButtons.propTypes = {
+  nextTUActions: PropTypes.node,
+  isPackIdRequired: PropTypes.bool,
+  onCloseDialog: PropTypes.func,
+};
+
 const ScanHUAndGetQtyComponent = ({
   scannedBarcode: scannedBarcodeParam,
   eligibleBarcode,
@@ -421,19 +444,11 @@ const ScanHUAndGetQtyComponent = ({
         <>
           {/* The tu buttons come first: on a phone the scanner panel (icon, caption, "Enter manually") is tall, and the buttons below it
               would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
-          {(nextTUActions || isPackIdRequired) && (
-            <div className="buttons is-centered mb-4">
-              {nextTUActions}
-              {isPackIdRequired && (
-                <DialogButton
-                  captionKey="general.closeText"
-                  className="is-danger"
-                  testId="scan-each-close-button"
-                  onClick={onCloseDialog}
-                />
-              )}
-            </div>
-          )}
+          <HUScanActionButtons
+            nextTUActions={nextTUActions}
+            isPackIdRequired={isPackIdRequired}
+            onCloseDialog={onCloseDialog}
+          />
           {useHUScanner ? (
             <HUScanner onResolvedBarcode={onHUScannerResult} eligibleBarcode={eligibleBarcode} />
           ) : (
