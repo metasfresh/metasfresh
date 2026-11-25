@@ -12,6 +12,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * {@code *Repository}/{@code *DAO} rather than in a command (docs/coding-rules/service-injection.md section 4).
  * <p>
  * Repository Tables: M_Locator
+ * Repository Cluster: WarehouseLocatorMasterdataRepository, WarehouseRepository, WarehouseDAO, HUWarehouseDAO
  */
 class WarehouseLocatorMasterdataRepository
 {
