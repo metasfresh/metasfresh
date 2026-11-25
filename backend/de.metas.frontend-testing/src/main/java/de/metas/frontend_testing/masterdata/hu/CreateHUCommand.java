@@ -106,7 +106,8 @@ public class CreateHUCommand
 		final String huQRCodeStr;
 		if (request.isGenerateHUQRCode())
 		{
-			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+			final HuId qrCodeHuId = request.isQrCodeOfAggregatedTU() ? getAggregatedTUId(huId) : huId;
+			huQRCodeStr = huQRCodesService.getQRCodeByHuId(qrCodeHuId).toGlobalQRCodeString();
 		}
 		else
 		{
@@ -168,6 +169,16 @@ public class CreateHUCommand
 			}
 			HUTransformService.newInstance(huContext).tuToNewTUs(aggregateTU, QtyTU.ofInt(count));
 		});
+	}
+
+	private @NonNull HuId getAggregatedTUId(@NonNull final HuId huId)
+	{
+		final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
+		if (aggregateTU == null)
+		{
+			throw new AdempiereException("No aggregate TU found under HU " + huId);
+		}
+		return HuId.ofRepoId(aggregateTU.getM_HU_ID());
 	}
 
 	/**

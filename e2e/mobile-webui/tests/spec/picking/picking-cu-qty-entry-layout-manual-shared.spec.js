@@ -383,7 +383,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
         // The quantity dialog of the HU Manager move (ReadQtyDialog) shares the dialog class with the picking quantity dialog: it must look .
         // noinspection JSUnusedLocalSymbols
-        test(`HU Manager move: number of TUs dialog of a pallet with several TUs (${viewport.name})`, async ({ page: _page }) => {
+        test(`HU Manager move: number of TUs dialog of an aggregated TU (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive Manual screens');
             const layout = (label, scope) => expectLayoutSound(label, viewport, scope);
             const masterdata = await createMasterdataRememberingSysconfigs({
@@ -393,7 +393,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     products: { P1: {} },
                     warehouses: { wh1: {} },
                     packingInstructions: { PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 } },
-                    handlingUnits: { HU1: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' }, HU2: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' } },
+                    handlingUnits: { HU1: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI', qrCodeOfAggregatedTU: true }, HU2: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' } },
                 },
             });
             await login(masterdata, 'huManager');

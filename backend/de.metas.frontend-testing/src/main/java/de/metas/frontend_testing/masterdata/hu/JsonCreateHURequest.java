@@ -20,6 +20,7 @@ public class JsonCreateHURequest
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean generateHUQRCodesForAllTUs;
+	@Nullable Boolean qrCodeOfAggregatedTU;
 	@Nullable Integer splitOutTUsCountAfterQRCodes;
 	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;
@@ -45,6 +46,13 @@ public class JsonCreateHURequest
 	 */
 	@JsonIgnore
 	public int getSplitOutTUsCountAfterQRCodes() {return splitOutTUsCountAfterQRCodes != null ? splitOutTUsCountAfterQRCodes : 0;}
+
+	/**
+	 * When {@code true}, the response's {@code qrCode} is the QR code of the aggregated TU inside the created HU (e.g. the TUs of a pallet),
+	 * instead of the QR code of the top-level HU. Needed to test screens that only exist for an aggregated TU (e.g. the HU Manager move number-of-TUs dialog).
+	 */
+	@JsonIgnore
+	public boolean isQrCodeOfAggregatedTU() {return qrCodeOfAggregatedTU != null && qrCodeOfAggregatedTU;}
 
 	@JsonIgnore
 	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
