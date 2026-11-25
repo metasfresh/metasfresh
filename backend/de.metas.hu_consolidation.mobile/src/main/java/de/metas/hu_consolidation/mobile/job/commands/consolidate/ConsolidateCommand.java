@@ -1,6 +1,5 @@
 package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -18,6 +17,8 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -38,6 +39,7 @@ public class ConsolidateCommand
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final GRAIScannedCodeResolver graiResolver;
 
 	// Params
 	@NonNull private final UserId callerId;
@@ -56,12 +58,14 @@ public class ConsolidateCommand
 			@NonNull final HUConsolidationJobRepository jobRepository,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final PickingSlotService pickingSlotService,
+			@NonNull final GRAIScannedCodeResolver graiResolver,
 			//
 			@NonNull final ConsolidateRequest request)
 	{
 		this.jobRepository = jobRepository;
 		this.huQRCodesService = huQRCodesService;
 		this.pickingSlotService = pickingSlotService;
+		this.graiResolver = graiResolver;
 
 		this.callerId = request.getCallerId();
 		this.jobId = request.getJobId();
@@ -110,8 +114,7 @@ public class ConsolidateCommand
 		return job;
 	}
 
-	@VisibleForTesting
-	Set<HuId> getHuIdsToConsolidate()
+	private Set<HuId> getHuIdsToConsolidate()
 	{
 		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
 
@@ -122,9 +125,7 @@ public class ConsolidateCommand
 		}
 		else if (grai != null)
 		{
-			effectiveHuId = handlingUnitsBL.getTopLevelHuIdByGrai(grai)
-					.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
-							.setParameter("grai", grai.toCanonicalString()));
+			effectiveHuId = getHuIdByGRAI(grai);
 		}
 		else
 		{
@@ -149,6 +150,24 @@ public class ConsolidateCommand
 		{
 			return fromPickingSlotQueue.getHuIds();
 		}
+	}
+
+	/**
+	 * Looks for the GRAI among the crates of this job first: two crates of the job with this GRAI are refused as ambiguous,
+	 * and a HU outside the job with the same GRAI does not block the crate of the job.
+	 * If no crate of the job carries it, a crate elsewhere that carries it is "not at the picking slot"; no such crate at all is "not found".
+	 */
+	@NonNull
+	private HuId getHuIdByGRAI(@NonNull final GRAI grai)
+	{
+		final HUConsolidationScannedCrate crateOfJob = graiResolver.resolveIfAny(grai, pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds())).orElse(null);
+		if (crateOfJob != null)
+		{
+			return crateOfJob.getHuId();
+		}
+
+		throw new AdempiereException(graiResolver.isCarriedByAnyCrate(grai) ? MobileQRCodeMessages.LU_NOT_AT_SLOT : MobileQRCodeMessages.HU_NOT_FOUND)
+				.setParameter("grai", grai.toCanonicalString());
 	}
 
 	private PickingSlotQueue getFromPickingSlotQueue()
