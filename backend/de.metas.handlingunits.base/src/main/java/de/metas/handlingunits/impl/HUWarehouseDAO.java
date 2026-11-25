@@ -44,7 +44,7 @@ import java.util.Set;
 
 /**
  * Repository Tables: M_Warehouse, M_Locator
- * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository, WarehouseLocatorMasterdataRepository
+ * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository
  */
 public class HUWarehouseDAO implements IHUWarehouseDAO
 {
