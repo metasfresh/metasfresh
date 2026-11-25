@@ -580,6 +580,35 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * Moves TUs onto an already existing LU via {@link HUTransformService#tuToExistingLU}, the same call as the HU editor's transform action "TU to existing LU".
+	 * Called "move" rather than "transform" because no HU is created: the TUs are attached to an LU that already exists.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>sourceTU</b> — (required, identifier-ref) the TU (or aggregate TU) to move<br>
+	 *   <b>tuQty</b> — (required) number of TUs to move<br>
+	 *   <b>targetLU</b> — (required, identifier-ref) the existing LU<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And move TU to existing LU
+	 *   | sourceTU | tuQty | targetLU |
+	 *   | tu_1     | 1     | lu_1     |
+	 * </pre>
+	 */
+	@And("move TU to existing LU")
+	public void moveTUToExistingLU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_HU tuHU = handlingUnitsBL.getById(row.getAsIdentifier("sourceTU").lookupIdIn(huTable));
+			final QtyTU tuQty = QtyTU.ofInt(row.getAsInt("tuQty"));
+			final I_M_HU luHU = handlingUnitsBL.getById(row.getAsIdentifier("targetLU").lookupIdIn(huTable));
+
+			HUTransformService.newInstance().tuToExistingLU(tuHU, tuQty, luHU);
+		});
+	}
+
 	@And("aggregate TUs to new LU")
 	public void aggregateTUsToNewLU(@NonNull final DataTable dataTable)
 	{
@@ -761,6 +790,7 @@ public class M_HU_StepDef
 	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
 	 *   <b>IsTopLevel</b> — (optional) true/false, whether HU has no parent<br>
 	 *   <b>Parent</b> — (optional, identifier-ref or null) expected parent HU; use "null" for no parent<br>
+	 *   <b>Parent_M_HU_PI_Item_ID</b> — (optional, identifier-ref) expected PI item of the parent HU's item via which the HU is attached<br>
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
 	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
@@ -964,6 +994,16 @@ public class M_HU_StepDef
 						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
 						final HuId actualParentId = handlingUnitsDAO.retrieveParentId(huRecord);
 						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
+					});
+			row.getAsOptionalIdentifier("Parent_M_HU_PI_Item_ID")
+					.map(huPiItemTable::get)
+					.ifPresent(expectedParentPIItem -> {
+						final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(huRecord);
+						softly.assertThat(parentItem).as("parent HU item").isNotNull();
+						if (parentItem != null)
+						{
+							softly.assertThat(parentItem.getM_HU_PI_Item_ID()).as("Parent_M_HU_PI_Item_ID").isEqualTo(expectedParentPIItem.getM_HU_PI_Item_ID());
+						}
 					});
 			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
 					.ifPresent(bpartnerIdentifier -> {

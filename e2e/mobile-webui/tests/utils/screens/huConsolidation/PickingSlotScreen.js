@@ -70,12 +70,31 @@ export const PickingSlotScreen = {
         await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCANNER_TESTID, terminator: 'Enter' });
     }),
 
-    /** The GRAI scanner is present — shown only when the consolidation customer requires GRAI. */
+    /**
+     * Scan the GRAI of a crate in this slot and wait until the backend has moved it onto the target pallet.
+     *
+     * `waitNotLoading` is not enough here: the screen shows no spinner while a scan is processed.
+     *
+     * @param {string} graiString - Canonical GRAI string ("{companyPrefix}.{assetType}.{serial}")
+     */
+    scanGRAIAndWaitConsolidated: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI and wait until consolidated: ${graiString}`, async () => {
+        // listener right before the action that fires the call
+        const consolidated = page.waitForResponse(
+            (response) => response.url().endsWith('/consolidate') && response.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCANNER_TESTID });
+        const response = await consolidated;
+        expect(response.ok(), `consolidate answer for GRAI ${graiString}: HTTP ${response.status()}`).toBe(true);
+        await PickingSlotScreen.waitNotLoading();
+    }),
+
+    /** The GRAI scanner is present — shown when a crate of the slot carries a GRAI. */
     expectScannerVisible: async () => await test.step(`${NAME} - Expect GRAI scanner present`, async () => {
         await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
     }),
 
-    /** The GRAI scanner is absent — the customer does not require GRAI. */
+    /** The GRAI scanner is absent — no crate of the slot carries a GRAI. */
     expectScannerNotVisible: async () => await test.step(`${NAME} - Expect GRAI scanner absent`, async () => {
         await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
     }),

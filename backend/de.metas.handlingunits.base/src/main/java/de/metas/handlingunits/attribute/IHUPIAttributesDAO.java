@@ -5,6 +5,7 @@ import java.util.Set;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IHUPIAttributesDAO extends ISingletonService
 {
@@ -41,4 +42,8 @@ public interface IHUPIAttributesDAO extends ISingletonService
 
 	void deleteByVersionId(HuPackingInstructionsVersionId versionId);
 
+	/**
+	 * Creates an active {@code M_HU_PI_Attribute} as described by the request.
+	 */
+	void createPIAttribute(@NonNull HUPIAttributeCreateRequest request);
 }

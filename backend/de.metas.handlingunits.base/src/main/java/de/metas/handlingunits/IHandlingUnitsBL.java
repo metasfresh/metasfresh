@@ -390,6 +390,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * no packing material or that packing material has no product.
 	 */
 	Optional<ProductId> getFirstPackingMaterialProductId(@NonNull HuId huId);
+	/**
+	 * @return {@code true} if the LU packing instructions have an item without product for the TU packing instructions (generic, or for the given partner)
+	 */
+	boolean isTUTypeTakenByLUType(@NonNull HuPackingInstructionsId luPIId, @NonNull HuPackingInstructionsId tuPIId, @Nullable BPartnerId bpartnerId);
 
 	@Builder
 	@Value

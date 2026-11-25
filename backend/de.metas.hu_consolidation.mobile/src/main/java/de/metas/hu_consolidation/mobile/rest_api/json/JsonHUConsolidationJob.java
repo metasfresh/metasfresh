@@ -19,4 +19,7 @@ public class JsonHUConsolidationJob
 	@NonNull ImmutableList<JsonHUConsolidationJobPickingSlot> pickingSlots;
 	
 	@Nullable JsonHUConsolidationTarget currentTarget;
+
+	/** Whether the mobile UI shows the GRAI scanner for this job; decided by the backend. */
+	boolean graiScanEnabled;
 }

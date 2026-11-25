@@ -66,6 +66,11 @@ import java.util.stream.Stream;
 
 public interface IBPartnerDAO extends ISingletonService
 {
+	/**
+	 * @return a new, not yet saved business partner; persist it with {@link #save(I_C_BPartner)}
+	 */
+	I_C_BPartner newBPartner();
+
 	void save(I_C_BPartner bpartner);
 
 	void saveOutOfTrx(I_C_BPartner bpartner);

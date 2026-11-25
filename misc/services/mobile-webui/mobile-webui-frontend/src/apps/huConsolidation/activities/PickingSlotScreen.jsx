@@ -43,9 +43,8 @@ export const PickingSlotScreen = () => {
       .then(() => history.goBack())
       .catch((error) => toastErrorFromObj(error));
   };
-  const onGraiScanned = ({ scannedBarcode }) => {
-    return consolidate({ grai: scannedBarcode }).catch((error) => toastErrorFromObj(error));
-  };
+  // no .catch here: the error must reach BarcodeScannerComponent, which plays the error beep and shows the one error message
+  const onGraiScanned = ({ scannedBarcode }) => consolidate({ grai: scannedBarcode });
 
   // console.log('PickingSlotScreen', { pickingSlotContent });
 
