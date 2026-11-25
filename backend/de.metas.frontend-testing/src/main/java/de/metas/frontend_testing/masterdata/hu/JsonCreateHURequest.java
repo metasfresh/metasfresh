@@ -54,6 +54,12 @@ public class JsonCreateHURequest
 	 */
 	@Nullable List<AdditionalProduct> additionalProducts;
 
+	/**
+	 * {@code true} = build a single TU of the {@code packingInstructions} without its LU (e.g. a TU whose TU packing is also on a pallet packing instruction).
+	 * Default: false
+	 */
+	@Nullable Boolean tuOnly;
+
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
 
@@ -72,6 +78,9 @@ public class JsonCreateHURequest
 	 */
 	@JsonIgnore
 	public int getSplitOutTUsCountAfterQRCodes() {return splitOutTUsCountAfterQRCodes != null ? splitOutTUsCountAfterQRCodes : 0;}
+
+	@JsonIgnore
+	public boolean isTuOnly() {return tuOnly != null && tuOnly;}
 
 	@JsonIgnore
 	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
