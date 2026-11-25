@@ -448,6 +448,8 @@ public class PackToHUsProducer
 
 				//
 				// LU
+				// the picked qty can be loose pieces (e.g. a VHU) => no source TU tells the LU item; if the LU's PI has no item without product, use the picked product's item
+				lutuProducer.setLUItemFallbackProductId(tuCapacity.getProductId());
 				LUPickingTarget.apply(lu, new LUPickingTarget.CaseConsumer()
 				{
 					@Override

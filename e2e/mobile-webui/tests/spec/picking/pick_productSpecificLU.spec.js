@@ -18,7 +18,8 @@ import { SelectPickTargetLUScreen } from "../../utils/screens/picking/SelectPick
 // TU source (sourceIsTU): a standalone TU of the picked product is picked into the new LU.
 // withXYPallet: one more pallet type "XY_LU" whose ONLY LU item is bound to product "XY" (40 TUs per LU), no generic item.
 // looseQty: the order line has no TU packing instruction, so the line is picked in CUs (loose quantity).
-const createMasterdata = async ({ pickedProduct, sourceIsTU = false, withXYPallet = false, looseQty = false }) => {
+// loosePieces: the line is picked in TUs (2 TUs = 8 pieces), but the stock is loose pieces: two VHUs ("HU1", "HU2") of 4 pieces each, not packed in a TU.
+const createMasterdata = async ({ pickedProduct, sourceIsTU = false, withXYPallet = false, looseQty = false, loosePieces = false }) => {
     const otherProduct = pickedProduct === 'XY' ? 'OTHER' : 'XY';
     return await Backend.createMasterdata({
         language: "en_US",
@@ -62,9 +63,14 @@ const createMasterdata = async ({ pickedProduct, sourceIsTU = false, withXYPalle
                 // A dedicated XY pallet type: linked to the TU only via an item for XY. The product "Z" is only its (unused) TU capacity entry.
                 ...(withXYPallet ? { "XY_PALLET": { lu: "XY_LU", qtyTUsPerLU: 40, luProduct: "XY", tu: "TU", product: "Z", qtyCUsPerTU: 4 } } : {}),
             },
-            handlingUnits: {
-                "HU1": { product: pickedProduct, warehouse: 'wh', packingInstructions: sourceIsTU ? 'TU_ONLY' : 'SRC' }, // a full SRC_LU (60 TUs) or one real TU
-            },
+            handlingUnits: loosePieces
+                ? {
+                    "HU1": { product: pickedProduct, warehouse: 'wh', qty: 4 }, // loose pieces (VHU), no packing instruction
+                    "HU2": { product: pickedProduct, warehouse: 'wh', qty: 4 },
+                }
+                : {
+                    "HU1": { product: pickedProduct, warehouse: 'wh', packingInstructions: sourceIsTU ? 'TU_ONLY' : 'SRC' }, // a full SRC_LU (60 TUs) or one real TU
+                },
             salesOrders: {
                 "SO1": {
                     bpartner: 'BP1',
@@ -72,7 +78,7 @@ const createMasterdata = async ({ pickedProduct, sourceIsTU = false, withXYPalle
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                     lines: [looseQty
                         ? { product: pickedProduct, qty: 200 } // no TU packing instruction => picked in CUs
-                        : { product: pickedProduct, qty: sourceIsTU ? 4 : 200, piItemProduct: 'TU' }] // 50 TUs, or 1 TU
+                        : { product: pickedProduct, qty: loosePieces ? 8 : (sourceIsTU ? 4 : 200), piItemProduct: 'TU' }] // 2 TUs, 1 TU or 50 TUs
                 }
             },
         }
@@ -287,5 +293,83 @@ test('Loose quantity: a pallet type linked to the TU only via product-specific i
     await PickingJobScreen.expectLUTargets({
         offered: [masterdata.packingInstructions.PI.luName],
         notOffered: [masterdata.packingInstructions.XY_PALLET.luName],
+    });
+});
+
+// Loose pieces (VHUs, not packed in a TU) picked into new TUs on an LU: the LU has no source TU to take its item from.
+// The pallet type's item without product is used first; only if the pallet type has none, the item for the picked product.
+// Two picks: the first builds the new LU, the second goes onto that (now existing) LU.
+const pickLoosePiecesOntoLU = async ({ masterdata, lu }) => {
+    const { pickingJobId } = await startPickingJob({ masterdata });
+    await PickingJobScreen.setTargetLU({ lu });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '2', qtyEntered: '1' }); // HU1 holds 1 TU (4 pieces)
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '1 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, expectQtyEntered: '1' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '2 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+    return { pickingJobId };
+}
+
+// noinspection JSUnusedLocalSymbols
+test('Loose pieces onto a pallet type with an item without product and an item for the product: the TUs go on the item without product (30 TUs)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick TUs into a new LU - product-specific LU item');
+    allure.severity('normal');
+
+    // pallet type "LU": item without product (30 TUs) + item for XY (40 TUs)
+    const masterdata = await createMasterdata({ pickedProduct: 'XY', loosePieces: true });
+    const { pickingJobId } = await pickLoosePiecesOntoLU({ masterdata, lu: masterdata.packingInstructions.PI.luName });
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    XY: {
+                        qtyPicked: [
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 1, lu: 'lu1' },
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 1, lu: 'lu1' },
+                        ]
+                    }
+                }
+            },
+        },
+        hus: {
+            lu1: { storages: { XY: '8 PCE' }, tus: [{ qtyTUs: 1, parentPIItemQtyTUs: 30 }, { qtyTUs: 1, parentPIItemQtyTUs: 30 }] },
+        }
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Loose pieces onto a pallet type with only an item for the product: the TUs go on that item (40 TUs)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick TUs into a new LU - product-specific LU item');
+    allure.severity('normal');
+
+    // pallet type "XY_LU": only an item for XY (40 TUs), no item without product
+    const masterdata = await createMasterdata({ pickedProduct: 'XY', withXYPallet: true, loosePieces: true });
+    const { pickingJobId } = await pickLoosePiecesOntoLU({ masterdata, lu: masterdata.packingInstructions.XY_PALLET.luName });
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    XY: {
+                        qtyPicked: [
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 1, lu: 'lu1' },
+                            { qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 1, lu: 'lu1' },
+                        ]
+                    }
+                }
+            },
+        },
+        hus: {
+            lu1: { storages: { XY: '8 PCE' }, tus: [{ qtyTUs: 1, parentPIItemQtyTUs: 40 }, { qtyTUs: 1, parentPIItemQtyTUs: 40 }] },
+        }
     });
 });
