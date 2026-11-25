@@ -249,3 +249,99 @@ Feature: Shipment line per box content
       | p_coo        | 5           | IT           |
       | p_coo        | 5           | DE           |
       | p_coo        | 4           | FR           |
+
+  @Id:BOX_LOT_95
+  Scenario: One box with three CUs of three lots ships as three product lines and one packing material line for the one box
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | pm_product95 |
+    And metasfresh contains M_HU_PackingMaterial:
+      | Identifier | M_Product_ID |
+      | pm95       | pm_product95 |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | box95_pi   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | box95_pi_Version   | box95_pi   | TU          | Y         |
+    # the box is made of one packing material (the box itself) and holds the goods
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID  | M_HU_PI_Version_ID | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
+      | box95_pi_item_mi | box95_pi_Version   |     | MI       |                                        |
+      | box95_pi_item_pm | box95_pi_Version   | 0   | PM       | pm95                                   |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID  | M_Product_ID | Qty | ValidFrom  |
+      | p_coo_box95_10CU        | box95_pi_item_mi | p_coo        | 10  | 2021-01-01 |
+    # moving packing material needs an empties warehouse for the shipping warehouse: add one to the shipped empties network
+    And load DD_NetworkDistribution:
+      | DD_NetworkDistribution_ID | Value   |
+      | emptiesNetwork            | Gebinde |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID |
+      | wh_empties95   |
+    And contains M_Shippers
+      | Identifier |
+      | shipper95  |
+    And metasfresh contains DD_NetworkDistributionLine
+      | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
+      | emptiesNetwork            | wh_empties95   | wh_box               | shipper95    |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lot1_95":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOT1"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lot2_95":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOT2"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lot3_95":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOT3"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_95         | 2022-12-12   | wh_box         |
+    # the goods are inventoried in plain CUs-in-TU without packing material; only the picking target box carries a packing material
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_l1   | inv_95         | p_coo        | 0       | 10       | PCE          | asi_lot1_95               | p_coo_box_10CU          |
+      | inv_l_l2   | inv_95         | p_coo        | 0       | 10       | PCE          | asi_lot2_95               | p_coo_box_10CU          |
+      | inv_l_l3   | inv_95         | p_coo        | 0       | 10       | PCE          | asi_lot3_95               | p_coo_box_10CU          |
+    When the inventory identified by inv_95 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_l1           | hu_l1   |
+      | inv_l_l2           | hu_l2   |
+      | inv_l_l3           | hu_l3   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_95      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_95_l1   | so_95      | p_coo        | 6          |
+    When the order identified by so_95 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_95      | so_95_l1       | N             |
+    # Three equal-quantity picks of three lots into ONE new box (one TU, not three)
+    When start picking job for sales order identified by so_95
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box95_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_l1      | 2         |
+      | p_coo                 | hu_l2      | 2         |
+      | p_coo                 | hu_l3      | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_95                 | inout_95   | CO        |
+    # three product lines, one per lot, and exactly ONE packing material line with quantity 1 (one box)
+    Then the shipment lines of inout_95 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer |
+      | p_coo        | 2           | LOT1            |
+      | p_coo        | 2           | LOT2            |
+      | p_coo        | 2           | LOT3            |
+      | pm_product95 | 1           |                 |
