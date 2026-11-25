@@ -706,6 +706,29 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ScanOnce
 	{
+		/** Scan once, over-pick prompt off: a pick above the line's quantity is refused with the over-delivery message and, as in Scan each CU, without the technical parameters. */
+		@Test
+		void lineDone_furtherPick_refused_noParametersInTheMessage()
+		{
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			helper.updateMobileProfile(profile -> profile.toBuilder()
+					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+							.isShowConfirmationPromptWhenOverPick(false)
+							.build())
+					.build());
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-SO");
+			PickingJob job = openTUFromLinePacking(createJob("salesOrderCU", tuPiipId, true, "2"));
+			job = pick(job, source, "2", label(PRODUCT_NO, LOT_A), false, null);
+			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
+			final PickingJob jobWhenDone = job;
+
+			assertThatThrownBy(() -> pick(jobWhenDone, source, "1", label(PRODUCT_NO, LOT_A), false, null))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PICK_OVERDELIVERY_BLOCKED.toAD_Message()))
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
+			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
+		}
+
 		/** TU line "TU x 4", Scan once, TU target from the line's packing, N=5: one TU on the line's PI with ONE CU of 5 carrying the label's lot and best-before. */
 		@Test
 		void tuLine_scanOnce_n5_oneTUOnLinePacking_oneCUOf5_withLotAndBestBefore()
@@ -1436,6 +1459,32 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(openTUId(job))).as("still 2 CUs").hasSize(2);
 			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source: only 2 taken").isEqualByComparingTo("98");
+		}
+
+		/**
+		 * Manual stays as before the CU quantity entry modes: with the over-pick prompt off, a pick above the line's quantity is refused with the
+		 * same over-delivery message, and its parameters are still appended to the message.
+		 */
+		@Test
+		void manual_overPickRefused_messageKeepsItsParameters()
+		{
+			setProfile(CUQtyEntryMode.MANUAL);
+			helper.updateMobileProfile(profile -> profile.toBuilder()
+					.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+							.isShowConfirmationPromptWhenOverPick(false)
+							.build())
+					.build());
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-MO");
+			PickingJob job = createJob("salesOrderCU", null, true, "2");
+			job = pick(job, source, "2", null, false, null);
+			assertThat(pickedQtyOfLine(job)).as("line done: 2 of 2").isEqualByComparingTo("2");
+			final PickingJob jobWhenDone = job;
+
+			assertThatThrownBy(() -> pick(jobWhenDone, source, "1", null, false, null))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PICK_OVERDELIVERY_BLOCKED.toAD_Message()))
+					.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).contains("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked"));
+			assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 		}
 
 		/** a line counted in kg is refused in Scan each CU (1 scan = 1 CU cannot be a kg quantity): the approved message, nothing booked. */

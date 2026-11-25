@@ -368,8 +368,8 @@ public class PickingJobPickCommand
 	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
 	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
-	 * guard. The refusal has one message in both cases; with the always-refusing CU mode the values go to the log only
-	 * (no parameter dump in the message the picker sees). Must run inside {@link #executeInTrx()}.
+	 * guard. The refusal has one message; in the label-based CU quantity entry modes the values go to the log only
+	 * (no parameter dump in the message the picker sees), Manual keeps the parameters in the message as before. Must run inside {@link #executeInTrx()}.
 	 */
 	private void assertNotAboveOrderedQty()
 	{
@@ -400,9 +400,9 @@ public class PickingJobPickCommand
 				.setParameter("qtyOrdered", line.getQtyToPick())
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
-		// Scan each CU always refuses, so a routine scan of the picker (a CU into a finished line) lands here:
-		// the values go to the log only, a parameter dump would make the toast taller than the handheld screen.
-		throw cuQtyEntryPolicy.isOverPickAlwaysRefused() ? exception : exception.appendParametersToMessage();
+		// Manual keeps its message as before (parameters appended). In the label-based modes a routine scan of the picker (a CU into a
+		// finished line) lands here: the values stay exception parameters (log / issue), not part of the text the picker reads.
+		throw cuQtyEntryPolicy.isLabelRequired() ? exception : exception.appendParametersToMessage();
 	}
 
 	public PickingJob execute()
