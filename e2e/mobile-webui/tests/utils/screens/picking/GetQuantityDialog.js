@@ -72,10 +72,6 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('lotNo')).toBeVisible();
     }),
 
-    expectLotNoValue: async (expected) => await test.step(`${NAME} - Expect LotNo value '${expected}'`, async () => {
-        await expect(page.getByTestId('lotNo')).toHaveValue(expected);
-    }),
-
     expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
         await expect(page.getByTestId('lotNo')).not.toBeVisible();
     }),

@@ -69,6 +69,7 @@ const allureMeta = (story) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
+    allure.tag('F17011: Shipment Line Attribute Propagation (ASI)');
     allure.tag('F17011');
     allure.story(story);
     allure.severity('normal');
@@ -76,8 +77,8 @@ const allureMeta = (story) => {
 
 /**
  * Asserts the shipment lines of SO1 in either order. The order of M_InOutLine.Line is not stable between runs when two
- * picks of different lots go into one shipment: seen 2026-11-25 on the fixed build, the LU test returned {3, L-B} first in one
- * run and {2, L-A} first in another. The expected lines are tried as given, then reversed; each line keeps its own
+ * picks of different lots go into one shipment: seen 2026-11-25 on the fixed build, the LU test matched {2, L-A} first in one run
+ * and returned {3, L-B} first in a full run. The expected lines are tried as given, then reversed; each line keeps its own
  * qty + attributes pairing and the line count stays exact, so a lot on the wrong quantity or an extra line still fails.
  * When both orders fail, the error carries both messages.
  */
@@ -225,7 +226,7 @@ test('lot field shown, picker clears it', async ({ page }) => {
     await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
     await GetQuantityDialog.waitForDialog();
     await GetQuantityDialog.expectLotNoVisible();
-    await GetQuantityDialog.expectLotNoValue('L-114'); // the field starts with the stock's lot, the picker then clears it
+    await GetQuantityDialog.expectLotNo('L-114'); // the field starts with the stock's lot, the picker then clears it
     await GetQuantityDialog.fillAndPressDone({ qtyEntered: 3, lotNo: '' });
     await PickingJobScreen.waitForScreen();
 
