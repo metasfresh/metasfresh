@@ -48,7 +48,7 @@ async function optionKey(option) {
 }
 
 // Scrollbars are hidden by default in Playwright's Chromium, so the scrollbar pin turns them on. `args` is a copy
-// of `launchOptions.args` of the `chromium` project in e2e/frontend-webui/playwright.config.js: keep them in sync.
+// of `projects["Desktop Chrome"].use.launchOptions.args` in e2e/frontend-webui/playwright.config.js: keep them in sync.
 test.use({
   launchOptions: {
     args: [
