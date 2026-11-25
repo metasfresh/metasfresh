@@ -162,7 +162,10 @@ const PickLineScanScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties: { entries: computeOpenTUHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
-    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode, 'data-cu-label-required': String(isLabelRequiredLine) },
+    rootDataAttributes: {
+      'data-cu-qty-entry-mode': cuQtyEntryMode,
+      'data-cu-label-required': String(isLabelRequiredLine),
+    },
     isLiveRefresh: isLabelRequiredLine,
   });
 
