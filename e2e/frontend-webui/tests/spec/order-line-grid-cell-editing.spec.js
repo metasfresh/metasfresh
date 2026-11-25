@@ -3,9 +3,11 @@ import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT, flushPendingUiTasks, waitForTypeaheadAnswer, waitForWebFonts } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, collectPageErrors, flushPendingUiTasks, waitForTypeaheadAnswer, waitForWebFonts } from '../utils/common';
 import { VIEWPORT, compareGeometry, measureRow } from '../utils/GridGeometry';
-import { createMasterdata } from '../utils/OrderLineHarness';
+import { ORDER_LINE_TAB_ID, createMasterdata } from '../utils/OrderLineHarness';
+import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { getTabRows } from '../utils/WebAPIValidation';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
@@ -394,6 +396,173 @@ Fresh browser, so no column width is stored and every column has its automatic w
 
       await test.info().attach('grid row after re-select', { body: await row.screenshot(), contentType: 'image/png' });
       expect.soft(compareGeometry('after re-select', COMBOBOX_COLUMN, before, await measureRow(row))).toEqual([]);
+    });
+  });
+});
+
+/**
+ * Pins (must pass on today's code): a list cell (C_PaymentTerm_Override_ID, a plain list column of the
+ * order-line grid). A static list cell has no list in the DOM: Enter (or a double click) mounts the editor
+ * without opening it, ArrowDown (or one click on the editor) opens the dropdown. Picks by keyboard or mouse
+ * save the value, Escape closes the dropdown with the value unchanged, and the grid keys keep working
+ * afterwards. The click-open reason: https://github.com/metasfresh/metasfresh-webui-frontend/issues/1712.
+ * Escape blurs the field by design, so the cursor is not asserted right after it.
+ */
+const LIST_COLUMN = 'C_PaymentTerm_Override_ID';
+const LIST_CELL = `[data-cy="cell-${LIST_COLUMN}"]`;
+const LIST_OPTION = '.input-dropdown-list-option[data-testid^="option-"]';
+
+async function savedListKey(recordId) {
+  const rows = (await getTabRows(SALES_ORDER_WINDOW_ID, recordId, ORDER_LINE_TAB_ID)) ?? [];
+  const key = rows[0]?.fieldsByName?.[LIST_COLUMN]?.value?.key;
+  return key === undefined || key === null ? null : String(key);
+}
+
+/** data-cy of the grid cell that holds the cursor, with the element for failure messages. */
+async function describeCursorCell(page) {
+  return await page.evaluate(() => {
+    const e = document.activeElement;
+    if (!e) return 'none';
+    const cell = e.closest('[data-cy^="cell-"]');
+    return `${e.tagName}${cell ? ' in ' + cell.getAttribute('data-cy') : ''}`;
+  });
+}
+
+const listLanguages = [
+  { language: 'en_US', label: 'English' },
+  { language: 'de_DE', label: 'German' },
+];
+
+listLanguages.forEach(({ language, label }) => {
+  test.describe(`Sales order-line grid — list cell (${label})`, () => {
+    const tag = (story) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order Window');
+      allure.tag('F00100');
+      allure.tag('F50000: Frontend WebUI');
+      allure.tag('F50000');
+      allure.story(story);
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.tag(language);
+    };
+
+    const start = async (page) => {
+      const masterdata = await createMasterdata(language);
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await SalesOrderPage.addOrderLine({ product: masterdata.products.Product1.productCode, quantity: 1, recordId });
+      const cell = page.locator(LIST_CELL).first();
+      await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      expect(await savedListKey(recordId), 'the new line has no value in the list column').toBeNull();
+      return { recordId, cell };
+    };
+
+    const OPENED = '.input-dropdown-container.opened';
+    const EDITOR = '.input-dropdown-container';
+
+    /** Wait until the dropdown is mounted with its options (Escape is handled only from then on). */
+    const waitForOptions = async (page, cell) => {
+      await expect(cell.locator(OPENED), 'list dropdown opened').toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator(LIST_OPTION).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    };
+
+    test(`list cell by keyboard: Enter opens, ArrowDown + Enter picks, Tab leaves, grid keys work (${label})`, async ({ page }) => {
+      tag('Grid list cell: keyboard open, pick and leave');
+      test.setTimeout(240000);
+      const errors = collectPageErrors(page);
+      const { recordId, cell } = await start(page);
+
+      await cell.click();
+      await page.keyboard.press('Enter');
+      await expect(cell.locator(EDITOR), 'Enter mounts the list editor').toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(cell.locator(OPENED), 'Enter alone does not open the dropdown').toHaveCount(0);
+      await page.keyboard.press('ArrowDown');
+      await waitForOptions(page, cell);
+      await page.keyboard.press('ArrowDown');
+      const highlighted = page.locator('.input-dropdown-list-option-key-on');
+      await expect(highlighted, 'ArrowDown highlights an option').toHaveCount(1);
+      const key = (await highlighted.getAttribute('data-testid')).replace(/^option-/, '');
+      await page.keyboard.press('Enter');
+      await expect(page.locator('.input-dropdown-list'), 'the dropdown closes after Enter').toHaveCount(0, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(1000);
+      const afterTab = await describeCursorCell(page);
+      expect(afterTab, `after Tab the cursor left the list cell: ${afterTab}`).not.toContain(`cell-${LIST_COLUMN}`);
+      expect(afterTab, `after Tab the cursor is in a grid cell: ${afterTab}`).toContain('in cell-');
+
+      await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(1000);
+      const afterLeft = await describeCursorCell(page);
+      expect(afterLeft, `ArrowLeft moves the cursor back to the list cell: ${afterLeft}`).toContain(`cell-${LIST_COLUMN}`);
+
+      await expect.poll(() => savedListKey(recordId), { timeout: SLOW_ACTION_TIMEOUT, message: 'the picked value is saved' }).toBe(key);
+      expect(errors).toEqual([]);
+    });
+
+    test(`list cell Escape: closes, value unchanged, grid keys work (${label})`, async ({ page }) => {
+      tag('Grid list cell: Escape closes without a change');
+      test.setTimeout(240000);
+      const errors = collectPageErrors(page);
+      const { recordId, cell } = await start(page);
+
+      await cell.click();
+      await page.keyboard.press('Enter');
+      await expect(cell.locator(EDITOR), 'Enter mounts the list editor').toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await page.keyboard.press('ArrowDown');
+      await waitForOptions(page, cell);
+      await page.keyboard.press('Escape');
+
+      for (const waitMs of [0, 1000]) {
+        await page.waitForTimeout(waitMs);
+        await expect(cell.locator(OPENED), `closed after Escape (+${waitMs} ms)`).toHaveCount(0);
+        await expect(page.locator('.input-dropdown-list'), `no dropdown list after Escape (+${waitMs} ms)`).toHaveCount(0);
+      }
+      expect(await savedListKey(recordId), 'Escape leaves the value unchanged').toBeNull();
+
+      // grid keys work again: click the cell (selects it), then ArrowLeft moves to the previous cell
+      await cell.click();
+      await expect(cell.locator(OPENED), 'one click on the cell does not open the list').toHaveCount(0);
+      await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(1000);
+      const afterLeft = await describeCursorCell(page);
+      expect(afterLeft, `ArrowLeft moves the cursor off the list cell: ${afterLeft}`).not.toContain(`cell-${LIST_COLUMN}`);
+      expect(afterLeft, `ArrowLeft lands in a grid cell: ${afterLeft}`).toContain('in cell-');
+      expect(await savedListKey(recordId), 'the value is still unchanged').toBeNull();
+      expect(errors).toEqual([]);
+    });
+
+    test(`list cell by mouse: double click mounts the editor, one click on it opens, a click picks (${label})`, async ({ page }) => {
+      tag('Grid list cell: click-open and mouse pick');
+      test.setTimeout(240000);
+      const errors = collectPageErrors(page);
+      const { recordId, cell } = await start(page);
+
+      await cell.dblclick();
+      await expect(cell.locator(EDITOR), 'a double click mounts the list editor').toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(cell.locator(OPENED), 'the double click does not open the dropdown').toHaveCount(0);
+      await cell.locator(EDITOR).click();
+      await waitForOptions(page, cell);
+
+      const option = page.locator(LIST_OPTION).nth(1);
+      await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const key = (await option.getAttribute('data-testid')).replace(/^option-/, '');
+      await option.click();
+      await expect(page.locator('.input-dropdown-list'), 'the dropdown closes after the pick').toHaveCount(0, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await page.waitForTimeout(1000);
+      await expect(cell.locator(OPENED), 'still closed after 1000 ms').toHaveCount(0);
+      await expect.poll(() => savedListKey(recordId), { timeout: SLOW_ACTION_TIMEOUT, message: 'the picked value is saved' }).toBe(key);
+      expect(errors).toEqual([]);
     });
   });
 });
