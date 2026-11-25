@@ -90,12 +90,15 @@ export function armHeaderReload(recorder) {
   return { frameIdx: recorder.frames.length, respIdx: recorder.responses.length };
 }
 
-const matchesDoc = (frame, windowId, recordId) =>
-  frame.destination === `/document/${windowId}/${recordId}`;
+// requireIncludedTabs: only a frame that also carries includedTabsInfo (the line-save reload) counts,
+// so a late header-only frame of an earlier step cannot satisfy a line-save wait.
+const matchesDoc = (frame, windowId, recordId, requireIncludedTabs = false) =>
+  frame.destination === `/document/${windowId}/${recordId}` &&
+  (!requireIncludedTabs || !!frame.payload?.includedTabsInfo);
 
 /** True if a header-reload frame for the document was recorded after the mark (no waiting). */
-export function hasReloadSince(recorder, mark, { windowId, recordId }) {
-  return recorder.frames.slice(mark.frameIdx).some((f) => matchesDoc(f, windowId, recordId));
+export function hasReloadSince(recorder, mark, { windowId, recordId, requireIncludedTabs = false }) {
+  return recorder.frames.slice(mark.frameIdx).some((f) => matchesDoc(f, windowId, recordId, requireIncludedTabs));
 }
 
 /** Wait for the stale frame and the header GET that follows it, then for the rendering to settle. */
@@ -103,24 +106,24 @@ export async function awaitHeaderReload(
   page,
   recorder,
   mark,
-  { windowId, recordId, timeout = SLOW_ACTION_TIMEOUT, step = 'header reload' }
+  { windowId, recordId, requireIncludedTabs = false, timeout = SLOW_ACTION_TIMEOUT, step = 'header reload' }
 ) {
   const deadline = Date.now() + timeout;
-  const fail = () =>
+  const failWith = (missing) =>
     new Error(
-      `${step}: no header reload (stale event + GET /window/${windowId}/${recordId}) within ${timeout} ms; unparsable frames: ${recorder.parseErrors}`
+      `${step}: no header reload (${missing}) within ${timeout} ms; stale frames recorded after the mark: ${recorder.frames.length - mark.frameIdx}; unparsable frames: ${recorder.parseErrors}`
     );
 
   let frame;
-  while (!(frame = recorder.frames.slice(mark.frameIdx).find((f) => matchesDoc(f, windowId, recordId)))) {
-    if (Date.now() > deadline) throw fail();
+  while (!(frame = recorder.frames.slice(mark.frameIdx).find((f) => matchesDoc(f, windowId, recordId, requireIncludedTabs)))) {
+    if (Date.now() > deadline) throw failWith(`no stale event for /document/${windowId}/${recordId}`);
     await page.waitForTimeout(100);
   }
 
   let resp;
   const pathOk = (p) => p.endsWith(`/window/${windowId}/${recordId}`) || p.endsWith(`/window/${windowId}/${recordId}/`);
   while (!(resp = recorder.responses.slice(mark.respIdx).find((r) => pathOk(r.path) && r.t >= frame.t))) {
-    if (Date.now() > deadline) throw fail();
+    if (Date.now() > deadline) throw failWith(`stale event seen, but no GET /window/${windowId}/${recordId} after it; GETs recorded after the mark: ${recorder.responses.length - mark.respIdx}`);
     await page.waitForTimeout(100);
   }
 
@@ -174,8 +177,8 @@ export async function expectFocusHeld(locator, millis, description) {
 }
 
 /** awaitHeaderReload, then the cursor must be in the field and stay there for 1000 ms. */
-export async function expectFocusAfterReload(locator, page, recorder, mark, { windowId, recordId }, description) {
-  await awaitHeaderReload(page, recorder, mark, { windowId, recordId, step: description });
+export async function expectFocusAfterReload(locator, page, recorder, mark, { windowId, recordId, requireIncludedTabs }, description) {
+  await awaitHeaderReload(page, recorder, mark, { windowId, recordId, requireIncludedTabs, step: description });
   await expectFocusOn(locator, description);
   await expectFocusHeld(locator, 1000, description);
 }
@@ -269,7 +272,11 @@ export async function enterLinesKeyboardOnly({
     await expectFocusOn(productInput, `opened line ${n}: cursor in Produkt`);
     await page.keyboard.type(products[i], { delay: 30 });
     try {
-      await page.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page
+        .locator('.input-dropdown-list-option')
+        .filter({ hasText: products[i] })
+        .first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     } catch (error) {
       // No option: if the cursor left Produkt while typing, name the field that holds it.
       if (!(await isFocused(productInput))) {
@@ -277,11 +284,26 @@ export async function enterLinesKeyboardOnly({
       }
       throw error;
     }
+    // The article Enter is not always followed by a header reload (none on line 1 in several runs):
+    // wait for the article PATCH, check the cursor, and only re-check after a reload that did come.
     let mark = armHeaderReload(recorder);
+    const articlePatch = page.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && /\/quickInput\/[^/]+$/.test(new URL(r.url()).pathname),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
     await page.keyboard.press('Enter');
+    await articlePatch;
+    const afterArticle = packingInstructionsField === 'Y' ? piInput : qtyInput;
+    const afterArticleName = packingInstructionsField === 'Y' ? 'Packvorschrift' : 'Menge';
+    await expectFocusOn(afterArticle, `after article Enter, line ${n}: cursor in ${afterArticleName}`);
+    await expectFocusHeld(afterArticle, 1000, `after article Enter, line ${n}: cursor stays in ${afterArticleName}`);
+    if (hasReloadSince(recorder, mark, doc)) {
+      await awaitHeaderReload(page, recorder, mark, { ...doc, step: `after article Enter, line ${n}` });
+      await expectFocusOn(afterArticle, `after article reload, line ${n}: cursor in ${afterArticleName}`);
+      await expectFocusHeld(afterArticle, 1000, `after article reload, line ${n}: cursor stays in ${afterArticleName}`);
+    }
 
     if (packingInstructionsField === 'Y') {
-      await expectFocusAfterReload(piInput, page, recorder, mark, doc, `after article Enter, line ${n}: cursor in Packvorschrift`);
       mark = armHeaderReload(recorder);
       await page.keyboard.press('Enter'); // empty Packvorschrift
       await expectFocusOn(qtyInput, `after Packvorschrift Enter, line ${n}: cursor in Menge`);
@@ -291,15 +313,15 @@ export async function enterLinesKeyboardOnly({
         await expectFocusOn(qtyInput, `after Packvorschrift reload, line ${n}: cursor in Menge`);
         await expectFocusHeld(qtyInput, 1000, `after Packvorschrift reload, line ${n}: cursor stays in Menge`);
       }
-    } else {
-      await expectFocusAfterReload(qtyInput, page, recorder, mark, doc, `after article Enter, line ${n}: cursor in Menge`);
     }
 
+    await expectFocusOn(qtyInput, `before typing quantity, line ${n}: cursor in Menge`);
     await page.keyboard.type(String(qtys[i]), { delay: 30 });
+    // Own mark right before the quantity Enter: only the line-save reload (it carries includedTabsInfo) counts.
     mark = armHeaderReload(recorder);
     await page.keyboard.press('Enter');
     await expect(page.locator(ORDER_LINE_GRID_ROWS)).toHaveCount(rowsBefore + n, { timeout: SLOW_ACTION_TIMEOUT });
-    await expectFocusAfterReload(productInput, page, recorder, mark, doc, `back in Produkt after line ${n}`);
+    await expectFocusAfterReload(productInput, page, recorder, mark, { ...doc, requireIncludedTabs: true }, `back in Produkt after line ${n}`);
   }
 }
 
