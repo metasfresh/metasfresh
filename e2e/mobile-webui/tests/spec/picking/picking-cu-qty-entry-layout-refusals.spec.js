@@ -287,7 +287,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('Each scan screen of job 2, TU open');
             await scanPack(label);
             await PickingJobScreen.waitForScreen();
-            await layout('Each job screen of job 2 after the same pack booked without a warning');
+            await layout('Each job screen of job 2 after the same CU booked without a warning');
         });
 
         // pallet target and TU packing, both modes

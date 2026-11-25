@@ -1,4 +1,4 @@
--- CU quantity entry: 'Scan each CU' is refused on a picking line whose unit (C_UOM.X12DE355) is not PCE (one scan = one pack cannot be a kg quantity).
+-- CU quantity entry: 'Scan each CU' is refused on a picking line whose unit (C_UOM.X12DE355) is not PCE (one scan = one CU cannot be a kg quantity).
 -- New: AD_Message de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES (+ AD_Message_Trl de_DE / en_US / de_CH)
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546022 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-21 01:30:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','''Jede CU einzeln scannen'' funktioniert nur für Zeilen, die in Stück geführt werden. Bitte beim Administrator die CU-Mengenerfassung für diesen Kunden auf ''Manuell'' oder ''Einmal scannen, Menge eingeben'' umstellen lassen.','E',TO_TIMESTAMP('2026-11-21 01:30:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES')

@@ -181,9 +181,9 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickLineScanScreen.openTU();
                 await layout('Each scan screen, TU open');
                 await scanPack(pack(1));
-                await layout('Each scan screen after a pack was booked');
+                await layout('Each scan screen after a CU was booked');
                 await PickLineScanScreen.scanCULabelRefused(pack(1), T.alreadyPicked, {
-                    whileToastShown: async () => await layout('Each refusal pack already picked (scan screen + toast)'),
+                    whileToastShown: async () => await layout('Each refusal CU already picked (scan screen + toast)'),
                 });
                 await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, gtin, packId: null }), T.noPackId, {
                     whileToastShown: async () => await layout('Each refusal label without pack ID (scan screen + toast)'),

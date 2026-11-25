@@ -128,7 +128,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout('mixed: Each scan screen, no TU open');
                 await PickLineScanScreen.openTU();
                 await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
-                await layout('mixed: Each scan screen after a pack was booked');
+                await layout('mixed: Each scan screen after a CU was booked');
                 await PickLineScanScreen.goBack();
                 await PickingJobLineScreen.waitForScreen();
                 await layout('mixed: Each line screen with a booked TU');
