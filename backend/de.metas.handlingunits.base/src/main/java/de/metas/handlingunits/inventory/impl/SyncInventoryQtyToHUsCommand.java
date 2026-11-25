@@ -30,8 +30,6 @@ import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryLinePackingInstructions;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -42,7 +40,6 @@ import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryAndLineId;
 import de.metas.inventory.InventoryAndLineIdSet;
@@ -101,7 +98,6 @@ public class SyncInventoryQtyToHUsCommand
 	private final Inventory inventory;
 
 	private static final String SYSCONFIG_IgnoreOnInventoryMinusAndNoHU = "inventory.IgnoreOnInventoryMinusAndNoHU";
-	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	private Map<InventoryAndLineId, I_M_InventoryLine> inventoryLineRecords; // lazy
 
@@ -455,8 +451,7 @@ public class SyncInventoryQtyToHUsCommand
 					final HuPackingInstructionsId luPIId = packingInstructions.getLuPIId();
 					if (luPIId != null)
 					{
-						lutuProducer.setLUPI(luPIId);
-						lutuProducer.setLUItemPI(retrieveLUItemForProduct(luPIId, lutuProducer.getTUPI(), inventoryLine.getProductId()));
+						lutuProducer.setLUPIAndItemForProduct(luPIId, inventoryLine.getProductId());
 						lutuProducer.setMaxLUsInfinite();
 					}
 					else
@@ -473,20 +468,6 @@ public class SyncInventoryQtyToHUsCommand
 			final I_M_HU hu = handlingUnitsBL.getById(inventoryLineHU.getHuId());
 			return HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
 		}
-	}
-
-	/**
-	 * The pallet item the TUs of the given product hang on: the product's own item if the pallet packing instruction has one for that TU, else the generic item.
-	 */
-	private I_M_HU_PI_Item retrieveLUItemForProduct(
-			@NonNull final HuPackingInstructionsId luPIId,
-			@NonNull final I_M_HU_PI tuPI,
-			@NonNull final ProductId productId)
-	{
-		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
-		return handlingUnitsBL.retrieveFirstPIItem(luPIId, tuPIId, null, productId)
-				.orElseThrow(() -> new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, handlingUnitsBL.getPIName(luPIId), tuPI.getName())
-						.markAsUserValidationError());
 	}
 
 	private static List<I_M_HU> extractCreatedHUs(

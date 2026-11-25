@@ -1062,16 +1062,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
 	}
 
-	@Override
-	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
-			@NonNull final HuPackingInstructionsId piId,
-			@NonNull final HuPackingInstructionsId includedPIId,
-			@Nullable final BPartnerId bpartnerId,
-			@Nullable final ProductId productId)
-	{
-		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId, productId);
-	}
-
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)

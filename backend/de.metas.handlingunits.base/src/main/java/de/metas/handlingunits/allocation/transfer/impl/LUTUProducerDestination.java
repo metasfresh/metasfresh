@@ -422,11 +422,7 @@ public class LUTUProducerDestination
 	{
 		if (_luPIItem == null && _luPI != null && tuPI != null)
 		{
-			final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(_luPI.getM_HU_PI_ID());
-			final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
-			final BPartnerId bpartnerId = getBPartnerId();
-			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
-					.orElseThrow(() -> newLUHasNoTUSubPackInstrException(_luPI, tuPI));
+			_luPIItem = retrieveLUItem(_luPI, tuPI, null);
 		}
 		return _luPIItem;
 	}
@@ -446,16 +442,45 @@ public class LUTUProducerDestination
 		Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
 
 		final I_M_HU_PI tuPI = getSourceTUPI(sourceHUs.get(0));
-		final I_M_HU_PI_Item luItem = handlingUnitsDAO.retrieveFirstPIItem(
-						HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()),
-						HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
-						getBPartnerId(),
-						getSingleProductIdOrNull(sourceHUs))
-				.orElseThrow(() -> newLUHasNoTUSubPackInstrException(luPI, tuPI));
+		final I_M_HU_PI_Item luItem = retrieveLUItem(luPI, tuPI, getSingleProductIdOrNull(sourceHUs));
 
 		setLUPI(luPI);
 		setLUItemPI(luItem);
 		setTUPI(luItem.getIncluded_HU_PI());
+	}
+
+	/**
+	 * Sets the LU PI together with its item for the TUs of the given product: the item of {@code luPIId} for the TU packing instruction
+	 * set before ({@link #setTUPI(I_M_HU_PI)}) and that product; if there is none, the generic item.
+	 * Call it after {@link #setTUPI(I_M_HU_PI)} and after {@link #setBPartnerId(BPartnerId)}, because the item can be partner-specific.
+	 *
+	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if {@code luPIId} has no item for that TU packing instruction
+	 */
+	public void setLUPIAndItemForProduct(@NonNull final HuPackingInstructionsId luPIId, @Nullable final ProductId productId)
+	{
+		final I_M_HU_PI tuPI = Check.assumeNotNull(getTUPI(), "TU PI is set before the LU PI and item");
+		final I_M_HU_PI luPI = handlingUnitsBL.getPI(luPIId);
+
+		setLUPI(luPI);
+		setLUItemPI(retrieveLUItem(luPI, tuPI, productId));
+	}
+
+	/**
+	 * @return the item of {@code luPI} that takes TUs of {@code tuPI}: the one for {@code productId} if there is one, else the generic one
+	 * @throws HUException {@link #ERR_LU_HAS_NO_TU_SUB_PACK_INSTR} (user error) if there is none
+	 */
+	private I_M_HU_PI_Item retrieveLUItem(@NonNull final I_M_HU_PI luPI, @NonNull final I_M_HU_PI tuPI, @Nullable final ProductId productId)
+	{
+		return handlingUnitsDAO.retrieveFirstPIItem(
+						HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()),
+						HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()),
+						getBPartnerId(),
+						productId)
+				.orElseThrow(() -> {
+					final HUException exception = new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, luPI.getName(), tuPI.getName());
+					exception.markAsUserValidationError();
+					return exception;
+				});
 	}
 
 	private I_M_HU_PI getSourceTUPI(@NonNull final I_M_HU sourceHU)
@@ -485,13 +510,6 @@ public class LUTUProducerDestination
 			productIds.add(productId);
 		}
 		return productIds.size() == 1 ? productIds.iterator().next() : null;
-	}
-
-	private static HUException newLUHasNoTUSubPackInstrException(@NonNull final I_M_HU_PI luPI, @NonNull final I_M_HU_PI tuPI)
-	{
-		final HUException exception = new HUException(ERR_LU_HAS_NO_TU_SUB_PACK_INSTR, luPI.getName(), tuPI.getName());
-		exception.markAsUserValidationError();
-		return exception;
 	}
 
 	@Override
