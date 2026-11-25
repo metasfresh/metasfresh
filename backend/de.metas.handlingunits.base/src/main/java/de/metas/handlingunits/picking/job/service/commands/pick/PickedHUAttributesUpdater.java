@@ -59,6 +59,10 @@ class PickedHUAttributesUpdater
 		lu.getTus().forEach(tu -> updateTUPickAttributes(tu, pickAttributes, serialNoPickingEnabled));
 
 		updateHUPickAttributes(lu.toHU(), pickAttributes, lu.isPreExistingLU(), serialNoPickingEnabled);
+		if (lu.isPreExistingLU())
+		{
+			recomputeLotAndBestBeforeFromChildrenIfNotSet(lu.toHU(), pickAttributes);
+		}
 	}
 
 	private void updateTUPickAttributes(@NonNull final TU tu, @NonNull final PickAttributes pickAttributes, final boolean serialNoPickingEnabled)
@@ -75,17 +79,12 @@ class PickedHUAttributesUpdater
 			}
 
 			updateHUPickAttributes(tu.toHU(), pickAttributes, true, serialNoPickingEnabled);
-			recomputeBoxLotAndBestBeforeIfNotSent(tu.toHU(), pickAttributes);
+			recomputeLotAndBestBeforeFromChildrenIfNotSet(tu.toHU(), pickAttributes);
 		}
 	}
 
-	/**
-	 * When the picker did not send a lot / best-before date (the quantity dialog did not show the field), the CUs keep the value copied from the
-	 * scanned stock unit, but the box (TU) can hold CUs from earlier picks: its value has to follow all its CUs
-	 * (one common value: that value; different values: empty), not stay at what the first CU gave it.
-	 * Values that are sent are handled by {@link #updateHUPickAttributes}.
-	 */
-	private void recomputeBoxLotAndBestBeforeIfNotSent(@NonNull final I_M_HU tu, @NonNull final PickAttributes pickAttributes)
+	/** For lot and best-before date, each one not set in {@code pickAttributes}: sets the value of {@code hu} from its children (the one common value, else null). */
+	private void recomputeLotAndBestBeforeFromChildrenIfNotSet(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes)
 	{
 		final boolean recomputeLotNo = !pickAttributes.isSetLotNo();
 		final boolean recomputeBestBeforeDate = !pickAttributes.isSetBestBeforeDate();
@@ -94,16 +93,16 @@ class PickedHUAttributesUpdater
 			return;
 		}
 
-		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(tu);
+		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
 		huAttributes.setSaveOnChange(true);
 
 		if (recomputeBestBeforeDate && huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
 		{
-			huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+			setBestBeforeDateFromChildren(huAttributes);
 		}
 		if (recomputeLotNo && huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 		{
-			huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
+			setLotNoFromChildren(huAttributes);
 		}
 	}
 
@@ -129,7 +128,7 @@ class PickedHUAttributesUpdater
 		{
 			if (recomputeFromChildren)
 			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+				setBestBeforeDateFromChildren(huAttributes);
 			}
 			else
 			{
@@ -151,7 +150,7 @@ class PickedHUAttributesUpdater
 		{
 			if (recomputeFromChildren)
 			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
+				setLotNoFromChildren(huAttributes);
 			}
 			else
 			{
@@ -178,6 +177,16 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
 		}
+	}
+
+	private static void setBestBeforeDateFromChildren(@NonNull final IAttributeStorage huAttributes)
+	{
+		huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+	}
+
+	private static void setLotNoFromChildren(@NonNull final IAttributeStorage huAttributes)
+	{
+		huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
 	}
 
 	@Nullable

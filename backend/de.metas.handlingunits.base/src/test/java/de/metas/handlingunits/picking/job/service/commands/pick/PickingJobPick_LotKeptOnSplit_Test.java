@@ -23,6 +23,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
@@ -56,11 +57,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Pick from a virtual stock CU that carries a lot number and a
  * best-before date, once into a new TU (box) and once without a TU.
  * <ul>
- * <li>Lot / best-before field hidden by the picking profile: the mobile UI sends no lot / best-before flag
- * ({@code isSetLotNo=false}); the picked CU keeps the values of the CU it was split from.</li>
- * <li>Field shown and cleared by the picker: the UI sends {@code isSetLotNo=true, lotNo=null}; the picked CU is cleared.</li>
- * <li>A second pick into the same box: the box lot follows its CUs (one lot: that lot; mixed lots: empty),
- * also when no lot flag is sent.</li>
+ * <li>No lot / best-before flag set ({@code isSetLotNo=false}, {@code isSetBestBeforeDate=false}): the picked CU keeps the values of the CU it was split from.</li>
+ * <li>Flag set with a null value ({@code isSetLotNo=true, lotNo=null}): the picked CU is cleared.</li>
+ * <li>A second pick into the same box or into a pre-existing LU, no flag set: the box / LU lot and best-before date
+ * follow their CUs (one value: that value; mixed values: empty).</li>
  * </ul>
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -82,6 +82,28 @@ class PickingJobPick_LotKeptOnSplit_Test
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = huTestHelper.handlingUnitsBL();
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+	}
+
+	private ProductId createProduct()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P-LOT", helper.uomEach);
+		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("Cat", null).getRepoId());
+		InterfaceWrapperHelper.save(product);
+		return productId;
+	}
+
+	private PickingJob createPickingJob(@NonNull final OrderAndLineId orderAndLineId, final boolean allowAnyHU)
+	{
+		return helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.SALES_ORDER)
+								.pickerId(UserId.ofRepoId(1234))
+								.salesOrderId(orderAndLineId.getOrderId())
+								.deliveryBPLocationId(helper.shipToBPLocationId)
+								.isAllowPickingAnyHU(allowAnyHU)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 	}
 
 	private HuPackingInstructionsId createKartonPI(@NonNull final I_M_Product product)
@@ -133,12 +155,8 @@ class PickingJobPick_LotKeptOnSplit_Test
 	})
 	void pick3FromStockCU(final boolean intoKarton, final boolean pickerClearedFields)
 	{
-		final ProductId productId = BusinessTestHelper.createProductId("P-LOT", helper.uomEach);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("Cat", null).getRepoId());
-		InterfaceWrapperHelper.save(product);
-
-		final HuPackingInstructionsId kartonPI = createKartonPI(product);
+		final ProductId productId = createProduct();
+		final HuPackingInstructionsId kartonPI = createKartonPI(InterfaceWrapperHelper.load(productId, I_M_Product.class));
 		final HUInfo stockCU = helper.createVHUInfo(productId, "114", "QR-STOCK-CU");
 		setLot(stockCU.getId(), LOT);
 		setBestBefore(stockCU.getId(), BEST_BEFORE);
@@ -148,15 +166,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("SO-LOT");
 		helper.packageable().orderAndLineId(orderAndLineId).productId(productId).qtyToDeliver("3").build();
 
-		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.SALES_ORDER)
-								.pickerId(UserId.ofRepoId(1234))
-								.salesOrderId(orderAndLineId.getOrderId())
-								.deliveryBPLocationId(helper.shipToBPLocationId)
-								.isAllowPickingAnyHU(false)
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
+		PickingJob pickingJob = createPickingJob(orderAndLineId, false);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		if (intoKarton)
 		{
@@ -182,6 +192,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		final List<PickingJobStepPickedToHU> picked = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo().getActualPickedHUs();
 		final HuId pickedHUId = CollectionUtils.singleElement(picked).getActualPickedHU().getId();
 		final HuId pickedCUId;
+		HuId boxId = null;
 		if (intoKarton)
 		{
 			// the picked-to HU is the CU (a TU part); its parent is the new Karton TU
@@ -201,12 +212,11 @@ class PickingJobPick_LotKeptOnSplit_Test
 				tuId = pickedHUId;
 			}
 			assertThat(handlingUnitsBL.isTransportUnit(handlingUnitsBL.getById(tuId))).as("new Karton TU (not virtual)").isTrue();
-			System.out.println("LOTREPRO box=true cleared=" + pickerClearedFields + ": TU " + tuId + " lot=" + getLot(tuId) + " / CU " + pickedCUId + " lot=" + getLot(pickedCUId));
+			boxId = tuId;
 		}
 		else
 		{
 			pickedCUId = pickedHUId;
-			System.out.println("LOTREPRO box=false cleared=" + pickerClearedFields + ": CU " + pickedCUId + " lot=" + getLot(pickedCUId));
 		}
 
 		assertThat(pickedCUId).as("a new CU was split off").isNotEqualTo(stockCU.getId());
@@ -216,61 +226,110 @@ class PickingJobPick_LotKeptOnSplit_Test
 		{
 			assertThat(getLot(pickedCUId)).as("picked CU lot, cleared on purpose").isNullOrEmpty();
 			assertThat(getBestBefore(pickedCUId)).as("picked CU best-before date, cleared on purpose").isNull();
+			if (boxId != null)
+			{
+				assertThat(getLot(boxId)).as("box lot, cleared on purpose").isNullOrEmpty();
+				assertThat(getBestBefore(boxId)).as("box best-before date, cleared on purpose").isNull();
+			}
 		}
 		else
 		{
 			assertThat(getLot(pickedCUId)).as("picked CU lot (box=" + intoKarton + ")").isEqualTo(LOT);
 			assertThat(getBestBefore(pickedCUId)).as("picked CU best-before date (box=" + intoKarton + ")").isEqualTo(BEST_BEFORE);
+			if (boxId != null)
+			{
+				assertThat(getLot(boxId)).as("box lot, kept").isEqualTo(LOT);
+				assertThat(getBestBefore(boxId)).as("box best-before date, kept").isEqualTo(BEST_BEFORE);
+			}
 		}
 	}
 
 	/**
-	 * Two picks of 3 into the same Karton, from two stock CUs (lots LOT-A and the second lot), no lot flag sent (field hidden).
-	 * The second pick lets the box lot follow its CUs: same lot twice, the lot; two lots, empty (never the first lot).
+	 * Two picks of 3 into the same Karton, from two stock CUs (first CU: {@link #LOT} / {@link #BEST_BEFORE}), no flag set.
+	 * The second pick lets the box lot and best-before date follow its CUs: same value twice, that value; two values, empty (never the first value).
 	 */
-	@ParameterizedTest(name = "secondLot={0}, expectedBoxLot={1}")
+	@ParameterizedTest(name = "secondLot={0}, secondBestBefore={2}: expectedBoxLot={1}, expectedBoxBestBefore={3}")
 	@CsvSource(value = {
-			"LOT-A, LOT-A",
-			"999999, ''",
-	})
-	void secondPickIntoSameBox_boxLotFollowsItsCUs(final String secondLot, final String expectedBoxLot)
+			"LOT-A,  LOT-A, 2027-01-31, 2027-01-31",
+			"999999, null,  2027-01-31, 2027-01-31",
+			"LOT-A,  LOT-A, 2027-02-28, null",
+	}, nullValues = "null")
+	void secondPickIntoSameBox_boxLotFollowsItsCUs(final String secondLot, final String expectedBoxLot, final LocalDate secondBestBefore, final LocalDate expectedBoxBestBefore)
 	{
-		final ProductId productId = BusinessTestHelper.createProductId("P-LOT", helper.uomEach);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("Cat", null).getRepoId());
-		InterfaceWrapperHelper.save(product);
-
-		final HuPackingInstructionsId kartonPI = createKartonPI(product);
-		final HUInfo stockCU1 = helper.createVHUInfo(productId, "114", "QR-STOCK-CU-1");
-		final HUInfo stockCU2 = helper.createVHUInfo(productId, "114", "QR-STOCK-CU-2");
-		setLot(stockCU1.getId(), LOT);
-		setLot(stockCU2.getId(), secondLot);
+		final ProductId productId = createProduct();
+		final HuPackingInstructionsId kartonPI = createKartonPI(InterfaceWrapperHelper.load(productId, I_M_Product.class));
+		final HUInfo stockCU1 = createStockCU(productId, "QR-STOCK-CU-1", LOT, BEST_BEFORE);
+		final HUInfo stockCU2 = createStockCU(productId, "QR-STOCK-CU-2", secondLot, secondBestBefore);
 
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("SO-LOT-2");
 		helper.packageable().orderAndLineId(orderAndLineId).productId(productId).qtyToDeliver("6").build();
 
-		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.SALES_ORDER)
-								.pickerId(UserId.ofRepoId(1234))
-								.salesOrderId(orderAndLineId.getOrderId())
-								.deliveryBPLocationId(helper.shipToBPLocationId)
-								.isAllowPickingAnyHU(true) // no plan: every scanned stock CU is picked on the fly
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
-		final List<PickingJobLine> lines = pickingJob.getLines();
-		assertThat(lines).hasSize(1);
+		PickingJob pickingJob = createPickingJob(orderAndLineId, true); // no plan: every scanned stock CU is picked on the fly
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		pickingJob = helper.pickingJobService.setTUPickingTarget(pickingJob, null, TUPickingTarget.ofPackingInstructions(kartonPI, "Karton"));
 
-		pickingJob = pickFromStockCU(pickingJob, lines.get(0), stockCU1);
-		pickingJob = pickFromStockCU(pickingJob, lines.get(0), stockCU2);
+		pickingJob = pickFromStockCU(pickingJob, line, stockCU1);
+		pickingJob = pickFromStockCU(pickingJob, line, stockCU2);
 
-		final HuId boxId = pickingJob.getTuPickingTargetEffective(lines.get(0).getId())
+		final HuId boxId = pickingJob.getTuPickingTargetEffective(line.getId())
 				.map(TUPickingTarget::getTuId)
 				.orElseThrow(() -> new AssertionError("no existing-TU target after the first pick"));
 		assertThat(handlingUnitsBL.isTransportUnit(handlingUnitsBL.getById(boxId))).as("box is a TU").isTrue();
 		assertThat(handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(boxId))).as("box holds one CU per pick").hasSize(2);
-		assertThat(getLot(boxId)).as("box lot (CU lots " + LOT + " and " + secondLot + ")").isEqualTo(expectedBoxLot.isEmpty() ? null : expectedBoxLot);
+		assertThat(getLot(boxId)).as("box lot (CU lots " + LOT + " and " + secondLot + ")").isEqualTo(expectedBoxLot);
+		assertThat(getBestBefore(boxId)).as("box best-before date (CU dates " + BEST_BEFORE + " and " + secondBestBefore + ")").isEqualTo(expectedBoxBestBefore);
+	}
+
+	/**
+	 * Two picks of 3 into the same LU (the second pick goes into the now pre-existing LU), no flag set:
+	 * the LU lot follows its CUs (same lot twice: that lot; two lots: empty).
+	 */
+	@ParameterizedTest(name = "secondLot={0}: expectedLuLot={1}")
+	@CsvSource(value = {
+			"LOT-A,  LOT-A",
+			"999999, null",
+	}, nullValues = "null")
+	void secondPickIntoPreExistingLU_luLotFollowsItsCUs(final String secondLot, final String expectedLuLot)
+	{
+		final ProductId productId = createProduct();
+		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("Karton-LU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI_Item miItem = huTestHelper.createHU_PI_Item_Material(tuPI);
+		final I_M_HU_PI_Item_Product piip = huTestHelper.assignProduct(miItem, InterfaceWrapperHelper.load(productId, I_M_Product.class), new BigDecimal("100"), helper.uomEach);
+		piip.setIsDefaultForProduct(true);
+		InterfaceWrapperHelper.save(piip);
+		final I_M_HU_PI luPI = huTestHelper.createHUDefinition("LU-LOT", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("10"));
+
+		final HUInfo stockCU1 = createStockCU(productId, "QR-STOCK-CU-1", LOT, BEST_BEFORE);
+		final HUInfo stockCU2 = createStockCU(productId, "QR-STOCK-CU-2", secondLot, BEST_BEFORE);
+
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("SO-LOT-3");
+		helper.packageable().orderAndLineId(orderAndLineId).productId(productId).qtyToDeliver("6").build();
+
+		PickingJob pickingJob = createPickingJob(orderAndLineId, true);
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		pickingJob = helper.pickingJobService.setLUPickingTarget(pickingJob, null,
+				LUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(luPI.getM_HU_PI_ID()), "LU-LOT"));
+		pickingJob = helper.pickingJobService.setTUPickingTarget(pickingJob, null,
+				TUPickingTarget.ofPackingInstructions(HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), "Karton-LU"));
+
+		pickingJob = pickFromStockCU(pickingJob, line, stockCU1);
+		pickingJob = pickFromStockCU(pickingJob, line, stockCU2);
+
+		final HuId luId = pickingJob.getLuPickingTargetEffective(line.getId())
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElseThrow(() -> new AssertionError("no existing-LU target after the first pick"));
+		assertThat(handlingUnitsBL.isLoadingUnit(handlingUnitsBL.getById(luId))).as("target is an LU").isTrue();
+		assertThat(getLot(luId)).as("LU lot (CU lots " + LOT + " and " + secondLot + ")").isEqualTo(expectedLuLot);
+	}
+
+	private HUInfo createStockCU(@NonNull final ProductId productId, @NonNull final String qrCode, @NonNull final String lot, @NonNull final LocalDate bestBefore)
+	{
+		final HUInfo stockCU = helper.createVHUInfo(productId, "114", qrCode);
+		setLot(stockCU.getId(), lot);
+		setBestBefore(stockCU.getId(), bestBefore);
+		return stockCU;
 	}
 
 	private PickingJob pickFromStockCU(@NonNull final PickingJob pickingJob, @NonNull final PickingJobLine line, @NonNull final HUInfo stockCU)
