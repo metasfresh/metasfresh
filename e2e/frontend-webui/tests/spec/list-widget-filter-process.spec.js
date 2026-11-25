@@ -36,7 +36,8 @@ async function describeCursor(page) {
       : e.closest('.filter-menu')
       ? 'filter panel'
       : 'page';
-    return `${e.tagName}${e.id ? '#' + e.id : ''}${column ? ' in field ' + column : ''} (${panel})`;
+    const testId = e.getAttribute('data-testid');
+    return `${e.tagName}${e.id ? '#' + e.id : ''}${testId ? '[' + testId + ']' : ''}${column ? ' in field ' + column : ''} (${panel})`;
   });
 }
 
@@ -127,6 +128,8 @@ languages.forEach(({ language, label }) => {
       await panel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const docStatusList = panel.locator('.form-field-DocStatus .input-dropdown-container');
       await docStatusList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      // the panel opens with the cursor in C_BPartner_ID; the Tab count to DocStatus depends on the filter's field order
+      // (AD configuration), so the list is focused directly. Tab arriving in a list is pinned in the attribute popup spec.
       await docStatusList.focus();
       await expect(docStatusList, 'the DocStatus list holds the cursor').toBeFocused();
 
@@ -138,7 +141,9 @@ languages.forEach(({ language, label }) => {
       );
       await page.keyboard.press('Tab');
       await twoFrames(page);
-      await recordAndHoldCursor(page, 'after Tab from the DocStatus list');
+      expect(await recordAndHoldCursor(page, 'after Tab from the DocStatus list'), 'Tab moves the cursor to the next filter field and it stays there').toBe(
+        'INPUT in field CreatedBy (filter panel)'
+      );
 
       await panel.getByTestId('filter-apply-button').click();
       await expect(panel, 'the filter panel closes on apply').toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
@@ -186,8 +191,9 @@ languages.forEach(({ language, label }) => {
       );
       await page.keyboard.press('Tab');
       await twoFrames(page);
-      // the Tab target is recorded, not asserted
-      console.log(`OBSERVED cursor after Tab from the credit status list: ${await describeCursor(page)}`);
+      expect(await recordAndHoldCursor(page, 'after Tab from the credit status list'), 'Tab leaves the list for the Cancel button of the dialog and the cursor stays there').toBe(
+        'BUTTON[process-modal-cancel-button] (process dialog)'
+      );
 
       await modal.getByTestId('process-modal-start-button').click();
       await expect(modal, 'the dialog closes after start').toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });

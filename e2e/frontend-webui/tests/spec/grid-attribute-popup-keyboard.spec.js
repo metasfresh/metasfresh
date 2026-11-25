@@ -70,6 +70,7 @@ languages.forEach(({ language, label }) => {
       test.setTimeout(240000);
 
       const runId = Date.now();
+      // the masterdata response carries no attribute codes, hence the caller-chosen `value`s (runId) used below
       const masterdata = await Backend.createMasterdata({
         request: {
           login: { user: { language, firstname: 'E2E', lastname: 'Tester' } },
