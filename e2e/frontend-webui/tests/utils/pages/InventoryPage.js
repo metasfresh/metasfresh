@@ -55,10 +55,17 @@ export class InventoryPage {
       await qtyCountInput.press('Tab');
       await expect(qtyCountInput).toHaveValue(String(qtyCount), { timeout: SLOW_ACTION_TIMEOUT });
 
-      // "Counted": the inventory completes only when all its lines are counted
+      // "Counted": the inventory completes only when all its lines are counted.
+      // The counted quantity's save can re-render the line and drop a click made meanwhile: let pending saves settle,
+      // then click only while unchecked (idempotent, retried).
+      await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       const isCounted = modal.locator('.form-field-IsCounted input[type="checkbox"]').first();
-      await isCounted.evaluate((el) => el.click()); // a click on the styled wrapper does not reach the input
-      await expect(isCounted).toBeChecked({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(async () => {
+        if (!(await isCounted.isChecked())) {
+          await isCounted.evaluate((el) => el.click()); // a click on the styled wrapper does not reach the input
+        }
+        await expect(isCounted).toBeChecked({ timeout: FAST_ACTION_TIMEOUT });
+      }).toPass({ timeout: VERY_SLOW_ACTION_TIMEOUT });
 
       await this.#selectOption({ scope: modal, columnName: 'M_HU_PI_Item_Product_ID', id: tuPIItemProductId });
     });
@@ -115,7 +122,7 @@ export class InventoryPage {
         .poll(async () => {
           const docStatus = await getFieldData(INVENTORY_WINDOW_ID, this.#inventoryId, 'DocStatus');
           return docStatus.value?.key ?? docStatus.value;
-        }, { message: 'DocStatus of the inventory', timeout: VERY_SLOW_ACTION_TIMEOUT })
+        }, { message: 'DocStatus of the inventory', timeout: 2 * 60 * 1000 }) // completion builds the HUs synchronously
         .toBe('CO');
     });
   }

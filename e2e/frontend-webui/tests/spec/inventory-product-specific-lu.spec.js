@@ -70,6 +70,9 @@ const pallet = ({ product, qty, includedTUsCount, palletItemQty }) => ({
 });
 
 test.describe('Physical inventory: pallets use the product-specific pallet item', () => {
+  // completing builds 100 TUs on 4 pallets; on a DB with many warehouses it takes up to about a minute
+  test.describe.configure({ timeout: 3 * 60 * 1000 });
+
   test.beforeEach(() => {
     allure.epic('E0193: Handling Units');
     allure.tag('F5001: Packing Instruction');
