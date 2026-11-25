@@ -21,6 +21,11 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 {
 	private final I_C_UOM uom = mock(I_C_UOM.class);
 
+	private Quantity qty(final int qty)
+	{
+		return Quantity.of(BigDecimal.valueOf(qty), uom);
+	}
+
 	private IHUProductStorage storage(final I_M_HU vhu, final int qty)
 	{
 		final IHUProductStorage storage = mock(IHUProductStorage.class);
@@ -35,7 +40,7 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 		final I_M_HU cu1 = mock(I_M_HU.class);
 		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(ImmutableList.of(storage(cu1, 2)));
 
-		assertThat(group.wholeVhuOrNull(BigDecimal.valueOf(2))).isSameAs(cu1);
+		assertThat(group.wholeVhuOrNull(qty(2))).isSameAs(cu1);
 	}
 
 	@Test
@@ -43,7 +48,7 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 	{
 		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(ImmutableList.of(storage(mock(I_M_HU.class), 5)));
 
-		assertThat(group.wholeVhuOrNull(BigDecimal.valueOf(2))).isNull();
+		assertThat(group.wholeVhuOrNull(qty(2))).isNull();
 	}
 
 	@Test
@@ -53,17 +58,17 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(
 				ImmutableList.of(storage(mock(I_M_HU.class), 2), storage(mock(I_M_HU.class), 3)));
 
-		assertThat(group.wholeVhuOrNull(BigDecimal.valueOf(2))).isNull();
-		assertThat(group.wholeVhuOrNull(BigDecimal.valueOf(5))).isNull();
+		assertThat(group.wholeVhuOrNull(qty(2))).isNull();
+		assertThat(group.wholeVhuOrNull(qty(5))).isNull();
 	}
 
 	@Test
 	void singleVhuGroup_afterPartConsumed_returnsNull()
 	{
 		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(ImmutableList.of(storage(mock(I_M_HU.class), 4)));
-		group.consume(BigDecimal.valueOf(2));
+		group.consume(qty(2));
 
-		assertThat(group.remainingQty()).isEqualByComparingTo("2");
-		assertThat(group.wholeVhuOrNull(BigDecimal.valueOf(2))).isNull();
+		assertThat(group.remainingQty().toBigDecimal()).isEqualByComparingTo("2");
+		assertThat(group.wholeVhuOrNull(qty(2))).isNull();
 	}
 }

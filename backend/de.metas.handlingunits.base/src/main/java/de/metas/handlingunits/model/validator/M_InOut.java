@@ -69,7 +69,10 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -273,19 +276,27 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = assignedQuantities.stream()
-				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
-				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
-				.map(ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-		final List<HUWithPickOnTheFlyStatus> allHusInvolved = assignedQuantities.stream()
-				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
-				.map(qtyPicked -> HUWithPickOnTheFlyStatus.builder()
+		// A row stands for its VHU, or for the CUs of its box when it only references the box (several CUs of one attribute combination).
+		// One entry per HU: the reopen maps its requests by HU id and rejects a duplicate. An HU might be in multiple
+		// qtyPicked records if inouts are completed and reversed multiple times.
+		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = new LinkedHashSet<>();
+		final Map<HuId, HUWithPickOnTheFlyStatus> husInvolvedById = new LinkedHashMap<>();
+		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : assignedQuantities)
+		{
+			final Set<HuId> pickedVhuIds = huShipmentScheduleBL.retrievePickedVhuIds(qtyPicked);
+			if (!pickedVhuIds.isEmpty())
+			{
+				allShipmentSchedulesInvolved.add(ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID()));
+			}
+			for (final HuId vhuId : pickedVhuIds)
+			{
+				husInvolvedById.putIfAbsent(vhuId, HUWithPickOnTheFlyStatus.builder()
 						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
-						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
-						.build())
-				.distinct() // one HU might be in multiple qtyPicked records if inouts are completed and reversed multiple times
-				.collect(ImmutableList.toImmutableList());
+						.huId(vhuId)
+						.build());
+			}
+		}
+		final List<HUWithPickOnTheFlyStatus> allHusInvolved = ImmutableList.copyOf(husInvolvedById.values());
 
 		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
 				.shipmentScheduleIds(allShipmentSchedulesInvolved)
