@@ -2,6 +2,9 @@ package de.metas.frontend_testing;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
+import de.metas.frontend_testing.describe.DescribeHUsCommand;
+import de.metas.frontend_testing.describe.JsonDescribeHUsRequest;
+import de.metas.frontend_testing.describe.JsonDescribeHUsResponse;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommand;
 import de.metas.frontend_testing.expectations.request.JsonExpectations;
 import de.metas.frontend_testing.expectations.request.JsonExpectationsResponse;
@@ -135,6 +138,15 @@ public class FrontendTestingRestController
 				.expectations(jsonExpectations)
 				.build()
 				.execute();
+	}
+
+	@PostMapping("describeHUs")
+	public JsonDescribeHUsResponse describeHUs(@RequestBody @NonNull final JsonDescribeHUsRequest request)
+	{
+		return callInContext(() -> DescribeHUsCommand.builder()
+				.request(request)
+				.build()
+				.execute());
 	}
 
 	@PostMapping("setSysconfigs")

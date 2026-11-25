@@ -394,8 +394,24 @@ public class CreatePackingInstructionsCommand
 		return luPIItemRecord;
 	}
 
+	/**
+	 * Creates the TU's material item, or returns the existing one if the TU was already created by another entry (reused by identifier):
+	 * a TU packing instruction has one material item, which holds the item products of all its products.
+	 */
 	private HuPackingInstructionsItemId createPIItem_Material(final PIResult tu)
 	{
+		final I_M_HU_PI_Item existingItem = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, tu.getPivId())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, HUItemType.Material.getCode())
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
+				.create()
+				.first(I_M_HU_PI_Item.class);
+		if (existingItem != null)
+		{
+			return HuPackingInstructionsItemId.ofRepoId(existingItem.getM_HU_PI_Item_ID());
+		}
+
 		final I_M_HU_PI_Item huPiItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		huPiItemRecord.setM_HU_PI_Version_ID(tu.getPivId().getRepoId());
 		huPiItemRecord.setItemType(HUItemType.Material.getCode());
