@@ -55,6 +55,8 @@ Feature: Shipment line per box content
     And update M_HU_PI_Attribute UseInASI:
       | M_HU_PI_Version_ID | M_Attribute.Value | UseInASI |
       | 100                | Lot-Nummer        | Y        |
+    And M_ShipmentSchedule_AttributeConfig is active for M_Attribute.Value Lot-Nummer
+    And M_ShipmentSchedule_AttributeConfig is active for M_Attribute.Value 1000001
 
   @Id:BOX_LOT_10
   Scenario: Equal-quantity picks of two origins into one box ship as two lines
@@ -482,3 +484,108 @@ Feature: Shipment line per box content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
+
+  @Id:BOX_LOT_20
+  Scenario: Two CUs of the same lot but different origins in one box ship as one line per origin
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_L1_DE_20":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "L1"}, {"attributeCode": "1000001", "valueStr": "DE"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_L1_IT_20":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "L1"}, {"attributeCode": "1000001", "valueStr": "IT"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_20         | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_de20 | inv_20         | p_coo        | 0       | 10       | PCE          | asi_L1_DE_20              | p_coo_box_10CU          |
+      | inv_l_it20 | inv_20         | p_coo        | 0       | 10       | PCE          | asi_L1_IT_20              | p_coo_box_10CU          |
+    When the inventory identified by inv_20 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_de20         | hu_de20 |
+      | inv_l_it20         | hu_it20 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_20      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_20_l1   | so_20      | p_coo        | 4          |
+    When the order identified by so_20 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_20      | so_20_l1       | N             |
+    When start picking job for sales order identified by so_20
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_de20    | 2         |
+      | p_coo                 | hu_it20    | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_20                 | inout_20   | CO        |
+    Then the shipment lines of inout_20 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | attr.1000001 |
+      | p_coo        | 2           | L1              | DE           |
+      | p_coo        | 2           | L1              | IT           |
+
+  @Id:BOX_LOT_25
+  Scenario: One box shared by two order lines of one product with equal quantities ships each order line only the units picked for it
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_L1_25":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "L1"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_L2_25":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "L2"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_25         | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_l125 | inv_25         | p_coo        | 0       | 10       | PCE          | asi_L1_25                 | p_coo_box_10CU          |
+      | inv_l_l225 | inv_25         | p_coo        | 0       | 10       | PCE          | asi_L2_25                 | p_coo_box_10CU          |
+    When the inventory identified by inv_25 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_l_l125         | hu_l125 |
+      | inv_l_l225         | hu_l225 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_25      | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_25_lA   | so_25      | p_coo        | 2          |
+      | so_25_lB   | so_25      | p_coo        | 2          |
+    When the order identified by so_25 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_25_A    | so_25_lA       | N             |
+      | ss_25_B    | so_25_lB       | N             |
+    # One new box for the whole job: the picks for both order lines land in the same box
+    When start picking job for sales order identified by so_25
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box_pi
+    And pick lines by order line
+      | C_OrderLine_ID | PickFromHU | QtyPicked |
+      | so_25_lA       | hu_l125    | 2         |
+      | so_25_lB       | hu_l225    | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_25_A               | inout_25   | CO        |
+    Then the shipment lines of inout_25 are exactly, in any order:
+      | M_Product_ID | MovementQty | C_OrderLine_ID | attr.Lot-Nummer |
+      | p_coo        | 2           | so_25_lA       | L1              |
+      | p_coo        | 2           | so_25_lB       | L2              |

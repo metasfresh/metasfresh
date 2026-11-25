@@ -38,6 +38,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
@@ -102,6 +104,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -1395,7 +1398,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		rowsWithUnit.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
 		if (!boxRows.isEmpty())
 		{
-			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
+			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, retrieveUnitIdsPickedForScheduleIfBoxIsShared(box, boxRows.get(0)), huContext);
 			if (rowsPickedWholeContent(boxRows, contentGroups))
 			{
 				result.addAll(createCandidatesPerContentGroup(boxRows, contentGroups, huContext, qtyTypeToUse));
@@ -1417,6 +1420,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final BoxKey box,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked anyBoxRow,
 			@NonNull final Set<HuId> unitIdsToSkip,
+			@Nullable final Set<HuId> onlyUnitIds,
 			@NonNull final IHUContext huContext)
 	{
 		final ProductId productId = ProductId.ofRepoId(anyBoxRow.getM_ShipmentSchedule().getM_Product_ID());
@@ -1429,6 +1433,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.stream()
 				.filter(handlingUnitsBL::isVirtual)
 				.filter(vhu -> !unitIdsToSkip.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
+				.filter(vhu -> onlyUnitIds == null || onlyUnitIds.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
 				.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
 				.forEach(fingerprintAndStorage -> storagesByFingerprint
 						.computeIfAbsent(fingerprintAndStorage.getKey(), fingerprint -> new ArrayList<>())
@@ -1436,6 +1441,48 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return storagesByFingerprint.values().stream()
 				.map(BoxContentGroup::new)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * A box that another schedule of the same product also picked into holds the units of both schedules, so the box content
+	 * alone cannot tell which unit belongs to which schedule; the picking job records it (the units a step of the schedule picked).
+	 *
+	 * @return the units the schedule's picking job steps picked into the box; {@code null} if the box is not shared (all units count)
+	 * or a step recorded the box itself (all its units count)
+	 */
+	@Nullable
+	private Set<HuId> retrieveUnitIdsPickedForScheduleIfBoxIsShared(
+			@NonNull final BoxKey box,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked anyBoxRow)
+	{
+		final ProductId productId = ProductId.ofRepoId(anyBoxRow.getM_ShipmentSchedule().getM_Product_ID());
+		final boolean isBoxShared = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, box.getBoxId())
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null)
+				.addNotEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, box.getShipmentScheduleId())
+				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.anyMatch();
+		if (!isBoxShared)
+		{
+			return null;
+		}
+
+		final IQuery<I_M_Picking_Job_Step> stepsOfSchedule = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addEqualsFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, box.getShipmentScheduleId())
+				.create();
+		final Set<HuId> pickedHuIds = queryBL.createQueryBuilder(I_M_Picking_Job_Step_PickedHU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_M_Picking_Job_Step_ID, I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_Step_ID, stepsOfSchedule)
+				.create()
+				.listDistinctAsImmutableSet(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_Picked_HU_ID, Integer.class)
+				.stream()
+				.map(HuId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		return pickedHuIds.contains(box.getBoxId()) ? null : pickedHuIds;
 	}
 
 	private static boolean rowsPickedWholeContent(

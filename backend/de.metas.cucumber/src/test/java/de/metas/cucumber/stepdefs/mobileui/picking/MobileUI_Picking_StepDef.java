@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -16,6 +17,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -55,6 +57,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Util;
@@ -81,6 +84,7 @@ public class MobileUI_Picking_StepDef
 
 	@NonNull private final M_Product_StepDefData productsTable;
 	@NonNull private final C_Order_StepDefData ordersTable;
+	@NonNull private final C_OrderLine_StepDefData orderLinesTable;
 	@NonNull private final PickingSlot_StepDefData pickingSlotsTable;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_PI_StepDefData huPiTable;
@@ -529,6 +533,54 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
+	 * Picks for the picking line of the given order line. Needed when one job has several order lines of the same product:
+	 * {@code pick lines} finds the picking line by product only. No lot / best-before / QR columns: the picker does not change them.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the order line whose picking line is picked for<br>
+	 *   <b>PickFromHU</b> — (required, identifier-ref) HU to pick from<br>
+	 *   <b>QtyPicked</b> — (required) quantity
+	 * @cucumber.example
+	 * <pre>
+	 * When pick lines by order line
+	 *   | C_OrderLine_ID | PickFromHU | QtyPicked |
+	 *   | ol_A           | hu_L1      | 2         |
+	 * </pre>
+	 */
+	@When("^pick lines by order line$")
+	public void pickLinesByOrderLine(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::pickLineByOrderLine);
+	}
+
+	private void pickLineByOrderLine(@NonNull final DataTableRow row)
+	{
+		SharedTestContext.put("context", () -> context);
+
+		final int orderLineRepoId = orderLinesTable.getId(row.getAsIdentifier("C_OrderLine_ID")).getRepoId();
+		final String pickingLineId = context.getPickingLineIdByOrderLineId(orderLineRepoId);
+		SharedTestContext.put("pickingLineId", pickingLineId);
+
+		final HuId pickFromHUId = huTable.getId(row.getAsIdentifier("PickFromHU"));
+		final HUQRCode pickFromQRCode = huQRCodesService.getQRCodeByHuId(pickFromHUId);
+		SharedTestContext.put("pickFromHUId", pickFromHUId);
+
+		final JsonPickingStepEvent request = JsonPickingStepEvent.builder()
+				.type(JsonPickingStepEvent.EventType.PICK)
+				.wfProcessId(context.getWfProcessIdNotNull())
+				.wfActivityId(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString())
+				.pickingLineId(pickingLineId)
+				.huQRCode(pickFromQRCode.toGlobalQRCodeString())
+				.qtyPicked(row.getAsBigDecimal("QtyPicked"))
+				.setBestBeforeDate(false)
+				.setLotNo(false)
+				.build();
+
+		context.setWfProcess(mobileUIPickingClient.pickLine(request));
+	}
+
+	/**
 	 * Atomic pick: sends a single PICK event whose {@code setGrais=true} and {@code graiCodes} are
 	 * populated with the GRAIs listed in the DataTable. The GRAIs are stamped onto the picked TUs
 	 * inside the same pick transaction.
@@ -820,6 +872,22 @@ public class MobileUI_Picking_StepDef
 			{
 				return eligibleLines.get(0).getPickingLineId();
 			}
+		}
+
+		/**
+		 * @return the id of the picking line whose {@code M_Picking_Job_Line} record carries the order line; fails if none or several match
+		 */
+		public String getPickingLineIdByOrderLineId(final int orderLineRepoId)
+		{
+			final List<JsonPickingJobLine> lines = getPickingJobLines();
+			final ImmutableList<JsonPickingJobLine> eligibleLines = lines.stream()
+					.filter(pickingLine -> InterfaceWrapperHelper.load(Integer.parseInt(pickingLine.getPickingLineId()), I_M_Picking_Job_Line.class).getC_OrderLine_ID() == orderLineRepoId)
+					.collect(ImmutableList.toImmutableList());
+			if (eligibleLines.size() != 1)
+			{
+				throw new AdempiereException("Expected exactly one picking line for C_OrderLine_ID=" + orderLineRepoId + " but found " + eligibleLines.size() + ". Available lines are: " + lines);
+			}
+			return eligibleLines.get(0).getPickingLineId();
 		}
 
 		public JsonPickingJobLine getPickingJobLineByProductId(@NonNull final ProductId productId)
