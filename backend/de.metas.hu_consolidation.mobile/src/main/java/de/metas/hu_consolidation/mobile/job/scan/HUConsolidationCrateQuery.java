@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Which HUs count as crates of a job: the active top-level HUs among the given ones.
+ * Which HUs count as crates: the active top-level HUs (of a job: those among the job's HUs).
  */
 final class HUConsolidationCrateQuery
 {
