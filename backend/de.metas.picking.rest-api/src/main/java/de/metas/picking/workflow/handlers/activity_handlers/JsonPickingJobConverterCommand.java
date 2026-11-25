@@ -99,7 +99,13 @@ public class JsonPickingJobConverterCommand
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
+				.quickPackAllAllowed(profile.isAllowQuickPackAll() && !isAnyLabelRequiredLine())
 				.build();
+	}
+
+	private boolean isAnyLabelRequiredLine()
+	{
+		return pickingJob.getLines().stream().anyMatch(line -> getLineOptions(line).getCUQtyEntryPolicy().isLabelRequired());
 	}
 
 	@NonNull

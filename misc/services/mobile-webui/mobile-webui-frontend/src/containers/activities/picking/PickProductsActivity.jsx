@@ -32,7 +32,6 @@ import { postPickAll } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastErrorFromObj } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
-import { useApplicationInfoParameters } from '../../../reducers/applications';
 import { usePickingJobQtyAvailable } from './usePickingJobQtyAvailable';
 import { QtyAvailableStatus } from '../../../constants/QtyAvailableStatus';
 
@@ -42,11 +41,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useMobileNavigation();
   const dispatch = useDispatch();
 
-  const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
-  const isQuickPackAllAllowedForJob = isQuickPackAllAllowed({
-    allowQuickPackAll,
-    lines: getLinesArrayFromActivity(activity),
-  });
+  const isQuickPackAllAllowedForJob = isQuickPackAllAllowed({ activity });
   const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: isQuickPackAllAllowedForJob });
   const isShowQuickPackAllButton =
     isQuickPackAllAllowedForJob && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;

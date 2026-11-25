@@ -1,6 +1,5 @@
 import { getLinesArrayFromActivity } from '../reducers/wfProcesses';
 import * as CompleteStatus from '../constants/CompleteStatus';
-import { getCUQtyEntryPolicy } from '../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 export const isUserEditable = ({ activity }) => activity?.dataStored?.isUserEditable ?? false;
 
@@ -100,7 +99,5 @@ export const computeCUEntryToRemember = ({
   label: { cuLabel, lotNo, bestBeforeDate },
 });
 
-export const hasLabelRequiredLine = (lines) => (lines ?? []).some((line) => getCUQtyEntryPolicy(line).isLabelRequired);
-
-export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) =>
-  !!allowQuickPackAll && !hasLabelRequiredLine(lines);
+/** The backend decides per job (profile switch, no line needing a label scan) and publishes the answer */
+export const isQuickPackAllAllowed = ({ activity }) => activity?.dataStored?.isQuickPackAllAllowed ?? false;

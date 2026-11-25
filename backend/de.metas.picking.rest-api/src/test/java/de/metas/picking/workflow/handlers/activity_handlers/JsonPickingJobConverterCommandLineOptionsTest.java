@@ -37,6 +37,7 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -159,5 +160,35 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		assertThat(lineB.getCuQtyEntryMode()).isEqualTo(CUQtyEntryMode.MANUAL.getCode());
 		assertThat(lineB.getCuQtyEntryPolicy().isLabelRequired()).isFalse();
 		assertThat(lineB.getCuLabelFormatId()).isNull();
+	}
+
+	@Nested
+	class QuickPackAll
+	{
+		private void allowQuickPackAllInProfile(final boolean allowed)
+		{
+			when(pickingJobRestService.getProfile().isAllowQuickPackAll()).thenReturn(allowed);
+		}
+
+		@Test
+		void allowed_whenProfileAllowsAndNoLineNeedsALabel()
+		{
+			allowQuickPackAllInProfile(true);
+			assertThat(convert(line(1, CUSTOMER_B)).isQuickPackAllAllowed()).isTrue();
+		}
+
+		@Test
+		void refused_whenOneLineNeedsALabel()
+		{
+			allowQuickPackAllInProfile(true);
+			assertThat(convert(line(1, CUSTOMER_B), line(2, CUSTOMER_A)).isQuickPackAllAllowed()).isFalse();
+		}
+
+		@Test
+		void refused_whenProfileDoesNotAllow()
+		{
+			allowQuickPackAllInProfile(false);
+			assertThat(convert(line(1, CUSTOMER_B)).isQuickPackAllAllowed()).isFalse();
+		}
 	}
 }

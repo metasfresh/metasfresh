@@ -1,36 +1,41 @@
-import { hasLabelRequiredLine, isQuickPackAllAllowed } from '../../../utils/picking';
-import { POLICY } from '../../../__testSupport__/picking/testPolicies';
+import reducer, { getActivityById } from '../../../reducers/wfProcesses';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { isQuickPackAllAllowed } from '../../../utils/picking';
 
-const line = (mode) => ({ pickingLineId: 'l', cuQtyEntryPolicy: POLICY[mode] });
+const wfProcessId = 'wf1';
+const activityId = 'act1';
 
-describe('hasLabelRequiredLine', () => {
-  it('is false without lines', () => {
-    expect(hasLabelRequiredLine([])).toBe(false);
-    expect(hasLabelRequiredLine(undefined)).toBe(false);
-  });
-  it('is false when all lines are MANUAL', () => {
-    expect(hasLabelRequiredLine([line('MANUAL'), line('MANUAL')])).toBe(false);
-  });
-  it('is true with one label-required-mode line', () => {
-    expect(hasLabelRequiredLine([line('MANUAL'), line('SCAN_ONCE_ENTER_QTY')])).toBe(true);
-    expect(hasLabelRequiredLine([line('SCAN_EACH_CU')])).toBe(true);
-  });
-  it('is true for a mixed job', () => {
-    expect(hasLabelRequiredLine([line('SCAN_EACH_CU'), line('MANUAL'), line(undefined)])).toBe(true);
-  });
-  it('is false when the line field is absent', () => {
-    expect(hasLabelRequiredLine([{ pickingLineId: 'l' }, line(undefined)])).toBe(false);
-  });
-});
+const stateWithJob = (pickingJobProps) =>
+  reducer(
+    {},
+    updateWFProcess({
+      wfProcess: {
+        id: wfProcessId,
+        activities: [
+          {
+            activityId,
+            componentType: 'picking/pickProducts',
+            componentProps: {
+              customQRCodeFormats: [],
+              pickingJob: { lines: [], pickFromAlternatives: [], aggregationType: 'SALES_ORDER', ...pickingJobProps },
+            },
+          },
+        ],
+      },
+    })
+  );
 
-describe('isQuickPackAllAllowed', () => {
-  it('needs the application switch', () => {
-    expect(isQuickPackAllAllowed({ allowQuickPackAll: false, lines: [] })).toBe(false);
+const activityOf = (state) => getActivityById({ wfProcesses: state }, wfProcessId, activityId);
+
+describe('isQuickPackAllAllowed: the backend decides, the client reads', () => {
+  it('is allowed when the job says so', () => {
+    expect(isQuickPackAllAllowed({ activity: activityOf(stateWithJob({ quickPackAllAllowed: true })) })).toBe(true);
   });
-  it('is allowed for Manual-only and absent-field jobs', () => {
-    expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line('MANUAL'), {}] })).toBe(true);
+  it('is refused when the job says so (profile switch off, or a line needs a label scan)', () => {
+    expect(isQuickPackAllAllowed({ activity: activityOf(stateWithJob({ quickPackAllAllowed: false })) })).toBe(false);
   });
-  it('is refused when a line has a label-required mode', () => {
-    expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line('SCAN_EACH_CU')] })).toBe(false);
+  it('is refused when the field is absent or the activity is missing', () => {
+    expect(isQuickPackAllAllowed({ activity: activityOf(stateWithJob({})) })).toBe(false);
+    expect(isQuickPackAllAllowed({ activity: undefined })).toBe(false);
   });
 });

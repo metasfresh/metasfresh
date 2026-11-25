@@ -218,6 +218,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
   draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
   draftActivityDataStored.isCompleteJobAutomatically = fromPickingJob.completeJobAutomatically;
+  draftActivityDataStored.isQuickPackAllAllowed = fromPickingJob.quickPackAllAllowed ?? false;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //
