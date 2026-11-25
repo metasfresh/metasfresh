@@ -6,11 +6,10 @@ import { getFieldData } from '../WebAPIValidation';
 
 /**
  * Completing builds the counted HUs synchronously, and the first completion after a warehouse was created (every test
- * creates one) reloads the warehouse cache: WarehouseRepository.retrieveWarehouseMap (WarehouseRepository.java:91-96)
- * runs one M_Warehouse_SourceHUConfig query per warehouse, reached via SyncInventoryQtyToHUsCommand.java:370 ->
- * SourceHUsService.java:252. Measured locally with ~875 warehouses: completion 39-40 s, of which ~37 s in that reload
- * (~42 ms per query round trip, < 1 ms of it in the DB). 90 s = about twice that.
- * Lower it to SLOW_ACTION_TIMEOUT once the configs are loaded with one query.
+ * creates one) reloads the warehouse cache, reached via SyncInventoryQtyToHUsCommand -> SourceHUsService. While
+ * WarehouseRepository.retrieveWarehouseMap loads the M_Warehouse_SourceHUConfig records with one query per warehouse,
+ * that reload dominates the completion time on a DB with many warehouses (measurements: PR description).
+ * Lower it to SLOW_ACTION_TIMEOUT once those configs are loaded with one query per reload.
  */
 export const INVENTORY_COMPLETE_TIMEOUT = 90 * 1000;
 
@@ -136,6 +135,8 @@ export class InventoryPage {
           (response.request().postData() ?? '').includes('"DocAction"'),
         { timeout: INVENTORY_COMPLETE_TIMEOUT }
       );
+      // awaited below; until then, a failing click must not leave this promise rejected without a handler
+      docActionPatched.catch(() => {});
       await page.getByTestId('status-button').click();
       await page.getByTestId('status-CO').click();
 
