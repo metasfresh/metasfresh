@@ -9,7 +9,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/scre
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
 // Lot and best-before date of the stock must survive a pick when the qty dialog does not show those fields
-// (real profile: LotNumber = N, BestBeforeDate = N, shipment policy CL). 'L-114' stands in for the real lot of the reported case.
+// (profile: LotNumber = N, BestBeforeDate = N, shipment policy CL).
 
 const LOT_ATTRIBUTE = 'Lot-Nummer';
 const BEST_BEFORE_ATTRIBUTE = 'HU_BestBeforeDate';
@@ -76,22 +76,16 @@ const allureMeta = (story) => {
 };
 
 /**
- * Asserts the shipment lines of SO1 in either order. The order of M_InOutLine.Line is not stable between runs when two
- * picks of different lots go into one shipment: seen 2026-11-25 on the fixed build, the LU test matched {2, L-A} first in one run
- * and returned {3, L-B} first in a full run. The expected lines are tried as given, then reversed; each line keeps its own
- * qty + attributes pairing and the line count stays exact, so a lot on the wrong quantity or an extra line still fails.
- * When both orders fail, the error carries both messages.
+ * Asserts the shipment lines of SO1 in either order. The order of M_InOutLine.Line is not stable when two picks of
+ * different lots go into one shipment. The expected lines are tried as given, then reversed (inside one report step);
+ * each line keeps its own qty + attributes pairing and the line count stays exact, so a lot on the wrong quantity or
+ * an extra line still fails.
  */
 const expectShipmentLinesInAnyOrder = async (lines) => {
-    try {
-        await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines }] } } });
-    } catch (firstError) {
-        try {
-            await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [...lines].reverse() }] } } });
-        } catch (reversedError) {
-            throw new Error(`Shipment lines match in neither order.\n--- as given:\n${firstError.message}\n--- reversed:\n${reversedError.message}`);
-        }
-    }
+    await Backend.expectAnyOf([
+        { salesOrders: { SO1: { shipments: [{ lines }] } } },
+        { salesOrders: { SO1: { shipments: [{ lines: [...lines].reverse() }] } } },
+    ], 'shipment lines (any order)');
 };
 
 const startJob = async (masterdata, { withLU = false } = {}) => {

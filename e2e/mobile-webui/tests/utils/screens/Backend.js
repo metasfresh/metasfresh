@@ -34,30 +34,23 @@ export const Backend = {
         return responseBody;
     }),
 
-    expect: async (expectations) => await test.step(`Backend: expect ${expectations?.title ?? ''}`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
-            data: {
-                ...expectations,
-                masterdata: testContext.lastMasterdata,
-                context: testContext.lastContext,
-            },
-            headers: {
-                'Content-Type': 'application/json',
+    expect: async (expectations) => await test.step(`Backend: expect ${expectations?.title ?? ''}`, async () => await postExpect(expectations)),
+
+    /**
+     * Like {@link expect}, but passes when at least one of the given expectations matches. All attempts run inside ONE
+     * step, so a passing attempt after a non-matching one leaves no failed step in the report. When none matches, the
+     * error carries every attempt's message.
+     */
+    expectAnyOf: async (expectationsList, title = '') => await test.step(`Backend: expect any of ${expectationsList.length} ${title}`, async () => {
+        const errors = [];
+        for (const expectations of expectationsList) {
+            try {
+                return await postExpect(expectations);
+            } catch (error) {
+                errors.push(error.message);
             }
-        });
-
-        const responseBody = await response.json();
-        if (responseBody?.context != null) {
-            testContext.lastContext = responseBody.context;
         }
-
-        assertNoErrors({ responseBody });
-
-        return {
-            ...responseBody,
-            context: stripTypePrefix(responseBody.context)
-        };
+        throw new Error(`None of the ${expectationsList.length} expectations matched.\n` + errors.map((e, i) => `--- attempt ${i + 1}:\n${e}`).join('\n'));
     }),
 
     /** Writes sysconfigs at config level; the previous values are restored after the test. */
@@ -303,6 +296,32 @@ export const Backend = {
 //
 
 let _backendBaseUrl = process.env.BACKEND_BASE_URL ? process.env.BACKEND_BASE_URL + '/api/v2' : null;
+
+const postExpect = async (expectations) => {
+    const backendBaseUrl = await getBackendBaseUrl();
+    const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
+        data: {
+            ...expectations,
+            masterdata: testContext.lastMasterdata,
+            context: testContext.lastContext,
+        },
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    const responseBody = await response.json();
+    if (responseBody?.context != null) {
+        testContext.lastContext = responseBody.context;
+    }
+
+    assertNoErrors({ responseBody });
+
+    return {
+        ...responseBody,
+        context: stripTypePrefix(responseBody.context)
+    };
+};
 
 const postAcctSchemaCostingMethod = async (data) => {
     const backendBaseUrl = await getBackendBaseUrl();
