@@ -280,38 +280,44 @@ test('one box, five CUs of three lots: every CU keeps its own lot, the box lot s
     allureMeta('CUs of several lots in one box keep their own lots');
 
     // two CUs of lot L-A, two of lot L-B, one of lot L-C (quantities differ, so every CU is identifiable by its qty)
-    const picks = [
-        { hu: 'HU1', qty: 2, lot: 'L-A' },
-        { hu: 'HU2', qty: 3, lot: 'L-A' },
-        { hu: 'HU3', qty: 4, lot: 'L-B' },
-        { hu: 'HU4', qty: 5, lot: 'L-B' },
-        { hu: 'HU5', qty: 6, lot: 'L-C' },
-    ];
     const masterdata = await createMasterdata({
-        readAttributes: [], orderQty: picks.reduce((sum, { qty }) => sum + qty, 0),
-        lots: picks.map(({ hu, lot }) => ({ id: hu, qty: 10, lotNo: lot }))
+        readAttributes: [], orderQty: 20,
+        lots: [
+            { id: 'HU1', qty: 10, lotNo: 'L-A' },
+            { id: 'HU2', qty: 10, lotNo: 'L-A' },
+            { id: 'HU3', qty: 10, lotNo: 'L-B' },
+            { id: 'HU4', qty: 10, lotNo: 'L-B' },
+            { id: 'HU5', qty: 10, lotNo: 'L-C' },
+        ]
     });
     const pickingJobId = await startJob(masterdata);
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
-    const qtyPickedRow = ({ qty }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' });
-    for (let i = 0; i < picks.length; i++) {
-        const { hu, qty } = picks[i];
-        const isLastPick = i === picks.length - 1; // the last pick fulfills the order qty, so no "qty not found" reason is asked
-        await PickingJobScreen.pickHU({
-            qrCode: masterdata.handlingUnits[hu].qrCode,
-            qtyEntered: qty,
-            ...(isLastPick ? {} : { expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE }),
-        });
-    }
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 2, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, qtyEntered: 3, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU3.qrCode, qtyEntered: 4, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU4.qrCode, qtyEntered: 5, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU5.qrCode, qtyEntered: 6 }); // the last pick fulfills the order qty, so no "qty not found" reason is asked
 
     // lots of the box's CUs, each with its own lot; the box itself holds several lots, so its own lot is empty
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: picks.map(qtyPickedRow) } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [
+            { qtyPicked: '2 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+            { qtyPicked: '3 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+            { qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+            { qtyPicked: '5 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+            { qtyPicked: '6 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+        ] } } } },
         hus: {
             tu1: {
                 attributes: { [LOT_ATTRIBUTE]: null },
-                cus: picks.map(({ qty, lot }) => ({ qty: `${qty} PCE`, attributes: { [LOT_ATTRIBUTE]: lot } })),
+                cus: [
+                    { qty: '2 PCE', attributes: { [LOT_ATTRIBUTE]: 'L-A' } },
+                    { qty: '3 PCE', attributes: { [LOT_ATTRIBUTE]: 'L-A' } },
+                    { qty: '4 PCE', attributes: { [LOT_ATTRIBUTE]: 'L-B' } },
+                    { qty: '5 PCE', attributes: { [LOT_ATTRIBUTE]: 'L-B' } },
+                    { qty: '6 PCE', attributes: { [LOT_ATTRIBUTE]: 'L-C' } },
+                ],
             },
         }
     });
