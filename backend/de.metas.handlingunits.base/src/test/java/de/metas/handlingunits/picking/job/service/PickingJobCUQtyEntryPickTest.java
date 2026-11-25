@@ -160,20 +160,18 @@ class PickingJobCUQtyEntryPickTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "92"),
-						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo),
+						constant(45, 46, "92"),
+						part(47, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 				.build());
 	}
 
 	private static ScannedCode eachLabel(final String lot, @Nullable final String packId)
 	{
-		return ScannedCode.ofString("01" + GTIN + "91" + PRODUCT_NO + GS + "17" + "261107" + "10" + lot + GS + "92" + (packId != null ? packId : ""));
+		return ScannedCode.ofString("01" + GTIN + "91" + PRODUCT_NO + "17" + "261107" + "10" + lot + "92" + (packId != null ? packId : ""));
 	}
 
 	private static Part constant(final int start, final int end, final String value)
@@ -187,6 +185,13 @@ class PickingJobCUQtyEntryPickTest
 	}
 
 	private static ScannedCode label(final String productNo, final String lot)
+	{
+		// the scanner string without separators (DataWedge without control characters)
+		return ScannedCode.ofString("01" + GTIN + "91" + productNo + "17" + "261107" + "10" + lot + "92" + "1");
+	}
+
+	/** The same label as a scanner that sends the GS separator (char 29) after the product and after the lot */
+	private static ScannedCode labelWithGS(final String productNo, final String lot)
 	{
 		return ScannedCode.ofString("01" + GTIN + "91" + productNo + GS + "17" + "261107" + "10" + lot + GS + "92" + "1");
 	}
@@ -692,6 +697,33 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class ScanOnce
 	{
+		@Test
+		void labelWithGS_isBooked_withAFormatOfTheGSPositions()
+		{
+			format = formatService.create(ScannableCodeFormatCreateRequest.builder()
+					.name("CU label with GS")
+					.parts(ImmutableList.of(
+						constant(1, 2, "01"),
+						part(3, 16, ScannableCodeFormatPartType.Ignored),
+						constant(17, 18, "91"),
+						part(19, 25, ScannableCodeFormatPartType.ProductCode),
+						part(26, 26, ScannableCodeFormatPartType.Ignored),
+						constant(27, 28, "17"),
+						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(35, 36, "10"),
+						part(37, 45, ScannableCodeFormatPartType.LotNo),
+						part(46, 46, ScannableCodeFormatPartType.Ignored),
+						constant(47, 48, "92"),
+						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+					.build());
+			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
+			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GS");
+			PickingJob job = openTUFromLinePacking(createJob("salesOrderCUGS", tuPiipId, true, "2"));
+
+			job = pick(job, source, "2", labelWithGS(PRODUCT_NO, LOT_A), false, null);
+
+			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
+		}
 		@Test
 		void lineDone_furtherPick_refused_noParametersInTheMessage()
 		{

@@ -31,15 +31,24 @@ describe('cuLabel.selectCULabelFormat', () => {
 });
 
 const GS = '\u001d';
-const LABEL = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
+// the string the scanner sends (DataWedge without control characters): no separators, the pack ID starts at 47
+const LABEL = `0109506000134352` + `91PTST001` + `17261107` + `10LA0000001` + `922`;
+// the same label from a scanner that sends the GS separator (char 29) after the product and after the lot
+const LABEL_GS = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
 const constant = (startPosition, endPosition, constantValue) => ({
   type: 'CONSTANT',
   startPosition,
   endPosition,
   constantValue,
 });
-const markerParts = [constant(1, 2, '01'), constant(17, 18, '91'), constant(27, 28, '17'), constant(35, 36, '10')];
+const markerParts = [constant(1, 2, '01'), constant(17, 18, '91'), constant(26, 27, '17'), constant(34, 35, '10')];
+const markerPartsGS = [constant(1, 2, '01'), constant(17, 18, '91'), constant(27, 28, '17'), constant(35, 36, '10')];
 const dataParts = [
+  { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+  { type: 'BEST_BEFORE_DATE', startPosition: 28, endPosition: 33, dateFormat: 'yyMMdd' },
+  { type: 'LOT', startPosition: 36, endPosition: 44 },
+];
+const dataPartsGS = [
   { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
   { type: 'BEST_BEFORE_DATE', startPosition: 29, endPosition: 34, dateFormat: 'yyMMdd' },
   { type: 'LOT', startPosition: 37, endPosition: 45 },
@@ -142,7 +151,7 @@ describe('cuLabel.readCULabel with a PackId part', () => {
   const packIdFormat = {
     id: 8,
     name: 'CU label with pack ID',
-    parts: [...markerParts, ...dataParts, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
+    parts: [...markerParts, ...dataParts, constant(45, 46, '92'), { type: 'PACK_ID', startPosition: 47 }],
   };
 
   it('reads the pack ID (open end), also with several digits', () => {
@@ -156,8 +165,8 @@ describe('cuLabel.readCULabel with a PackId part', () => {
   });
 
   it('a label ending before the "92" marker or the pack ID part is a format mismatch, whether or not a pack ID is required (L0)', () => {
-    const beforeMarker = LABEL.substring(0, 46);
-    const markerOnly = LABEL.substring(0, 48);
+    const beforeMarker = LABEL.substring(0, 44);
+    const markerOnly = LABEL.substring(0, 46);
     for (const string of [beforeMarker, markerOnly]) {
       expect(readCULabel({ string, format: packIdFormat, isPackIdRequired: true })).toEqual({
         errorKey: 'picking.cuLabel.formatMismatch',
@@ -173,20 +182,20 @@ describe('cuLabel.readCULabel with a PackId part', () => {
   it('no PackId part: a cut-off label is a format mismatch', () => {
     const noZoneFormat = {
       ...packIdFormat,
-      parts: [...markerParts, ...dataParts, constant(47, 48, '92'), constant(52, 53, '93')],
+      parts: [...markerParts, ...dataParts, constant(45, 46, '92'), constant(50, 51, '93')],
     };
-    expect(readCULabel({ string: LABEL.substring(0, 49), format: noZoneFormat, isPackIdRequired: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 47), format: noZoneFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
       errorDetails: expect.any(String),
     });
-    expect(readCULabel({ string: LABEL.substring(0, 46), format: noZoneFormat, isPackIdRequired: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 44), format: noZoneFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
       errorDetails: expect.any(String),
     });
   });
 
   it('a label ending before the lot is a format mismatch even when a pack ID is required', () => {
-    expect(readCULabel({ string: LABEL.substring(0, 36), format: packIdFormat, isPackIdRequired: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 35), format: packIdFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
       errorDetails: expect.any(String),
     });
@@ -195,9 +204,9 @@ describe('cuLabel.readCULabel with a PackId part', () => {
   it('a label ending before the pack ID part is a format mismatch whatever the marker is', () => {
     const otherMarkerFormat = {
       ...packIdFormat,
-      parts: [...markerParts, ...dataParts, constant(47, 48, '93'), { type: 'PACK_ID', startPosition: 49 }],
+      parts: [...markerParts, ...dataParts, constant(45, 46, '93'), { type: 'PACK_ID', startPosition: 47 }],
     };
-    expect(readCULabel({ string: LABEL.substring(0, 46), format: otherMarkerFormat, isPackIdRequired: true })).toEqual({
+    expect(readCULabel({ string: LABEL.substring(0, 44), format: otherMarkerFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
       errorDetails: expect.any(String),
     });
@@ -221,6 +230,42 @@ describe('cuLabel.readCULabel with a PackId part', () => {
       bestBeforeDate: '2026-11-07',
       packId: '2',
       cuLabel: LABEL,
+    });
+  });
+});
+
+describe('cuLabel with a scanner that sends the GS separator (char 29)', () => {
+  const formatGS = { id: 9, name: 'CU label with GS', parts: [...markerPartsGS, ...dataPartsGS] };
+  const packIdFormatGS = {
+    id: 10,
+    name: 'CU label with GS and pack ID',
+    parts: [...markerPartsGS, ...dataPartsGS, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
+  };
+
+  it('reads product, lot and best-before with a format of the GS positions', () => {
+    expect(readCULabel({ string: LABEL_GS, format: formatGS })).toEqual({
+      productNo: 'PTST001',
+      lotNo: 'LA0000001',
+      bestBeforeDate: '2026-11-07',
+      packId: undefined,
+    });
+  });
+
+  it('reads the pack ID with a format of the GS positions', () => {
+    expect(readCULabel({ string: LABEL_GS, format: packIdFormatGS }).packId).toBe('2');
+  });
+
+  it('the label without separators is a format mismatch for the format of the GS positions', () => {
+    expect(readCULabel({ string: LABEL, format: formatGS })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
+    });
+  });
+
+  it('the label with GS separators is a format mismatch for the format of the real positions', () => {
+    expect(readCULabel({ string: LABEL_GS, format })).toEqual({
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 });

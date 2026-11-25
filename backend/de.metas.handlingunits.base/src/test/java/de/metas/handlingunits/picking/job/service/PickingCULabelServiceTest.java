@@ -85,14 +85,12 @@ class PickingCULabelServiceTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "92"),
-						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo),
+						constant(45, 46, "92"),
+						part(47, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)
 				))
 				.build());
 	}
@@ -133,6 +131,13 @@ class PickingCULabelServiceTest
 	}
 
 	private static String label(final String gtin, final String productNo, final String packId)
+	{
+		// the string the scanner sends (DataWedge without control characters): 47 characters for a one-digit pack ID, no separators
+		return "01" + gtin + "91" + productNo + "17" + "261107" + "10" + LOT + "92" + packId;
+	}
+
+	/** The same label as a scanner that sends the GS separator (char 29) after the product and after the lot */
+	private static String labelWithGS(final String gtin, final String productNo, final String packId)
 	{
 		return "01" + gtin + "91" + productNo + GS + "17" + "261107" + "10" + LOT + GS + "92" + packId;
 	}
@@ -279,7 +284,7 @@ class PickingCULabelServiceTest
 	@Test
 	void labelEndingBeforeANonPackIdPart_isFormatMismatch()
 	{
-		final String truncatedBeforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);
+		final String truncatedBeforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 35);
 
 		assertFails(() -> resolve(truncatedBeforeLot, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
@@ -320,13 +325,12 @@ class PickingCULabelServiceTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo)))
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo)))
 				.build());
-		final String beforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 36);
+		final String beforeLot = label(GTIN, PRODUCT_NO, "7").substring(0, 35);
 
 		assertFails(() -> resolve(beforeLot, CUQtyEntryMode.SCAN_EACH_CU, constantBeforeLastPartFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
@@ -341,20 +345,18 @@ class PickingCULabelServiceTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "92"),
-						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo),
+						constant(45, 46, "92"),
+						part(47, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 				.build());
 
 		assertThat(resolve(label(GTIN, PRODUCT_NO, "2"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("2"));
 		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("10"));
 
-		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 46); // ends before "92"
+		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 44); // ends before "92"
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
@@ -369,17 +371,15 @@ class PickingCULabelServiceTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "92"),
-						constant(52, 53, "93")))
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo),
+						constant(45, 46, "92"),
+						constant(50, 51, "93")))
 				.build());
-		final String insideGap = label(GTIN, PRODUCT_NO, "2").substring(0, 49);
-		final String beforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
+		final String insideGap = label(GTIN, PRODUCT_NO, "2").substring(0, 47);
+		final String beforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 44);
 
 		assertFails(() -> resolve(insideGap, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, gapFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
@@ -395,16 +395,14 @@ class PickingCULabelServiceTest
 						part(3, 16, ScannableCodeFormatPartType.Ignored),
 						constant(17, 18, "91"),
 						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "93"),
-						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+						constant(26, 27, "17"),
+						part(28, 33, ScannableCodeFormatPartType.BestBeforeDate),
+						constant(34, 35, "10"),
+						part(36, 44, ScannableCodeFormatPartType.LotNo),
+						constant(45, 46, "93"),
+						part(47, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 				.build());
-		final String endsBeforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
+		final String endsBeforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 44);
 
 		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_EACH_CU, otherMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, otherMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
@@ -422,7 +420,7 @@ class PickingCULabelServiceTest
 		@Test
 		void labelEndingBeforeTheMarker_isAFormatMismatch()
 		{
-			final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
+			final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 44);
 
 			assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
@@ -436,13 +434,13 @@ class PickingCULabelServiceTest
 			logger.addAppender(logAppender);
 			try
 			{
-				final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
+				final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 44);
 				assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 
 				assertThat(logAppender.list).hasSize(1);
 				final ILoggingEvent event = logAppender.list.get(0);
 				assertThat(event.getLevel()).isEqualTo(Level.WARN);
-				assertThat(event.getFormattedMessage()).contains("Cannot extract part Ignored[46-46]");
+				assertThat(event.getFormattedMessage()).contains("Cannot extract part Constant[45-46]");
 			}
 			finally
 			{
@@ -453,7 +451,7 @@ class PickingCULabelServiceTest
 		@Test
 		void labelEndingBeforeThePackIdPart_isAFormatMismatch()
 		{
-			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
 
 			assertFails(() -> resolve(constantOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
@@ -483,7 +481,7 @@ class PickingCULabelServiceTest
 		@Test
 		void labelEndingBeforeThePackIdPart_isFormatMismatch()
 		{
-			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
+			final String constantOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
 
 			assertFails(() -> resolve(constantOnly, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
@@ -496,6 +494,61 @@ class PickingCULabelServiceTest
 			final ResolvedCULabel resolved = service.resolve(line(PRODUCT_NO), data, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy());
 			assertThat(resolved).isNotNull();
 			assertThat(resolved.getPackId()).isNull();
+		}
+	}
+
+	@Nested
+	class LabelWithGSSeparators
+	{
+		private ScannableCodeFormat gsFormat;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			gsFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
+					.name("CU label with GS")
+					.parts(ImmutableList.of(
+							constant(1, 2, "01"),
+							part(3, 16, ScannableCodeFormatPartType.Ignored),
+							constant(17, 18, "91"),
+							part(19, 25, ScannableCodeFormatPartType.ProductCode),
+							part(26, 26, ScannableCodeFormatPartType.Ignored),
+							constant(27, 28, "17"),
+							part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+							constant(35, 36, "10"),
+							part(37, 45, ScannableCodeFormatPartType.LotNo),
+							part(46, 46, ScannableCodeFormatPartType.Ignored),
+							constant(47, 48, "92"),
+							part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+					.build());
+		}
+
+		@Test
+		void labelWithGS_isReadByAFormatWithTheGSPositions()
+		{
+			final ResolvedCULabel resolved = resolve(labelWithGS(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_EACH_CU, gsFormat.getId());
+
+			assertThat(resolved.getProductId()).isEqualTo(ProductId.ofRepoId(10));
+			assertThat(resolved.getLotNo()).isEqualTo(LOT);
+			assertThat(resolved.getPackId()).isEqualTo(CULabelPackId.ofString("7"));
+		}
+
+		@Test
+		void labelWithGS_otherProduct_isRefused()
+		{
+			assertFails(() -> resolve(labelWithGS(GTIN, "OTHER99", "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, gsFormat.getId()), HU_PRODUCT_NOT_MATCHING);
+		}
+
+		@Test
+		void labelWithGS_isNotReadByTheFormatOfTheLabelWithoutSeparators()
+		{
+			assertFails(() -> resolve(labelWithGS(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()), CU_LABEL_FORMAT_MISMATCH);
+		}
+
+		@Test
+		void labelWithoutSeparators_isNotReadByTheFormatWithTheGSPositions()
+		{
+			assertFails(() -> resolve(label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, gsFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
 	}
 }

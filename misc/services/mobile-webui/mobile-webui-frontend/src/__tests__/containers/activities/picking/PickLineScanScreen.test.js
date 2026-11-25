@@ -58,7 +58,9 @@ describe('PickingLineScanScreen', () => {
 
 describe('PickingLineScanScreen: label-based mode label scan', () => {
   const GS = '\u001d';
-  const label = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
+  // the string the scanner sends (DataWedge without control characters), and the same label from a scanner that sends GS
+  const label = `0109506000134352` + `91PTST001` + `17261107` + `10LA0000001` + `922`;
+  const labelGS = `0109506000134352` + `91PTST001${GS}17261107` + `10LA0000001${GS}922`;
   const constant = (startPosition, endPosition, constantValue) => ({
     type: 'CONSTANT',
     startPosition,
@@ -71,6 +73,19 @@ describe('PickingLineScanScreen: label-based mode label scan', () => {
     parts: [
       constant(1, 2, '01'),
       constant(17, 18, '91'),
+      constant(26, 27, '17'),
+      constant(34, 35, '10'),
+      { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
+      { type: 'BEST_BEFORE_DATE', startPosition: 28, endPosition: 33, dateFormat: 'yyMMdd' },
+      { type: 'LOT', startPosition: 36, endPosition: 44 },
+    ],
+  };
+  const cuLabelFormatGS = {
+    id: 8,
+    name: 'CU label with GS',
+    parts: [
+      constant(1, 2, '01'),
+      constant(17, 18, '91'),
       constant(27, 28, '17'),
       constant(35, 36, '10'),
       { type: 'PRODUCT_CODE', startPosition: 19, endPosition: 25 },
@@ -78,6 +93,21 @@ describe('PickingLineScanScreen: label-based mode label scan', () => {
       { type: 'LOT', startPosition: 37, endPosition: 45 },
     ],
   };
+
+  it('a label with GS separators is read with a format of the GS positions', () => {
+    expect(
+      convertScannedCULabelToResolvedResult({
+        scannedBarcode: labelGS,
+        cuLabelFormat: cuLabelFormatGS,
+        expectedProductNo: 'PTST001',
+      })
+    ).toEqual({
+      lotNo: 'LA0000001',
+      bestBeforeDate: '2026-11-07',
+      cuLabel: labelGS,
+      isTUToBePickedAsWhole: false,
+    });
+  });
 
   it('fills lot and best-before and keeps the raw label', () => {
     expect(
