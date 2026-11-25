@@ -53,9 +53,9 @@ export const PickingSlotScreen = {
      * Scan a TU's GRAI barcode on the PickingSlotScreen.
      *
      * The screen renders a BarcodeScannerComponent with data-testid="grai-scanner".
-     * On a successful scan the backend resolves the HU by GRAI attribute, consolidates it onto
+     * On a successful scan the backend resolves the HU by GRAI attribute among the crates of the job, consolidates it onto
      * the target LU, and refreshes the slot content — the screen stays on PickingSlotScreen.
-     * On error (HuNotFound, LuNotAtPickingSlot) the backend returns 4xx → error toast.
+     * On error (HuNotFound, HuAmbiguous, LuNotAtPickingSlot) the backend returns 4xx → error toast.
      *
      * @param {string} graiString - Canonical GRAI string ("{companyPrefix}.{assetType}.{serial}")
      */

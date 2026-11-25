@@ -64,7 +64,6 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -1656,16 +1655,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
-				.firstIdOnly();
-	}
-
-	@Override
-	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
-	{
-		return handlingUnitsRepo.createHUQueryBuilder()
-				.setOnlyActiveHUs(true)
-				.setOnlyTopLevelHUs()
-				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
 				.firstIdOnly();
 	}
 
