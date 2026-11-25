@@ -47,6 +47,7 @@ const createMasterdata = async ({ readAttributes, lots, orderQty, withLU = false
                     allowSkippingRejectedReason: true,
                 }
             },
+            // the best-before row is the generic case for the best-before test; the lot row mirrors the real configuration
             shipmentScheduleAttributeConfigs: [LOT_ATTRIBUTE, BEST_BEFORE_ATTRIBUTE],
             bpartners: { "BP1": {} },
             warehouses: { "wh": {} },
@@ -316,4 +317,6 @@ test('one box, five CUs of three lots: every CU keeps its own lot, the box lot s
     });
 
     await PickingJobScreen.complete();
+
+    // The shipment lines of this box (merged per lot or one per CU) are asserted on the final build, together with the shipment fix; this test covers the picking side only.
 });

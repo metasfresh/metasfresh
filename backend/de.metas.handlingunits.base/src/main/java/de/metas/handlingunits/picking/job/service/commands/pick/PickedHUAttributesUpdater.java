@@ -22,8 +22,8 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.function.Supplier;
 import java.util.LinkedHashSet;
+import java.util.function.Supplier;
 
 @Builder
 class PickedHUAttributesUpdater
@@ -102,6 +102,7 @@ class PickedHUAttributesUpdater
 
 		applyPickOrRecompute(huAttributes, AttributeConstants.ATTR_BestBeforeDate, recomputeFromChildren, pickAttributes.isSetBestBeforeDate(),
 				pickAttributes::getBestBeforeDate, () -> computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+		// ProductionDate is deliberately not part of applyPickOrRecompute: only lot and best-before are kept on a pick without a sent value
 		if (pickAttributes.isSetProductionDate())
 		{
 			if (recomputeFromChildren)
