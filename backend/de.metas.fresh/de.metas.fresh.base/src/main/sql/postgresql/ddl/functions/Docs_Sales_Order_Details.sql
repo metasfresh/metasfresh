@@ -153,7 +153,7 @@ FROM C_OrderLine ol
          LEFT OUTER JOIN C_Tax t ON ol.C_Tax_ID = t.C_Tax_ID
 
     -- Get Attributes
-         LEFT OUTER JOIN (SELECT STRING_AGG(att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
+         LEFT OUTER JOIN (SELECT STRING_AGG(att.at_value ||': '||att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
                           FROM Report.fresh_Attributes att
                                    JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
                           WHERE att.IsPrintedInDocument = 'Y'
