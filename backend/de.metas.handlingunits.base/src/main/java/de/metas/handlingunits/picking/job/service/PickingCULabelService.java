@@ -59,17 +59,17 @@ public class PickingCULabelService
 		}
 
 		logger.warn("CU label refused: label '{}' does not match format {}: {}", label, format.getId(), parsed.getExplanation().getDefaultValue());
-		throw userError(MSG_CU_LABEL_FORMAT_MISMATCH);
+		throw new AdempiereException(MSG_CU_LABEL_FORMAT_MISMATCH);
 	}
 
 	@NonNull
 	private ScannableCodeFormat getFormat(@NonNull final Optional<ScannableCodeFormatId> formatId)
 	{
-		final ScannableCodeFormatId id = formatId.orElseThrow(() -> userError(MSG_CU_LABEL_NO_FORMAT));
+		final ScannableCodeFormatId id = formatId.orElseThrow(() -> new AdempiereException(MSG_CU_LABEL_NO_FORMAT));
 		return huService.getScannableCodeFormat(id)
 				.orElseThrow(() -> {
 					logger.warn("CU label refused: label format {} not found or inactive", id.getRepoId());
-					return userError(MSG_CU_LABEL_NO_FORMAT);
+					return new AdempiereException(MSG_CU_LABEL_NO_FORMAT);
 				});
 	}
 
@@ -81,12 +81,12 @@ public class PickingCULabelService
 		if (labelData.getProductNo() == null)
 		{
 			logger.warn("CU label refused: the format reads no product number (no ProductCode part): {}, line {}", labelData, line.getId());
-			throw userError(MSG_CU_LABEL_FORMAT_MISMATCH);
+			throw new AdempiereException(MSG_CU_LABEL_FORMAT_MISMATCH);
 		}
 		if (!Objects.equals(labelData.getProductNo(), line.getProductNo()))
 		{
 			logger.warn("CU label refused: other product than the line's {}: {}, line {}", line.getProductNo(), labelData, line.getId());
-			throw userError(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductName());
+			throw new AdempiereException(MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING, line.getProductName());
 		}
 
 		final boolean isPackIdRequired = policy.isPackIdRequired();
@@ -94,7 +94,7 @@ public class PickingCULabelService
 		if (isPackIdRequired && packId == null)
 		{
 			logger.warn("CU label refused: the label has no pack ID: {}, line {}", labelData, line.getId());
-			throw userError(MSG_CU_LABEL_NO_PACK_ID);
+			throw new AdempiereException(MSG_CU_LABEL_NO_PACK_ID);
 		}
 
 		return ResolvedCULabel.builder()
@@ -113,10 +113,5 @@ public class PickingCULabelService
 				.bestBeforeDate(parsed.getBestBeforeDate())
 				.packId(CULabelPackId.ofNullable(parsed.getPackId()))
 				.build();
-	}
-
-	private static AdempiereException userError(@NonNull final AdMessageKey messageKey, final Object... params)
-	{
-		return new AdempiereException(messageKey, params).markAsUserValidationError();
 	}
 }

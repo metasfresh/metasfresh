@@ -53,7 +53,7 @@ class PickingJobPickAllCommandTest
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void profileLabelBasedMode_refused(final boolean isAllowQuickPackAll)
+	void profileLabelRequiredMode_refused(final boolean isAllowQuickPackAll)
 	{
 		createProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, isAllowQuickPackAll);
 		final PickingJob job = createSalesOrderJob("salesOrder-i", helper.shipToBPLocationId);
@@ -62,7 +62,7 @@ class PickingJobPickAllCommandTest
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void customerLabelBasedMode_overProfileManual_refused(final boolean isAllowQuickPackAll)
+	void customerLabelRequiredMode_overProfileManual_refused(final boolean isAllowQuickPackAll)
 	{
 		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, isAllowQuickPackAll);
 		createCustomerRecord(profile, helper.shipToBPLocationId.getBpartnerId(), CUQtyEntryMode.SCAN_EACH_CU);

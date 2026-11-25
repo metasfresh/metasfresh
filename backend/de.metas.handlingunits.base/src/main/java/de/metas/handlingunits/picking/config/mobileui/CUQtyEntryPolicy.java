@@ -22,7 +22,7 @@ public final class CUQtyEntryPolicy
 
 	public boolean isScanOnce() {return isLabelScanned && !isPackIdUsed;}
 
-	public boolean isBookedAsSingleCUInTU() {return isLabelScanned;}
+	public boolean isBookAsSingleCUInTU() {return isLabelScanned;}
 
 	public boolean isPackIdRequired() {return isPackIdUsed;}
 

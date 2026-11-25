@@ -162,7 +162,7 @@ const PickLineScanScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties: { entries: computeOpenTUHeaderEntries({ isLabelRequiredLine, tuPickingTarget }) },
-    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode, 'data-cu-label-scan': String(isLabelRequiredLine) },
+    rootDataAttributes: { 'data-cu-qty-entry-mode': cuQtyEntryMode, 'data-cu-label-required': String(isLabelRequiredLine) },
     isLiveRefresh: isLabelRequiredLine,
   });
 
@@ -296,7 +296,7 @@ export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sour
   return sourceHUQRCode;
 };
 
-/** The source HU of a label-based-mode pick */
+/** The source HU of a label-required-mode pick */
 // @VisibleForTesting
 export const computeSourceHUQRCode = ({ qrCode, activity }) => qrCode || activity?.dataStored?.pickFromHU?.code;
 

@@ -105,7 +105,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.build();
 	}
 
-	private LUTUResult pack(final I_M_HU source, final String qty, final PackToInfo packToInfo, final boolean isLabelBasedModes)
+	private LUTUResult pack(final I_M_HU source, final String qty, final PackToInfo packToInfo, final boolean isLabelRequiredModes)
 	{
 		final IHUContext huContext = helper.huTestHelper.createMutableHUContextOutOfTransaction();
 		return producer.packToHU(PackToHURequest.builder()
@@ -117,7 +117,7 @@ public class PackToHUsProducerCUQtyEntryTest
 				.documentRef(TableRecordReference.of(source))
 				.checkIfAlreadyPacked(true)
 				.createInventoryForMissingQty(true)
-				.isBookAsSingleCUInTU(isLabelBasedModes)
+				.isBookAsSingleCUInTU(isLabelRequiredModes)
 				.build());
 	}
 

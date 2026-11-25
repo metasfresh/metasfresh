@@ -56,7 +56,7 @@ describe('PickingLineScanScreen', () => {
   });
 });
 
-describe('PickingLineScanScreen: label-based mode label scan', () => {
+describe('PickingLineScanScreen: label-required mode label scan', () => {
   const GS = '\u001d';
   // the string the scanner sends (DataWedge without control characters), and the same label from a scanner that sends GS
   const label = `0109506000134352` + `91PTST001` + `17261107` + `10LA0000001` + `922`;
@@ -142,7 +142,7 @@ describe('PickingLineScanScreen: label-based mode label scan', () => {
 });
 
 describe('PickingLineScanScreen: pick-time GRAI capture', () => {
-  it('stays on for Manual  and is switched off in both label-based modes', () => {
+  it('stays on for Manual  and is switched off in both label-required modes', () => {
     const base = { graiScanEnabled: true, tuPickingTarget: null };
     expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryPolicy: POLICY.MANUAL })).toBe(true);
     expect(isInlineGraiCaptureEnabled({ ...base, cuQtyEntryPolicy: POLICY.SCAN_EACH_CU })).toBe(false);
@@ -155,7 +155,7 @@ describe('PickingLineScanScreen: pick-time GRAI capture', () => {
   });
 });
 
-describe('PickingLineScanScreen: GRAI scan on a label-based-mode line', () => {
+describe('PickingLineScanScreen: GRAI scan on a label-required-mode line', () => {
   const A_GRAI = '1234567.12345.SERIAL1';
 
   it('opens the TU from the GRAI and does not read it as a label', async () => {
@@ -200,7 +200,7 @@ describe('PickingLineScanScreen: quantity unit follows the line picking unit fro
     });
   });
 
-  it('a label-based-mode line that the backend reports in CU shows the CU caption and no packing item name', () => {
+  it('a label-required-mode line that the backend reports in CU shows the CU caption and no packing item name', () => {
     expect(
       computeQtyUnitProps({
         pickingUnit: 'CU',
@@ -226,7 +226,7 @@ describe('PickingLineScanScreen: re-entry hop', () => {
 });
 
 describe('PickingLineScanScreen: the open TU is shown in the header', () => {
-  it('a label-based-mode line with an open TU shows its caption', () => {
+  it('a label-required-mode line with an open TU shows its caption', () => {
     expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
       { caption: expect.any(String), value: 'Kiste 7', valueTestId: 'openTU-caption' },
     ]);
@@ -294,7 +294,7 @@ describe('PickingLineScanScreen: the HU the PICK event takes the CUs from', () =
     expect(computeSourceHUQRCode({ qrCode: null, activity: undefined })).toBeUndefined();
   });
 
-  it('a label-based-mode pick without any source HU is refused with the pick-from message, nothing is posted', () => {
+  it('a label-required-mode pick without any source HU is refused with the pick-from message, nothing is posted', () => {
     [POLICY.SCAN_EACH_CU, POLICY.SCAN_ONCE_ENTER_QTY].forEach((cuQtyEntryPolicy) => {
       expect(() =>
         computePickFromHUQRCode({ cuQtyEntryPolicy, sourceHUQRCode: undefined, scannedBarcode: label })
@@ -308,7 +308,7 @@ describe('PickingLineScanScreen: the HU the PICK event takes the CUs from', () =
 });
 
 describe('PickingLineScanScreen: no-source refusal reaches the toast', () => {
-  it('a label-based-mode pick without a source HU rejects (so callers .catch it into the toast), shows the message, posts nothing', async () => {
+  it('a label-required-mode pick without a source HU rejects (so callers .catch it into the toast), shows the message, posts nothing', async () => {
     setupCounterpart();
     jest.spyOn(toast, 'error').mockImplementation(mockToastError);
     jest.spyOn(console, 'log').mockImplementation(() => {});

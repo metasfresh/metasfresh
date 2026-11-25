@@ -56,7 +56,7 @@ describe('GetQuantityDialog (Manual): submit and default buttons', () => {
   });
 });
 
-describe('GetQuantityDialog (label-based CU quantity entry mode): one OK books once', () => {
+describe('GetQuantityDialog (label-required CU quantity entry mode): one OK books once', () => {
   it('a click on OK calls onQtyChange exactly once', async () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
     renderManual({ onQtyChange, cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });

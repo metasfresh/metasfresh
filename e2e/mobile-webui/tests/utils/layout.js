@@ -38,8 +38,8 @@ const measureLayout = ({ scope, minTapSize }) => {
         issues.push(`page is wider than the screen (${document.documentElement.scrollWidth} > ${vw})`);
     }
 
-    const isLabelBasedScreen = (el) => !!el.closest('[data-cu-label-scan="true"]');
-    const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isLabelBasedScreen(el));
+    const isLabelRequiredScreen = (el) => !!el.closest('[data-cu-label-required="true"]');
+    const isBaseChrome = (el) => !!el.closest('.app-header, .app-footer') || (!!el.closest('.view-header') && !isLabelRequiredScreen(el));
     const isLineButtonText = (el) => !!el.closest('button[id^="line-"]');
     const all = [...root.querySelectorAll('*')].filter(isShown).filter((el) => !isBaseChrome(el));
     const controls = all.filter((el) => !el.closest('.Toastify') && el.matches('button, input:not([type=hidden]), select, textarea, a[href], [role=button]') && el.getBoundingClientRect().height >= 4);

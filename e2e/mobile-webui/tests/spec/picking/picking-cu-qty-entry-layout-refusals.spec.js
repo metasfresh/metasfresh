@@ -34,7 +34,7 @@ const masterdataOf = async (mode, { lang = 'en_US', orders, ...rest }) =>
         : await createMasterdata({ formatName: uniqueFormatName(), orders, language: lang, ...rest });
 
 for (const viewport of PHONE_VIEWPORTS) {
-    test.describe(`label-based mode screens ${viewport.name}`, () => {
+    test.describe(`label-required mode screens ${viewport.name}`, () => {
         test.use({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: viewport.deviceScaleFactor });
         const layoutFor = (lang) => (label, scope) => expectLayoutSound(`${label} [${lang}]`, viewport, scope);
 

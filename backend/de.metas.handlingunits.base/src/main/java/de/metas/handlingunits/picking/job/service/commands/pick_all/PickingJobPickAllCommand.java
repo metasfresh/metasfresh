@@ -36,7 +36,7 @@ public class PickingJobPickAllCommand
 	{
 		PickingJob pickingJob = pickingJobService.getById(pickingJobId);
 		pickingJob.assertCanBeEditedBy(callerId);
-		assertNoLineUsesLabelBasedCUQtyEntryMode(pickingJob);
+		assertNoLabelRequiredLine(pickingJob);
 
 		PickingJob pickingJobChanged = pickingJob;
 
@@ -53,13 +53,13 @@ public class PickingJobPickAllCommand
 		return pickingJobService.complete(pickingJobChanged);
 	}
 
-	/** Pick-all books without a label scan, so one line in a label-based CU quantity entry mode refuses the whole job. */
-	private void assertNoLineUsesLabelBasedCUQtyEntryMode(final PickingJob pickingJob)
+	/** Pick-all books without a label scan, so one line in a label-required CU quantity entry mode refuses the whole job. */
+	private void assertNoLabelRequiredLine(final PickingJob pickingJob)
 	{
-		final boolean isAnyLineLabelBased = pickingJob.hasLine(configService::isLabelRequired);
-		if (isAnyLineLabelBased)
+		final boolean isAnyLabelRequiredLine = pickingJob.hasLine(configService::isLabelRequired);
+		if (isAnyLabelRequiredLine)
 		{
-			throw new AdempiereException(MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED).markAsUserValidationError();
+			throw new AdempiereException(MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED);
 		}
 	}
 }

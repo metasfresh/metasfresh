@@ -11,7 +11,7 @@ describe('hasLabelRequiredLine', () => {
   it('is false when all lines are MANUAL', () => {
     expect(hasLabelRequiredLine([line('MANUAL'), line('MANUAL')])).toBe(false);
   });
-  it('is true with one label-based-mode line', () => {
+  it('is true with one label-required-mode line', () => {
     expect(hasLabelRequiredLine([line('MANUAL'), line('SCAN_ONCE_ENTER_QTY')])).toBe(true);
     expect(hasLabelRequiredLine([line('SCAN_EACH_CU')])).toBe(true);
   });
@@ -30,7 +30,7 @@ describe('isQuickPackAllAllowed', () => {
   it('is allowed for Manual-only and absent-field jobs', () => {
     expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line('MANUAL'), {}] })).toBe(true);
   });
-  it('is refused when a line has a label-based mode', () => {
+  it('is refused when a line has a label-required mode', () => {
     expect(isQuickPackAllAllowed({ allowQuickPackAll: true, lines: [line('SCAN_EACH_CU')] })).toBe(false);
   });
 });

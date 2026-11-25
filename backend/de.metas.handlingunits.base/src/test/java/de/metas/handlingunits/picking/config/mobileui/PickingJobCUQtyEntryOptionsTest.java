@@ -56,7 +56,7 @@ class PickingJobCUQtyEntryOptionsTest
 		}
 
 		@Test
-		void customerMode_manual_winsOverProfileLabelBasedMode()
+		void customerMode_manual_winsOverProfileLabelRequiredMode()
 		{
 			final PickingJobOptions resolved = options(CUQtyEntryMode.MANUAL, null).fallbackTo(options(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, null));
 			assertThat(resolved.getCUQtyEntryModeOrDefault()).isEqualTo(CUQtyEntryMode.MANUAL);
@@ -114,8 +114,8 @@ class PickingJobCUQtyEntryOptionsTest
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isOverPickAlwaysRefused()).isFalse();
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isPickWholeTUAllowed()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().isPickWholeTUAllowed()).isFalse();
-			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookedAsSingleCUInTU()).isFalse();
-			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isBookedAsSingleCUInTU()).isTrue();
+			assertThat(CUQtyEntryMode.MANUAL.getPolicy().isBookAsSingleCUInTU()).isFalse();
+			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().isBookAsSingleCUInTU()).isTrue();
 			assertThat(CUQtyEntryMode.SCAN_EACH_CU.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("1");
 			assertThat(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");
 			assertThat(CUQtyEntryMode.MANUAL.getPolicy().getQtyToPickCUs(new java.math.BigDecimal("7"))).isEqualByComparingTo("7");

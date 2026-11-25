@@ -791,22 +791,22 @@ public class PickingJobService implements PickingSlotListener
 		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
-	/** Closes the job's targets and every line's targets; closed HUs of lines in a label-based CU quantity entry mode go to their own line's picking slot, the others to the slot scanned last. */
+	/** Closes the job's targets and every line's targets; closed HUs of lines in a label-required CU quantity entry mode go to their own line's picking slot, the others to the slot scanned last. */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final Predicate<PickingJobLine> isLabelRequired = configService::isLabelRequired;
 		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
-		final ImmutableSet<HuId> cusBookedLabelBased = pickingJob.hasLine(isToCheckForLabelBookings)
-				? huService.filterBookedWithLabelScan(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
+		final ImmutableSet<HuId> cusBookedWithLabel = pickingJob.hasLine(isToCheckForLabelBookings)
+				? huService.filterBookedWithLabel(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
 				: ImmutableSet.of();
-		final List<PickingJobLine> labelBasedLines = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedLabelBased));
-		if (labelBasedLines.isEmpty())
+		final List<PickingJobLine> labelRequiredLines = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedWithLabel));
+		if (labelRequiredLines.isEmpty())
 		{
 			return closeAllTargetsOnLastScannedSlot(pickingJob);
 		}
 		else
 		{
-			return closeTargetsPerLabelBasedLineSlot(pickingJob, labelBasedLines);
+			return closeTargetsPerLabelRequiredLineSlot(pickingJob, labelRequiredLines);
 		}
 	}
 
@@ -815,10 +815,10 @@ public class PickingJobService implements PickingSlotListener
 		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
 	}
 
-	private PickingJob closeTargetsPerLabelBasedLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> labelBasedLines)
+	private PickingJob closeTargetsPerLabelRequiredLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> labelRequiredLines)
 	{
 		PickingJob pickingJobChanged = closeHeaderTargets(pickingJob);
-		for (final PickingJobLine line : labelBasedLines)
+		for (final PickingJobLine line : labelRequiredLines)
 		{
 			pickingJobChanged = closeLineTargets(pickingJobChanged, line.getId());
 		}

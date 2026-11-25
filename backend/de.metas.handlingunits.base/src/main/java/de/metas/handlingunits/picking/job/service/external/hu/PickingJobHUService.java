@@ -160,9 +160,9 @@ public class PickingJobHUService
 	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
 	@VisibleForTesting
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
+	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
 	{
-		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabelScan));
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabel));
 	}
 
 	/** The GRAI snapshots of what was picked on the given lines. */
@@ -171,10 +171,10 @@ public class PickingJobHUService
 	{
 		final ImmutableSet<HuId> pickedHUIds = lines.stream().flatMap(line -> line.getPickedHUIds().stream()).collect(ImmutableSet.toImmutableSet());
 		final ImmutableList<HUInfo> pickedHUInfos = lines.stream().flatMap(line -> line.getPickedHUInfos().stream()).collect(ImmutableList.toImmutableList());
-		return getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(pickedHUIds, filterBookedWithLabelScan(pickedHUInfos));
+		return getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(pickedHUIds, filterBookedWithLabel(pickedHUInfos));
 	}
 
-	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
 	{
 		// CUs of the same TU share their parent item: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
@@ -182,7 +182,7 @@ public class PickingJobHUService
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
 		{
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-			if (cusBookedWithLabelScan.contains(huId))
+			if (cusBookedWithLabel.contains(huId))
 			{
 				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
 			}
@@ -211,7 +211,7 @@ public class PickingJobHUService
 	}
 
 	@NonNull
-	public ImmutableSet<HuId> filterBookedWithLabelScan(@NonNull final Collection<HUInfo> pickedHUInfos)
+	public ImmutableSet<HuId> filterBookedWithLabel(@NonNull final Collection<HUInfo> pickedHUInfos)
 	{
 		return filterCUsInTU(filterAssignedToOwnQRCode(pickedHUInfos));
 	}

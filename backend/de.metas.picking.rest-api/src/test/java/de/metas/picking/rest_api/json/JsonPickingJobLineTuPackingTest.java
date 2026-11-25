@@ -86,7 +86,7 @@ class JsonPickingJobLineTuPackingTest
 	}
 
 	@Test
-	void labelBasedModeLineOnTuPacking_countsCUs()
+	void labelRequiredModeLineOnTuPacking_countsCUs()
 	{
 		final HUPIItemProduct packingInfo = packing(540010)
 				.productId(ProductId.ofRepoId(10))

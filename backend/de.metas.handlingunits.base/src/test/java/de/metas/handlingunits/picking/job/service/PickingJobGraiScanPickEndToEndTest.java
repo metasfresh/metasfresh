@@ -561,7 +561,7 @@ class PickingJobGraiScanPickEndToEndTest
 	class GetGraiSnapshots
 	{
 		@Test
-		void labelBasedMode_pickedCUInsideTU_tuWithoutGrai_isRefused()
+		void labelRequiredMode_pickedCUInsideTU_tuWithoutGrai_isRefused()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final HuId cuId = createTUWithCU(productId).getCuId();
@@ -573,7 +573,7 @@ class PickingJobGraiScanPickEndToEndTest
 		}
 
 		@Test
-		void labelBasedMode_pickedCUInsideTU_tuWithGrai_isAccepted()
+		void labelRequiredMode_pickedCUInsideTU_tuWithGrai_isAccepted()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final TUWithCU tu = createTUWithCU(productId);
@@ -583,7 +583,7 @@ class PickingJobGraiScanPickEndToEndTest
 		}
 
 		@Test
-		void labelBasedMode_severalCUsInSameTU_tuCheckedOnce()
+		void labelRequiredMode_severalCUsInSameTU_tuCheckedOnce()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final TUWithCU tu = createTUWithCU(productId);
@@ -620,7 +620,7 @@ class PickingJobGraiScanPickEndToEndTest
 		}
 
 		@Test
-		void labelBasedMode_dummyGRAIs_writtenOnTheTUOfThePickedCU()
+		void labelRequiredMode_dummyGRAIs_writtenOnTheTUOfThePickedCU()
 		{
 			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
 			final TUWithCU tu = createTUWithCU(productId);
@@ -663,6 +663,6 @@ class PickingJobGraiScanPickEndToEndTest
 
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

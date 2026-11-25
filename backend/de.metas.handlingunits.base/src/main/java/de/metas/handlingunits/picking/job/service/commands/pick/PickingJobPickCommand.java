@@ -162,7 +162,7 @@ public class PickingJobPickCommand
 	@NonNull private PickingJob _pickingJob;
 	@Nullable private PickingJobStepId _stepId;
 	@Nullable PickAttributes _pickAttributes; // lazy
-	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, label-based modes only
+	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, label-required modes only
 	@Nullable private HUInfo _pickFromHUIdAndQRCode; // lazy
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
@@ -228,12 +228,12 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabel = cuLabel;
-		// label-based modes always book CUs into the open TU: never a whole TU
+		// label-required modes always book CUs into the open TU: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = line.getPickingUnit(); // CU for label-based-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
+		this.pickingUnit = line.getPickingUnit(); // CU for label-required-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
@@ -270,7 +270,7 @@ public class PickingJobPickCommand
 			// Scan each CU: one CU per label, whatever quantity the client sent. One CU = one unit of the line UOM, so the line must be counted in pieces
 			if (cuQtyEntryPolicy.isPackIdRequired() && !X12DE355.EACH.equals(X12DE355.ofCode(uom.getX12DE355())))
 			{
-				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG).markAsUserValidationError();
+				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG);
 			}
 			this.qtyToPickCUs = Quantity.of(cuQtyEntryPolicy.getQtyToPickCUs(qtyToPickBD), uom);
 			this.qtyToPickTUs = null;
@@ -459,14 +459,14 @@ public class PickingJobPickCommand
 
 		if (!getTUPickingTarget().isPresent())
 		{
-			throw new AdempiereException(CU_NO_OPEN_TU_ERROR_MSG).markAsUserValidationError();
+			throw new AdempiereException(CU_NO_OPEN_TU_ERROR_MSG);
 		}
 
 		final ResolvedCULabel label = getResolvedCULabel();
 		if (cuQtyEntryPolicy.isPackIdRequired()
 				&& huService.isAlreadyPickedInJob(getPickingJob(), label.toCUPackIdentity()))
 		{
-			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId()).markAsUserValidationError();
+			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId());
 		}
 	}
 
@@ -1079,8 +1079,8 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		// Label-based modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the TU's code is assigned to the TU only)
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookedAsSingleCUInTU() ? cu.getId() : tu1.getId());
+		// Label-required modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the TU's code is assigned to the TU only)
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookAsSingleCUInTU() ? cu.getId() : tu1.getId());
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
@@ -1238,7 +1238,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
-						.isBookAsSingleCUInTU(cuQtyEntryPolicy.isBookedAsSingleCUInTU())
+						.isBookAsSingleCUInTU(cuQtyEntryPolicy.isBookAsSingleCUInTU())
 						.build()
 		);
 	}

@@ -68,14 +68,14 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
-  // a CU label carries lot and best-before: the quantity block of a label-based mode always shows them
-  const isLabelMode = !!cuQtyEntryPolicy?.isLabelRequired;
-  const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
-  const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
+  // a CU label carries lot and best-before: the quantity block of a label-required mode always shows them
+  const isLabelRequired = !!cuQtyEntryPolicy?.isLabelRequired;
+  const isShowBestBeforeDate = isLabelRequired || readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = isLabelRequired || readAttributes.includes(PickAttribute.LotNo);
 
   const isScanOnce = !!cuQtyEntryPolicy?.isScanOnce;
-  // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
-  const buttonType = isLabelMode ? 'button' : undefined;
+  // label-required modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
+  const buttonType = isLabelRequired ? 'button' : undefined;
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -130,7 +130,7 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
-  const isLabelAttributeReadOnly = readOnly || isLabelMode;
+  const isLabelAttributeReadOnly = readOnly || isLabelRequired;
 
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
@@ -348,7 +348,7 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            onSubmit={isLabelMode ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
+            onSubmit={isLabelRequired ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
           >
             <div className="table-container">
               <table className="table">

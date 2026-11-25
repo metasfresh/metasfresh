@@ -345,10 +345,10 @@ class PickingJobCUQtyEntryPickTest
 				.orElseThrow(() -> new AssertionError("no CU of " + qty + " in TU " + tuId));
 	}
 
-	private void assertLabelBasedLineCountsCUs(final PickingJob job)
+	private void assertLabelRequiredLineCountsCUs(final PickingJob job)
 	{
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
-		assertThat(line.getPickingUnit().isCU()).as("label-based mode: picking unit is CU").isTrue();
+		assertThat(line.getPickingUnit().isCU()).as("label-required mode: picking unit is CU").isTrue();
 		assertThat(line.getQtyToPick().toBigDecimal()).as("qty to pick in CUs").isEqualByComparingTo("100");
 		assertThat(line.getQtyRemainingToPick().toBigDecimal()).as("qty remaining in CUs").isEqualByComparingTo("100");
 	}
@@ -556,7 +556,7 @@ class PickingJobCUQtyEntryPickTest
 	class Completion
 	{
 		@Test
-		void labelBasedMode_cuPickedInTUWithoutGrai_graiRequiredYes_isRefused()
+		void labelRequiredMode_cuPickedInTUWithoutGrai_graiRequiredYes_isRefused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -600,12 +600,12 @@ class PickingJobCUQtyEntryPickTest
 					.hasMessageContaining(GRAI_COUNT_MISMATCH.toAD_Message());
 
 			@SuppressWarnings("unchecked") final ArgumentCaptor<Collection<HUInfo>> lookedUp = ArgumentCaptor.forClass(Collection.class);
-			Mockito.verify(huServiceSpy).filterBookedWithLabelScan(lookedUp.capture());
+			Mockito.verify(huServiceSpy).filterBookedWithLabel(lookedUp.capture());
 			assertThat(lookedUp.getValue()).extracting(HUInfo::getId).as("only the CUs of the GRAI customer are looked up").containsExactlyElementsOf(cusOfA);
 		}
 
 		@Test
-		void labelBasedModePick_thenModeSwitchedToManual_cuPickedInTUWithoutGrai_isStillRefused()
+		void labelRequiredModePick_thenModeSwitchedToManual_cuPickedInTUWithoutGrai_isStillRefused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -621,7 +621,7 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
-		void manualPick_thenModeSwitchedToLabelBasedMode_tuWithoutGrai_isRefused()
+		void manualPick_thenModeSwitchedToLabelRequiredMode_tuWithoutGrai_isRefused()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			setCustomerGraiRequired(GRAIRequired.Yes);
@@ -643,9 +643,9 @@ class PickingJobCUQtyEntryPickTest
 			final HuId cuId = HuId.ofRepoId(cusOf(tuId).get(0).getM_HU_ID());
 			assertThat(helper.huService.isCUInTU(handlingUnitsBL.getById(cuId))).as("the CU sits in the TU").isTrue();
 
-			assertThat(helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of()))
+			assertThat(helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of()))
 					.as("Manual-shaped CU: checked as it is, the CU has no GRAI snapshot").isEmpty();
-			assertThat(helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
+			assertThat(helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of(cuId)))
 					.as("CU booked with its own QR code: its TU is checked").extracting(snapshot -> snapshot.getHuId()).containsExactly(tuId);
 		}
 
@@ -755,7 +755,7 @@ class PickingJobCUQtyEntryPickTest
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = sourceTU("QR-A");
 			PickingJob job = createJob(tuPiipId, true);
-			assertLabelBasedLineCountsCUs(job);
+			assertLabelRequiredLineCountsCUs(job);
 			job = openTUFromLinePacking(job);
 
 			job = pick(job, source, "5", label(PRODUCT_NO, LOT_A), false, null);
@@ -846,7 +846,7 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
-		void labelBasedMode_noCuLabel_refused()
+		void labelRequiredMode_noCuLabel_refused()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = sourceTU("QR-J");
@@ -1069,7 +1069,7 @@ class PickingJobCUQtyEntryPickTest
 	}
 
 	@Nested
-	class LabelBasedModeAndPallet
+	class LabelRequiredModeAndPallet
 	{
 		private PickingJob jobWithPalletAndTU()
 		{
@@ -1618,7 +1618,7 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
-		void labelBasedModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheTUOnItsOwnLinesSlot()
+		void labelRequiredModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheTUOnItsOwnLinesSlot()
 		{
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final TUOfCustomerA given = pickIntoTUOfCustomerA_thenScanSlotB("x4", "3", label(PRODUCT_NO, LOT_A));
@@ -1642,13 +1642,13 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
-		void mixedJob_labelBasedModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
+		void mixedJob_labelRequiredModeLineOnItsOwnSlot_manualLineOnTheLastScannedSlot()
 		{
 			setProfile(CUQtyEntryMode.MANUAL);
 			final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("customerB");
 			final BPartnerId customerAId = customerAId();
 			helper.updateMobileProfile(profile -> {
-				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A label-based mode", profile.getDefaultPickingJobOptions());
+				final PickingJobOptionsId optionsA = helper.configService.createPickingJobOptions("customer A label-required mode", profile.getDefaultPickingJobOptions());
 				helper.configService.updatePickingJobOptionsCUQtyEntry(optionsA, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId());
 				return profile.toBuilder()
 						.customerConfigs(PickingCustomerConfigsCollection.ofCollection(ImmutableList.of(
@@ -1673,7 +1673,7 @@ class PickingJobCUQtyEntryPickTest
 
 			final PickingJob jobClosed = helper.pickingJobService.closeLUAndTUPickingTargets(job);
 
-			assertThat(queuedSlotsOf(tuA)).as("label-based-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
+			assertThat(queuedSlotsOf(tuA)).as("label-required-mode customer A: own line slot only").containsExactly(helper.pickingSlotId);
 			assertThat(queuedSlotsOf(tuB)).as("Manual customer B: the slot scanned last").contains(slotC);
 			assertThat(jobClosed.getTuPickingTargetEffective(lineB.getId())).as("Manual line's target closed").isEmpty();
 		}
@@ -1708,6 +1708,6 @@ class PickingJobCUQtyEntryPickTest
 
 	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
 	{
-		return helper.huService.getGraiSnapshotsReplacingLabelBookedCUsByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
+		return helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }

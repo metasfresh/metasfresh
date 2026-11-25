@@ -245,7 +245,7 @@ export const useHeaderUpdate = ({
   isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();
-  // fixed-length deps: null in Manual (refresh on url/caption only), a value key in the label-based modes
+  // fixed-length deps: null in Manual (refresh on url/caption only), a value key in the label-required modes
   const liveKey = isLiveRefresh
     ? JSON.stringify([
         pickingSlot?.caption,
