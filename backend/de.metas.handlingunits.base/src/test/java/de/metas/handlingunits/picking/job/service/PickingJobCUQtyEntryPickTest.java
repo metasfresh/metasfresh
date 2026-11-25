@@ -703,18 +703,18 @@ class PickingJobCUQtyEntryPickTest
 			format = formatService.create(ScannableCodeFormatCreateRequest.builder()
 					.name("CU label with GS")
 					.parts(ImmutableList.of(
-						constant(1, 2, "01"),
-						part(3, 16, ScannableCodeFormatPartType.Ignored),
-						constant(17, 18, "91"),
-						part(19, 25, ScannableCodeFormatPartType.ProductCode),
-						part(26, 26, ScannableCodeFormatPartType.Ignored),
-						constant(27, 28, "17"),
-						part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
-						constant(35, 36, "10"),
-						part(37, 45, ScannableCodeFormatPartType.LotNo),
-						part(46, 46, ScannableCodeFormatPartType.Ignored),
-						constant(47, 48, "92"),
-						part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
+							constant(1, 2, "01"),
+							part(3, 16, ScannableCodeFormatPartType.Ignored),
+							constant(17, 18, "91"),
+							part(19, 25, ScannableCodeFormatPartType.ProductCode),
+							part(26, 26, ScannableCodeFormatPartType.Ignored),
+							constant(27, 28, "17"),
+							part(29, 34, ScannableCodeFormatPartType.BestBeforeDate),
+							constant(35, 36, "10"),
+							part(37, 45, ScannableCodeFormatPartType.LotNo),
+							part(46, 46, ScannableCodeFormatPartType.Ignored),
+							constant(47, 48, "92"),
+							part(49, ScannableCodeFormatPart.OPEN_END, ScannableCodeFormatPartType.PackId)))
 					.build());
 			setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-GS");
@@ -724,6 +724,7 @@ class PickingJobCUQtyEntryPickTest
 
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 		}
+
 		@Test
 		void lineDone_furtherPick_refused_noParametersInTheMessage()
 		{
