@@ -53,6 +53,7 @@ const runAndWatchForErrors = async (func) => {
                 async (toastLocator) => {
                     if (currentErrorWatcherId !== watcherId) {
                         // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
+                        // an inner watcher owns this toast: never settle, so this race is decided by func() alone
                         return await new Promise(() => {});
                     }
 
