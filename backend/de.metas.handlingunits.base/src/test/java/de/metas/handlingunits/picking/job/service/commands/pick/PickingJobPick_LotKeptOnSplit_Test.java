@@ -200,7 +200,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		HuId boxId = null;
 		if (intoKarton)
 		{
-			// the picked-to HU is the CU (a TU part); its parent is the new Karton TU
+			// the picked-to HU is either the CU (a TU part; its parent is the new Karton TU) or the new Karton TU itself, depending on how the pick materializes it
 			final I_M_HU pickedHU = handlingUnitsBL.getById(pickedHUId);
 			final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(pickedHU);
 			final HuId tuId;

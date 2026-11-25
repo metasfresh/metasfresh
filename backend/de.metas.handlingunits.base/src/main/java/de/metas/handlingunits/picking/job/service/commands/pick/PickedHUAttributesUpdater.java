@@ -22,6 +22,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.function.Supplier;
 import java.util.LinkedHashSet;
 
 @Builder
@@ -99,17 +100,8 @@ class PickedHUAttributesUpdater
 		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
 		huAttributes.setSaveOnChange(true);
 
-		if (recomputeFromChildren)
-		{
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
-			}
-		}
-		else if (pickAttributes.isSetBestBeforeDate())
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, pickAttributes.getBestBeforeDate());
-		}
+		applyPickOrRecompute(huAttributes, AttributeConstants.ATTR_BestBeforeDate, recomputeFromChildren, pickAttributes.isSetBestBeforeDate(),
+				pickAttributes::getBestBeforeDate, () -> computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
 		if (pickAttributes.isSetProductionDate())
 		{
 			if (recomputeFromChildren)
@@ -121,17 +113,8 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ProductionDate, pickAttributes.getProductionDate());
 			}
 		}
-		if (recomputeFromChildren)
-		{
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
-			}
-		}
-		else if (pickAttributes.isSetLotNo())
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, pickAttributes.getLotNo());
-		}
+		applyPickOrRecompute(huAttributes, AttributeConstants.ATTR_LotNumber, recomputeFromChildren, pickAttributes.isSetLotNo(),
+				pickAttributes::getLotNo, () -> computeLotNoFromChildren(huAttributes));
 		// SerialNo: only when the product opts in (serialNoPickingEnabled) AND the HU storage actually supports the attribute.
 		// A product flagged IsSerialNoPicked=Y whose picked HU lacks the SerialNo attribute is a config gap → no write, no error.
 		if (serialNoPickingEnabled && huAttributes.hasAttribute(AttributeConstants.ATTR_SerialNo))
@@ -151,6 +134,31 @@ class PickedHUAttributesUpdater
 				}
 				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
+		}
+	}
+
+	/**
+	 * With {@code recomputeFromChildren} the attribute is taken from the HU's children (only if the HU has the attribute);
+	 * otherwise the value sent with the pick is written, only when the pick sent one.
+	 */
+	private static void applyPickOrRecompute(
+			@NonNull final IAttributeStorage huAttributes,
+			@NonNull final AttributeCode attributeCode,
+			final boolean recomputeFromChildren,
+			final boolean pickSetsValue,
+			@NonNull final Supplier<Object> pickValue,
+			@NonNull final Supplier<Object> valueFromChildren)
+	{
+		if (recomputeFromChildren)
+		{
+			if (huAttributes.hasAttribute(attributeCode))
+			{
+				huAttributes.setValueNoPropagate(attributeCode, valueFromChildren.get());
+			}
+		}
+		else if (pickSetsValue)
+		{
+			huAttributes.setValue(attributeCode, pickValue.get());
 		}
 	}
 
