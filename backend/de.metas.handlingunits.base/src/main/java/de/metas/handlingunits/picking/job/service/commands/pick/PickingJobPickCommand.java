@@ -453,7 +453,7 @@ public class PickingJobPickCommand
 
 	private void assertCULabelBookingAllowed()
 	{
-		cuLabelBooking.assertBookingAllowed(getPickingJob(), getTUPickingTarget().isPresent());
+		cuLabelBooking.assertBookingAllowed(getPickingJob(), () -> getTUPickingTarget().isPresent());
 	}
 
 	private PickingJob getPickingJob()

@@ -31,6 +31,7 @@ public class MobileConfigCommand
 	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobOptionsWriter jobOptionsWriter = new PickingJobOptionsWriter();
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
@@ -96,7 +97,7 @@ public class MobileConfigCommand
 
 	private void updatePickingCUQtyEntryInTrx(@NonNull final JsonMobileConfigRequest.Picking picking)
 	{
-		new PickingJobOptionsWriter().deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
+		jobOptionsWriter.deleteUnusedPickingJobOptions(CustomerCUQtyEntryWriter.JOB_OPTIONS_NAME_PREFIX);
 
 		final CUQtyEntryMode mode = CUQtyEntryMode.ofNullableCode(picking.getCuQtyEntryMode());
 		final ScannableCodeFormatId formatId = resolveFormatIdOrNull(picking.getCuLabelFormatName());

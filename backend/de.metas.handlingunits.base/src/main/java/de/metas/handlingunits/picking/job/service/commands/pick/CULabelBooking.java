@@ -22,6 +22,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -63,15 +64,15 @@ final class CULabelBooking
 
 	boolean isLabelRequired() {return policy.isLabelRequired();}
 
-	/** Refuses a booking without an open TU, or of a label already picked in the job (when the pack ID is used). No-op when no label is required. */
-	void assertBookingAllowed(@NonNull final PickingJob pickingJob, final boolean isOpenTUPresent)
+	/** Refuses a booking without an open TU, or of a label already picked in the job (when the pack ID is used). No-op when no label is required; the open-TU supplier is then not called. */
+	void assertBookingAllowed(@NonNull final PickingJob pickingJob, @NonNull final BooleanSupplier isOpenTUPresent)
 	{
 		if (!policy.isLabelRequired())
 		{
 			return;
 		}
 
-		if (!isOpenTUPresent)
+		if (!isOpenTUPresent.getAsBoolean())
 		{
 			throw new AdempiereException(PickingJobPickCommand.CU_NO_OPEN_TU_ERROR_MSG);
 		}

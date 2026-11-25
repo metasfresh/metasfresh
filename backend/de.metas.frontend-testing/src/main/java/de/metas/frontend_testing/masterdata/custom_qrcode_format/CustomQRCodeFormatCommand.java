@@ -23,6 +23,7 @@ public class CustomQRCodeFormatCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(CustomQRCodeFormatCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobOptionsWriter jobOptionsWriter = new PickingJobOptionsWriter();
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	@NonNull private final MasterdataContext context;
@@ -64,7 +65,7 @@ public class CustomQRCodeFormatCommand
 				.filter(CustomQRCodeFormatCommand::isGeneratedFormat)
 				.map(ScannableCodeFormat::getId)
 				.collect(ImmutableList.toImmutableList());
-		new PickingJobOptionsWriter().unlinkCULabelFormats(generatedFormatIds);
+		jobOptionsWriter.unlinkCULabelFormats(generatedFormatIds);
 	}
 
 	private void createFormat(@NonNull final JsonCustomQRCodeFormatRequest request)
