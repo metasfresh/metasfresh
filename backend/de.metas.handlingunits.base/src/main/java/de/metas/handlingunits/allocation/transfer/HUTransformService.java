@@ -732,18 +732,9 @@ public class HUTransformService
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(tuToAttach);
 
-			I_M_HU_PI_Item parentPIItem = luPIItem != null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
+			final I_M_HU_PI_Item parentPIItem = luPIItem != null && luPIItem.getIncluded_HU_PI_ID() == tuPI.getM_HU_PI_ID()
 					? luPIItem
-					: handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
-			if (parentPIItem == null && luItemBPartnerId != null)
-			{
-				parentPIItem = retrieveLUItemForTU(luHU, HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), luItemBPartnerId).orElse(null);
-			}
-			if (parentPIItem == null)
-			{
-				// last resort: a product-specific item (the LU PI links the TU PI only via product-specific items)
-				parentPIItem = retrieveLUPIItemForTUOrNull(luHU, tuPI, tuToAttach);
-			}
+					: retrieveLUPIItemForWholeTUOrNull(luHU, tuPI, tuToAttach, luItemBPartnerId);
 			if (parentPIItem == null)
 			{
 				throw new AdempiereException("LU `" + handlingUnitsBL.getDisplayName(luHU) + "` cannot stack TU `" + handlingUnitsBL.getDisplayName(tuToAttach) + "` because there is no link between them.")
@@ -797,37 +788,46 @@ public class HUTransformService
 	 */
 	public boolean isTUAttachableToExistingLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU lu)
 	{
-		final I_M_HU_PI tuPI = handlingUnitsBL.getEffectivePI(tu);
-		if (handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(lu, tuPI, huContext) != null)
-		{
-			return true;
-		}
-		final BPartnerId bpartnerId = resolveBPartnerForLUItem(lu, tu);
-		if (bpartnerId != null
-				&& retrieveLUItemForTU(lu, handlingUnitsBL.getEffectivePackingInstructionsId(tu), bpartnerId).isPresent())
-		{
-			return true;
-		}
-		final ProductId tuProductId = handlingUnitsBL.getStorageFactory().getStorage(tu).getSingleProductIdOrNull();
-		return handlingUnitsDAO.retrieveProductSpecificParentPIItemForChildHUOrNull(lu, tuPI, tuProductId, huContext) != null;
+		return retrieveLUPIItemForWholeTUOrNull(lu, handlingUnitsBL.getEffectivePI(tu), tu, resolveBPartnerForLUItem(lu, tu)) != null;
 	}
 
 	/**
-	 * @return the LU's item for the TU's PI (an LU built from a product-specific item keeps it), else the generic item or the LU partner's item without product;
-	 * if the LU PI links the TU PI only via product-specific items, one of those (preferably the TU's product's), because different products on the same LU are allowed.
+	 * The single lookup of the LU item for attaching a whole TU, shared by {@link #tuToExistingLU} and {@link #isTUAttachableToExistingLU}, so that they cannot drift apart:
+	 * the generic item or the LU partner's item without product, else the item of the given (resolved) partner, else a product-specific item.
 	 */
 	@Nullable
-	private I_M_HU_PI_Item retrieveLUPIItemForTUOrNull(
+	private I_M_HU_PI_Item retrieveLUPIItemForWholeTUOrNull(
 			@NonNull final I_M_HU luHU,
 			@NonNull final I_M_HU_PI tuPI,
-			@NonNull final I_M_HU tu)
+			@NonNull final I_M_HU tu,
+			@Nullable final BPartnerId luItemBPartnerId)
 	{
 		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, tuPI, huContext);
 		if (luPIItem != null)
 		{
 			return luPIItem;
 		}
+		if (luItemBPartnerId != null)
+		{
+			final I_M_HU_PI_Item partnerItem = retrieveLUItemForTU(luHU, HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID()), luItemBPartnerId).orElse(null);
+			if (partnerItem != null)
+			{
+				return partnerItem;
+			}
+		}
+		// last resort: a product-specific item (the LU PI links the TU PI only via product-specific items)
+		return retrieveProductSpecificLUPIItemForTUOrNull(luHU, tuPI, tu);
+	}
 
+	/**
+	 * @return if the LU PI links the TU PI via product-specific items, one of those (preferably the TU's product's), because different products on the same LU are allowed; else {@code null}.
+	 */
+	@Nullable
+	private I_M_HU_PI_Item retrieveProductSpecificLUPIItemForTUOrNull(
+			@NonNull final I_M_HU luHU,
+			@NonNull final I_M_HU_PI tuPI,
+			@NonNull final I_M_HU tu)
+	{
 		final ProductId tuProductId = handlingUnitsBL.getStorageFactory().getStorage(tu).getSingleProductIdOrNull();
 		return handlingUnitsDAO.retrieveProductSpecificParentPIItemForChildHUOrNull(luHU, tuPI, tuProductId, huContext);
 	}

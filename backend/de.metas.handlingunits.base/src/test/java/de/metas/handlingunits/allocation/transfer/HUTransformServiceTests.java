@@ -1872,6 +1872,7 @@ public class HUTransformServiceTests
 
 		Assertions.assertThat(huTransformService.isTUAttachableToExistingLU(realTU, targetLU)).as("existing LU").isFalse();
 		Assertions.assertThat(huTransformService.isTUAttachableToNewLU(HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID()), realTU)).as("new LU").isFalse();
+		Assertions.assertThatThrownBy(() -> huTransformService.tuToExistingLU(realTU, QtyTU.ONE, targetLU)).as("the move refuses too").isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
 	}
 
 	/**
