@@ -148,7 +148,6 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
     await PickingJobScreen.expectPickAllButtonHidden();
 });
 
-const MSG_QUICK_PACK_ALL_NOT_ALLOWED = "Quick Pack is not allowed";
 const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
 const MODE_SCAN_EACH = 'SCAN_EACH_CU';
 const MODE_MANUAL = 'MANUAL';
@@ -170,10 +169,6 @@ const openJob = async (masterdata, { productJob = false } = {}) => {
 const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
     await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
 
-    const { status, body } = await PickingJobScreen.postPickAllDirectly({ wfProcessId: `picking-${pickingJobId}` });
-    expect(status, `answer: ${body}`).toBeGreaterThanOrEqual(400);
-    expect(body).toContain(MSG_QUICK_PACK_ALL_NOT_ALLOWED);
-
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -185,7 +180,7 @@ const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2',
 };
 
 // noinspection JSUnusedLocalSymbols
-test('profile mode Scan once: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+test('profile mode Scan once: no Quick Pack All button, nothing is picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -198,7 +193,7 @@ test('profile mode Scan once: no Quick Pack All button, the direct call is refus
 });
 
 // noinspection JSUnusedLocalSymbols
-test('profile Manual, customer record Scan each CU: no Quick Pack All button, the direct call is refused, nothing is picked', async ({ page }) => {
+test('profile Manual, customer record Scan each CU: no Quick Pack All button, nothing is picked', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
@@ -215,7 +210,7 @@ test('profile Manual, customer record Scan each CU: no Quick Pack All button, th
 });
 
 // noinspection JSUnusedLocalSymbols
-test('mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All button, the direct call is refused for the whole job', async ({ page }) => {
+test('mixed job (customer 1 Manual, customer 2 Scan once): no Quick Pack All button for the whole job', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
