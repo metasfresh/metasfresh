@@ -75,15 +75,21 @@ const allureMeta = (story) => {
 };
 
 /**
- * Asserts the shipment lines of SO1 whatever order the server numbers them in (M_InOutLine.Line follows the order of the
- * picked-qty records, which is not the pick order): the expected lines are tried in the given order, then reversed.
- * Every line keeps its own qty + attributes pairing, so a lot on the wrong quantity still fails.
+ * Asserts the shipment lines of SO1 in either order. The order of M_InOutLine.Line is not stable between runs when two
+ * picks of different lots go into one shipment: seen 2026-11-25 on the fixed build, the LU test returned {3, L-B} first in one
+ * run and {2, L-A} first in another. The expected lines are tried as given, then reversed; each line keeps its own
+ * qty + attributes pairing and the line count stays exact, so a lot on the wrong quantity or an extra line still fails.
+ * When both orders fail, the error carries both messages.
  */
 const expectShipmentLinesInAnyOrder = async (lines) => {
     try {
         await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines }] } } });
-    } catch (e) {
-        await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [...lines].reverse() }] } } });
+    } catch (firstError) {
+        try {
+            await Backend.expect({ salesOrders: { SO1: { shipments: [{ lines: [...lines].reverse() }] } } });
+        } catch (reversedError) {
+            throw new Error(`Shipment lines match in neither order.\n--- as given:\n${firstError.message}\n--- reversed:\n${reversedError.message}`);
+        }
     }
 };
 
@@ -143,7 +149,7 @@ test('lot kept without a box, whole-HU pick', async ({ page }) => {
     allureMeta('Lot kept on whole-HU pick');
 
     const masterdata = await createMasterdata({ readAttributes: [], orderQty: 4, lots: [{ id: 'HU1', qty: 4, lotNo: 'L-114' }] });
-    const pickingJobId = await startJob(masterdata);
+    await startJob(masterdata);
 
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 4 });
     await PickingJobScreen.complete();
@@ -219,6 +225,7 @@ test('lot field shown, picker clears it', async ({ page }) => {
     await BarcodeScannerComponent.type(masterdata.handlingUnits.HU1.qrCode);
     await GetQuantityDialog.waitForDialog();
     await GetQuantityDialog.expectLotNoVisible();
+    await GetQuantityDialog.expectLotNoValue('L-114'); // the field starts with the stock's lot, the picker then clears it
     await GetQuantityDialog.fillAndPressDone({ qtyEntered: 3, lotNo: '' });
     await PickingJobScreen.waitForScreen();
 
