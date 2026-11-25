@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -7,11 +8,15 @@ import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUServic
 import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,6 +41,8 @@ public class PickingCULabelService
 
 	@NonNull private final PickingJobHUService huService;
 
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	public static PickingCULabelService newInstanceForUnitTesting()
 	{
 		SpringContextHolder.assertUnitTestMode();
@@ -59,7 +66,16 @@ public class PickingCULabelService
 		}
 
 		logger.warn("CU label refused: label '{}' does not match format {}: {}", label, format.getId(), parsed.getExplanation().getDefaultValue());
-		throw new AdempiereException(MSG_CU_LABEL_FORMAT_MISMATCH);
+		throw formatMismatchWithReason(parsed.getExplanation());
+	}
+
+	/** The refusal text followed by the parser's reason, so the operator sees why the label does not fit. */
+	private AdempiereException formatMismatchWithReason(@NonNull final ITranslatableString reason)
+	{
+		final String errorCode = msgBL.getErrorCode(MSG_CU_LABEL_FORMAT_MISMATCH);
+		return new AdempiereException(
+				TranslatableStrings.builder().append(TranslatableStrings.adMessage(MSG_CU_LABEL_FORMAT_MISMATCH)).append(" ").append(reason).build(),
+				CoalesceUtil.coalesceNotNull(errorCode, MSG_CU_LABEL_FORMAT_MISMATCH.toAD_Message()));
 	}
 
 	@NonNull
