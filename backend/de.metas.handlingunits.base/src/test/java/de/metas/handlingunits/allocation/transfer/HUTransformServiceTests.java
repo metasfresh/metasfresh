@@ -1853,6 +1853,28 @@ public class HUTransformServiceTests
 	}
 
 	/**
+	 * Negative counterpart of the two pre-check tests above: the crate sits on a pallet of partner Q, the item is bound to partner P only,
+	 * so neither a new pallet nor an existing pallet without partner takes it, and the pre-check must say so.
+	 */
+	@Test
+	public void isTUAttachableTo_realTUOnOtherPartnersPallet_itemBoundToPartnerPOnly_refused()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer P");
+		final BPartnerId partnerQ = createBPartner("Customer Q");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 1);
+		final I_M_HU realTU = createStandaloneTU(fixture);
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, sourceLU);
+		sourceLU.setC_BPartner_ID(partnerQ.getRepoId()); // the pallet the crate sits on belongs to Q now
+		saveRecord(sourceLU);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+
+		Assertions.assertThat(huTransformService.isTUAttachableToExistingLU(realTU, targetLU)).as("existing LU").isFalse();
+		Assertions.assertThat(huTransformService.isTUAttachableToNewLU(HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID()), realTU)).as("new LU").isFalse();
+	}
+
+	/**
 	 * Take ALL TUs of an aggregate onto a NEW pallet (whole-move branch); source pallet partner P; item bound to P only.
 	 * Calls {@code tuToNewLU} for the aggregate directly: via {@code luExtractTUs}, taking all TUs of a pallet is "take the pallet as is".
 	 */

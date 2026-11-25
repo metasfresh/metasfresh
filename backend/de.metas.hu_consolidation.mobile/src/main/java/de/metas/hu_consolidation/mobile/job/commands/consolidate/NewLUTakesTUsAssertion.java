@@ -9,9 +9,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Fails with an operator message naming the pallet type and the crate type if a pallet (LU) type does not take a crate (TU) type.
@@ -45,21 +43,20 @@ class NewLUTakesTUsAssertion
 	}
 
 	/**
-	 * Checks crates for the given existing pallet, judged by {@link HUTransformService#isTUAttachableToExistingLU}; one check per crate type.
+	 * Checks crates for the given existing pallet, judged by {@link HUTransformService#isTUAttachableToExistingLU}; one check per crate, because the answer
+	 * depends on the partner of the pallet each crate sits on, not only on its type.
 	 *
-	 * @throws AdempiereException with the operator message if the pallet does not take one of the crate types
+	 * @throws AdempiereException with the operator message if the pallet does not take one of the crates
 	 */
 	public void assertLUTakesTUs(@NonNull final I_M_HU lu, @NonNull final List<I_M_HU> tus)
 	{
-		final Map<HuPackingInstructionsId, I_M_HU> oneTUPerType = new LinkedHashMap<>();
-		tus.forEach(tu -> oneTUPerType.putIfAbsent(handlingUnitsBL.getEffectivePackingInstructionsId(tu), tu));
-
-		oneTUPerType.forEach((tuPIId, tu) -> {
+		for (final I_M_HU tu : tus)
+		{
 			if (!huTransformService.isTUAttachableToExistingLU(tu, lu))
 			{
-				throw palletTypeDoesNotTakeCrateType(handlingUnitsBL.getPIId(lu), tuPIId);
+				throw palletTypeDoesNotTakeCrateType(handlingUnitsBL.getPIId(lu), handlingUnitsBL.getEffectivePackingInstructionsId(tu));
 			}
-		});
+		}
 	}
 
 	private AdempiereException palletTypeDoesNotTakeCrateType(@NonNull final HuPackingInstructionsId luPIId, @NonNull final HuPackingInstructionsId tuPIId)

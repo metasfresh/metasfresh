@@ -776,7 +776,7 @@ public class HUTransformService
 
 	/**
 	 * @return {@code true} if the given TU can be put on a new LU of the given packing instructions, i.e. the LU PI has an item for the TU's (effective) PI,
-	 * for the partner {@link #tuToNewLU} resolves (the TU's own, else the one of the pallet the TU sits on); the same lookup as {@link #tuToNewLU}.
+	 * for the partner {@link #tuToNewLU} resolves (the TU's own, else the one of the pallet the TU sits on); the same lookup as {@link #tuToNewLU(I_M_HU, QtyTU, HuPackingInstructionsId)}, i.e. without product context (no product-specific items).
 	 * A TU without real packing instructions is not checked ({@code true}).
 	 */
 	public boolean isTUAttachableToNewLU(@NonNull final HuPackingInstructionsId luPIId, @NonNull final I_M_HU tu)
@@ -792,7 +792,7 @@ public class HUTransformService
 
 	/**
 	 * @return {@code true} if the whole given TU can be attached to the given existing LU, i.e. the LU's PI has an item for the TU's (effective) PI:
-	 * the generic item or the LU partner's item without product, else the item of the partner resolved by {@link #resolveBPartnerForLUItem} (the TU's own, else the one of the pallet the TU sits on),
+	 * the LU's own item (e.g. a product-specific one it was built from), the generic item or the LU partner's item without product, else the item of the partner resolved by {@link #resolveBPartnerForLUItem} (the TU's own, else the one of the pallet the TU sits on),
 	 * else a product-specific item; the same lookup as the whole-TU attach of {@link #tuToExistingLU(I_M_HU, QtyTU, I_M_HU)}
 	 */
 	public boolean isTUAttachableToExistingLU(@NonNull final I_M_HU tu, @NonNull final I_M_HU lu)
@@ -808,7 +808,8 @@ public class HUTransformService
 		{
 			return true;
 		}
-		return retrieveLUPIItemForTUOrNull(lu, tuPI, tu) != null;
+		final ProductId tuProductId = handlingUnitsBL.getStorageFactory().getStorage(tu).getSingleProductIdOrNull();
+		return handlingUnitsDAO.retrieveProductSpecificParentPIItemForChildHUOrNull(lu, tuPI, tuProductId, huContext) != null;
 	}
 
 	/**

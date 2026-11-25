@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Crates put on a new pallet: the first crate is checked the way the new pallet is created for it, the other crates the way they are put on the
- * pallet created then. One check per crate type, not per crate.
+ * pallet created then. One check per crate, since the answer depends on the pallet partner each crate sits on.
  */
 class NewLUTakesTUsAssertionTest
 {
@@ -100,7 +100,7 @@ class NewLUTakesTUsAssertionTest
 	class OtherCrates_ontoTheNewPallet
 	{
 		@Test
-		void threeCratesOfTwoTypes_oneCheckPerType_withTheMoveOntoAnExistingPallet()
+		void threeCratesOfTwoTypes_oneCheckPerCrate_withTheMoveOntoAnExistingPallet()
 		{
 			final I_M_HU crate1 = crate(CRATE_PI);
 			final I_M_HU otherCrate = crate(OTHER_CRATE_PI);
@@ -109,7 +109,7 @@ class NewLUTakesTUsAssertionTest
 
 			assertThatCode(() -> assertion.assertLUTakesTUs(pallet, ImmutableList.of(crate1, otherCrate, crate2))).doesNotThrowAnyException();
 
-			verify(huTransformService, times(2)).isTUAttachableToExistingLU(any(I_M_HU.class), any(I_M_HU.class));
+			verify(huTransformService, times(3)).isTUAttachableToExistingLU(any(I_M_HU.class), any(I_M_HU.class));
 			verify(huTransformService, never()).isTUAttachableToNewLU(any(), any());
 		}
 
