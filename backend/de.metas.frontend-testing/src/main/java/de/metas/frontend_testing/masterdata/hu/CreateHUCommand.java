@@ -106,8 +106,10 @@ public class CreateHUCommand
 		final String huQRCodeStr;
 		if (request.isGenerateHUQRCode())
 		{
-			final HuId qrCodeHuId = request.isQrCodeOfAggregatedTU() ? getAggregatedTUId(huId) : huId;
-			huQRCodeStr = huQRCodesService.getQRCodeByHuId(qrCodeHuId).toGlobalQRCodeString();
+			// an aggregated TU stands for several TUs and gets one QR code per TU: any of them identifies it, so take the first
+			huQRCodeStr = (request.isQrCodeOfAggregatedTU()
+					? huQRCodesService.getFirstQRCodeByHuId(getAggregatedTUId(huId))
+					: huQRCodesService.getQRCodeByHuId(huId)).toGlobalQRCodeString();
 		}
 		else
 		{
