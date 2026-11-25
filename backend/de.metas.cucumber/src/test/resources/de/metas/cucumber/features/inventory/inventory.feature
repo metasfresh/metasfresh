@@ -93,6 +93,156 @@ Feature: Physical inventory tests
       | M_Product_ID.Identifier | QtyOnHand |
       | product                 | 800       |
 
+  # Product-specific LU item: the pallet packing instruction LU_PS has a generic item (30 TUs) and an item for product XY (40 TUs).
+  # Pallets built by the inventory use the item of the line's product; products without their own item keep the generic item.
+  @from:cucumber
+  @Id:S32544_INV_010
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
+  Scenario: S32544_INV_010 - Inventory+ to LU/TU/CU: product with its own LU item gets pallets of that item (40 + 10 TUs)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | XY         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU_PS      |
+      | TU_PS      |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | LU_PS_version      | LU_PS      | LU          |
+      | TU_PS_version      | TU_PS      | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType | Qty | Included_HU_PI_ID | M_Product_ID |
+      | LU_PS_generic   | LU_PS_version      | HU       | 30  | TU_PS             |              |
+      | LU_PS_XY        | LU_PS_version      | HU       | 40  | TU_PS             | XY           |
+      | TU_PS_PI_Item   | TU_PS_version      | MI       |     |                   |              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty   |
+      | TUx4_XY                 | TU_PS_PI_Item   | XY           | 4 PCE |
+
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |
+      | inventory1     | warehouse      | 2021-04-16   | XY           | 0 PCE   | 200 PCE  | TUx4_XY                 | LU_PS         | lu1     | lu2      |
+
+    Then validate M_HUs:
+      | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty     | QtyTUs | IsAggregate |
+      | -           | lu1     | LU_PS      | A        | XY           | 160 PCE |        | N           |
+      | lu1         | tu_agg1 | TU_PS      | A        | XY           | 160 PCE | 40     | Y           |
+      | -           | lu2     | LU_PS      | A        | XY           | 40 PCE  |        | N           |
+      | lu2         | tu_agg2 | TU_PS      | A        | XY           | 40 PCE  | 10     | Y           |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | XY                      | 200       |
+
+  @from:cucumber
+  @Id:S32544_INV_020
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
+  Scenario: S32544_INV_020 - Inventory+ to LU/TU/CU: product without its own LU item keeps the generic item (30 + 20 TUs)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | XY         |
+      | OTHER      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU_PS      |
+      | TU_PS      |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | LU_PS_version      | LU_PS      | LU          |
+      | TU_PS_version      | TU_PS      | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType | Qty | Included_HU_PI_ID | M_Product_ID |
+      | LU_PS_generic   | LU_PS_version      | HU       | 30  | TU_PS             |              |
+      | LU_PS_XY        | LU_PS_version      | HU       | 40  | TU_PS             | XY           |
+      | TU_PS_PI_Item   | TU_PS_version      | MI       |     |                   |              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty   |
+      | TUx4_OTHER              | TU_PS_PI_Item   | OTHER        | 4 PCE |
+
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |
+      | inventory1     | warehouse      | 2021-04-16   | OTHER        | 0 PCE   | 200 PCE  | TUx4_OTHER              | LU_PS         | lu1     | lu2      |
+
+    Then validate M_HUs:
+      | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty     | QtyTUs | IsAggregate |
+      | -           | lu1     | LU_PS      | A        | OTHER        | 120 PCE |        | N           |
+      | lu1         | tu_agg1 | TU_PS      | A        | OTHER        | 120 PCE | 30     | Y           |
+      | -           | lu2     | LU_PS      | A        | OTHER        | 80 PCE  |        | N           |
+      | lu2         | tu_agg2 | TU_PS      | A        | OTHER        | 80 PCE  | 20     | Y           |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | OTHER                   | 200       |
+
+  # LU_XY_ONLY links the TU packing instruction only through an item for product XY (no generic item).
+  @from:cucumber
+  @Id:S32544_INV_030
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
+  Scenario: S32544_INV_030 - Inventory+ to LU/TU/CU: pallet packing instruction linked to the TU only through the product's own item
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | XY         |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU_XY_ONLY |
+      | TU_PS      |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | LU_XY_ONLY_version | LU_XY_ONLY | LU          |
+      | TU_PS_version      | TU_PS      | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType | Qty | Included_HU_PI_ID | M_Product_ID |
+      | LU_XY_ONLY_XY   | LU_XY_ONLY_version | HU       | 40  | TU_PS             | XY           |
+      | TU_PS_PI_Item   | TU_PS_version      | MI       |     |                   |              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty   |
+      | TUx4_XY                 | TU_PS_PI_Item   | XY           | 4 PCE |
+
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |
+      | inventory1     | warehouse      | 2021-04-16   | XY           | 0 PCE   | 200 PCE  | TUx4_XY                 | LU_XY_ONLY    | lu1     | lu2      |
+
+    Then validate M_HUs:
+      | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty     | QtyTUs | IsAggregate |
+      | -           | lu1     | LU_XY_ONLY | A        | XY           | 160 PCE |        | N           |
+      | lu1         | tu_agg1 | TU_PS      | A        | XY           | 160 PCE | 40     | Y           |
+      | -           | lu2     | LU_XY_ONLY | A        | XY           | 40 PCE  |        | N           |
+      | lu2         | tu_agg2 | TU_PS      | A        | XY           | 40 PCE  | 10     | Y           |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | XY                      | 200       |
+
+  # Another product on the same TU packing instruction: LU_XY_ONLY has no item for it, so completing the inventory fails with a user error.
+  @from:cucumber
+  @Id:S32544_INV_040
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
+  Scenario: S32544_INV_040 - Inventory+ to LU/TU/CU: pallet packing instruction with an item only for another product is refused
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | XY         |
+      | OTHER      |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | LU_XY_ONLY |
+      | TU_PS      |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType |
+      | LU_XY_ONLY_version | LU_XY_ONLY | LU          |
+      | TU_PS_version      | TU_PS      | TU          |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType | Qty | Included_HU_PI_ID | M_Product_ID |
+      | LU_XY_ONLY_XY   | LU_XY_ONLY_version | HU       | 40  | TU_PS             | XY           |
+      | TU_PS_PI_Item   | TU_PS_version      | MI       |     |                   |              |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty   |
+      | TUx4_OTHER              | TU_PS_PI_Item   | OTHER        | 4 PCE |
+
+    Then metasfresh fails to complete single line inventories
+      | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | AD_Message                      |
+      | inventory1     | warehouse      | 2021-04-16   | OTHER        | 0 PCE   | 200 PCE  | TUx4_OTHER              | LU_XY_ONLY    | ERR_LU_HAS_NO_TU_SUB_PACK_INSTR |
+
   @from:cucumber
 @allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010

@@ -24,16 +24,11 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.impl.LULoader;
+import de.metas.handlingunits.allocation.impl.TUsToNewLUsLoader;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
@@ -51,7 +46,6 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 {
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
@@ -93,7 +87,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 				.filter(handlingUnitsBL::isTopLevel)
 				.filter(handlingUnitsBL::isTransportUnit)
 				.filter(hu -> !handlingUnitsBL.isEmptyStorage(hu))
-				.filter(this::isPackToLuAllowed)
+				.filter(TUsToNewLUsLoader::isPackToLUAllowed)
 				.collect(ImmutableSet.toImmutableSet());
 
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** doIt(): start processing the following HUs: {}", hus);
@@ -112,11 +106,11 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 		//4. inactivate related picking candidates
 		pickingCandidateService.inactivateForHUIds(hus.stream().map(I_M_HU::getM_HU_ID).map(HuId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
 
-		//5. compress the qualified HUs on TUs
+		//5. load the qualified TUs onto new LUs; a product with its own LU item gets its own LUs (see TUsToNewLUsLoader)
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
-		final LULoader luLoader = new LULoader(huContext);
+		final TUsToNewLUsLoader luLoader = TUsToNewLUsLoader.builder().huContext(huContext).build();
 
-		hus.forEach(luLoader::addTU);
+		luLoader.addTUs(hus);
 		luLoader.close();
 
 		Loggables.withLogger(log, Level.DEBUG).addLog("*** doIt(): created the following HUs: {}" , luLoader.getLU_HUs());
@@ -137,23 +131,6 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUsAndAddToNewLUs extends Pic
 				|| (selectedPickingSlot.isPickingSlotRow()
 				    && selectedPickingSlot.getIncludedRows().stream().anyMatch(PickingSlotRow::isTopLevelTU));
 
-	}
-
-	private boolean isPackToLuAllowed(final I_M_HU hu)
-	{
-		final I_M_HU_PI_Version mHuPiVersion = hu.getM_HU_PI_Version();
-
-		if (mHuPiVersion == null
-				|| mHuPiVersion.getHU_UnitType() != null && !mHuPiVersion.getHU_UnitType().equals(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit))
-		{
-			return false;
-		}
-
-		final BPartnerId bPartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(hu);
-
-		final I_M_HU_PI_Item actualLUItem = handlingUnitsDAO.retrieveDefaultParentPIItem(mHuPiVersion.getM_HU_PI(), X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bPartnerId);
-
-		return actualLUItem != null;
 	}
 
 	@Override
