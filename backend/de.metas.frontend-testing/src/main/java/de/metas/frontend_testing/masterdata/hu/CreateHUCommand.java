@@ -162,23 +162,25 @@ public class CreateHUCommand
 	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
 	{
 		huTrxBL.process(huContext -> {
-			final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
-			if (aggregateTU == null)
-			{
-				throw new AdempiereException("No aggregate TU found under HU " + huId + " to split TUs out of");
-			}
+			final I_M_HU aggregateTU = findAggregateTUOrThrow(huId, " to split TUs out of");
 			HUTransformService.newInstance(huContext).tuToNewTUs(aggregateTU, QtyTU.ofInt(count));
 		});
 	}
 
 	private @NonNull HuId getAggregatedTUId(@NonNull final HuId huId)
 	{
+		return HuId.ofRepoId(findAggregateTUOrThrow(huId, "").getM_HU_ID());
+	}
+
+	@NonNull
+	private I_M_HU findAggregateTUOrThrow(@NonNull final HuId huId, @NonNull final String messageSuffix)
+	{
 		final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
 		if (aggregateTU == null)
 		{
-			throw new AdempiereException("No aggregate TU found under HU " + huId);
+			throw new AdempiereException("No aggregate TU found under HU " + huId + messageSuffix);
 		}
-		return HuId.ofRepoId(aggregateTU.getM_HU_ID());
+		return aggregateTU;
 	}
 
 	/**
