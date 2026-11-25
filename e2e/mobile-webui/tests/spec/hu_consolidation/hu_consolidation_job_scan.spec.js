@@ -1586,5 +1586,9 @@ test('Slot screen, duplicate GRAI: 2 crates of the slot carry it, the duplicate 
                 [slot4.qrCode]: { queue: [{ hu: 'bp2Pallet' }] },
             },
         });
+        await Backend.expect({
+            title: 'the scanned GRAI is stored on the crate inside the pallet of BP2\'s job',
+            hus: { bp2Pallet: { tus: [{ attributes: { GRAI: graiInOtherJobsPallet } }] } },
+        });
     });
 });

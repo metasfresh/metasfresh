@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Resolves a scanned GRAI to the one active top-level crate of the job that carries it.
+ * Resolves a scanned GRAI to the one active top-level crate of the job that carries it, and tells whether any crate, in or outside a job, carries it.
  */
 @Component
 public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolver
@@ -34,23 +34,12 @@ public class GRAIScannedCodeResolver implements HUConsolidationScannedCodeResolv
 			return Optional.empty();
 		}
 
-		return Optional.of(resolve(grai, queues));
+		return Optional.of(resolveIfAny(grai, queues).orElseThrow(() -> huNotFound(grai)));
 	}
 
 	/**
-	 * @return the one crate among the HUs of {@code queues} that carries the GRAI; a HU with that GRAI outside {@code queues} is never looked at.
-	 * @throws AdempiereException {@code HU_NOT_FOUND} if no crate matches (also when {@code queues} is empty, without any query),
-	 *                            {@code HU_AMBIGUOUS} if more than one matches.
-	 */
-	@NonNull
-	public HUConsolidationScannedCrate resolve(@NonNull final GRAI grai, @NonNull final PickingSlotQueues queues)
-	{
-		return resolveIfAny(grai, queues).orElseThrow(() -> huNotFound(grai));
-	}
-
-	/**
-	 * Like {@link #resolve(GRAI, PickingSlotQueues)}, but no matching crate gives empty instead of {@code HU_NOT_FOUND}.
-	 *
+	 * @return the one crate among the HUs of {@code queues} that carries the GRAI; empty if none does (also when {@code queues} is empty, without any query).
+	 * A HU with that GRAI outside {@code queues} is never looked at.
 	 * @throws AdempiereException {@code HU_AMBIGUOUS} if more than one crate matches
 	 */
 	public Optional<HUConsolidationScannedCrate> resolveIfAny(@NonNull final GRAI grai, @NonNull final PickingSlotQueues queues)
