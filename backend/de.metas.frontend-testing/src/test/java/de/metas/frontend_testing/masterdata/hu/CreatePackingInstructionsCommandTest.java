@@ -123,6 +123,30 @@ public class CreatePackingInstructionsCommandTest
 	}
 
 	@Test
+	public void execute_luProduct_bindsTheLUItemToThatProduct() throws Exception
+	{
+		createProduct("P1");
+		final ProductId xy = createProduct("XY");
+
+		final List<I_M_HU_PI_Item> items = luItems("{\"lu\":\"LU\",\"qtyTUsPerLU\":40,\"luProduct\":\"XY\",\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4}");
+
+		// the only LU->TU item is for XY: there is no generic item
+		assertThat(items).hasSize(1);
+		assertThat(items.get(0).getM_Product_ID()).isEqualTo(xy.getRepoId());
+		assertThat(items.get(0).getQty()).isEqualByComparingTo(BigDecimal.valueOf(40));
+	}
+
+	@Test
+	public void execute_luProductWithoutLU_fails()
+	{
+		createProduct("P1");
+		createProduct("XY");
+
+		assertThatThrownBy(() -> luItems("{\"luProduct\":\"XY\",\"tu\":\"TU\",\"product\":\"P1\",\"qtyCUsPerTU\":4}"))
+				.hasMessageContaining("luProduct requires lu");
+	}
+
+	@Test
 	public void execute_additionalLUItemsWithoutLU_fails()
 	{
 		createProduct("P1");
