@@ -5,6 +5,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -39,11 +40,13 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class HUQueryBuilderTest
 {
@@ -187,6 +190,26 @@ public class HUQueryBuilderTest
 		assertThat(huFilters.accept(hus.get(2))).isTrue(); // because they are not reserved at all
 		assertThat(huFilters.accept(hus.get(3))).isTrue();
 		assertThat(huFilters.accept(hus.get(4))).isTrue();
+	}
+
+	@Test
+	public void anyMatch_noMatchingHU_false()
+	{
+		final I_M_Warehouse emptyWh = newInstance(I_M_Warehouse.class);
+		save(emptyWh);
+
+		assertThat(huQueryBuilder.addOnlyInWarehouseId(WarehouseId.ofRepoId(emptyWh.getM_Warehouse_ID())).anyMatch()).isFalse();
+	}
+
+	@Test
+	public void anyMatch_severalMatchingHUs_true_noException()
+	{
+		// 2 HUs match (locator-product, locator-product-nosourceHU); unlike firstIdOnly() it shall not fail because of that
+		huQueryBuilder
+				.addOnlyWithProduct(product)
+				.addOnlyInWarehouseId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+
+		assertThat(huQueryBuilder.anyMatch()).isTrue();
 	}
 
 	private void createReservationRecord(final OrderLineId orderLineId, final I_M_HU hu)
@@ -384,4 +407,40 @@ public class HUQueryBuilderTest
 				new DDOrderMoveScheduleRepository());
 	}
 
+	@Test
+	public void firstOnlyNotNull_oneFound_returnsIt()
+	{
+		final I_M_HU expected = hus.get(2);
+
+		final I_M_HU actual = huQueryBuilder
+				.addOnlyHUIds(ImmutableList.of(HuId.ofRepoId(expected.getM_HU_ID())))
+				.firstOnlyNotNull(() -> new IllegalStateException("not found"), () -> new IllegalStateException("more than one"));
+
+		assertThat(actual.getM_HU_ID()).isEqualTo(expected.getM_HU_ID());
+	}
+
+	@Test
+	public void firstOnlyNotNull_noneFound_throwsNotFoundException()
+	{
+		final HuId missing = HuId.ofRepoId(hus.stream().mapToInt(I_M_HU::getM_HU_ID).max().orElse(0) + 1000);
+		final Supplier<IllegalStateException> notFound = () -> new IllegalStateException("not found");
+		final Supplier<IllegalStateException> moreThanOne = () -> new IllegalStateException("more than one");
+
+		assertThatThrownBy(() -> huQueryBuilder
+				.addOnlyHUIds(ImmutableList.of(missing))
+				.firstOnlyNotNull(notFound, moreThanOne))
+				.hasMessage("not found");
+	}
+
+	@Test
+	public void firstOnlyNotNull_moreThanOneFound_throwsMoreThanOneException()
+	{
+		final Supplier<IllegalStateException> notFound = () -> new IllegalStateException("not found");
+		final Supplier<IllegalStateException> moreThanOne = () -> new IllegalStateException("more than one");
+
+		assertThatThrownBy(() -> huQueryBuilder
+				.addOnlyHUIds(ImmutableList.of(HuId.ofRepoId(hus.get(0).getM_HU_ID()), HuId.ofRepoId(hus.get(1).getM_HU_ID())))
+				.firstOnlyNotNull(notFound, moreThanOne))
+				.hasMessage("more than one");
+	}
 }

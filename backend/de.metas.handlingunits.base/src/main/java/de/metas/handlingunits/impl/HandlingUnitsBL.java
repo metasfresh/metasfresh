@@ -1632,6 +1632,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isTUTypeTakenByLUType(@NonNull final HuPackingInstructionsId luPIId, @NonNull final HuPackingInstructionsId tuPIId, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId, null).isPresent();
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{

@@ -20,6 +20,12 @@ const containerElement = () => page.locator('.Toastify .Toastify__toast--error d
 export const ErrorToast = {
     /** @returns {import('@playwright/test').Locator} */
     locator: () => containerElement(),
+    /** Waits until the error toast finished its enter animation and is fully in the viewport (e.g. before a screenshot). */
+    expectFullyShown: async () => {
+        const toast = page.locator('.Toastify__toast--error').first();
+        await expect(toast).not.toHaveClass(/Toastify__bounce-enter/, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(toast).toBeInViewport({ ratio: 1, timeout: SLOW_ACTION_TIMEOUT });
+    },
 
     waitToPopup: (callback, timeout) => {
         // Wait for the FIRST error toast to attach, then hand it to the caller. The count is
@@ -30,6 +36,12 @@ export const ErrorToast = {
             .then(async () => {
                 await callback?.(toastLocator);
             });
+    },
+
+    /** Asserts the DOM id of the toast that contains the given toast body (the scanner gives each error toast its own id, BarcodeScannerComponentError-<seq>; pass a RegExp to match it). */
+    expectToastId: async (toastBody, expectedId) => {
+        const toastElement = toastBody.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
+        await expect(toastElement).toHaveAttribute('id', expectedId);
     },
 
     closePopup: async () => {
@@ -50,9 +62,11 @@ export const ErrorToast = {
         }
 
         const closeButton = page.locator('.Toastify__close-button--error').first();
-        await closeButton.scrollIntoViewIfNeeded({ timeout: FAST_ACTION_TIMEOUT });
-        await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
+        // tap() waits for actionability itself; the SLOW budget because the stability check needs rendered frames, which a loaded host delays
+        await closeButton.tap({ timeout: SLOW_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+        // react-toastify ignores a new toast with the same id until the previous one has fully exited (known product gap: a quick rescan shows no message); wait for that
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
 
     // Assert exactly N non-blocking success/info toasts (`.Toastify__toast--success`) are shown — one

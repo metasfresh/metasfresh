@@ -4,6 +4,9 @@
     "New": "Neues Gebinde",
     "Current": "Offenes Gebinde"
   },
+  "HUConsolidationActivity": {
+    "scanGRAI": "Scan (GRAI)"
+  },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
     "closeTarget": "Schließen",
@@ -16,5 +19,9 @@
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All",
     "scanGRAI": "GRAI scannen, um TU auszuwählen"
+  },
+  "CompleteActivity": {
+    "ok": "OK",
+    "completed": "Abgeschlossen, Lieferung wird erstellt."
   }
 }

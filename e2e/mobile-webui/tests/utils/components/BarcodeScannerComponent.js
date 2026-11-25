@@ -25,6 +25,26 @@ const dispatchScanTerminator = async (key) => {
 };
 
 export const BarcodeScannerComponent = {
+    /** Records the frequency of every beep oscillator started from now on (the beep sets it with AudioParam.setValueAtTime; the volume uses .value, not recorded). */
+    startRecordingBeepTones: async () => await test.step(`${NAME} - Start recording beep tones`, async () => {
+        await page.evaluate(() => {
+            window.__beepTones = [];
+            if (!window.__beepRecorderInstalled) {
+                window.__beepRecorderInstalled = true;
+                const original = AudioParam.prototype.setValueAtTime;
+                AudioParam.prototype.setValueAtTime = function (value, time) {
+                    window.__beepTones.push(value);
+                    return original.call(this, value, time);
+                };
+            }
+        });
+    }),
+    /** @returns {Promise<number[]>} the beep frequencies (Hz) recorded since the last take; clears the record */
+    takeBeepTones: async () => await page.evaluate(() => window.__beepTones.splice(0)),
+    /** Waits until at least one beep was recorded (does not consume the record). */
+    waitForBeepTones: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for a beep`, async () => {
+        await expect.poll(async () => (await page.evaluate(() => window.__beepTones.length)), { timeout }).toBeGreaterThan(0);
+    }),
     waitToAttach: async ({ testId }) => await test.step(`${NAME} - Wait for input element to attach  (${testId})`, async () => {
         let selector = '#input-text';
         if (testId) {

@@ -57,15 +57,31 @@ public class HULabelService
 
 	public void print(@NonNull final HULabelPrintRequest request)
 	{
-		HULabelPrintCommand.builder()
+		newPrintCommand(request).execute();
+	}
+
+	/**
+	 * Validates the request (e.g. a label config must apply) and returns the printing without running it.
+	 * Running the returned action prints immediately, not after the transaction closed, and throws if the printing fails.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if the label cannot be printed, e.g. no label config applies
+	 */
+	@NonNull
+	public HULabelPrintAction preparePrint(@NonNull final HULabelPrintRequest request)
+	{
+		return newPrintCommand(request).prepare().orElse(HULabelPrintAction.NOTHING);
+	}
+
+	private HULabelPrintCommand newPrintCommand(@NonNull final HULabelPrintRequest request)
+	{
+		return HULabelPrintCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huLabelConfigService(huLabelConfigService)
 				.huProcessDAO(huProcessDAO)
 				.huQRCodesService(huQRCodesService)
 				.huLabelService(this)
 				.request(request)
-				.build()
-				.execute();
+				.build();
 	}
 
 	public void printNow(final HULabelDirectPrintRequest request)

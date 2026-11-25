@@ -4,6 +4,9 @@
     "New": "New LU",
     "Current": "Current"
   },
+  "HUConsolidationActivity": {
+    "scanGRAI": "Scan (GRAI)"
+  },
   "SelectHUConsolidationTargetScreen": {
     "caption": "Select Target",
     "closeTarget": "Close",
@@ -16,5 +19,9 @@
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All",
     "scanGRAI": "Scan GRAI to select TU"
+  },
+  "CompleteActivity": {
+    "ok": "OK",
+    "completed": "Done, the shipment is being created."
   }
 }

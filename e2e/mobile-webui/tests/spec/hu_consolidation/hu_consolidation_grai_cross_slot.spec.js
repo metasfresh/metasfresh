@@ -177,8 +177,7 @@ test('Scan GRAI of TU not in the open slot → LuNotAtPickingSlot error toast', 
 
         // Sanity: now consolidate graiP1 (the correct TU) successfully and complete
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
-        await PickingSlotScreen.scanGRAI({ graiString: graiP1 });
-        await PickingSlotScreen.waitNotLoading();
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: graiP1 });
         await PickingSlotScreen.goBack();
         await HUConsolidationJobScreen.complete();
     });

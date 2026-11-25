@@ -23,10 +23,12 @@
 package de.metas.javaclasses.impl;
 
 import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,5 +82,25 @@ public class JavaClassDAOTests extends JavaClassTestBase
 		Assertions.assertTrue(javaClasses.contains(javaClass), "No class found for type id");
 		Assertions.assertEquals(1, javaClasses.size(), "Size not equals one");
 
+	}
+
+	@Test
+	public void test_getJavaClassIdByClassname()
+	{
+		final I_AD_JavaClass active = newJavaClass("com.example.Active", true);
+		newJavaClass("com.example.Inactive", false);
+
+		Assertions.assertEquals(JavaClassId.ofRepoId(active.getAD_JavaClass_ID()), dao.getJavaClassIdByClassname("com.example.Active"));
+		Assertions.assertThrows(AdempiereException.class, () -> dao.getJavaClassIdByClassname("com.example.Inactive"));
+		Assertions.assertThrows(AdempiereException.class, () -> dao.getJavaClassIdByClassname("com.example.Unknown"));
+	}
+
+	private static I_AD_JavaClass newJavaClass(final String classname, final boolean active)
+	{
+		final I_AD_JavaClass javaClass = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class);
+		javaClass.setClassname(classname);
+		javaClass.setIsActive(active);
+		InterfaceWrapperHelper.save(javaClass);
+		return javaClass;
 	}
 }

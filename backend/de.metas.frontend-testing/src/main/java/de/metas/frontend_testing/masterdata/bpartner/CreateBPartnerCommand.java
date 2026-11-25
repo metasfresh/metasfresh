@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
 import de.metas.bpartner.service.IBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -46,9 +47,17 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/**
+ * Creates a business partner, or - when the request's identifier already stands for a business partner of the masterdata
+ * context (e.g. created by an earlier call) - updates its header with the values given in the request.
+ * Locations and contacts are created only together with a new partner.
+ */
 public class CreateBPartnerCommand
 {
 	@NonNull private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final PriceListVersionRepository priceListVersionRepository;
@@ -106,72 +115,28 @@ public class CreateBPartnerCommand
 
 	public JsonCreateBPartnerResponse execute()
 	{
-		final PricingSystemId pricingSystemId = createPricingSystem();
-
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bpartner.setValue(bpValue);
-
-		// Use custom name if provided (max 100 chars), otherwise use value
-		final String customName = request.getName();
-		if (Check.isNotBlank(customName) && customName.length() > 100)
+		final BPartnerId existingBPartnerId = context.getOptionalId(bpIdentifier, BPartnerId.class).orElse(null);
+		final boolean isNew = existingBPartnerId == null;
+		if (!isNew)
 		{
-			throw new AdempiereException("bpartner name must not exceed 100 characters");
-		}
-		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
-		bpartner.setName(bpName);
-		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(bpName);
-		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
-		bpartner.setIsVendor(request.isVendor());
-		bpartner.setIsCustomer(request.isCustomer());
-		bpartner.setAD_Org_ID(orgId.getRepoId());
-		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
-
-		final GRAIRequired graiRequired = request.getGraiRequired();
-		if (graiRequired != null)
-		{
-			bpartner.setGRAIRequired(graiRequired.getCode());
+			assertUpdatable();
 		}
 
-		if (request.getIsEInvoiceRecipeint() != null)
-		{
-			bpartner.setIsEInvoiceRecipeint(request.getIsEInvoiceRecipeint());
-		}
-		if (request.getEInvoiceType() != null)
-		{
-			bpartner.setEInvoiceType(request.getEInvoiceType());
-		}
-		if (request.getEInvoiceBuyerReference() != null)
-		{
-			bpartner.setEInvoice_BuyerReference(request.getEInvoiceBuyerReference());
-		}
-		if (request.getVatTaxId() != null)
-		{
-			bpartner.setVATaxID(request.getVatTaxId());
-		}
-		if (request.getInvoiceRule() != null)
-		{
-			// validate the request's code maps to a real InvoiceRule, then store the normalized code
-			bpartner.setInvoiceRule(InvoiceRule.ofCode(request.getInvoiceRule()).getCode());
-		}
+		final I_C_BPartner bpartner = isNew
+				? bpartnerDAO.newBPartner()
+				: bpartnerDAO.getById(existingBPartnerId);
+		setHeader(bpartner, isNew);
+		bpartnerDAO.save(bpartner);
 
-		if (request.getOrderDocSubType() != null)
-		{
-			bpartner.setSO_DocTypeTarget_ID(getSalesOrderDocTypeId(request.getOrderDocSubType()).getRepoId());
-		}
-
-		// Set pricing system based on vendor/customer flags
-		if (request.isCustomer())
-		{
-			bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Sales pricing system
-		}
-		if (request.isVendor())
-		{
-			bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Purchase pricing system
-		}
-
-		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
+		if (!isNew)
+		{
+			return JsonCreateBPartnerResponse.builder()
+					.id(bpartnerId)
+					.bpartnerCode(bpartner.getValue())
+					.build();
+		}
+
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
 		if (request.getBankAccounts() != null)
@@ -273,6 +238,115 @@ public class CreateBPartnerCommand
 				.docSubType(docSubType)
 				.clientAndOrgId(MasterdataContext.CLIENT_ID, OrgId.ANY)
 				.build());
+	}
+
+	/**
+	 * Locations and contacts are created only together with a new partner; the partner header can be created and updated.
+	 */
+	private void assertUpdatable()
+	{
+		if (request.getGln() != null || request.getLocations() != null || request.getContacts() != null)
+		{
+			throw new AdempiereException("Business partner " + bpIdentifier + " already exists: its header can be updated, but not gln, locations, contacts");
+		}
+	}
+
+	/**
+	 * Sets the partner header from the request: a new partner gets the defaults, an existing one only the fields given in the request;
+	 * in both cases a customer or vendor without a pricing system gets one (its price list is a sales price list unless {@code isSoPriceList} says otherwise).
+	 */
+	private void setHeader(@NonNull final I_C_BPartner bpartner, final boolean isNew)
+	{
+		final String customName = request.getName();
+		if (Check.isNotBlank(customName) && customName.length() > 100)
+		{
+			throw new AdempiereException("bpartner name must not exceed 100 characters");
+		}
+
+		if (isNew)
+		{
+			bpartner.setValue(bpValue);
+			// Use custom name if provided (max 100 chars), otherwise use value
+			final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
+			bpartner.setName(bpName);
+			bpartner.setIsCompany(true);
+			bpartner.setCompanyName(bpName);
+			bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
+			bpartner.setAD_Org_ID(orgId.getRepoId());
+			bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
+		}
+		else
+		{
+			if (request.getBpartnerCode() != null)
+			{
+				bpartner.setValue(bpValue);
+			}
+			if (Check.isNotBlank(customName))
+			{
+				bpartner.setName(customName);
+				bpartner.setCompanyName(customName);
+			}
+		}
+
+		final GRAIRequired graiRequired = request.getGraiRequired();
+		if (graiRequired != null)
+		{
+			bpartner.setGRAIRequired(graiRequired.getCode());
+		}
+
+		if (request.getIsEInvoiceRecipeint() != null)
+		{
+			bpartner.setIsEInvoiceRecipeint(request.getIsEInvoiceRecipeint());
+		}
+		if (request.getEInvoiceType() != null)
+		{
+			bpartner.setEInvoiceType(request.getEInvoiceType());
+		}
+		if (request.getEInvoiceBuyerReference() != null)
+		{
+			bpartner.setEInvoice_BuyerReference(request.getEInvoiceBuyerReference());
+		}
+		if (request.getVatTaxId() != null)
+		{
+			bpartner.setVATaxID(request.getVatTaxId());
+		}
+		if (request.getInvoiceRule() != null)
+		{
+			// validate the request's code maps to a real InvoiceRule, then store the normalized code
+			bpartner.setInvoiceRule(InvoiceRule.ofCode(request.getInvoiceRule()).getCode());
+		}
+
+		if (request.getOrderDocSubType() != null)
+		{
+			bpartner.setSO_DocTypeTarget_ID(getSalesOrderDocTypeId(request.getOrderDocSubType()).getRepoId());
+		}
+
+		final Boolean isVendor = isNew ? CoalesceUtil.coalesceNotNull(request.getIsVendor(), false) : request.getIsVendor();
+		final Boolean isCustomer = isNew ? CoalesceUtil.coalesceNotNull(request.getIsCustomer(), true) : request.getIsCustomer();
+		if (isVendor != null)
+		{
+			bpartner.setIsVendor(isVendor);
+		}
+		if (isCustomer != null)
+		{
+			bpartner.setIsCustomer(isCustomer);
+		}
+
+		// A customer needs a sales pricing system and a vendor a purchase one; a side that has none yet gets it (on create and on update)
+		final boolean needsSalesPricingSystem = bpartner.isCustomer() && bpartner.getM_PricingSystem_ID() <= 0;
+		final boolean needsPurchasePricingSystem = bpartner.isVendor() && bpartner.getPO_PricingSystem_ID() <= 0;
+		if (needsSalesPricingSystem || needsPurchasePricingSystem)
+		{
+			final PricingSystemId pricingSystemId = createPricingSystem();
+			if (needsSalesPricingSystem)
+			{
+				bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+			}
+			if (needsPurchasePricingSystem)
+			{
+				bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+			}
+		}
 	}
 
 	private I_C_BPartner_Location createBPLocation(
@@ -442,7 +516,7 @@ public class CreateBPartnerCommand
 						.currencyId(currencyId)
 						.countryId(countryId)
 						.isTaxIncluded(false)
-						.isSoPriceList(request.isSoPriceList())
+						.isSoPriceList(CoalesceUtil.coalesceNotNull(request.getIsSoPriceList(), true))
 						.build());
 
 		context.putIdentifier(pricingSystemIdentifier, setup.getPricingSystemId());

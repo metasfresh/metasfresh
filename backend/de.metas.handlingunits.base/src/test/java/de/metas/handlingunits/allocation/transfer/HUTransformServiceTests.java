@@ -1813,6 +1813,69 @@ public class HUTransformServiceTests
 	}
 
 	/**
+	 * Pre-check of the HU consolidation: a real TU without partner on a pallet of partner P, target pallet without partner, item bound to P only.
+	 * The move accepts it (partner resolved from the source pallet), so the pre-check must not refuse it.
+	 */
+	@Test
+	public void isTUAttachableToExistingLU_realTUOnPartnerPallet_itemBoundToPartnerOnly_likeTheMove()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 1);
+		final I_M_HU realTU = createStandaloneTU(fixture);
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, sourceLU);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(realTU).getM_HU_ID()).as("guard: TU on source pallet").isEqualTo(sourceLU.getM_HU_ID());
+
+		Assertions.assertThat(huTransformService.isTUAttachableToExistingLU(realTU, targetLU)).as("pre-check").isTrue();
+
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, targetLU); // the move accepts it
+		Assertions.assertThat(handlingUnitsBL.getTopLevelParent(realTU).getM_HU_ID()).as("TU is under the target LU").isEqualTo(targetLU.getM_HU_ID());
+	}
+
+	/**
+	 * Same for a new pallet: {@code tuToNewLU} accepts the TU (see {@link #tuToNewLU_realTUOnPartnerPallet_itemBoundToPartnerOnly_works()}), so the pre-check must too.
+	 */
+	@Test
+	public void isTUAttachableToNewLU_realTUOnPartnerPallet_itemBoundToPartnerOnly_likeTheMove()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 1);
+		final I_M_HU realTU = createStandaloneTU(fixture);
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, sourceLU);
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID());
+
+		Assertions.assertThat(huTransformService.isTUAttachableToNewLU(luPIId, realTU)).as("pre-check").isTrue();
+		Assertions.assertThat(huTransformService.tuToNewLU(realTU, QtyTU.ONE, luPIId).getLURecords()).as("the move accepts it").hasSize(1);
+	}
+
+	/**
+	 * Negative counterpart of the two pre-check tests above: the crate sits on a pallet of partner Q, the item is bound to partner P only,
+	 * so neither a new pallet nor an existing pallet without partner takes it, and the pre-check must say so.
+	 */
+	@Test
+	public void isTUAttachableTo_realTUOnOtherPartnersPallet_itemBoundToPartnerPOnly_refused()
+	{
+		SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+		final BPartnerId partnerP = createBPartner("Customer P");
+		final BPartnerId partnerQ = createBPartner("Customer Q");
+		final PalletFixture fixture = createPalletFixture(partnerP);
+		final I_M_HU sourceLU = createPallet(fixture, partnerP, null, 1);
+		final I_M_HU realTU = createStandaloneTU(fixture);
+		huTransformService.tuToExistingLU(realTU, QtyTU.ONE, sourceLU);
+		sourceLU.setC_BPartner_ID(partnerQ.getRepoId()); // the pallet the crate sits on belongs to Q now
+		saveRecord(sourceLU);
+		final I_M_HU targetLU = createPallet(fixture, null, null, 1);
+
+		Assertions.assertThat(huTransformService.isTUAttachableToExistingLU(realTU, targetLU)).as("existing LU").isFalse();
+		Assertions.assertThat(huTransformService.isTUAttachableToNewLU(HuPackingInstructionsId.ofRepoId(fixture.piLU.getM_HU_PI_ID()), realTU)).as("new LU").isFalse();
+		Assertions.assertThatThrownBy(() -> huTransformService.tuToExistingLU(realTU, QtyTU.ONE, targetLU)).as("the move refuses too").isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
+	}
+
+	/**
 	 * Take ALL TUs of an aggregate onto a NEW pallet (whole-move branch); source pallet partner P; item bound to P only.
 	 * Calls {@code tuToNewLU} for the aggregate directly: via {@code luExtractTUs}, taking all TUs of a pallet is "take the pallet as is".
 	 */

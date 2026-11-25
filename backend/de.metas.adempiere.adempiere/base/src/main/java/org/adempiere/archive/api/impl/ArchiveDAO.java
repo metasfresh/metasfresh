@@ -23,6 +23,7 @@ package org.adempiere.archive.api.impl;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.process.AdProcessId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -98,6 +99,17 @@ public class ArchiveDAO implements IArchiveDAO
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Archive_ID, archiveId)
 				.create()
 				.firstOnly(I_AD_Archive.class);
+	}
+
+	@Override
+	public int countArchives(@NonNull final TableRecordReference recordRef, @Nullable final AdProcessId processId)
+	{
+		final IQueryBuilder<I_AD_Archive> queryBuilder = retrieveArchivesQuery(Env.getCtx(), recordRef);
+		if (processId != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Process_ID, processId);
+		}
+		return queryBuilder.create().count();
 	}
 
 	private IQueryBuilder<I_AD_Archive> retrieveArchivesQuery(final Properties ctx, final TableRecordReference recordRef)
