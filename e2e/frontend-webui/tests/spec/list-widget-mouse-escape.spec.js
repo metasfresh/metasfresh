@@ -8,7 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getRecordData } from '../utils/WebAPIValidation';
-import { pickCustomerByMouse, expectFocusOn } from '../utils/QuickInputFocus';
+import { pickCustomerByMouse, expectFocusOn, expectFocusHeld } from '../utils/QuickInputFocus';
 
 /**
  * Pins (must pass on today's code): in the sales order header a mouse click on a list field opens its
@@ -47,6 +47,8 @@ async function optionKey(option) {
   return testId.replace(/^option-/, '');
 }
 
+// Scrollbars are hidden by default in Playwright's Chromium, so the scrollbar pin turns them on. `args` is a copy
+// of `launchOptions.args` of the `chromium` project in e2e/frontend-webui/playwright.config.js: keep them in sync.
 test.use({
   launchOptions: {
     args: [
@@ -128,7 +130,11 @@ testCases.forEach(({ language, label }) => {
           { timeout: SLOW_ACTION_TIMEOUT, message: 'after Tab: cursor is on the next field, not on body or in PaymentRule' }
         )
         .toBe(true);
-      console.log(`Active element after Tab (${language}): ${await describeActiveElement(page)}`);
+      const described = await describeActiveElement(page);
+      console.log(`Active element after Tab (${language}): ${described}`);
+      // Mark the element holding the cursor so the hold check targets exactly it.
+      await page.evaluate(() => document.activeElement && document.activeElement.setAttribute('data-pin-active', 'A'));
+      await expectFocusHeld(page.locator('[data-pin-active="A"]').first(), 1000, `after Tab: cursor left ${described}`);
 
       await expect
         .poll(() => savedKey(recordId, 'PaymentRule'), { timeout: SLOW_ACTION_TIMEOUT, message: `saved PaymentRule equals ${key}` })
@@ -168,6 +174,14 @@ testCases.forEach(({ language, label }) => {
       await expect(page.locator(PAYMENT_TERM), 'dropdown still open after a scrollbar press').toHaveClass(/opened/);
       await expect(list, 'option list still visible after a scrollbar press').toBeVisible();
       expect(await savedKey(recordId, 'C_PaymentTerm_ID'), 'scrollbar press selects nothing').toBe(before);
+      // A deferred focus-out handling must not close it later either: hold for 1000 ms, sampled every 100 ms.
+      for (const deadline = Date.now() + 1000; Date.now() < deadline; ) {
+        const isOpen = await page.locator(PAYMENT_TERM).evaluate((el) => el.classList.contains('opened'));
+        expect(isOpen, 'dropdown stays open for 1000 ms after a scrollbar press').toBe(true);
+        await page.waitForTimeout(100);
+      }
+      await expect(list, 'option list still visible 1000 ms after a scrollbar press').toBeVisible();
+      expect(await savedKey(recordId, 'C_PaymentTerm_ID'), 'value unchanged 1000 ms after a scrollbar press').toBe(before);
 
       const option = page.locator(OPTION).nth(1);
       await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
