@@ -75,7 +75,7 @@ public class LUTUProducerDestination
 		implements ILUTUProducerAllocationDestination
 {
 
-	public static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
+	private static final AdMessageKey ERR_LU_HAS_NO_TU_SUB_PACK_INSTR = AdMessageKey.of("ERR_LU_HAS_NO_TU_SUB_PACK_INSTR");
 
 	// Services
 	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
