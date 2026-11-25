@@ -19,7 +19,7 @@ const createHuManagerMasterdata = async ({ withAggregatedTU = false } = {}) =>
             warehouses: { wh1: {} },
             packingInstructions: { PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 } },
             handlingUnits: {
-                HU1: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI', ...(withAggregatedTU ? { qrCodeOfAggregatedTU: true } : {}) },
+                HU1: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI', ...(withAggregatedTU ? { isQrCodeOfAggregatedTU: true } : {}) },
                 ...(withAggregatedTU ? { HU2: { product: 'P1', warehouse: 'wh1', packingInstructions: 'PI' } } : {}),
             },
         },

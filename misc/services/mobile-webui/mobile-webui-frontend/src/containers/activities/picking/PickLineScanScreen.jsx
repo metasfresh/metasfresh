@@ -142,7 +142,7 @@ const PickLineScanScreen = () => {
   });
   const isInlineGraiCapture = isInlineGraiCaptureEnabled({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy });
 
-  const isLabelRequiredLine = cuQtyEntryPolicy.labelRequired;
+  const isLabelRequiredLine = cuQtyEntryPolicy.isLabelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
   const nextTU = useOpenNextTU({
     applicationId,
@@ -189,7 +189,7 @@ const PickLineScanScreen = () => {
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
   // scan once: the count offered for the next TU (the last typed count, capped by the open quantity)
-  const isScanOnce = cuQtyEntryPolicy.scanOnce;
+  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
   const suggestedQty = isScanOnce
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
     : undefined;
@@ -286,12 +286,12 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
 
 // @VisibleForTesting
 export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_POLICY }) =>
-  cuQtyEntryPolicy.labelRequired ? undefined : qrCode;
+  cuQtyEntryPolicy.isLabelRequired ? undefined : qrCode;
 
 /** The HU the PICK event takes the CUs from (`huQRCode`) */
 // @VisibleForTesting
 export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sourceHUQRCode, scannedBarcode }) => {
-  if (!cuQtyEntryPolicy.labelRequired) return scannedBarcode;
+  if (!cuQtyEntryPolicy.isLabelRequired) return scannedBarcode;
   if (!sourceHUQRCode) throw new UserMessageError('picking.pickFromRequired');
   return sourceHUQRCode;
 };
@@ -306,7 +306,7 @@ export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
 
 // @VisibleForTesting
 export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy = MANUAL_POLICY }) =>
-  graiScanEnabled && tuPickingTarget == null && !cuQtyEntryPolicy.labelRequired;
+  graiScanEnabled && tuPickingTarget == null && !cuQtyEntryPolicy.isLabelRequired;
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
@@ -415,7 +415,7 @@ export const convertScannedCULabelToResolvedResult = ({
     format: cuLabelFormat,
     expectedProductNo,
     expectedGS1ProductCodes,
-    isPackIdRequired: cuQtyEntryPolicy.packIdRequired,
+    isPackIdRequired: cuQtyEntryPolicy.isPackIdRequired,
   });
   if (errorKey) {
     // the scanned label goes to the UI trace, so support can see later what was refused

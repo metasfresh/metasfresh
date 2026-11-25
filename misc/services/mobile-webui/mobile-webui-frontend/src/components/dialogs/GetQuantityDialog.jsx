@@ -69,11 +69,11 @@ const GetQuantityDialog = ({
   onCloseDialog,
 }) => {
   // a CU label carries lot and best-before: the quantity block of a label-based mode always shows them
-  const isLabelMode = !!cuQtyEntryPolicy?.labelRequired;
+  const isLabelMode = !!cuQtyEntryPolicy?.isLabelRequired;
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
-  const isScanOnce = !!cuQtyEntryPolicy?.scanOnce;
+  const isScanOnce = !!cuQtyEntryPolicy?.isScanOnce;
   // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
   const buttonType = isLabelMode ? 'button' : undefined;
 

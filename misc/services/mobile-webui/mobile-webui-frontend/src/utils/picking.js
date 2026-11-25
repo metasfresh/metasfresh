@@ -100,7 +100,7 @@ export const computeCUEntryToRemember = ({
   label: { cuLabel, lotNo, bestBeforeDate },
 });
 
-export const hasLabelRequiredLine = (lines) => (lines ?? []).some((line) => getCUQtyEntryPolicy(line).labelRequired);
+export const hasLabelRequiredLine = (lines) => (lines ?? []).some((line) => getCUQtyEntryPolicy(line).isLabelRequired);
 
 export const isQuickPackAllAllowed = ({ allowQuickPackAll, lines }) =>
   !!allowQuickPackAll && !hasLabelRequiredLine(lines);

@@ -182,14 +182,14 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
-	void formatMismatch_tellsWhyTheLabelDoesNotFit()
+	void formatMismatch_messageIsTheLocalizedTextOnly_theParserReasonIsOnlyLogged()
 	{
 		assertThatThrownBy(() -> resolve("]d2" + label(GTIN, PRODUCT_NO, "7"), CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, format.getId()))
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> {
 					final AdempiereException adempiereException = (AdempiereException)ex;
 					assertThat(adempiereException.getErrorCode()).isEqualTo(CU_LABEL_FORMAT_MISMATCH.toAD_Message());
-					assertThat(adempiereException.getMessage()).contains("01");
+					assertThat(adempiereException.getMessage()).doesNotContain("Invalid constant marker");
 				});
 	}
 

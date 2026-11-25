@@ -65,7 +65,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
-    isLiveRefresh: cuQtyEntryPolicy.labelRequired,
+    isLiveRefresh: cuQtyEntryPolicy.isLabelRequired,
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -111,7 +111,7 @@ const PickLineScreen = () => {
         lineId,
         qrCode: pickFromHUQRCode,
         // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
-        isResume: cuQtyEntryPolicy.labelRequired,
+        isResume: cuQtyEntryPolicy.isLabelRequired,
       })
     );
   };

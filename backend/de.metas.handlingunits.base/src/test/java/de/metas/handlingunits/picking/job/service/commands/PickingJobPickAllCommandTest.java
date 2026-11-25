@@ -53,18 +53,18 @@ class PickingJobPickAllCommandTest
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void profileLabelBasedMode_refused(final boolean allowQuickPackAll)
+	void profileLabelBasedMode_refused(final boolean isAllowQuickPackAll)
 	{
-		createProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, allowQuickPackAll);
+		createProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, isAllowQuickPackAll);
 		final PickingJob job = createSalesOrderJob("salesOrder-i", helper.shipToBPLocationId);
 		assertRefusedAndNothingPicked(job);
 	}
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void customerLabelBasedMode_overProfileManual_refused(final boolean allowQuickPackAll)
+	void customerLabelBasedMode_overProfileManual_refused(final boolean isAllowQuickPackAll)
 	{
-		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, allowQuickPackAll);
+		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, isAllowQuickPackAll);
 		createCustomerRecord(profile, helper.shipToBPLocationId.getBpartnerId(), CUQtyEntryMode.SCAN_EACH_CU);
 		final PickingJob job = createSalesOrderJob("salesOrder-ii", helper.shipToBPLocationId);
 		assertRefusedAndNothingPicked(job);
@@ -72,9 +72,9 @@ class PickingJobPickAllCommandTest
 
 	@ParameterizedTest
 	@ValueSource(booleans = { true, false })
-	void mixedProductJob_refused(final boolean allowQuickPackAll)
+	void mixedProductJob_refused(final boolean isAllowQuickPackAll)
 	{
-		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, allowQuickPackAll);
+		final I_MobileUI_UserProfile_Picking profile = createProfile(CUQtyEntryMode.MANUAL, isAllowQuickPackAll);
 		final BPartnerLocationId customerA = helper.createBPartnerAndLocationId("CustomerA");
 		final BPartnerLocationId customerB = helper.createBPartnerAndLocationId("CustomerB");
 		createCustomerRecord(profile, customerB.getBpartnerId(), CUQtyEntryMode.SCAN_EACH_CU);
@@ -119,14 +119,14 @@ class PickingJobPickAllCommandTest
 		assertThat(jobAfter.getLines()).allSatisfy(line -> assertThat(line.getPickedHUIds()).as("no CU created").isEmpty());
 	}
 
-	private I_MobileUI_UserProfile_Picking createProfile(final CUQtyEntryMode mode, final boolean allowQuickPackAll)
+	private I_MobileUI_UserProfile_Picking createProfile(final CUQtyEntryMode mode, final boolean isAllowQuickPackAll)
 	{
 		final I_MobileUI_UserProfile_Picking profile = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		profile.setName("test profile");
 		profile.setPickingJobAggregationType("sales_order");
 		profile.setCreateShipmentPolicy(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_DO_NOT_CREATE);
 		profile.setCUQtyEntryMode(mode.getCode());
-		profile.setIsAllowQuickPackAll(allowQuickPackAll);
+		profile.setIsAllowQuickPackAll(isAllowQuickPackAll);
 		InterfaceWrapperHelper.saveRecord(profile);
 		return profile;
 	}

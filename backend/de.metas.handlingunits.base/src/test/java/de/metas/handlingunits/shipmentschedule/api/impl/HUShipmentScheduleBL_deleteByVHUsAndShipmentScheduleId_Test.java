@@ -116,12 +116,12 @@ class HUShipmentScheduleBL_deleteByVHUsAndShipmentScheduleId_Test
 		return ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID());
 	}
 
-	private I_M_ShipmentSchedule_QtyPicked newRow(final ShipmentScheduleId scheduleId, final int vhuId, final boolean active)
+	private I_M_ShipmentSchedule_QtyPicked newRow(final ShipmentScheduleId scheduleId, final int vhuId, final boolean isActive)
 	{
 		final I_M_ShipmentSchedule_QtyPicked row = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		row.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
 		row.setVHU_ID(vhuId);
-		row.setIsActive(active);
+		row.setIsActive(isActive);
 		InterfaceWrapperHelper.saveRecord(row);
 		return row;
 	}
