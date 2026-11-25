@@ -419,4 +419,102 @@ dialog opened only after the third click.
 
     console.log('Email template picker first-click test completed');
   });
+
+  [
+    { language: 'en_US', label: 'English' },
+    { language: 'de_DE', label: 'German' },
+  ].forEach(({ language, label }) => {
+    test(`Letter template picker opens on the first click (${label})`, async ({ page }) => {
+      allure.epic('E0193: User Interface');
+      allure.tag('F50000: Frontend WebUI');
+      allure.tag('F50000');
+      allure.story('Letter template picker');
+      allure.severity('normal');
+
+      allure.description(`
+## Letter template picker — first-click open
+
+The letter template picker starts focused on purpose, so the first click only
+toggles the dropdown instead of racing click-outside (mirrors the email picker).
+
+1. Open the Letter dialog on a Sales Order (Alt+R).
+2. Single-click the template picker.
+3. Assert the template list opens and stays open.
+      `);
+
+      test.setTimeout(180000); // 3 minutes
+
+      // === CREATE TEST DATA ===
+      const masterdata = await Backend.createMasterdata({
+        request: {
+          login: {
+            user: { language, firstname: 'first', lastname: 'last' },
+          },
+          bpartners: {
+            CUSTOMER1: {
+              isVendor: false,
+              isCustomer: true,
+              isSoPriceList: true,
+              name: 'Customer',
+            },
+          },
+          products: {
+            Product1: {
+              name: 'PROD',
+              type: 'Item',
+              prices: [{ price: 15.0, currencyCode: 'EUR' }],
+            },
+          },
+        },
+      });
+
+      // === LOGIN ===
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+
+      // === CREATE SALES ORDER WITH CUSTOMER ===
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await page.waitForTimeout(2000);
+
+      // === OPEN LETTER DIALOG (Alt+R) ===
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+      await page.keyboard.press('Alt+R');
+      await expect(page.locator('.panel-letter').first()).toBeVisible({
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // === PRECONDITION: template picker rendered (>=1 template available) ===
+      const picker = page.locator('.letter-templates .input-dropdown-container').first();
+      await picker.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // === single click opens the dropdown list and keeps it open ===
+      await test.step('Single click opens the template dropdown', async () => {
+        const dropdownList = page.locator('.input-dropdown-list');
+        expect(await dropdownList.isVisible().catch(() => false)).toBe(false);
+
+        await picker.click(); // exactly ONE click
+
+        await expect(dropdownList).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // wait for the option list to mount, not just the opened container
+        await expect(
+          page.locator('.input-dropdown-list .input-dropdown-list-option').first()
+        ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+        // hold: a deferred close (flash-then-close) must be caught
+        await page.waitForTimeout(1000);
+        await expect(dropdownList).toBeVisible();
+        await expect(
+          page.locator('.input-dropdown-list .input-dropdown-list-option').first()
+        ).toBeVisible();
+
+        const screenshot = await page.screenshot();
+        allure.attachment('Letter template dropdown after single click', screenshot, 'image/png');
+      });
+    });
+  });
 });
