@@ -16,9 +16,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
  */
 class ShipmentScheduleAttributeConfigRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	boolean existsActive(final int handlerId, @NonNull final AttributeId attributeId)
+	boolean hasActiveRow(final int handlerId, @NonNull final AttributeId attributeId)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_IolCandHandler_ID, handlerId)

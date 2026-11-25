@@ -93,7 +93,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		return productId;
 	}
 
-	private PickingJob createPickingJob(@NonNull final OrderAndLineId orderAndLineId, final boolean allowAnyHU)
+	private PickingJob createPickingJob(@NonNull final OrderAndLineId orderAndLineId, final boolean isAllowAnyHU)
 	{
 		return helper.pickingJobService.createPickingJob(
 						PickingJobCreateRequest.builder()
@@ -101,7 +101,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 								.pickerId(UserId.ofRepoId(1234))
 								.salesOrderId(orderAndLineId.getOrderId())
 								.deliveryBPLocationId(helper.shipToBPLocationId)
-								.isAllowPickingAnyHU(allowAnyHU)
+								.isAllowPickingAnyHU(isAllowAnyHU)
 								.build())
 				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
 	}
@@ -151,14 +151,14 @@ class PickingJobPick_LotKeptOnSplit_Test
 		return attributes(huId).getValueAsString(AttributeConstants.ATTR_LotNumber);
 	}
 
-	@ParameterizedTest(name = "box={0}, pickerClearedFields={1}")
+	@ParameterizedTest(name = "box={0}, isPickerClearedFields={1}")
 	@CsvSource({
 			"true,  true",
 			"true,  false",
 			"false, true",
 			"false, false",
 	})
-	void pick3FromStockCU(final boolean intoKarton, final boolean pickerClearedFields)
+	void pick3FromStockCU(final boolean isIntoKarton, final boolean isPickerClearedFields)
 	{
 		final ProductId productId = createProduct();
 		final HuPackingInstructionsId kartonPI = createKartonPI(InterfaceWrapperHelper.load(productId, I_M_Product.class));
@@ -173,7 +173,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 
 		PickingJob pickingJob = createPickingJob(orderAndLineId, false);
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-		if (intoKarton)
+		if (isIntoKarton)
 		{
 			pickingJob = helper.pickingJobService.setTUPickingTarget(pickingJob, null, TUPickingTarget.ofPackingInstructions(kartonPI, "Karton"));
 		}
@@ -187,7 +187,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 				.qrCode(stockCU.getQrCode().toScannedCode())
 				.qtyPicked(new BigDecimal("3"))
 				.checkIfAlreadyPacked(true);
-		if (pickerClearedFields)
+		if (isPickerClearedFields)
 		{
 			// the lot / best-before fields are shown in the quantity dialog and the picker emptied them
 			event.isSetLotNo(true).lotNo(null).isSetBestBeforeDate(true).bestBeforeDate(null);
@@ -198,7 +198,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		final HuId pickedHUId = CollectionUtils.singleElement(picked).getActualPickedHU().getId();
 		final HuId pickedCUId;
 		HuId boxId = null;
-		if (intoKarton)
+		if (isIntoKarton)
 		{
 			// the picked-to HU is either the CU (a TU part; its parent is the new Karton TU) or the new Karton TU itself, depending on how the pick materializes it
 			final I_M_HU pickedHU = handlingUnitsBL.getById(pickedHUId);
@@ -227,7 +227,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		assertThat(pickedCUId).as("a new CU was split off").isNotEqualTo(stockCU.getId());
 		assertThat(getLot(stockCU.getId())).as("stock CU keeps its lot").isEqualTo(LOT);
 		assertThat(getBestBefore(stockCU.getId())).as("stock CU keeps its best-before date").isEqualTo(BEST_BEFORE);
-		if (pickerClearedFields)
+		if (isPickerClearedFields)
 		{
 			assertThat(getLot(pickedCUId)).as("picked CU lot, cleared on purpose").isNullOrEmpty();
 			assertThat(getBestBefore(pickedCUId)).as("picked CU best-before date, cleared on purpose").isNull();
@@ -239,8 +239,8 @@ class PickingJobPick_LotKeptOnSplit_Test
 		}
 		else
 		{
-			assertThat(getLot(pickedCUId)).as("picked CU lot (box=" + intoKarton + ")").isEqualTo(LOT);
-			assertThat(getBestBefore(pickedCUId)).as("picked CU best-before date (box=" + intoKarton + ")").isEqualTo(BEST_BEFORE);
+			assertThat(getLot(pickedCUId)).as("picked CU lot (box=" + isIntoKarton + ")").isEqualTo(LOT);
+			assertThat(getBestBefore(pickedCUId)).as("picked CU best-before date (box=" + isIntoKarton + ")").isEqualTo(BEST_BEFORE);
 			if (boxId != null)
 			{
 				assertThat(getLot(boxId)).as("box lot, kept").isEqualTo(LOT);

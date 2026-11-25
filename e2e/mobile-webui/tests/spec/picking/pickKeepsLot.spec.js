@@ -18,16 +18,16 @@ const BEST_BEFORE_ATTRIBUTE = 'HU_BestBeforeDate';
  * @param readAttributes mobile picking config: attributes the qty dialog shows
  * @param lots stock HUs: `[{ id: 'HU1', qty, lotNo, bestBeforeDate }]`
  * @param orderQty qty of the sales order line
- * @param withLU true: packing instruction PI2 (LU + TU) is created and LU targets are allowed
+ * @param hasLU true: packing instruction PI2 (LU + TU) is created and LU targets are allowed
  */
-const createMasterdata = async ({ readAttributes, lots, orderQty, withLU = false }) => {
+const createMasterdata = async ({ readAttributes, lots, orderQty, hasLU = false }) => {
     const handlingUnits = {};
     for (const { id, qty, lotNo, bestBeforeDate } of lots) {
         handlingUnits[id] = { product: 'P1', warehouse: 'wh', qty, lotNo, bestBeforeDate };
     }
 
     const packingInstructions = { "PI1": { tu: 'Karton', product: 'P1', qtyCUsPerTU: 10 } };
-    if (withLU) {
+    if (hasLU) {
         packingInstructions["PI2"] = { lu: 'LU1', qtyTUsPerLU: 20, tu: 'Karton2', product: 'P1', qtyCUsPerTU: 10 };
     }
 
@@ -41,7 +41,7 @@ const createMasterdata = async ({ readAttributes, lots, orderQty, withLU = false
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     allowPickingAnyCustomer: true,
-                    pickTo: withLU ? ['LU_TU'] : ['LU_TU', 'TU', 'LU_CU', 'CU'],
+                    pickTo: hasLU ? ['LU_TU'] : ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     readAttributes,
                     allowCompletingPartialPickingJob: true,
                     allowSkippingRejectedReason: true,
@@ -90,14 +90,14 @@ const expectShipmentLinesInAnyOrder = async (lines) => {
     ], 'shipment lines (any order)');
 };
 
-const startJob = async (masterdata, { withLU = false } = {}) => {
+const startJob = async (masterdata, { hasLU = false } = {}) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    if (withLU) {
+    if (hasLU) {
         // LU targets only: the job asks for a target after the slot, so no line scan screen to go back from
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     } else {
@@ -237,10 +237,10 @@ test('pre-existing LU target: LU lot follows its TUs', async ({ page }) => {
     allureMeta('LU lot follows the lots of its TUs');
 
     const masterdata = await createMasterdata({
-        readAttributes: [], orderQty: 5, withLU: true,
+        readAttributes: [], orderQty: 5, hasLU: true,
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L-A' }, { id: 'HU2', qty: 10, lotNo: 'L-B' }]
     });
-    const pickingJobId = await startJob(masterdata, { withLU: true });
+    const pickingJobId = await startJob(masterdata, { hasLU: true });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI2.luName });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI2.tuName });
 

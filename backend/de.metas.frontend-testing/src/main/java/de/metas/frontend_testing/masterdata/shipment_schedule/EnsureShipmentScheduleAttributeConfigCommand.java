@@ -2,7 +2,6 @@ package de.metas.frontend_testing.masterdata.shipment_schedule;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.util.Services;
@@ -59,12 +58,7 @@ public class EnsureShipmentScheduleAttributeConfigCommand
 		{
 			throw new AdempiereException("Unexpected IShipmentScheduleHandlerBL implementation: " + handlerBL.getClass().getName());
 		}
-		final I_M_IolCandHandler handler = ((ShipmentScheduleHandlerBL)handlerBL).retrieveHandlerRecordOrNull(HANDLER_CLASSNAME);
-		if (handler == null)
-		{
-			throw new AdempiereException("No active M_IolCandHandler with Classname=" + HANDLER_CLASSNAME);
-		}
-		return handler.getM_IolCandHandler_ID();
+		return ((ShipmentScheduleHandlerBL)handlerBL).retrieveHandlerRecord(HANDLER_CLASSNAME).getM_IolCandHandler_ID();
 	}
 
 	private AttributeId getAttributeId(@NonNull final String attributeCodeStr)
@@ -80,7 +74,7 @@ public class EnsureShipmentScheduleAttributeConfigCommand
 
 	private void ensure(final int handlerId, @NonNull final AttributeId attributeId)
 	{
-		if (repository.existsActive(handlerId, attributeId))
+		if (repository.hasActiveRow(handlerId, attributeId))
 		{
 			logger.info("M_ShipmentSchedule_AttributeConfig already active for M_Attribute_ID={}", attributeId.getRepoId());
 			return;

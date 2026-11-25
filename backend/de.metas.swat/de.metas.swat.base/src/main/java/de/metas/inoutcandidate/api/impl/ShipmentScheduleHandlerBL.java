@@ -135,6 +135,21 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.firstOnly(I_M_IolCandHandler.class);
 	}
 
+	/**
+	 * @return the active {@link I_M_IolCandHandler} record of the given handler class; never {@code null}
+	 * @throws AdempiereException if there is no active record for the given class name
+	 */
+	@NonNull
+	public I_M_IolCandHandler retrieveHandlerRecord(@NonNull final String className)
+	{
+		final I_M_IolCandHandler handlerRecord = retrieveHandlerRecordOrNull(className);
+		if (handlerRecord == null)
+		{
+			throw new AdempiereException("No active M_IolCandHandler with Classname=" + className);
+		}
+		return handlerRecord;
+	}
+
 	@Override
 	public void registerVetoer(final ModelWithoutShipmentScheduleVetoer l, final String tableName)
 	{
