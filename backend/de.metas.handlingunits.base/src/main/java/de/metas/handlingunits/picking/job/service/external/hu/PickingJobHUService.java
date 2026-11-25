@@ -104,9 +104,11 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -176,7 +178,6 @@ public class PickingJobHUService
 
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
 	{
-		// CUs of the same TU share their parent item: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
 		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
 		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
@@ -184,7 +185,7 @@ public class PickingJobHUService
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 			if (cusBookedWithLabel.contains(huId))
 			{
-				result.add(carrierHuIdByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> getTUIdOrSelf(hu)));
+				result.add(computeOncePerParentItem(carrierHuIdByParentItemId, hu, this::getTUIdOrSelf));
 			}
 			else
 			{
@@ -199,8 +200,16 @@ public class PickingJobHUService
 	{
 		return handlingUnitsBL.isVirtual(hu)
 				&& !handlingUnitsBL.isAggregateHU(hu)
-				&& hu.getM_HU_Item_Parent_ID() > 0
 				&& getTU(hu).isPresent();
+	}
+
+	/**
+	 * CUs of the same TU share their parent item, hence the answer: walk up once per parent item, not once per CU.
+	 * The HU must have a parent item.
+	 */
+	private static <T> T computeOncePerParentItem(@NonNull final Map<HuItemId, T> memo, @NonNull final I_M_HU hu, @NonNull final Function<I_M_HU, T> compute)
+	{
+		return memo.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> compute.apply(hu));
 	}
 
 	@NonNull
@@ -224,12 +233,10 @@ public class PickingJobHUService
 			return ImmutableSet.of();
 		}
 
-		// CUs of the same TU share their parent item, hence the answer: walk up once per parent item, not once per CU
 		final HashMap<HuItemId, Boolean> isCUInTUByParentItemId = new HashMap<>();
 		return handlingUnitsBL.getByIds(huIds).stream()
-				.filter(hu -> handlingUnitsBL.isVirtual(hu)
-						&& hu.getM_HU_Item_Parent_ID() > 0
-						&& isCUInTUByParentItemId.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> isCUInTU(hu)))
+				.filter(hu -> hu.getM_HU_Item_Parent_ID() > 0
+						&& computeOncePerParentItem(isCUInTUByParentItemId, hu, this::isCUInTU))
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
