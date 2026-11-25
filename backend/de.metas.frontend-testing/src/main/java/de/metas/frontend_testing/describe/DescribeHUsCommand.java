@@ -9,6 +9,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inventory.InventoryId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -54,16 +55,16 @@ public class DescribeHUsCommand
 		final Integer inventoryRepoId = request.getInventoryId();
 		if (inventoryRepoId != null)
 		{
-			getInventoryLineHUIds(inventoryRepoId).forEach(huId -> response.hu(describe(huId)));
+			getInventoryLineHUIds(InventoryId.ofRepoId(inventoryRepoId)).forEach(huId -> response.hu(describe(huId)));
 		}
 
 		return response.build();
 	}
 
-	private List<HuId> getInventoryLineHUIds(final int inventoryRepoId)
+	private List<HuId> getInventoryLineHUIds(@NonNull final InventoryId inventoryId)
 	{
 		return queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryRepoId)
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.addNotNull(I_M_InventoryLine_HU.COLUMNNAME_M_HU_ID)
 				.orderBy(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_HU_ID)
 				.create()

@@ -341,14 +341,22 @@ public class M_Inventory_StepDef
 		assertThat(extractAdMessages(error)).as("AD_Message of the error and its causes").contains(expectedAdMessage);
 	}
 
-	private static List<Object> extractAdMessages(@NonNull final Throwable error)
+	/**
+	 * @return the {@code AD_Message} parameter of the error and of each of its causes that has one
+	 * (set by {@link AdempiereException#AdempiereException(String, AdMessageKey, Object...)})
+	 */
+	private static List<AdMessageKey> extractAdMessages(@NonNull final Throwable error)
 	{
-		final List<Object> adMessages = new ArrayList<>();
+		final List<AdMessageKey> adMessages = new ArrayList<>();
 		for (Throwable current = error; current != null; current = current.getCause())
 		{
 			if (current instanceof AdempiereException)
 			{
-				adMessages.add(((AdempiereException)current).getParameter("AD_Message"));
+				final Object adMessage = ((AdempiereException)current).getParameter("AD_Message");
+				if (adMessage instanceof AdMessageKey)
+				{
+					adMessages.add((AdMessageKey)adMessage);
+				}
 			}
 		}
 		return adMessages;

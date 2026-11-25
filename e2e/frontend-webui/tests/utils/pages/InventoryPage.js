@@ -4,8 +4,15 @@ import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, V
 import { INVENTORY_WINDOW_ID } from '../WindowIds';
 import { getFieldData } from '../WebAPIValidation';
 
-/** Completing builds the counted HUs synchronously: on a DB with many warehouses it takes up to about a minute. */
-export const INVENTORY_COMPLETE_TIMEOUT = 2 * 60 * 1000;
+/**
+ * Completing builds the counted HUs synchronously, and the first completion after a warehouse was created (every test
+ * creates one) reloads the warehouse cache: WarehouseRepository.retrieveWarehouseMap (WarehouseRepository.java:91-96)
+ * runs one M_Warehouse_SourceHUConfig query per warehouse, reached via SyncInventoryQtyToHUsCommand.java:370 ->
+ * SourceHUsService.java:252. Measured locally with ~875 warehouses: completion 39-40 s, of which ~37 s in that reload
+ * (~42 ms per query round trip, < 1 ms of it in the DB). 90 s = about twice that.
+ * Lower it to SLOW_ACTION_TIMEOUT once the configs are loaded with one query.
+ */
+export const INVENTORY_COMPLETE_TIMEOUT = 90 * 1000;
 
 /**
  * Page object for the desktop "Physical Inventory" window (168).
@@ -114,18 +121,37 @@ export class InventoryPage {
     });
   }
 
-  /** Completes the inventory (document action CO) and waits until its DocStatus is CO. */
+  /**
+   * Completes the inventory (document action CO) and waits until its DocStatus is CO.
+   * The document is processed while the PATCH of its DocAction is answered: if the server rejects it, this fails at once
+   * with the server's message (instead of waiting for a DocStatus that will not come).
+   */
   static async complete() {
     return await test.step('InventoryPage - Complete', async () => {
       const page = getPage();
+      const docActionPatched = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'PATCH' &&
+          new URL(response.url()).pathname.endsWith(`/window/${INVENTORY_WINDOW_ID}/${this.#inventoryId}`) &&
+          (response.request().postData() ?? '').includes('"DocAction"'),
+        { timeout: INVENTORY_COMPLETE_TIMEOUT }
+      );
       await page.getByTestId('status-button').click();
       await page.getByTestId('status-CO').click();
+
+      const response = await docActionPatched;
+      if (!response.ok()) {
+        const body = await response.json().catch(() => null);
+        throw new Error(
+          `Completing inventory ${this.#inventoryId} failed (HTTP ${response.status()}): ${body?.message ?? (await response.text())}`
+        );
+      }
 
       await expect
         .poll(async () => {
           const docStatus = await getFieldData(INVENTORY_WINDOW_ID, this.#inventoryId, 'DocStatus');
           return docStatus.value?.key ?? docStatus.value;
-        }, { message: 'DocStatus of the inventory', timeout: INVENTORY_COMPLETE_TIMEOUT })
+        }, { message: 'DocStatus of the inventory', timeout: SLOW_ACTION_TIMEOUT })
         .toBe('CO');
     });
   }
