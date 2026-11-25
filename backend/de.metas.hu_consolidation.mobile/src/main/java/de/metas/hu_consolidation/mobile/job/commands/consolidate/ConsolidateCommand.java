@@ -1,6 +1,5 @@
 package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -18,11 +17,14 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.job.scan.GRAIScannedCodeResolver;
+import de.metas.hu_consolidation.mobile.job.scan.HUConsolidationScannedCrate;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -33,9 +35,11 @@ import java.util.Set;
 public class ConsolidateCommand
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final GRAIScannedCodeResolver graiResolver;
 
 	// Params
 	@NonNull private final UserId callerId;
@@ -54,12 +58,14 @@ public class ConsolidateCommand
 			@NonNull final HUConsolidationJobRepository jobRepository,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final PickingSlotService pickingSlotService,
+			@NonNull final GRAIScannedCodeResolver graiResolver,
 			//
 			@NonNull final ConsolidateRequest request)
 	{
 		this.jobRepository = jobRepository;
 		this.huQRCodesService = huQRCodesService;
 		this.pickingSlotService = pickingSlotService;
+		this.graiResolver = graiResolver;
 
 		this.callerId = request.getCallerId();
 		this.jobId = request.getJobId();
@@ -108,8 +114,7 @@ public class ConsolidateCommand
 		return job;
 	}
 
-	@VisibleForTesting
-	Set<HuId> getHuIdsToConsolidate()
+	private Set<HuId> getHuIdsToConsolidate()
 	{
 		final PickingSlotQueue fromPickingSlotQueue = getFromPickingSlotQueue();
 
@@ -120,9 +125,7 @@ public class ConsolidateCommand
 		}
 		else if (grai != null)
 		{
-			effectiveHuId = handlingUnitsBL.getTopLevelHuIdByGrai(grai)
-					.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
-							.setParameter("grai", grai.toCanonicalString()));
+			effectiveHuId = getHuIdByGRAI(grai);
 		}
 		else
 		{
@@ -147,6 +150,24 @@ public class ConsolidateCommand
 		{
 			return fromPickingSlotQueue.getHuIds();
 		}
+	}
+
+	/**
+	 * Looks for the GRAI among the crates of this job first: two crates of the job with this GRAI are refused as ambiguous,
+	 * and a HU outside the job with the same GRAI does not block the crate of the job.
+	 * If no crate of the job carries it, a crate elsewhere that carries it is "not at the picking slot"; no such crate at all is "not found".
+	 */
+	@NonNull
+	private HuId getHuIdByGRAI(@NonNull final GRAI grai)
+	{
+		final HUConsolidationScannedCrate crateOfJob = graiResolver.resolveIfAny(grai, pickingSlotService.getNotEmptyQueues(job.getPickingSlotIds())).orElse(null);
+		if (crateOfJob != null)
+		{
+			return crateOfJob.getHuId();
+		}
+
+		throw new AdempiereException(graiResolver.isCarriedByAnyCrate(grai) ? MobileQRCodeMessages.LU_NOT_AT_SLOT : MobileQRCodeMessages.HU_NOT_FOUND)
+				.setParameter("grai", grai.toCanonicalString());
 	}
 
 	private PickingSlotQueue getFromPickingSlotQueue()
@@ -223,15 +244,23 @@ public class ConsolidateCommand
 			return;
 		}
 
-		final I_M_HU firstTU = fromTUs.get(0);
-		final I_M_HU lu = huTransformService.tuToNewLU(firstTU, QtyTU.ONE, luPackingInstructionsId)
-				.getSingleLURecord();
+		final NewLUTakesTUsAssertion newLUTakesTUs = new NewLUTakesTUsAssertion(handlingUnitsBL, huTransformService);
 
-		if (fromTUs.size() > 1)
-		{
-			final List<I_M_HU> remainingTUs = fromTUs.subList(1, fromTUs.size());
-			huTransformService.tusToExistingLU(remainingTUs, lu);
-		}
+		// one transaction: if the new pallet does not take one of the other crates, the pallet created for the first crate is rolled back
+		final I_M_HU lu = trxManager.callInThreadInheritedTrx(() -> {
+			final I_M_HU firstTU = fromTUs.get(0);
+			newLUTakesTUs.assertNewLUTakesTU(luPackingInstructionsId, firstTU);
+			final I_M_HU newLU = huTransformService.tuToNewLU(firstTU, QtyTU.ONE, luPackingInstructionsId)
+					.getSingleLURecord();
+
+			if (fromTUs.size() > 1)
+			{
+				final List<I_M_HU> remainingTUs = fromTUs.subList(1, fromTUs.size());
+				newLUTakesTUs.assertLUTakesTUs(newLU, remainingTUs);
+				huTransformService.tusToExistingLU(remainingTUs, newLU);
+			}
+			return newLU;
+		});
 
 		final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
 		final HUQRCode qrCode = huQRCodesService.getQRCodeByHuId(luId);

@@ -2,7 +2,7 @@ import { test, testContext } from '../../playwright.config';
 import { getPage } from './common';
 
 // The webapi node (mailbox/cache endpoints live here), distinct from the app-node testing API.
-const WEBAPI_BASE_URL =
+export const WEBAPI_BASE_URL =
   process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 /**
@@ -101,6 +101,61 @@ export const Backend = {
       assertNoErrors({ responseBody });
 
       return responseBody;
+    }),
+
+  /**
+   * Call a REST endpoint of the app server's API (the base of the testing API, e.g. the mobile picking API `/picking/...`)
+   * as the given user.
+   * @param {Object} options
+   * @param {string} options.method - HTTP method
+   * @param {string} options.path - path below the API base, e.g. `/picking/event`
+   * @param {Object} [options.data] - JSON request body
+   * @param {string} options.authToken - the user's auth token (e.g. `masterdata.login.user.token`)
+   * @returns {Promise<Object|null>} the parsed JSON response, null for an empty one
+   */
+  callAppApi: async ({ method, path, data, authToken }) => {
+    const page = getPage();
+    const backendBaseUrl = await getBackendBaseUrl();
+    const response = await page.request.fetch(`${backendBaseUrl}${path}`, {
+      method,
+      data,
+      headers: { 'Content-Type': 'application/json', Authorization: authToken },
+    });
+    const text = await response.text();
+    if (!response.ok()) {
+      throw Error(`${method} ${path} failed with HTTP ${response.status()}: ${text.substring(0, 1000)}`);
+    }
+    return text ? JSON.parse(text) : null;
+  },
+
+  /**
+   * Describe HUs by id (read-only), e.g. pallets built by a WebUI action whose ids are known only at runtime.
+   * @param {Object} options
+   * @param {Array<number|string>} [options.huIds] - M_HU_IDs to describe
+   * @param {number|string} [options.inventoryId] - M_Inventory_ID: also describe the HUs of its lines (e.g. the pallets built on completion)
+   * @returns {Promise<Array<{huId: number, topLevelHuId: number, huUnitType: string, storages: Object<string, string>, includedTUsCount: number, tuParentPIItemQtys: number[]}>>}
+   *   one entry per HU; storages map M_Product.Value to "<qty> <X12DE355>" (e.g. "160 PCE")
+   */
+  describeHUs: async ({ huIds = [], inventoryId = null }) =>
+    await test.step(`Backend: describe HUs ${[huIds.length ? huIds : null, inventoryId ? `of inventory ${inventoryId}` : null].filter(Boolean).join(' ')}`, async () => {
+      const page = getPage();
+      const backendBaseUrl = await getBackendBaseUrl();
+
+      const response = await page.request.post(
+        `${backendBaseUrl}/frontendTesting/describeHUs`,
+        {
+          data: {
+            huIds: huIds.map((huId) => Number(huId)),
+            ...(inventoryId ? { inventoryId: Number(inventoryId) } : {}),
+          },
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const responseBody = await response.json();
+      assertNoErrors({ responseBody });
+
+      return responseBody.hus;
     }),
 };
 

@@ -98,7 +98,8 @@ public class CreatePackingInstructionsCommand
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), null);
+			final ProductId luProductId = request.getLuProduct() != null ? context.getId(request.getLuProduct(), ProductId.class) : null;
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU(), luProductId);
 			for (final JsonPackingInstructionsRequest.AdditionalLUItem additionalLUItem : request.getAdditionalLUItems())
 			{
 				final ProductId productId = context.getId(additionalLUItem.getProduct(), ProductId.class);
@@ -121,6 +122,10 @@ public class CreatePackingInstructionsCommand
 			if (request.isLuSSCC18())
 			{
 				throw new AdempiereException("luSSCC18 requires lu to be set: " + request);
+			}
+			if (request.getLuProduct() != null)
+			{
+				throw new AdempiereException("luProduct requires lu to be set: " + request);
 			}
 
 			lu = null;
@@ -389,8 +394,24 @@ public class CreatePackingInstructionsCommand
 		return luPIItemRecord;
 	}
 
+	/**
+	 * Creates the TU's material item, or returns the existing one if the TU was already created by another entry (reused by identifier):
+	 * a TU packing instruction has one material item, which holds the item products of all its products.
+	 */
 	private HuPackingInstructionsItemId createPIItem_Material(final PIResult tu)
 	{
+		final I_M_HU_PI_Item existingItem = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, tu.getPivId())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, HUItemType.Material.getCode())
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID)
+				.create()
+				.first(I_M_HU_PI_Item.class);
+		if (existingItem != null)
+		{
+			return HuPackingInstructionsItemId.ofRepoId(existingItem.getM_HU_PI_Item_ID());
+		}
+
 		final I_M_HU_PI_Item huPiItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		huPiItemRecord.setM_HU_PI_Version_ID(tu.getPivId().getRepoId());
 		huPiItemRecord.setItemType(HUItemType.Material.getCode());

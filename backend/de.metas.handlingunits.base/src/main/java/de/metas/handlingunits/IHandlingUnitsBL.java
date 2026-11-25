@@ -30,7 +30,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
@@ -323,6 +322,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
 			@Nullable BPartnerId bpartnerId);
 
+	/**
+	 * @see IHandlingUnitsDAO#retrieveParentLUPIsForProducts(Collection, BPartnerId)
+	 */
+	Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull Collection<ParentLUPIsQuery> queries,
+			@Nullable BPartnerId bpartnerId);
+
 	@NonNull
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds);
 
@@ -332,16 +338,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
-
-	/**
-	 * Looks up the first active, top-level HU whose GRAI attribute exactly equals
-	 * {@code grai.toCanonicalString()}.
-	 * <p>
-	 * Scope note: this matches a single canonical GRAI stored on a top-level HU (e.g. a TU).
-	 * The GRAI attribute on aggregate-VHUs beneath an LU may hold a comma-separated GRAI set;
-	 * those are not matched here (and are not top-level anyway).
-	 */
-	Optional<HuId> getTopLevelHuIdByGrai(@NonNull GRAI grai);
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 
@@ -356,6 +352,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Delegates to {@link IHandlingUnitsDAO#retrievePIItems(I_M_HU_PI_Version, BPartnerId)}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @return {@code true} if the LU packing instructions have an item without product for the TU packing instructions (generic, or for the given partner)
+	 */
+	boolean isTUTypeTakenByLUType(@NonNull HuPackingInstructionsId luPIId, @NonNull HuPackingInstructionsId tuPIId, @Nullable BPartnerId bpartnerId);
 
 	@Builder
 	@Value

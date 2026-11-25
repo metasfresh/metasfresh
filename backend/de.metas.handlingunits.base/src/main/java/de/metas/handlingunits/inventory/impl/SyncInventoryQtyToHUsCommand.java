@@ -3,6 +3,7 @@ package de.metas.handlingunits.inventory.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -447,9 +448,10 @@ public class SyncInventoryQtyToHUsCommand
 					lutuProducer.setLocatorId(inventoryLine.getLocatorId());
 					lutuProducer.setTUPI(packingInstructions.getTuPIItemProductId(), inventoryLine.getProductId());
 
-					if (packingInstructions.getLuPIId() != null)
+					final HuPackingInstructionsId luPIId = packingInstructions.getLuPIId();
+					if (luPIId != null)
 					{
-						lutuProducer.setLUPI(packingInstructions.getLuPIId());
+						lutuProducer.setLUPIAndItemForProduct(luPIId, inventoryLine.getProductId());
 						lutuProducer.setMaxLUsInfinite();
 					}
 					else

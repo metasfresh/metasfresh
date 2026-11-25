@@ -37,6 +37,8 @@ public class JsonHUExpectation
 	@Nullable Integer archiveCount;
 	/** Optional filter of {@link #archiveCount}: only {@code AD_Archive} records of this {@code AD_Process_ID} (e.g. the HU label process) are counted. Requires {@code archiveCount}. */
 	@Nullable AdProcessId archiveProcessId;
+	/** Number of {@code C_Printing_Queue} records of this HU's {@code AD_Archive} records (filtered by {@link #archiveProcessId} if set), i.e. label prints that reached the printing queue. Waits briefly for them. */
+	@Nullable Integer printingQueueCount;
 
 	/**
 	 * Expected TU count of the LU packing-instruction item (M_HU_PI_Item.Qty) via which this TU is attached to its LU,
