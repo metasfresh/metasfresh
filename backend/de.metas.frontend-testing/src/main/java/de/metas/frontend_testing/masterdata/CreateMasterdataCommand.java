@@ -89,6 +89,7 @@ import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.shipment_schedule.EnsureShipmentScheduleAttributeConfigCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.PreviousSysconfigsCollector;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.sysconfig.SystemSysconfigCommand;
@@ -195,6 +196,8 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
+		// Before the sales orders: the shipment-line split by attribute is read when the shipment is created later.
+		ensureShipmentScheduleAttributeConfigs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		registerOrderIdsInContext(salesOrders);
 		final ImmutableMap<String, JsonPurchaseOrderCreateResponse> purchaseOrders = createPurchaseOrders();
@@ -889,6 +892,14 @@ public class CreateMasterdataCommand
 		SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
 				.previousSysconfigsCollector(previousSysconfigs)
+				.build()
+				.execute();
+	}
+
+	private void ensureShipmentScheduleAttributeConfigs()
+	{
+		EnsureShipmentScheduleAttributeConfigCommand.builder()
+				.attributeValues(request.getShipmentScheduleAttributeConfigs())
 				.build()
 				.execute();
 	}

@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Expectation for a single M_InOutLine of a shipment, used inside {@link JsonInOutExpectation#getLines()}.
@@ -20,6 +21,8 @@ import java.math.BigDecimal;
  * { "movementQty": 8 }
  * // assert the catch qty (catch UOM) of this line
  * { "product": "P1", "qtyDeliveredCatch": 2.5 }
+ * // assert the attribute values of the line's attribute set instance; null = the attribute has no value
+ * { "product": "P1", "movementQty": 3, "attributes": { "Lot-Nummer": "LOT-A" } }
  * </pre>
  */
 @Value
@@ -44,4 +47,12 @@ public class JsonInOutLineExpectation
 	 * When null, no assertion.
 	 */
 	@Nullable BigDecimal qtyDeliveredCatch;
+
+	/**
+	 * Expected attribute values of the line's attribute set instance (M_InOutLine.M_AttributeSetInstance_ID), keyed by
+	 * attribute value (e.g. {@code Lot-Nummer}). A {@code null} map value expects the attribute to have no value.
+	 * Value syntax: see {@link de.metas.frontend_testing.expectations.HUAttributeAssertions}.
+	 * When the map is null, no attribute assertion is performed on this line.
+	 */
+	@Nullable Map<String, String> attributes;
 }
