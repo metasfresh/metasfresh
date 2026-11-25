@@ -170,7 +170,7 @@ const openJob = async (masterdata, { productJob = false } = {}) => {
 const expectQuickPackAllRefused = async ({ pickingJobId, products = ['P1', 'P2', 'P3'] }) => {
     await PickingJobScreen.expectPickAllButtonHiddenAfterQtyAvailable();
 
-    const { status, body } = await Backend.postPickAll({ wfProcessId: `picking-${pickingJobId}` });
+    const { status, body } = await PickingJobScreen.postPickAllDirectly({ wfProcessId: `picking-${pickingJobId}` });
     expect(status, `answer: ${body}`).toBeGreaterThanOrEqual(400);
     expect(body).toContain(MSG_QUICK_PACK_ALL_NOT_ALLOWED);
 

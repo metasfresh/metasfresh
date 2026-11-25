@@ -12,7 +12,8 @@ import { waitForNoInFlightXhr } from '../../inFlightXhr';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { PickGraiScreen } from './PickGraiScreen';
-import { test } from '../../../../playwright.config';
+import { test, testContext } from '../../../../playwright.config';
+import { getBackendBaseUrl } from '../Backend';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityErrorPanel';
 
@@ -275,6 +276,19 @@ export const PickingJobScreen = {
 
     expectPickAllButtonVisible: async () => await step(`${NAME} - Expect Pick All button to be visible`, async () => {
         await expect(page.getByTestId('pickAll-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** A call the UI never makes: the backend must refuse it by itself, whatever the button shows */
+    postPickAllDirectly: async ({ wfProcessId }) => await step(`${NAME} - POST pickAll ${wfProcessId} directly`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/picking/job/${wfProcessId}/pickAll`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': 'en_US',
+                'Authorization': testContext.lastMasterdata.login.user.token,
+            }
+        });
+        return { status: response.status(), body: await response.text() };
     }),
 
     expectPickAllButtonHidden: async () => await step(`${NAME} - Expect Pick All button to be hidden`, async () => {

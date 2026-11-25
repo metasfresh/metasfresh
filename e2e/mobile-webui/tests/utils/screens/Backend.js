@@ -222,21 +222,6 @@ export const Backend = {
         return responseBody;
     }),
 
-    postPickAll: async ({ wfProcessId }) => await test.step(`Backend: POST pickAll ${wfProcessId}`, async () => {
-        const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.post(`${backendBaseUrl}/picking/job/${wfProcessId}/pickAll`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept-Language': 'en_US',
-                'Authorization': getAuthToken(),
-            }
-        });
-        const status = response.status();
-        const text = await response.text();
-        console.log(`pickAll answer (${status}): ${text}`);
-        return { status, body: text };
-    }),
-
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
