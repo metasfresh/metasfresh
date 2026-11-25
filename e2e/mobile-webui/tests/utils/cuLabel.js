@@ -1,4 +1,4 @@
-// CU (pack) label builders for the CU quantity entry specs.
+// CU label builders for the CU quantity entry specs.
 // Pure functions: no Playwright import, usable from node and from the specs.
 //
 // Label layout (test values only):

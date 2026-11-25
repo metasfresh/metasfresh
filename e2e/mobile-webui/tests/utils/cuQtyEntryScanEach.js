@@ -1,5 +1,5 @@
 // Shared setup of the CU quantity entry specs that drive a product-based picking job in Scan each CU
-// ("scan every pack label"; every scan books one CU of 1 into the open TU). Builds on cuQtyEntryCommon.js.
+// ("scan every CU label"; every scan books one CU of 1 into the open TU). Builds on cuQtyEntryCommon.js.
 // A Scan each CU label carries a pack ID, so these specs need a format with a pack-ID part
 // (buildCULabelFormat({ withPackId: true })).
 import { PickingJobScreen } from './screens/picking/PickingJobScreen';
@@ -14,7 +14,7 @@ export const MSG_NO_PACK_ID = 'The label contains no pack ID. Nothing was booked
 export const MSG_OVER_PICK = 'Cannot pick more than the ordered quantity for this line.';
 export const MSG_ALREADY_PICKED = (packId) => `This pack was already picked in this job (pack ID ${packId}). Nothing was booked.`;
 
-/** Raw label of one pack; `packId: null` = a label without counter (ends before the "92" marker). */
+/** Raw label of one CU; `packId: null` = a label without counter (ends before the "92" marker). */
 export const packLabelOf = ({ masterdata, lot = uniqueLot(), packId, bestBefore = BEST_BEFORE, gtin = uniqueGTIN() }) =>
     buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore, packId });
 

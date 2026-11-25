@@ -264,9 +264,9 @@ for (const viewport of PHONE_VIEWPORTS) {
                             });
         }
 
-        // the same pack in a second job
+        // the same CU in a second job
         // noinspection JSUnusedLocalSymbols
-        test(`Each: the same pack in a second job: job list, second job scan screen (${viewport.name})`, async ({ page: _page }) => {
+        test(`Each: the same CU in a second job: job list, second job scan screen (${viewport.name})`, async ({ page: _page }) => {
             allureMeta('Responsive shared states');
             const layout = layoutFor('en_US');
             const masterdata = await createScanEachMasterdata({

@@ -293,7 +293,7 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_P
   cuQtyEntryPolicy.labelRequired ? undefined : qrCode;
 
 /**
- * The HU the PICK event takes the packs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
+ * The HU the PICK event takes the CUs from (`huQRCode`). A line with a CU quantity entry mode takes them from the
  * source HU of the screen URL ("Kommissionieren aus", or the pick-on-the-fly code); the scanned CU label only gives
  * the attributes and travels as `cuLabel`. Manual: the scanned code is the source HU.
  */

@@ -1175,7 +1175,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(cusOf(tuId)).as("the CU left the TU").isEmpty();
 		}
 
-		/** Scan each CU, pallet + new TU, packs 1 and 2 go into the same TU on the pallet; undo of pack 1 removes only that CU. */
+		/** Scan each CU, pallet + new TU, CUs 1 and 2 go into the same TU on the pallet; undo of CU 1 removes only that CU. */
 		@Test
 		void scanEachCU_palletAndTU_twoPacks_undoFirst_removesOnlyThatCU()
 		{
@@ -1188,7 +1188,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId tuId = openTUId(job);
 			final HuId cu1Id = HuId.ofRepoId(cuWithPackId(tuId, "1").getM_HU_ID());
 			final HuId cu2Id = HuId.ofRepoId(cuWithPackId(tuId, "2").getM_HU_ID());
-			assertThat(tuOf(cu1Id)).as("pack 1 in the TU").isEqualTo(tuId);
+			assertThat(tuOf(cu1Id)).as("CU 1 in the TU").isEqualTo(tuId);
 			final HuId palletId = palletOf(tuId);
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HUs are the CUs").containsExactlyInAnyOrder(cu1Id, cu2Id);
 			assertThat(countQtyPickedRowsOfTU(tuId)).isEqualTo(2);
@@ -1196,15 +1196,15 @@ class PickingJobCUQtyEntryPickTest
 
 			job = undo(job, cu1Id, source.getQrCode(), null);
 
-			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU of pack 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
-			assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
 			assertThat(handlingUnitsBL.getById(tuId).getHUStatus()).as("TU stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
 			assertThat(handlingUnitsBL.getById(palletId).getHUStatus()).as("pallet stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-			assertThat(cusOf(tuId)).as("only the CU of pack 2 is left in the TU").extracting(cu -> cu.getM_HU_ID()).containsExactly(cu2Id.getRepoId());
+			assertThat(cusOf(tuId)).as("only CU 2 is left in the TU").extracting(cu -> cu.getM_HU_ID()).containsExactly(cu2Id.getRepoId());
 			assertThat(palletOf(tuId)).as("the TU stays on the pallet").isEqualTo(palletId);
-			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").containsExactly(cu2Id);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only CU 2 is still picked").containsExactly(cu2Id);
 			assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
-			assertThat(countQtyPickedRowsOfCU(cu2Id)).as("the QtyPicked row of pack 2 stays").isEqualTo(1);
+			assertThat(countQtyPickedRowsOfCU(cu2Id)).as("the QtyPicked row of CU 2 stays").isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 		}
 
@@ -1239,7 +1239,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 3").isEqualByComparingTo("2");
 		}
 
-		/** Scan each CU, the pallet already exists (made by pack 1) and a second new TU is opened: pack 2 is the CU in the new TU on the same pallet. */
+		/** Scan each CU, the pallet already exists (made by CU 1) and a second new TU is opened: CU 2 is the CU in the new TU on the same pallet. */
 		@Test
 		void scanEachCU_existingPalletAndSecondTU_cuInNewTUOnSamePallet()
 		{
@@ -1251,7 +1251,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId tu1Id = tuOf(cu1Id);
 			final HuId palletId = palletOf(tu1Id);
 			assertThat(job.getLuPickingTargetEffective(CollectionUtils.singleElement(job.getLines()).getId()).map(LUPickingTarget::isExistingLU))
-					.as("the pallet made by pack 1 is the pallet target").contains(true);
+					.as("the pallet made by CU 1 is the pallet target").contains(true);
 
 			job = openTUFromLinePacking(job);
 			job = pickEach(job, source, LOT_A, "2");
@@ -1263,8 +1263,8 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(handlingUnitsBL.isVirtual(cu2)).as("the picked HU is the booked CU").isTrue();
 			assertThat(packIdOf(cu2)).isEqualTo("2");
 			final HuId tu2Id = tuOf(cu2Id);
-			assertThat(tu2Id).as("pack 2 is in a new TU").isNotEqualTo(tu1Id);
-			assertThat(cusOf(tu2Id)).as("the new TU holds only pack 2").hasSize(1);
+			assertThat(tu2Id).as("CU 2 is in a new TU").isNotEqualTo(tu1Id);
+			assertThat(cusOf(tu2Id)).as("the new TU holds only CU 2").hasSize(1);
 			assertThat(palletOf(tu2Id)).as("the new TU sits on the same pallet").isEqualTo(palletId);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 		}
@@ -1288,7 +1288,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId tuId = openTUId(job);
 			final List<I_M_HU> cus = cusOf(tuId);
 			assertThat(cus).as("3 CUs in the TU").hasSize(3);
-			cus.forEach(cu -> assertThat(qtyOf(cu)).as("each CU is 1 pack").isEqualByComparingTo("1"));
+			cus.forEach(cu -> assertThat(qtyOf(cu)).as("each CU has quantity 1").isEqualByComparingTo("1"));
 			assertThat(cus).extracting(PickingJobCUQtyEntryPickTest.this::lotOf, PickingJobCUQtyEntryPickTest.this::packIdOf)
 					.containsExactlyInAnyOrder(
 							tuple(LOT_A, "1"),
@@ -1331,7 +1331,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("99");
 		}
 
-		/** the same pack ID on another lot is a different pack: booked. */
+		/** the same pack ID on another lot is a different CU: booked. */
 		@Test
 		void samePackIdOnAnotherLot_booked()
 		{
@@ -1367,7 +1367,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("98");
 		}
 
-		/** the TU's first pack: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (TU and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
+		/** the TU's first CU: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (TU and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
 		@Test
 		void firstPackOfTheTU_duplicate_undo_rescan()
 		{
@@ -1381,7 +1381,7 @@ class PickingJobCUQtyEntryPickTest
 			final HuId cu1Id = HuId.ofRepoId(cu1.getM_HU_ID());
 			final I_M_HU cu2 = cuWithPackId(tuId, "2");
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the picked HUs are the CUs, not the TU").containsExactlyInAnyOrder(cu1Id, HuId.ofRepoId(cu2.getM_HU_ID()));
-			assertThat(pickedQtyOfLine(job)).as("2 packs picked").isEqualByComparingTo("2");
+			assertThat(pickedQtyOfLine(job)).as("2 CUs picked").isEqualByComparingTo("2");
 			assertThat(pickedHUOfStepWithCU(job, cu1Id).getQrCode()).as("the picked CU carries its own QR code, not the TU's").isNotEqualTo(helper.getQRCode(tuId));
 			final PickingJob jobBeforeRescan = job;
 			assertFails(() -> pickEach(jobBeforeRescan, source, LOT_A, "1"), PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED);
@@ -1390,17 +1390,17 @@ class PickingJobCUQtyEntryPickTest
 
 			job = undo(job, cu1Id, source.getQrCode(), null);
 
-			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU of pack 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
+			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("CU 1 Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
 			assertThat(handlingUnitsBL.getById(tuId).getHUStatus()).as("TU stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-			assertThat(handlingUnitsBL.getById(HuId.ofRepoId(cu2.getM_HU_ID())).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").containsExactly(HuId.ofRepoId(cu2.getM_HU_ID()));
+			assertThat(handlingUnitsBL.getById(HuId.ofRepoId(cu2.getM_HU_ID())).getHUStatus()).as("CU 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only CU 2 is still picked").containsExactly(HuId.ofRepoId(cu2.getM_HU_ID()));
 			assertThat(countQtyPickedRowsOfTU(tuId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 
 			job = pickEach(job, source, LOT_A, "1");
 
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("rescan booked").hasSize(2);
-			assertThat(pickedQtyOfLine(job)).as("rescan: 2 packs picked again").isEqualByComparingTo("2");
+			assertThat(pickedQtyOfLine(job)).as("rescan: 2 CUs picked again").isEqualByComparingTo("2");
 			final I_M_HU rescanned = cuWithPackId(tuId, "1");
 			assertThat(lotOf(rescanned)).as("rescanned CU keeps its lot").isEqualTo(LOT_A);
 			assertThat(countQtyPickedRowsOfTU(tuId)).as("QtyPicked rows of both CUs").isEqualTo(2);
@@ -1438,7 +1438,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).as("source: only 2 taken").isEqualByComparingTo("98");
 		}
 
-		/** a line counted in kg is refused in Scan each CU (1 scan = 1 pack cannot be a kg quantity): the approved message, nothing booked. */
+		/** a line counted in kg is refused in Scan each CU (1 scan = 1 CU cannot be a kg quantity): the approved message, nothing booked. */
 		@Test
 		void kgLine_refusedWithApprovedMessage_nothingBooked()
 		{
@@ -1476,7 +1476,7 @@ class PickingJobCUQtyEntryPickTest
 	@Nested
 	class Undo
 	{
-		/** undo of a CU in a TU with a scanned target (the CU is moved into it): TU and the 2nd CU stay Picked, the target takes the pack. */
+		/** undo of a CU in a TU with a scanned target (the CU is moved into it): TU and the 2nd CU stay Picked, the target takes the CU. */
 		@Test
 		void undoWithTargetScan_cuMovedIntoTarget()
 		{
@@ -1492,9 +1492,9 @@ class PickingJobCUQtyEntryPickTest
 
 			job = undo(job, cu1Id, source.getQrCode(), target.getQrCode());
 
-			assertThat(qtyOf(handlingUnitsBL.getById(target.getId()))).as("target took the pack").isEqualByComparingTo("11");
+			assertThat(qtyOf(handlingUnitsBL.getById(target.getId()))).as("target took the CU").isEqualByComparingTo("11");
 			assertThat(handlingUnitsBL.getById(tuId).getHUStatus()).as("TU stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
-			assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU of pack 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
+			assertThat(handlingUnitsBL.getById(cu2Id).getHUStatus()).as("CU 2 stays Picked").isEqualTo(X_M_HU.HUSTATUS_Picked);
 			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).containsExactly(cu2Id);
 			assertThat(countQtyPickedRowsOfTU(tuId)).as("QtyPicked row of the 2nd CU stays").isEqualTo(1);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
@@ -1503,7 +1503,7 @@ class PickingJobCUQtyEntryPickTest
 		/**
 		 * (u) undo of the TU's ONLY CU: nothing stays picked and no QtyPicked row of the CU is left. The emptied TU is gone (in production
 		 * the HU framework destroys a TU whose last CU leaves it), so the line keeps an open TU of the same TU type, like an LU target
-		 * that an un-pick destroyed; the next pack is booked into a TU of that type.
+		 * that an un-pick destroyed; the next CU is booked into a TU of that type.
 		 */
 		@Test
 		void undoOfTheTUsOnlyCU_lineKeepsAnOpenTUOfTheSameType()
@@ -1529,12 +1529,12 @@ class PickingJobCUQtyEntryPickTest
 			job = pickEach(job, source, LOT_A, "2");
 
 			final HuId nextTUId = openTUId(job);
-			assertThat(cusOf(nextTUId)).as("the next pack went into a TU of that type").hasSize(1);
+			assertThat(cusOf(nextTUId)).as("the next CU went into a TU of that type").hasSize(1);
 			assertThat(handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(handlingUnitsBL.getById(nextTUId)).getId()).isEqualTo(tuPIId);
 			assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("1");
 		}
 
-		/** undo of the ONLY CU of a TU opened by a GRAI scan: the line's open TU keeps the GRAI, the next pack's TU carries it. */
+		/** undo of the ONLY CU of a TU opened by a GRAI scan: the line's open TU keeps the GRAI, the next CU's TU carries it. */
 		@Test
 		void undoOfTheOnlyCUOfAGRAITU_openTUKeepsTheGRAI()
 		{
@@ -1557,13 +1557,13 @@ class PickingJobCUQtyEntryPickTest
 
 			final HuId nextTUId = openTUId(job);
 			final GRAISet grais = CollectionUtils.singleElement(ImmutableList.copyOf(graiSnapshotsOfTUs(ImmutableSet.of(nextTUId)))).getAllGrais();
-			assertThat(grais.toSet()).as("the next pack's TU carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
+			assertThat(grais.toSet()).as("the next CU's TU carries the GRAI").containsExactly(GRAI.parse(GRAI_CANONICAL));
 		}
 
 		/**
 		 * (v) The un-pick of a CU in a TU removes the CU's own QtyPicked rows from what was booked, not from the current profile: the same
 		 * picked CU un-picked after the profile was switched to Manual still leaves no QtyPicked row of that CU (else the line would count a
-		 * pack that is not picked); the other CU's row stays.
+		 * CU that is not picked); the other CU's row stays.
 		 */
 		@Test
 		void profileSwitchedToManualAfterBooking_unpickStillRemovesTheCUsRows()
@@ -1583,7 +1583,7 @@ class PickingJobCUQtyEntryPickTest
 			assertThat(countQtyPickedRowsOfCU(cu1Id)).as("no QtyPicked row of the un-picked CU left").isEqualTo(0);
 			assertThat(countQtyPickedRowsOfTU(tuId)).as("the other CU's row stays").isEqualTo(1);
 			assertThat(handlingUnitsBL.getById(cu1Id).getHUStatus()).as("the CU is Active again").isEqualTo(X_M_HU.HUSTATUS_Active);
-			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only the CU of pack 2 is still picked").hasSize(1).doesNotContain(cu1Id);
+			assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only CU 2 is still picked").hasSize(1).doesNotContain(cu1Id);
 			assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 		}
 	}

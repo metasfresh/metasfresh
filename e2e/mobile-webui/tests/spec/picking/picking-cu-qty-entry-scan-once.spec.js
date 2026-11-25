@@ -123,7 +123,7 @@ test('Scan once: OK without an open TU is refused, nothing is booked; after "Nex
 });
 
 // noinspection JSUnusedLocalSymbols
-test('the packs come from the "Kommissionieren aus" HU; the source pallet drops by the booked count, nothing is created on the fly', async ({ page }) => {
+test('the CUs come from the "Kommissionieren aus" HU; the source pallet drops by the booked count, nothing is created on the fly', async ({ page }) => {
     allureMeta('Scan once source');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });

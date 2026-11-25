@@ -108,7 +108,7 @@ describe('ScanHUAndGetQtyComponent: Scan each CU loop', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('a backend refusal (duplicate pack) is toasted and the scan step stays', async () => {
+  it('a backend refusal (duplicate CU) is toasted and the scan step stays', async () => {
     const { toastErrorFromObj } = require('../../../../utils/toast');
     const onResult = jest.fn().mockRejectedValue({ message: 'already picked' });
     renderComponent({ onResult });

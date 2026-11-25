@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Reads a CU (pack) label with the picking line's effective label format only (never the global format list).
+ * Reads a CU label with the picking line's effective label format only (never the global format list).
  * <p>
  * Mobile app counterpart: {@code misc/services/mobile-webui/mobile-webui-frontend/src/apps/picking/cuQtyEntry/cuLabel.js} reads the label on the
  * handheld before the pick is sent (same checks: format, pack ID, product); change both together. The refusal texts are the AD_Messages

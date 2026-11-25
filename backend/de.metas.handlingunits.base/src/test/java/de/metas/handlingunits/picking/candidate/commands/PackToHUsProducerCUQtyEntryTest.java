@@ -228,7 +228,7 @@ public class PackToHUsProducerCUQtyEntryTest
 			assertThat(result.getSingleTU().isFullTU()).isTrue();
 		}
 
-		/** (iv) new TU, qty 1, source = a TU of the line's TU packing holding exactly 1 pack -> a NEW TU, the source TU is not the picked HU. */
+		/** (iv) new TU, qty 1, source = a TU of the line's TU packing holding exactly 1 CU -> a NEW TU, the source TU is not the picked HU. */
 		@Test
 		public void sourceIsTUWithExactlyOnePack_newTUIsMade()
 		{

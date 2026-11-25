@@ -219,7 +219,7 @@ describe('PickingLineScanScreen: re-entry with the remembered label', () => {
   });
 });
 
-describe('PickingLineScanScreen: the HU the PICK event takes the packs from', () => {
+describe('PickingLineScanScreen: the HU the PICK event takes the CUs from', () => {
   const sourceHUQRCode = 'HU#1#{"id":"source"}';
   const label = 'RAW-CU-LABEL';
 

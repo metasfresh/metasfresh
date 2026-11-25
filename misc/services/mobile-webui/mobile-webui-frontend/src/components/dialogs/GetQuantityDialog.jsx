@@ -74,7 +74,7 @@ const GetQuantityDialog = ({
   const isShowBestBeforeDate = isLabelMode || readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = isLabelMode || readAttributes.includes(PickAttribute.LotNo);
 
-  // scan once: the picker types how many packs of the scanned label go into the TU; the field starts empty and a
+  // scan once: the picker types how many CUs of the scanned label go into the TU; the field starts empty and a
   // smaller count than the open qty is not a rejection
   const isScanOnce = !!cuQtyEntryPolicy?.scanOnce;
   // label-based modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)

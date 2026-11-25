@@ -13,7 +13,7 @@ import { LAUNCHERS_LIMIT_SYSCONFIGS, allureMeta, createMasterdataRememberingSysc
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry: reading of the pack label on the Scan once line.
+ * CU quantity entry: reading of the CU label on the Scan once line.
  * Scan once = one label scan, then the quantity block. Keyboard-wedge input: the raw label typed into the scan field.
  * Buyer A has no record: the line takes the profile's mode (Scan once) and the profile's format (without `PackId` part).
  */
@@ -52,7 +52,7 @@ const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {} },
             products: {
-                // product values of 7 characters, as on the real pack label
+                // product values of 7 characters, as on the real CU label
                 "P1": { price: 1, randomValue: { size: 7, isIncludeDigits: true } },
                 "P2": { price: 1, randomValue: { size: 7, isIncludeDigits: true }, ...p2 },
             },

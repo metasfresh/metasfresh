@@ -130,7 +130,7 @@ export const createMasterdata = async ({
             warehouses: { "wh": {} },
             pickingSlots: slots,
             products: {
-                // product value of 7 characters, as on the real pack label
+                // product value of 7 characters, as on the real CU label
                 "P1": { price: 1, randomValue: { size: 7, isIncludeDigits: true } },
                 ...products,
             },

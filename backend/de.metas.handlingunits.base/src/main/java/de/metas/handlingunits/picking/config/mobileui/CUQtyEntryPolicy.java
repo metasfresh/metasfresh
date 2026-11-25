@@ -22,9 +22,9 @@ public final class CUQtyEntryPolicy
 {
 	/** The quantity is entered by hand. */
 	public static final CUQtyEntryPolicy MANUAL = new CUQtyEntryPolicy(false, false);
-	/** One pack label per CU: the label carries a pack ID and one scan books exactly one CU. */
+	/** One CU label per CU: the label carries a pack ID and one scan books exactly one CU. */
 	public static final CUQtyEntryPolicy SCAN_EACH_CU = new CUQtyEntryPolicy(true, true);
-	/** One pack label, then the quantity is typed: the label's pack ID is ignored. */
+	/** One CU label, then the quantity is typed: the label's pack ID is ignored. */
 	public static final CUQtyEntryPolicy SCAN_ONCE_ENTER_QTY = new CUQtyEntryPolicy(true, false);
 
 	private final boolean isLabelScanned;

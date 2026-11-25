@@ -441,8 +441,8 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
 });
 
 /*
- * The same three line packings in Scan each CU: every pack scan books one CU of 1 into the open TU, so each TU below holds one CU of 1.
- * The last pack of a line finishes it and the app leaves the scan screen.
+ * The same three line packings in Scan each CU: every CU scan books one CU of 1 into the open TU, so each TU below holds one CU of 1.
+ * The last CU of a line finishes it and the app leaves the scan screen.
  */
 const scanEachMasterdataOf = async ({ orders, packingInstructions }) =>
     await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, packingInstructions });
@@ -528,7 +528,7 @@ test('Scan each CU: line without a TU type: first scan refused, "Next TU" opens 
     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 1 }), MSG_NO_OPEN_TU);
     await PickGraiScreen.expectNotShown();
 
-    await test.step('"Next TU" opens the TU list, the picker chooses the TU type and scans the first pack', async () => {
+    await test.step('"Next TU" opens the TU list, the picker chooses the TU type and scans the first CU', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -540,7 +540,7 @@ test('Scan each CU: line without a TU type: first scan refused, "Next TU" opens 
         await PickGraiScreen.expectNotShown();
     });
 
-    await test.step('"Next TU" again: the list opens directly, the picker chooses the TU type and scans the second pack', async () => {
+    await test.step('"Next TU" again: the list opens directly, the picker chooses the TU type and scans the second CU', async () => {
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
@@ -551,7 +551,7 @@ test('Scan each CU: line without a TU type: first scan refused, "Next TU" opens 
         await PickGraiScreen.expectNotShown();
     });
 
-    await test.step('a GRAI scan opens the next TU, the third pack finishes the line', async () => {
+    await test.step('a GRAI scan opens the next TU, the third CU finishes the line', async () => {
         await PickLineScanScreen.scanGrai(grai);
         await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
         await scanPack(packLabelOf({ masterdata, lot, packId: 3 }));

@@ -11,8 +11,8 @@ import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMA
 restoreSysconfigsAfterEach(test);
 
 /**
- * CU quantity entry, Scan each CU ("scan every pack label"): every scan books one CU of 1 into the open TU; a pack label needs a
- * pack ID; the same pack twice in one job is warned; a scan after the line is done is refused; "Unpack" frees a CU.
+ * CU quantity entry, Scan each CU ("scan every CU label"): every scan books one CU of 1 into the open TU; a CU label needs a
+ * pack ID; the same CU twice in one job is warned; a scan after the line is done is refused; "Unpack" frees a CU.
  *
  * The label format of these specs has a pack-ID part (`buildCULabelFormat({ withPackId: true })`).
  *
@@ -47,14 +47,14 @@ test('scan IDs 1 and 2 book one CU each into the open TU, a rescan of ID 1 is wa
         });
     });
 
-    await test.step('the same pack again is warned, nothing is booked', async () => {
+    await test.step('the same CU again is warned, nothing is booked', async () => {
         await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 1 }), MSG_ALREADY_PICKED(1));
         await Backend.expect({
             pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         });
     });
 
-    await test.step('third pack finishes the line (back on the job screen), job completes', async () => {
+    await test.step('third CU finishes the line (back on the job screen), job completes', async () => {
         await scanPack(packLabelOf({ masterdata, lot, packId: 3 }));
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
@@ -68,7 +68,7 @@ test('scan IDs 1 and 2 book one CU each into the open TU, a rescan of ID 1 is wa
 });
 
 // noinspection JSUnusedLocalSymbols
-test('a scan after the line is done books nothing: the picker re-enters the finished line via "HU verpacken", a new pack is refused', async ({ page }) => {
+test('a scan after the line is done books nothing: the picker re-enters the finished line via "HU verpacken", a new CU is refused', async ({ page }) => {
     allureMeta('Scan each CU line done');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
@@ -78,13 +78,13 @@ test('a scan after the line is done books nothing: the picker re-enters the fini
     await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
     await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
     await scanPack(packLabelOf({ masterdata, lot, packId: 3 }));
-    // the third pack finishes the line: back on the job screen, 3 of 3 picked
+    // the third CU finishes the line: back on the job screen, 3 of 3 picked
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '3 Stk' });
 
     const threeBooked = [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' })];
 
-    await test.step('re-enter the done line via "HU verpacken", scan a fourth pack: refused, nothing is booked', async () => {
+    await test.step('re-enter the done line via "HU verpacken", scan a fourth CU: refused, nothing is booked', async () => {
         await PickingJobScreen.clickLineButton({ index: 1 });
         await PickingJobLineScreen.waitForScreen();
         await PickingJobLineScreen.tapPickHUButton();
@@ -115,11 +115,11 @@ test('a second lot on the same line books a CU with that lot; the first CU keeps
 });
 
 // noinspection JSUnusedLocalSymbols
-test('the same pack in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
+test('the same CU in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
     allureMeta('Scan each CU two jobs');
 
     // a product job holds every customer who ordered the product: job 1 = both orders; the picker packs customer A's line only
-    // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same pack)
+    // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same CU)
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
     const lot = uniqueLot();
     const label = packLabelOf({ masterdata, lot, packId: 2 });
@@ -160,7 +160,7 @@ test('"Unpack" of a booked CU, then the same label books again without a warning
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TU opened by GRAI scan: "Unpack" of the TU\'s only pack, then the same label books again into a TU that carries the GRAI', async ({ page }) => {
+test('TU opened by GRAI scan: "Unpack" of the TU\'s only CU, then the same label books again into a TU that carries the GRAI', async ({ page }) => {
     allureMeta('Scan each CU unpick, GRAI TU');
 
     const masterdata = await masterdataOf({
@@ -174,7 +174,7 @@ test('TU opened by GRAI scan: "Unpack" of the TU\'s only pack, then the same lab
     await openScanEachLine({ index: 1, openTU: false });
     await PickLineScanScreen.scanGrai(grai);
     await scanPack(label);
-    await unpackFirstBooking(); // the TU's only pack: the TU is emptied
+    await unpackFirstBooking(); // the TU's only CU: the TU is emptied
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
     await PickingJobScreen.clickLineButton({ index: 1 });
@@ -187,8 +187,8 @@ test('TU opened by GRAI scan: "Unpack" of the TU\'s only pack, then the same lab
 });
 
 // noinspection JSUnusedLocalSymbols
-test('the TU\'s first pack: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
-    allureMeta('Scan each CU first pack of the TU');
+test('the TU\'s first CU: a rescan is warned; "Unpack" frees only that CU (the other CU stays), then the rescan books', async ({ page }) => {
+    allureMeta('Scan each CU: first CU of the TU');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }] });
     const lot = uniqueLot();
@@ -293,7 +293,7 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
     });
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
-    await test.step('the valid label of the same pack books one CU: the refusals left the line untouched', async () => {
+    await test.step('the valid label of the same CU books one CU: the refusals left the line untouched', async () => {
         await scanPack(validLabel);
     });
     await Backend.expect({
@@ -378,7 +378,7 @@ test('counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID 
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU into the TU on the pallet; "Unpack" of pack 1 frees only that CU', async ({ page }) => {
+test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU into the TU on the pallet; "Unpack" of CU 1 frees only that CU', async ({ page }) => {
     allureMeta('Scan each CU pallet target');
 
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 3 }], pickTo: ['LU_TU', 'TU'] });
@@ -388,7 +388,7 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
     await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
     await PickLineScanScreen.openTU();
 
-    await test.step('packs 1 and 2: one CU of 1 each, in the same TU, the TU on the pallet', async () => {
+    await test.step('CUs 1 and 2: one CU of 1 each, in the same TU, the TU on the pallet', async () => {
         await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
         await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
         await Backend.expect({
@@ -401,7 +401,7 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
         });
     });
 
-    await test.step('"Unpack" of pack 1: only that CU is freed, pack 2 stays in the TU on the pallet', async () => {
+    await test.step('"Unpack" of CU 1: only that CU is freed, CU 2 stays in the TU on the pallet', async () => {
         await unpackFirstBooking();
         await Backend.expect({
             pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: '1 PCE', vhu: 'vhu2', tu: 'tu1', lu: 'lu1', processed: false }] } } } },
@@ -410,11 +410,11 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
     });
 });
 
-// A pack is one unit of the line UOM, so Scan each CU cannot book a quantity counted in kg: the scan is refused with the instruction to ask the administrator
+// A CU is one unit of the line UOM, so Scan each CU cannot book a quantity counted in kg: the scan is refused with the instruction to ask the administrator
 const MSG_EACH_ONLY_FOR_PIECES = "'Scan each CU' works only for lines counted in pieces. Please have your administrator set the CU quantity entry for this customer to 'Manual' or 'Scan once, enter quantity'.";
 
 // noinspection JSUnusedLocalSymbols
-test('a line counted in kg: a pack scan is refused with the "pieces only" message, nothing is booked', async ({ page }) => {
+test('a line counted in kg: a CU scan is refused with the "pieces only" message, nothing is booked', async ({ page }) => {
     allureMeta('Scan each CU kg line');
 
     const masterdata = await masterdataOf({
