@@ -22,6 +22,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -96,7 +97,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU extends
 
 		final IAllocationSource source = HUListAllocationSourceDestination.of(fromHUs)
 				.setDestroyEmptyHUs(true);
-		final IHUProducerAllocationDestination destination = createHUProducer();
+		final IHUProducerAllocationDestination destination = createHUProducer(fromHUs);
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false)
@@ -129,9 +130,9 @@ public class WEBUI_PickingSlotsClearingView_TakeOutMultiHUsAndAddToNewHU extends
 		getPackingHUsView().invalidateAll();
 	}
 
-	private IHUProducerAllocationDestination createHUProducer()
+	private IHUProducerAllocationDestination createHUProducer(@NonNull final List<I_M_HU> fromHUs)
 	{
 		final PickingSlotRow pickingRow = getRootRowForSelectedPickingSlotRows();
-		return createNewHUProducer(pickingRow, targetHUPI);
+		return createNewHUProducer(pickingRow, targetHUPI, fromHUs);
 	}
 }

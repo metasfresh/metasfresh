@@ -423,8 +423,31 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
 
+	/**
+	 * @return the LU PIs that can hold the PIs of the given items, via active parent items without partner or for {@code bpartnerId}, whatever product those parent items are for.
+	 */
 	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
 			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * Like {@link #retrieveParentLUPIs(Set, BPartnerId)}, but only via parent items that can be used when packing {@code productId}:
+	 * items without product, and items for {@code productId}. The rule applies on every level of the chain up to the LU.
+	 *
+	 * @param productId the product to be packed; {@code null} means product-less packing, which can only use items without product
+	 *                  (same rule as {@link #retrieveFirstPIItem(HuPackingInstructionsId, HuPackingInstructionsId, BPartnerId, ProductId)}).
+	 */
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProduct(
+			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId,
+			@Nullable ProductId productId);
+
+	/**
+	 * @return the union of {@link #retrieveParentLUPIsForProduct(Set, BPartnerId, ProductId)} over the given queries.
+	 * If no parent item reachable from the queries' items is product-specific, this costs a single walk, like {@link #retrieveParentLUPIs(Set, BPartnerId)}.
+	 */
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIsForProducts(
+			@NonNull Collection<ParentLUPIsQuery> queries,
 			@Nullable BPartnerId bpartnerId);
 
 	@NonNull

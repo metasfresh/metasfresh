@@ -11,6 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -359,11 +360,11 @@ public class PickingJobHUService
 
 	public HuPackingInstructionsId getPackingInstructionsId(@NonNull final I_M_HU hu) {return handlingUnitsBL.getPackingInstructionsId(hu);}
 
-	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
-			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIsForProducts(
+			@NonNull final Collection<ParentLUPIsQuery> queries,
 			@Nullable final BPartnerId bpartnerId)
 	{
-		return handlingUnitsBL.getLUPIs(tuPIItemIds, bpartnerId);
+		return handlingUnitsBL.getLUPIsForProducts(queries, bpartnerId);
 	}
 
 	public I_M_HU_PI retrievePIDefaultForPicking() {return handlingUnitsBL.retrievePIDefaultForPicking();}
