@@ -12,6 +12,8 @@ restoreSysconfigsAfterEach(test);
 
 // noinspection JSUnusedLocalSymbols
 test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with one duplicate warning (Scan each CU): 13 TUs, 56 CU, job completed', async ({ page }) => {
+    // 13 TUs, 17 bookings and 2 completions: about 100 s on a quiet machine, over the default 120 s under load
+    test.slow();
     allureMeta('Real case');
 
     const onceFormat = uniqueFormatName();
