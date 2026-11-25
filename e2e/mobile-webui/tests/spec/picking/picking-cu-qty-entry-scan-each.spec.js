@@ -107,7 +107,7 @@ test('a second lot on the same line books a CU with that lot; the first CU keeps
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 1 }));
-    await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 1 })); // same pack ID, other lot = another pack
+    await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 1 })); // same pack ID, other lot = another CU
     await Backend.expect({
         pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
         hus: { vhu1: { attributes: { 'Lot-Nummer': lotA } }, vhu2: { attributes: { 'Lot-Nummer': lotB } } },
@@ -118,7 +118,7 @@ test('a second lot on the same line books a CU with that lot; the first CU keeps
 test('the same CU in two jobs: job 1 picked it, job 2 books it without a warning (scope = the current job)', async ({ page }) => {
     allureMeta('Scan each CU two jobs');
 
-    // a product job holds every customer who ordered the product: job 1 = both orders; the picker packs customer A's line only
+    // a product job holds every customer who ordered the product: job 1 = both orders; the picker picks customer A's line only
     // and completes; customer B's still open order is offered again and becomes job 2 (same product, same lot, same CU)
     const masterdata = await masterdataOf({ orders: [{ key: 'A', qty: 1 }, { key: 'B', qty: 1 }], allowCompletingPartialPickingJob: true }); // job 1 completes with customer B's line unpicked
     const lot = uniqueLot();

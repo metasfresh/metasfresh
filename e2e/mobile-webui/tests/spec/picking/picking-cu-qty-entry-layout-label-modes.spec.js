@@ -30,7 +30,7 @@ restoreSysconfigsAfterEach(test);
 const TEXTS = {
     en_US: {
         noOpenTU: MSG_NO_OPEN_TU,
-        alreadyPicked: 'This pack was already picked in this job',
+        alreadyPicked: 'This CU was already picked in this job',
         noPackId: 'The label contains no pack ID',
         formatMismatch: 'does not match the label format',
         pickFromRequired: "Please scan 'Pick From' first.",

@@ -1177,7 +1177,7 @@ class PickingJobCUQtyEntryPickTest
 
 		/** Scan each CU, pallet + new TU, CUs 1 and 2 go into the same TU on the pallet; undo of CU 1 removes only that CU. */
 		@Test
-		void scanEachCU_palletAndTU_twoPacks_undoFirst_removesOnlyThatCU()
+		void scanEachCU_palletAndTU_twoCUs_undoFirst_removesOnlyThatCU()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-LU-EACH-U");
@@ -1369,7 +1369,7 @@ class PickingJobCUQtyEntryPickTest
 
 		/** the TU's first CU: its picked HU is the CU; a rescan is refused; undo leaves only that CU Active (TU and 2nd CU stay Picked, their QtyPicked rows stay, the line's picked qty drops by 1); the rescan books. */
 		@Test
-		void firstPackOfTheTU_duplicate_undo_rescan()
+		void firstCUOfTheTU_duplicate_undo_rescan()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-R");

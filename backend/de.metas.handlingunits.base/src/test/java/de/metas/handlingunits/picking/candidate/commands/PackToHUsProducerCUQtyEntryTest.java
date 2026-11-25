@@ -230,7 +230,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 		/** (iv) new TU, qty 1, source = a TU of the line's TU packing holding exactly 1 CU -> a NEW TU, the source TU is not the picked HU. */
 		@Test
-		public void sourceIsTUWithExactlyOnePack_newTUIsMade()
+		public void sourceIsTUWithExactlyOneCU_newTUIsMade()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 
@@ -246,7 +246,7 @@ public class PackToHUsProducerCUQtyEntryTest
 
 		/** (iv) flags off: the source TU is itself the picked TU (no new TU is created). */
 		@Test
-		public void sourceIsTUWithExactlyOnePack_flagsOff_sourceTUIsThePickedTU()
+		public void sourceIsTUWithExactlyOneCU_flagsOff_sourceTUIsThePickedTU()
 		{
 			final I_M_HU sourceTU = handlingUnitsBL.getById(helper.createHU(tuPIId, productId, qty("1")));
 

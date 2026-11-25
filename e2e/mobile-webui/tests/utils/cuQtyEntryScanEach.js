@@ -12,7 +12,7 @@ export { MODE_SCAN_ONCE };
 export const MSG_FORMAT_MISMATCH = 'The label does not match the label format of the picking profile';
 export const MSG_NO_PACK_ID = 'The label contains no pack ID. Nothing was booked.';
 export const MSG_OVER_PICK = 'Cannot pick more than the ordered quantity for this line.';
-export const MSG_ALREADY_PICKED = (packId) => `This pack was already picked in this job (pack ID ${packId}). Nothing was booked.`;
+export const MSG_ALREADY_PICKED = (packId) => `This CU was already picked in this job (pack ID ${packId}). Nothing was booked.`;
 
 /** Raw label of one CU; `packId: null` = a label without counter (ends before the "92" marker). */
 export const packLabelOf = ({ masterdata, lot = uniqueLot(), packId, bestBefore = BEST_BEFORE, gtin = uniqueGTIN() }) =>

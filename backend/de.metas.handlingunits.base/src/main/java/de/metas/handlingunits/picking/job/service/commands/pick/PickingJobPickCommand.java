@@ -263,7 +263,7 @@ public class PickingJobPickCommand
 		}
 		else if (this.pickingUnit.isCU())
 		{
-			// Scan each CU: one pack per label, whatever quantity the client sent. One pack = one unit of the line UOM, so the line must be counted in pieces
+			// Scan each CU: one CU per label, whatever quantity the client sent. One CU = one unit of the line UOM, so the line must be counted in pieces
 			if (cuQtyEntryPolicy.isPackIdRequired() && !X12DE355.EACH.equals(X12DE355.ofCode(uom.getX12DE355())))
 			{
 				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG).markAsUserValidationError();
@@ -400,7 +400,7 @@ public class PickingJobPickCommand
 				.setParameter("qtyOrdered", line.getQtyToPick())
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
-		// Scan each CU always refuses, so a routine scan of the picker (a pack into a finished line) lands here:
+		// Scan each CU always refuses, so a routine scan of the picker (a CU into a finished line) lands here:
 		// the values go to the log only, a parameter dump would make the toast taller than the handheld screen.
 		throw cuQtyEntryPolicy.isOverPickAlwaysRefused() ? exception : exception.appendParametersToMessage();
 	}
