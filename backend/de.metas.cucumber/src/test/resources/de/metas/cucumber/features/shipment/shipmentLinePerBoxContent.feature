@@ -181,8 +181,8 @@ Feature: Shipment line per box content
       | p_coo        | 2           | IT           |
       | p_coo        | 2           | DE           |
 
-  @Id:BOX_LOT_90
-  Scenario: One box with several CUs in each of three origin groups ships as three lines with the summed quantity and the right origin
+  @Id:BOX_LOT_91
+  Scenario: One box with two CUs of unequal quantities per origin, origins picked interleaved, ships as one line per origin with the summed quantity
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
@@ -249,6 +249,67 @@ Feature: Shipment line per box content
       | p_coo        | 5           | IT           |
       | p_coo        | 5           | DE           |
       | p_coo        | 4           | FR           |
+
+  @Id:BOX_LOT_90
+  Scenario: One box with four equal-quantity CUs of three lots, two CUs of the same lot from one stock HU, ships as one line per lot
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotA_3lot":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTA"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotB_3lot":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTB"}]}
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asi_lotC_3lot":
+    """
+    {"attributeInstances": [{"attributeCode": "Lot-Nummer", "valueStr": "LOTC"}]}
+    """
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_3lot       | 2022-12-12   | wh_box         |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier   | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | M_AttributeSetInstance_ID | M_HU_PI_Item_Product_ID |
+      | inv_l_a_3lot | inv_3lot       | p_coo        | 0       | 10       | PCE          | asi_lotA_3lot             | p_coo_box_10CU          |
+      | inv_l_b_3lot | inv_3lot       | p_coo        | 0       | 10       | PCE          | asi_lotB_3lot             | p_coo_box_10CU          |
+      | inv_l_c_3lot | inv_3lot       | p_coo        | 0       | 10       | PCE          | asi_lotC_3lot             | p_coo_box_10CU          |
+    When the inventory identified by inv_3lot is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID   |
+      | inv_l_a_3lot       | hu_a_3lot |
+      | inv_l_b_3lot       | hu_b_3lot |
+      | inv_l_c_3lot       | hu_c_3lot |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | so_3lot    | true    | customer_box  | 2025-04-01  | wh_box         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_3lot_l1 | so_3lot    | p_coo        | 8          |
+    When the order identified by so_3lot is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_3lot    | so_3lot_l1     | N             |
+    # Four picks of 2 into the same new box: lot A twice from the same stock HU, then lot B, then lot C
+    When start picking job for sales order identified by so_3lot
+    And scan picking slot identified by slot_box
+    And set picking target as new TU identified by box_pi
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | p_coo                 | hu_a_3lot  | 2         |
+      | p_coo                 | hu_a_3lot  | 2         |
+      | p_coo                 | hu_b_3lot  | 2         |
+      | p_coo                 | hu_c_3lot  | 2         |
+    And complete picking job
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_3lot               | inout_3lot | CO        |
+    Then the shipment lines of inout_3lot are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer |
+      | p_coo        | 4           | LOTA            |
+      | p_coo        | 2           | LOTB            |
+      | p_coo        | 2           | LOTC            |
 
   @Id:BOX_LOT_95
   Scenario: One box with three CUs of three lots ships as three product lines and one packing material line for the one box
@@ -345,3 +406,4 @@ Feature: Shipment line per box content
       | p_coo        | 2           | LOT2            |
       | p_coo        | 2           | LOT3            |
       | pm_product95 | 1           |                 |
+
