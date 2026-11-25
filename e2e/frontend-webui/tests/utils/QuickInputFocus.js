@@ -302,28 +302,13 @@ export async function enterLinesKeyboardOnly({
       await expectFocusOn(afterArticle, `after article reload, line ${n}: cursor in ${afterArticleName}`);
       await expectFocusHeld(afterArticle, 1000, `after article reload, line ${n}: cursor stays in ${afterArticleName}`);
     }
-    // A header-only frame of the article step can arrive after the hold above; frames not yet awaited
-    // are awaited and the cursor re-checked here, right before the next field is used.
-    let articleSeen = recorder.frames.length;
+    // Frames of the article step handled so far; a later header-only frame is caught after typing the quantity.
     const articleRespIdx = mark.respIdx;
-    const recheckLateArticleReload = async (label) => {
-      const lateMark = { frameIdx: articleSeen, respIdx: articleRespIdx };
-      if (!hasReloadSince(recorder, lateMark, doc)) return;
-      await awaitHeaderReload(page, recorder, lateMark, { ...doc, step: `late article reload before ${label}, line ${n}` });
-      articleSeen = recorder.frames.length;
-      await expectFocusOn(currentTarget(), `late article reload before ${label}, line ${n}: cursor in ${currentName()}`);
-      await expectFocusHeld(currentTarget(), 1000, `late article reload before ${label}, line ${n}: cursor stays in ${currentName()}`);
-    };
-    let currentTarget = () => afterArticle;
-    let currentName = () => afterArticleName;
-    await recheckLateArticleReload(afterArticleName);
+    let handledFrames = recorder.frames.length;
 
     if (packingInstructionsField === 'Y') {
       mark = armHeaderReload(recorder);
       await page.keyboard.press('Enter'); // empty Packvorschrift
-      articleSeen = mark.frameIdx; // frames up to the Packvorschrift Enter were handled above
-      currentTarget = () => qtyInput;
-      currentName = () => 'Menge';
       await expectFocusOn(qtyInput, `after Packvorschrift Enter, line ${n}: cursor in Menge`);
       await expectFocusHeld(qtyInput, 1000, `after Packvorschrift Enter, line ${n}: cursor stays in Menge`);
       if (hasReloadSince(recorder, mark, doc)) {
@@ -331,11 +316,20 @@ export async function enterLinesKeyboardOnly({
         await expectFocusOn(qtyInput, `after Packvorschrift reload, line ${n}: cursor in Menge`);
         await expectFocusHeld(qtyInput, 1000, `after Packvorschrift reload, line ${n}: cursor stays in Menge`);
       }
+      handledFrames = recorder.frames.length;
     }
 
-    await recheckLateArticleReload('quantity');
     await expectFocusOn(qtyInput, `before typing quantity, line ${n}: cursor in Menge`);
     await page.keyboard.type(String(qtys[i]), { delay: 30 });
+    // A header-only frame of the article / Packvorschrift step may arrive while the quantity is typed:
+    // await it and check the cursor and the typed value again before the line is saved.
+    const lateMark = { frameIdx: handledFrames, respIdx: articleRespIdx };
+    if (hasReloadSince(recorder, lateMark, doc)) {
+      await awaitHeaderReload(page, recorder, lateMark, { ...doc, step: `late article reload after typing quantity, line ${n}` });
+      await expectFocusOn(qtyInput, `late article reload, line ${n}: cursor in Menge`);
+      await expectFocusHeld(qtyInput, 1000, `late article reload, line ${n}: cursor stays in Menge`);
+      await expect(qtyInput, `late article reload, line ${n}: typed quantity still in Menge`).toHaveValue(String(qtys[i]));
+    }
     // Own mark right before the quantity Enter: only the line-save reload (it carries includedTabsInfo) counts.
     mark = armHeaderReload(recorder);
     await page.keyboard.press('Enter');
