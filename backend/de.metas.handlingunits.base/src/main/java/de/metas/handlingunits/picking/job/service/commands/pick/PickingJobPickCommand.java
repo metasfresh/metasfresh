@@ -20,7 +20,6 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.model.I_M_HU;
@@ -31,7 +30,6 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
-import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -51,7 +49,6 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
@@ -86,7 +83,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
@@ -118,7 +114,6 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
-	private final static AdMessageKey CU_NO_OPEN_TU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_TU");
 	private final static AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
 	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
@@ -135,7 +130,6 @@ public class PickingJobPickCommand
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
-	@NonNull private final PickingCULabelService cuLabelService;
 
 	//
 	// Params
@@ -155,14 +149,13 @@ public class PickingJobPickCommand
 	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
 	@NonNull private final CUQtyEntryPolicy cuQtyEntryPolicy;
-	@Nullable private final ScannedCode cuLabel;
+	@NonNull private final CULabelBooking cuLabelBooking;
 
 	//
 	// State
 	@NonNull private PickingJob _pickingJob;
 	@Nullable private PickingJobStepId _stepId;
 	@Nullable PickAttributes _pickAttributes; // lazy
-	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, label-required modes only
 	@Nullable private HUInfo _pickFromHUIdAndQRCode; // lazy
 	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
@@ -210,7 +203,6 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
-		this.cuLabelService = cuLabelService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
@@ -227,7 +219,15 @@ public class PickingJobPickCommand
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
-		this.cuLabel = cuLabel;
+		this.cuLabelBooking = CULabelBooking.builder()
+				.policy(cuQtyEntryPolicy)
+				.cuLabelService(cuLabelService)
+				.huService(huService)
+				.lineSupplier(this::getLine)
+				.cuLabel(cuLabel)
+				.cuLabelFormatId(pickingJobOptions.getCULabelFormatId())
+				.modeName(String.valueOf(pickingJobOptions.getCUQtyEntryModeOrDefault()))
+				.build();
 		// label-required modes always book CUs into the open TU: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
@@ -452,37 +452,7 @@ public class PickingJobPickCommand
 
 	private void assertCULabelBookingAllowed()
 	{
-		if (!cuQtyEntryPolicy.isLabelRequired())
-		{
-			return;
-		}
-
-		if (!getTUPickingTarget().isPresent())
-		{
-			throw new AdempiereException(CU_NO_OPEN_TU_ERROR_MSG);
-		}
-
-		final ResolvedCULabel label = getResolvedCULabel();
-		if (cuQtyEntryPolicy.isPackIdRequired()
-				&& huService.isAlreadyPickedInJob(getPickingJob(), label.toCUPackIdentity()))
-		{
-			throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_ALREADY_PICKED, label.getPackId());
-		}
-	}
-
-	@NonNull
-	private ResolvedCULabel getResolvedCULabel()
-	{
-		if (_resolvedCULabel == null)
-		{
-			if (cuLabel == null)
-			{
-				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
-				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + pickingJobOptions.getCUQtyEntryModeOrDefault());
-			}
-			_resolvedCULabel = cuLabelService.resolve(getLine(), cuLabel, cuQtyEntryPolicy, pickingJobOptions.getCULabelFormatId());
-		}
-		return _resolvedCULabel;
+		cuLabelBooking.assertBookingAllowed(getPickingJob(), getTUPickingTarget().isPresent());
 	}
 
 	private PickingJob getPickingJob()
@@ -786,20 +756,9 @@ public class PickingJobPickCommand
 	}
 
 	@NonNull
-	private static PickAttributes toPickAttributes(@NonNull final ResolvedCULabel label)
-	{
-		return PickAttributes.builder()
-				.isSetLotNo(label.getLotNo() != null).lotNo(label.getLotNo())
-				.isSetBestBeforeDate(label.getBestBeforeDate() != null).bestBeforeDate(label.getBestBeforeDate())
-				.build();
-	}
-
-	@NonNull
 	private PickAttributes computePickAttributes()
 	{
-		PickAttributes pickAttributes = cuQtyEntryPolicy.isLabelRequired()
-				? toPickAttributes(getResolvedCULabel()).fallbackTo(this._manualPickAttributes)
-				: this._manualPickAttributes;
+		PickAttributes pickAttributes = cuLabelBooking.getPickAttributes(this._manualPickAttributes);
 		boolean isCatchWeightRequired = false;
 		if (pickFromHUQRCode != null)
 		{
@@ -936,10 +895,7 @@ public class PickingJobPickCommand
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
-		if (cuQtyEntryPolicy.isPackIdRequired())
-		{
-			setPackIdOnCreatedCUs(packedHUs, getResolvedCULabel().getPackId());
-		}
+		cuLabelBooking.stampPackId(packedHUs);
 
 		//
 		// Add shipment schedule QtyPicked records
@@ -1079,8 +1035,7 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		// Label-required modes: the booked CU is the picked HU and an undo extracts exactly it, so it carries its own QR code (the TU's code is assigned to the TU only)
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuQtyEntryPolicy.isBookAsSingleCUInTU() ? cu.getId() : tu1.getId());
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cuLabelBooking.getQRCodeOwnerId(tu1, cu));
 		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
@@ -1206,19 +1161,6 @@ public class PickingJobPickCommand
 		huService.setHUStatusPicked(result.getAllLUAndTURecords());
 
 		return result;
-	}
-
-	private static void setPackIdOnCreatedCUs(@NonNull final LUTUResult packedHUs, @Nullable final CULabelPackId packId)
-	{
-		for (final TU tu : packedHUs.getAllTUs())
-		{
-			for (final TUPart cu : tu.getCUsNotEmpty())
-			{
-				final IAttributeStorage cuAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(cu.toHU());
-				cuAttributes.setSaveOnChange(true);
-				cuAttributes.setValue(AttributeConstants.PackId, packId != null ? packId.getValue() : null);
-			}
-		}
 	}
 
 	private LUTUResult pickCUsAndPackTo(
