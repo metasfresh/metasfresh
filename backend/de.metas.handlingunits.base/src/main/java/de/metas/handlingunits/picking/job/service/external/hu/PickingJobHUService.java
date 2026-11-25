@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -151,6 +152,18 @@ public class PickingJobHUService
 	public HUGraiSnapshotsCollection getGraiSnapshotsOfTUs(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
 	{
 		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabelScan));
+	}
+
+	/**
+	 * The GRAI snapshots of what was picked on the given lines: the one place that decides which picked HU carries the GRAI (see
+	 * {@link #getGraiSnapshotsOfTUs(Set, Set)}); callers do not need to know how a pick was booked.
+	 */
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfPicked(@NonNull final Collection<PickingJobLine> lines)
+	{
+		final ImmutableSet<HuId> pickedHUIds = lines.stream().flatMap(line -> line.getPickedHUIds().stream()).collect(ImmutableSet.toImmutableSet());
+		final ImmutableList<HUInfo> pickedHUInfos = lines.stream().flatMap(line -> line.getPickedHUInfos().stream()).collect(ImmutableList.toImmutableList());
+		return getGraiSnapshotsOfTUs(pickedHUIds, getCUBookingSpecification().filterBookedWithLabelScan(pickedHUInfos));
 	}
 
 	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabelScan)
