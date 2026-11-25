@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.business_rule.BusinessRuleService;
+import de.metas.cache.CacheMgt;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -59,7 +60,6 @@ import org.compiere.model.X_AD_BusinessRule;
 import org.compiere.model.X_AD_Message;
 import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -229,7 +229,8 @@ public class AD_BusinessRule_StepDef
 	}
 
 	/**
-	 * Writes {@code M_Product.UpdatedBy} with plain SQL, i.e. a value the model would never write, and reloads the product
+	 * Writes {@code M_Product.UpdatedBy} with plain SQL, i.e. a value the model would never write, resets the cached
+	 * M_Product record (so that code reading the product through the cache sees the stored value too) and reloads the product
 	 * in the scenario so that its next save starts from that stored value.
 	 *
 	 * @cucumber.stepdef
@@ -259,6 +260,8 @@ public class AD_BusinessRule_StepDef
 					new Object[] { updatedBy, product.getM_Product_ID() },
 					ITrx.TRXNAME_None);
 
+			// reset the cached M_Product, so that code reading it through the cache (e.g. IProductBL.getById) sees the stored value, as on a real instance where the value was written long before
+			CacheMgt.get().reset(I_M_Product.Table_Name, product.getM_Product_ID());
 			InterfaceWrapperHelper.refresh(product);
 			assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy").isEqualTo(updatedBy);
 		});
@@ -301,25 +304,6 @@ public class AD_BusinessRule_StepDef
 					.as("Triggering_User_ID of the events")
 					.containsOnly(expectedTriggeringUserId);
 		});
-	}
-
-	/**
-	 * Checks that the last save of the product wrote the user of the session (the logged-in user) as {@code M_Product.UpdatedBy}.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: M_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * Then validate M_Product.UpdatedBy of product_1 is the logged-in user
-	 * </pre>
-	 */
-	@Then("validate M_Product.UpdatedBy of {word} is the logged-in user")
-	public void validate_M_Product_UpdatedBy_is_logged_in_user(@NonNull final String productIdentifier)
-	{
-		final I_M_Product product = productTable.get(productIdentifier);
-		InterfaceWrapperHelper.refresh(product);
-		final UserId loggedUserId = Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM);
-		assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy of M_Product_ID=" + product.getM_Product_ID()).isEqualTo(loggedUserId.getRepoId());
 	}
 
 	private int resolveUserId(@NonNull final String userIdOrIdentifier)

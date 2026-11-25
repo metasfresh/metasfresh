@@ -51,6 +51,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -71,6 +72,7 @@ import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -304,7 +306,7 @@ public class M_Product_StepDef
 	 * Required column:<br>
 	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
 	 * Optional columns (only the ones present are written):<br>
-	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
+	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>, <b>IsVerified</b>,
 	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
 	 *   <b>CoProductCostDistributionPercent</b> — the co-product's cost distribution percent read live at
 	 *   production post-calculation (blank = the co-product carries zero cost, the main/finished product absorbs
@@ -519,6 +521,7 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsVerified).ifPresent(productRecord::setIsVerified);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
 				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 		// Co-product cost distribution percent (blank = zero cost carve; the main product absorbs the rest).
@@ -531,7 +534,8 @@ public class M_Product_StepDef
 
 	/**
 	 * Verifies M_Product fields. Only checks the columns provided in the data table.
-	 * Supported columns: M_Product_ID.Identifier (required), GTIN, UPC, EAN13_ProductCode.
+	 * Supported columns: M_Product_ID (required), GTIN, UPC, EAN13_ProductCode, IsVerified (Y/N),
+	 * UpdatedBy (an AD_User_ID such as -1, or {@code acting} for the logged-in user of the scenario).
 	 * The record is refreshed from DB before assertion.
 	 */
 	@Then("M_Product is verified:")
@@ -554,6 +558,17 @@ public class M_Product_StepDef
 				.ifPresent(expected -> assertThat(productRecord.getUPC()).as("UPC").isEqualTo(nullToken2Null(expected)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(expected -> assertThat(productRecord.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsVerified)
+				.ifPresent(expected -> assertThat(productRecord.isVerified()).as("IsVerified").isEqualTo(expected));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UpdatedBy)
+				.ifPresent(expected -> assertThat(productRecord.getUpdatedBy()).as("UpdatedBy").isEqualTo(resolveUpdatedBy(expected)));
+	}
+
+	private static int resolveUpdatedBy(@NonNull final String expected)
+	{
+		return "acting".equals(expected.trim())
+				? Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId()
+				: Integer.parseInt(expected.trim());
 	}
 
 	@Nullable

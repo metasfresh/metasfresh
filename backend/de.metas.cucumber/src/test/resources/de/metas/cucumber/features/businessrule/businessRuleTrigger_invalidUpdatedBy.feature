@@ -1,6 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0380_Masterdata_Products
-@allure.label.feature:F00500
+@allure.label.epic:E0159_Manufacturing_Planning
+@allure.label.feature:F8010_Manufacturing_Bill_of_Material
 @ghActions:run_on_executor3
 Feature: Business rule on M_Product when the stored UpdatedBy is not a valid user
   A product that was last changed by an unknown user can still be saved.
@@ -26,8 +26,8 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
       | Identifier | Description |
       | product_1  | tc4valid    |
     And metasfresh contains AD_BusinessRules with M_Product trigger:
-      | Identifier          | Name                | ValidationSQL                       | TriggerConditionSQL                 |
-      | tc4_valid_user_rule | tc4_valid_user_rule | M_Product.Description = 'tc4valid'  | M_Product.Description = 'tc4valid'  |
+      | Identifier          | Name                | ValidationSQL                      | TriggerConditionSQL                |
+      | tc4_valid_user_rule | tc4_valid_user_rule | M_Product.Description = 'tc4valid' | M_Product.Description = 'tc4valid' |
     And set M_Product.UpdatedBy by SQL:
       | M_Product_ID | UpdatedBy  |
       | product_1    | other_user |
@@ -61,7 +61,9 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
       | M_Product_ID | IsStocked |
       | product_1    | N         |
 
-    Then validate M_Product.UpdatedBy of product_1 is the logged-in user
+    Then M_Product is verified:
+      | M_Product_ID | UpdatedBy |
+      | product_1    | acting    |
     And validate AD_BusinessRule_Events for:
       | M_Product_ID | AD_BusinessRule_ID | Triggering_User_ID |
       | product_1    | tc4_minus_one_rule | 0                  |
@@ -79,8 +81,8 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
       | Identifier | Description |
       | product_1  | tc4notice   |
     And metasfresh contains AD_BusinessRules with M_Product trigger:
-      | Identifier      | Name            | ValidationSQL                          | TriggerConditionSQL                |
-      | tc4_notice_rule | tc4_notice_rule | M_Product.Description <> 'tc4notice'   | M_Product.Description = 'tc4notice' |
+      | Identifier      | Name            | ValidationSQL                        | TriggerConditionSQL                 |
+      | tc4_notice_rule | tc4_notice_rule | M_Product.Description <> 'tc4notice' | M_Product.Description = 'tc4notice' |
     And set M_Product.UpdatedBy by SQL:
       | M_Product_ID | UpdatedBy |
       | product_1    | -1        |
@@ -111,7 +113,7 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
       | Identifier | Description |
       | product_1  | tc4missing  |
     And metasfresh contains AD_BusinessRules with M_Product trigger:
-      | Identifier           | Name                 | ValidationSQL                        | TriggerConditionSQL                  |
+      | Identifier            | Name                  | ValidationSQL                        | TriggerConditionSQL                  |
       | tc4_missing_user_rule | tc4_missing_user_rule | M_Product.Description = 'tc4missing' | M_Product.Description = 'tc4missing' |
     And set M_Product.UpdatedBy by SQL:
       | M_Product_ID | UpdatedBy    |
@@ -121,7 +123,9 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
       | M_Product_ID | IsStocked |
       | product_1    | N         |
 
-    Then validate M_Product.UpdatedBy of product_1 is the logged-in user
+    Then M_Product is verified:
+      | M_Product_ID | UpdatedBy |
+      | product_1    | acting    |
     And validate AD_BusinessRule_Events for:
       | M_Product_ID | AD_BusinessRule_ID    | Triggering_User_ID |
       | product_1    | tc4_missing_user_rule | 0                  |
