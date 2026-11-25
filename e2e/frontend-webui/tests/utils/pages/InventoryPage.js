@@ -11,6 +11,9 @@ import { getFieldData } from '../WebAPIValidation';
  * A line is created with the "Add new" button of the lines tab; it opens the line in a modal
  * (`.panel-modal`, closed with its "Done" button), whose fields are addressed the same way.
  */
+/** Completing builds the counted HUs synchronously: on a DB with many warehouses it takes up to about a minute. */
+export const INVENTORY_COMPLETE_TIMEOUT = 2 * 60 * 1000;
+
 export class InventoryPage {
   static #inventoryId = null;
 
@@ -58,7 +61,7 @@ export class InventoryPage {
       // "Counted": the inventory completes only when all its lines are counted.
       // The counted quantity's save can re-render the line and drop a click made meanwhile: let pending saves settle,
       // then click only while unchecked (idempotent, retried).
-      await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await page.locator('.rotating, .indicator-pending').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       const isCounted = modal.locator('.form-field-IsCounted input[type="checkbox"]').first();
       await expect(async () => {
         if (!(await isCounted.isChecked())) {
@@ -97,7 +100,7 @@ export class InventoryPage {
           await dropdown.waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
         }
       }).toPass({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      await page.locator('.rotating, .indicator-pending').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       return offeredIds;
     });
   }
@@ -122,7 +125,7 @@ export class InventoryPage {
         .poll(async () => {
           const docStatus = await getFieldData(INVENTORY_WINDOW_ID, this.#inventoryId, 'DocStatus');
           return docStatus.value?.key ?? docStatus.value;
-        }, { message: 'DocStatus of the inventory', timeout: 2 * 60 * 1000 }) // completion builds the HUs synchronously
+        }, { message: 'DocStatus of the inventory', timeout: INVENTORY_COMPLETE_TIMEOUT })
         .toBe('CO');
     });
   }
@@ -159,6 +162,6 @@ export class InventoryPage {
       await dropdown.locator(`[data-testid="option-${id}"]`).click({ timeout: FAST_ACTION_TIMEOUT });
       await dropdown.waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
     }).toPass({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-    await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.locator('.rotating, .indicator-pending').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
   }
 }

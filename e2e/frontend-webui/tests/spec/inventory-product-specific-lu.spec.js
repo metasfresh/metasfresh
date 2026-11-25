@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { DOCTYPE_INVENTORY } from '../utils/DocTypeIds';
 import { LoginPage } from '../utils/pages/LoginPage';
-import { InventoryPage } from '../utils/pages/InventoryPage';
+import { INVENTORY_COMPLETE_TIMEOUT, InventoryPage } from '../utils/pages/InventoryPage';
 
 /**
  * Features:
@@ -70,8 +70,8 @@ const pallet = ({ product, qty, includedTUsCount, palletItemQty }) => ({
 });
 
 test.describe('Physical inventory: pallets use the product-specific pallet item', () => {
-  // completing builds 100 TUs on 4 pallets; on a DB with many warehouses it takes up to about a minute
-  test.describe.configure({ timeout: 3 * 60 * 1000 });
+  // the UI steps take about 20 s; completing (100 TUs on 4 pallets) can take up to INVENTORY_COMPLETE_TIMEOUT
+  test.describe.configure({ timeout: INVENTORY_COMPLETE_TIMEOUT + 60 * 1000 });
 
   test.beforeEach(() => {
     allure.epic('E0193: Handling Units');
