@@ -435,6 +435,7 @@ public class LUTUProducerDestination
 
 	/**
 	 * Sets the product whose LU item {@link #getLUItemPI()} falls back to when the LU PI (or the existing LU's PI) has no item without product for the TU PI.
+	 * To keep the item an existing LU already uses, the caller sets it explicitly (as mobile picking and the HU editor do).
 	 * An item without product still comes first, also if there is an item for this product. Items of other products are never used.
 	 * Both lookups honour this producer's partner ({@link #getBPartnerId()}).
 	 * Has no effect if the LU item is set explicitly ({@link #setLUItemPI(I_M_HU_PI_Item)}).

@@ -365,6 +365,66 @@ class PickingJobLUAvailableTargetsProductSpecificItemTest
 					.containsExactly(luItemForA.getM_HU_PI_Item_ID(), luItemForA.getM_HU_PI_Item_ID());
 		}
 
+		private I_M_HU_PI_Item addItemForProductA(final I_M_HU_PI luPI)
+		{
+			final I_M_HU_PI_Item luItemForA = huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("40"));
+			luItemForA.setM_Product_ID(productA.getRepoId());
+			InterfaceWrapperHelper.save(luItemForA);
+			return luItemForA;
+		}
+
+		private PickingJob setExistingLUTarget(final PickingJob pickingJob, final I_M_HU lu, final String qrCode)
+		{
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final HuId luId = HuId.ofRepoId(lu.getM_HU_ID());
+			return helper.pickingJobService.setLUPickingTarget(pickingJob, line.getId(), LUPickingTarget.ofExistingHU(luId, helper.createQRCode(luId, qrCode)));
+		}
+
+		/**
+		 * Pallet type with the generic item (30) and an item for A (40). A whole-TU pick builds the LU on A's item;
+		 * loose pieces of A picked onto that existing LU keep the item the LU already uses (not the generic one).
+		 */
+		@Test
+		void loosePieces_ontoExistingLUBuiltOnThePickedProductsItem_keepThatItem()
+		{
+			final I_M_HU_PI_Item luItemForA = addItemForProductA(genericLUPI);
+			final HUQRCode sourceQRCode = createSourceLUOfProductA_3TUs();
+			final HUQRCode vhuQRCode = helper.createVHUInfo(productA, "30", "QR-VHU-A").getQrCode();
+			final PickingJob afterFirstPick = pickOntoNewLU(createPickingJobForProductA(tuPIIP_A, PickingUnit.TU), genericLUPI, sourceQRCode, "1");
+			final I_M_HU existingLU = getLUOfFirstPickedHU(afterFirstPick);
+			assertThat(getPIItemIdsOfIncludedTUs(existingLU)).as("precondition: LU built on A's item").containsExactly(luItemForA.getM_HU_PI_Item_ID());
+
+			pickLoosePieces(setExistingLUTarget(afterFirstPick, existingLU, "QR-EXISTING-LU"), vhuQRCode, "1");
+
+			assertThat(getPIItemIdsOfIncludedTUs(handlingUnitsDAO.getById(HuId.ofRepoId(existingLU.getM_HU_ID()))))
+					.containsExactly(luItemForA.getM_HU_PI_Item_ID(), luItemForA.getM_HU_PI_Item_ID());
+		}
+
+		/**
+		 * Control: same pallet type (generic item + A's item), but the existing LU is built on the generic item: loose pieces of A stay on the generic item.
+		 */
+		@Test
+		void loosePieces_ontoExistingLUBuiltOnTheGenericItem_keepTheGenericItem()
+		{
+			addItemForProductA(genericLUPI);
+			final I_M_HU existingLU = huTestHelper.newLUs()
+					.huContext(huTestHelper.createMutableHUContextOutOfTransaction())
+					.loadingUnitPIItem(genericLUItem)
+					.tuPIItemProduct(tuPIIP_A)
+					.totalQtyCU(new BigDecimal("10"))
+					.locatorId(helper.shipFromLocatorId)
+					.huStatus(X_M_HU.HUSTATUS_Active)
+					.buildSingleLU();
+			assertThat(getPIItemIdsOfIncludedTUs(existingLU)).as("precondition: LU built on the generic item").containsExactly(genericLUItem.getM_HU_PI_Item_ID());
+			final HUQRCode vhuQRCode = helper.createVHUInfo(productA, "30", "QR-VHU-A").getQrCode();
+			final PickingJob pickingJob = setExistingLUTarget(createPickingJobForProductA(tuPIIP_A, PickingUnit.TU), existingLU, "QR-EXISTING-LU");
+
+			pickLoosePieces(pickingJob, vhuQRCode, "1");
+
+			assertThat(getPIItemIdsOfIncludedTUs(handlingUnitsDAO.getById(HuId.ofRepoId(existingLU.getM_HU_ID()))))
+					.containsExactly(genericLUItem.getM_HU_PI_Item_ID(), genericLUItem.getM_HU_PI_Item_ID());
+		}
+
 		/**
 		 * Pallet type whose only item for the TU PI is another product's: loose pieces of A are refused as before.
 		 */

@@ -790,7 +790,8 @@ public class HUTransformService
 	 * <p>
 	 * The check mirrors the producer's lookup, so it uses the LU PI's current version like the producer does; the product-specific item is taken from the LU's own PI version.
 	 * <p>
-	 * Deliberately different from the producer's own fallback ({@link LUTUProducerDestination#setLUItemFallbackProductId(ProductId)}, used by mobile picking):
+	 * Mobile picking onto an existing LU first keeps the item the LU already uses, with the same lookup as the HU editor
+	 * ({@link IHandlingUnitsDAO#retrieveParentPIItemForChildHUOrNull}). Its fallback after that is deliberately different from the producer's own fallback ({@link LUTUProducerDestination#setLUItemFallbackProductId(ProductId)}, used by mobile picking):
 	 * here, if the TU's product has no item, <b>another product's</b> item is returned (moving existing TUs onto an LU may mix products),
 	 * and the "is there an item without product" check ignores the partner; the producer's fallback uses only the given product's item and honours its partner.
 	 */
