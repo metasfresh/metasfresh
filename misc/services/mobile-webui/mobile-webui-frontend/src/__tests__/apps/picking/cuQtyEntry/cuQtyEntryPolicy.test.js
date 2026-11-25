@@ -1,4 +1,8 @@
-import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
+import {
+  getCUQtyEntryPolicy,
+  MANUAL_POLICY,
+  toQtyEntryBehaviorProps,
+} from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 describe('getCUQtyEntryPolicy', () => {
@@ -15,5 +19,31 @@ describe('getCUQtyEntryPolicy', () => {
       isScanOnce: false,
       isOneCUPerLabel: false,
     });
+  });
+});
+
+describe('toQtyEntryBehaviorProps', () => {
+  it('maps each policy onto the behaviour switches of the shared quantity components', () => {
+    expect(toQtyEntryBehaviorProps(POLICY.MANUAL)).toEqual({
+      isRepeatedBooking: false,
+      isBookedOnScan: false,
+      isLotAndBestBeforeShownReadOnly: false,
+      isSubmitOnEnter: true,
+    });
+    expect(toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)).toEqual({
+      isRepeatedBooking: true,
+      isBookedOnScan: false,
+      isLotAndBestBeforeShownReadOnly: true,
+      isSubmitOnEnter: false,
+    });
+    expect(toQtyEntryBehaviorProps(POLICY.SCAN_EACH_CU)).toEqual({
+      isRepeatedBooking: false,
+      isBookedOnScan: true,
+      isLotAndBestBeforeShownReadOnly: true,
+      isSubmitOnEnter: false,
+    });
+  });
+  it('treats a missing policy as Manual', () => {
+    expect(toQtyEntryBehaviorProps(undefined)).toEqual(toQtyEntryBehaviorProps(POLICY.MANUAL));
   });
 });

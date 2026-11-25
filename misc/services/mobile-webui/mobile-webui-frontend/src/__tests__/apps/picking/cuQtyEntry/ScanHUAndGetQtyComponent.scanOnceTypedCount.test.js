@@ -6,6 +6,7 @@ import { combineReducers, createStore } from 'redux';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -30,7 +31,7 @@ const renderOpenQuantityBlock = async ({ resolveScannedBarcode, isShowCloseTarge
         qtyMax={12}
         qtyTarget={12}
         uom="PCE"
-        cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+        {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
         isShowCloseTargetButton={isShowCloseTargetButton}
         resolveScannedBarcode={resolveScannedBarcode}
         onResult={jest.fn().mockResolvedValue()}

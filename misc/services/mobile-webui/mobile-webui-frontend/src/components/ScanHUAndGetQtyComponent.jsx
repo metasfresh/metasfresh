@@ -17,7 +17,6 @@ import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickCon
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
 import Spinner from './Spinner';
 import { doFinally } from '../utils';
-import { CUQtyEntryPolicyPropType, MANUAL_POLICY } from '../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import DialogButton from './dialogs/DialogButton';
 import { isLineDoneAfterBooking } from '../utils/picking';
 
@@ -35,13 +34,13 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 // dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
 const EMPTY_LU_GRAIS = [];
 
-const HUScanActionButtons = ({ nextTUActions, isOneCUPerScan, onCloseDialog }) => {
-  if (!nextTUActions && !isOneCUPerScan) return null;
+const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
+  if (!nextTUActions && !isBookedOnScan) return null;
 
   return (
     <div className="buttons is-centered mb-4">
       {nextTUActions}
-      {isOneCUPerScan && (
+      {isBookedOnScan && (
         <DialogButton
           captionKey="general.closeText"
           className="is-danger"
@@ -54,7 +53,7 @@ const HUScanActionButtons = ({ nextTUActions, isOneCUPerScan, onCloseDialog }) =
 };
 HUScanActionButtons.propTypes = {
   nextTUActions: PropTypes.node,
-  isOneCUPerScan: PropTypes.bool,
+  isBookedOnScan: PropTypes.bool,
   onCloseDialog: PropTypes.func,
 };
 
@@ -85,7 +84,10 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   customQRCodeFormats,
   readAttributes = [],
-  cuQtyEntryPolicy = MANUAL_POLICY,
+  isRepeatedBooking = false,
+  isBookedOnScan = false,
+  isLotAndBestBeforeShownReadOnly = false,
+  isSubmitOnEnter = true,
   isShowCloseTargetButton = false,
   nextTUActions,
   suggestedQty,
@@ -101,8 +103,6 @@ const ScanHUAndGetQtyComponent = ({
   onResult,
   onClose: onCloseCallback,
 }) => {
-  const isScanOnce = cuQtyEntryPolicy.isScanOnce;
-  const isOneCUPerScan = cuQtyEntryPolicy.isOneCUPerLabel;
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);
@@ -192,7 +192,7 @@ const ScanHUAndGetQtyComponent = ({
           toastErrorFromObj(error);
           setProgressStatus(STATUS_READ_HU_BARCODE);
         });
-    } else if (isScanOnce && rememberedCULabel?.cuLabel) {
+    } else if (isRepeatedBooking && rememberedCULabel?.cuLabel) {
       // back on a line the picker already booked on: the quantity block opens with the remembered label
       setResolvedBarcodeData((prev) => ({
         ...prev,
@@ -248,7 +248,7 @@ const ScanHUAndGetQtyComponent = ({
 
     setResolvedBarcodeData(resolvedBarcodeDataNew);
 
-    if (isOneCUPerScan) {
+    if (isBookedOnScan) {
       await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
       return;
     }
@@ -371,7 +371,7 @@ const ScanHUAndGetQtyComponent = ({
       productNo,
       isCloseTarget,
       // scan once: the picker stays on the line until its open quantity is booked
-      isDone: isScanOnce
+      isDone: isRepeatedBooking
         ? isLineDoneAfterBooking({ qtyBooked: qtyEnteredAndValidated, qtyOpen: resolvedBarcodeData.qtyMax })
         : isDone,
     };
@@ -390,7 +390,7 @@ const ScanHUAndGetQtyComponent = ({
     }
 
     const resultPromise = onResult(result);
-    return isScanOnce && resultPromise?.then
+    return isRepeatedBooking && resultPromise?.then
       ? resultPromise.then((value) => {
           // a done line navigates away: nothing to reset there
           if (!result.isDone) {
@@ -445,7 +445,7 @@ const ScanHUAndGetQtyComponent = ({
               would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
           <HUScanActionButtons
             nextTUActions={nextTUActions}
-            isOneCUPerScan={isOneCUPerScan}
+            isBookedOnScan={isBookedOnScan}
             onCloseDialog={onCloseDialog}
           />
           {useHUScanner ? (
@@ -488,7 +488,7 @@ const ScanHUAndGetQtyComponent = ({
           qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
-          qtyInitial={isScanOnce ? suggestedQty : resolvedBarcodeData.qtyInitial}
+          qtyInitial={isRepeatedBooking ? suggestedQty : resolvedBarcodeData.qtyInitial}
           packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
@@ -502,13 +502,15 @@ const ScanHUAndGetQtyComponent = ({
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           readAttributes={readAttributes}
-          cuQtyEntryPolicy={cuQtyEntryPolicy}
+          isRepeatedBooking={isRepeatedBooking}
+          isLotAndBestBeforeShownReadOnly={isLotAndBestBeforeShownReadOnly}
+          isSubmitOnEnter={isSubmitOnEnter}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           nextTUActions={nextTUActions}
           labelRescan={
-            isScanOnce ? (
+            isRepeatedBooking ? (
               <BarcodeScannerComponent
                 testId="rescanCULabel-input"
                 isCoexistingWithTypedInput
@@ -596,7 +598,13 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
-  cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
+  // Behaviour switches (the caller maps its own mode onto them)
+  /** the screen stays after every booking until the open quantity is booked; label can be rescanned */
+  isRepeatedBooking: PropTypes.bool,
+  /** the quantity block opens right after the scan: every scan books one unit */
+  isBookedOnScan: PropTypes.bool,
+  isLotAndBestBeforeShownReadOnly: PropTypes.bool,
+  isSubmitOnEnter: PropTypes.bool,
   isShowCloseTargetButton: PropTypes.bool,
   nextTUActions: PropTypes.node,
   suggestedQty: PropTypes.number,

@@ -1,3 +1,4 @@
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 import React from 'react';
 import '@testing-library/jest-dom';
@@ -59,7 +60,7 @@ describe('GetQuantityDialog (Manual): submit and default buttons', () => {
 describe('GetQuantityDialog (label-required CU quantity entry mode): one OK books once', () => {
   it('a click on OK calls onQtyChange exactly once', async () => {
     const onQtyChange = jest.fn(() => Promise.resolve());
-    renderManual({ onQtyChange, cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY });
+    renderManual({ onQtyChange, ...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY) });
     await act(async () => {
       fireEvent.click(screen.getByTestId('done-button'));
     });
@@ -70,7 +71,7 @@ describe('GetQuantityDialog (label-required CU quantity entry mode): one OK book
     const onQtyChange = jest.fn(() => Promise.resolve());
     const { container } = renderManual({
       onQtyChange,
-      cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY,
+      ...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY),
       isShowCloseTargetButton: true,
     });
     await act(async () => {

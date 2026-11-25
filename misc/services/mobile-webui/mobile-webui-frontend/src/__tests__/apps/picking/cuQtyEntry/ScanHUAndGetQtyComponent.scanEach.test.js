@@ -6,6 +6,7 @@ import { combineReducers, createStore } from 'redux';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -35,7 +36,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, qtyMax = 3, ...props
         qtyMax={qtyMax}
         qtyTarget={qtyMax}
         uom="PCE"
-        cuQtyEntryPolicy={POLICY.SCAN_EACH_CU}
+        {...toQtyEntryBehaviorProps(POLICY.SCAN_EACH_CU)}
         resolveScannedBarcode={
           resolveScannedBarcode ??
           (async (code) => {
@@ -68,7 +69,13 @@ describe('ScanHUAndGetQtyComponent: Scan each CU loop', () => {
     await scan('RAW-1');
     expect(onResult).toHaveBeenCalledTimes(1);
     expect(onResult).toHaveBeenLastCalledWith(
-      expect.objectContaining({ qty: 1, cuLabel: 'RAW-1', lotNo: 'LOTA', bestBeforeDate: '2026-11-07', isDone: false })
+      expect.objectContaining({
+        qty: 1,
+        cuLabel: 'RAW-1',
+        lotNo: 'LOTA',
+        bestBeforeDate: '2026-11-07',
+        isDone: false,
+      })
     );
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
     expect(screen.queryByTestId('done-button')).toBeNull();

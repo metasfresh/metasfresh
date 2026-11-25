@@ -7,6 +7,7 @@ import { combineReducers, createStore } from 'redux';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { putSettingsAction, reducer as settings } from '../../../../reducers/settings';
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -43,7 +44,7 @@ const renderDialog = ({
         qtyTargetCaption="To pick"
         uom="PCE"
         qtyRejectedReasons={REJECT_REASONS}
-        cuQtyEntryPolicy={cuQtyEntryPolicy}
+        {...toQtyEntryBehaviorProps(cuQtyEntryPolicy)}
         onQtyChange={onQtyChange}
         onCloseDialog={jest.fn()}
         {...props}
@@ -118,7 +119,7 @@ describe('ScanHUAndGetQtyComponent: scan once passes the label', () => {
           qtyMax={10}
           qtyTarget={10}
           uom="PCE"
-          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
           resolveScannedBarcode={async () => ({ lotNo: 'L1', cuLabel: 'RAW-LABEL' })}
           onResult={onResult}
         />

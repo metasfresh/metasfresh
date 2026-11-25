@@ -11,6 +11,7 @@ import { toastErrorFromObj, toastNotification } from '../../../../utils/toast';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -129,7 +130,7 @@ describe('next TU button placement', () => {
         <GetQuantityDialog
           qtyTarget={10}
           uom="PCE"
-          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
           nextTUActions={nextTUActions}
           onQtyChange={jest.fn()}
           onCloseDialog={jest.fn()}
@@ -203,7 +204,7 @@ describe('next TU button inside the quantity block form', () => {
           qtyTarget={10}
           qtyInitial={5}
           uom="PCE"
-          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
           nextTUActions={<OpenNextTUButton onNextTU={jest.fn()} />}
           onQtyChange={onQtyChange}
           onCloseDialog={jest.fn()}

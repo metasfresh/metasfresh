@@ -6,6 +6,7 @@ import { combineReducers, createStore } from 'redux';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
+import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -35,7 +36,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, ...props }) =>
         qtyMax={12}
         qtyTarget={12}
         uom="PCE"
-        cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+        {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
         resolveScannedBarcode={resolveScannedBarcode ?? (async (code) => labels[code])}
         onResult={onResult}
         {...props}
@@ -88,7 +89,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
           qtyTarget={7}
           suggestedQty={5}
           uom="PCE"
-          cuQtyEntryPolicy={POLICY.SCAN_ONCE_ENTER_QTY}
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
           resolveScannedBarcode={async (code) => labels[code]}
           onResult={onResult}
         />
@@ -190,7 +191,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
     const onResult = jest.fn().mockResolvedValue();
     renderComponent({
       onResult,
-      cuQtyEntryPolicy: POLICY.MANUAL,
+      ...toQtyEntryBehaviorProps(POLICY.MANUAL),
       resolveScannedBarcode: async () => ({ qtyTarget: 12, qtyMax: 12 }),
     });
     await act(async () => {});

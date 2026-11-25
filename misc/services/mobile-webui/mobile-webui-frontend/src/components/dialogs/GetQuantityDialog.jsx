@@ -22,11 +22,10 @@ import * as uiTrace from '../../utils/ui_trace';
 import Spinner from '../Spinner';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
-import { CUQtyEntryPolicyPropType } from '../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 /** The offered quantity when the dialog opens */
-const computeInitialQtyInfo = ({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue }) => {
-  if (!isScanOnce) {
+const computeInitialQtyInfo = ({ isRepeatedBooking, qtyInitial, qtyTarget, useZeroAsInitialValue }) => {
+  if (!isRepeatedBooking) {
     return qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget);
   }
   return qtyInitial != null
@@ -56,7 +55,9 @@ const GetQuantityDialog = ({
   customQRCodeFormats,
   //
   readAttributes = [],
-  cuQtyEntryPolicy,
+  isRepeatedBooking = false,
+  isLotAndBestBeforeShownReadOnly = false,
+  isSubmitOnEnter = true,
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
@@ -68,14 +69,11 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
-  // a CU label carries lot and best-before: the quantity block of a label-required mode always shows them
-  const isLabelRequired = !!cuQtyEntryPolicy?.isLabelRequired;
-  const isShowBestBeforeDate = isLabelRequired || readAttributes.includes(PickAttribute.BestBeforeDate);
-  const isShowLotNo = isLabelRequired || readAttributes.includes(PickAttribute.LotNo);
+  const isShowBestBeforeDate = isLotAndBestBeforeShownReadOnly || readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = isLotAndBestBeforeShownReadOnly || readAttributes.includes(PickAttribute.LotNo);
 
-  const isScanOnce = !!cuQtyEntryPolicy?.isScanOnce;
-  // label-required modes: no implicit form submit by secondary buttons; undefined = default submit (Manual)
-  const buttonType = isLabelRequired ? 'button' : undefined;
+  // no implicit form submit by secondary buttons; undefined = default submit
+  const buttonType = isSubmitOnEnter ? undefined : 'button';
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -88,7 +86,7 @@ const GetQuantityDialog = ({
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
   const [qtyInfo, setQtyInfo] = useState(
-    computeInitialQtyInfo({ isScanOnce, qtyInitial, qtyTarget, useZeroAsInitialValue })
+    computeInitialQtyInfo({ isRepeatedBooking, qtyInitial, qtyTarget, useZeroAsInitialValue })
   );
   const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
@@ -117,7 +115,8 @@ const GetQuantityDialog = ({
     setLotNo(lotNoNew);
   };
 
-  const isQtyRejectedRequired = !isScanOnce && Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
+  const isQtyRejectedRequired =
+    !isRepeatedBooking && Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
     isQtyRejectedRequired && qtyInfos.isValid(qtyInfo)
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
@@ -130,7 +129,7 @@ const GetQuantityDialog = ({
       (!useCatchWeight || catchWeight?.isQtyValid));
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
-  const isLabelAttributeReadOnly = readOnly || isLabelRequired;
+  const isLabelAttributeReadOnly = readOnly || isLotAndBestBeforeShownReadOnly;
 
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
@@ -348,7 +347,7 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form
-            onSubmit={isLabelRequired ? (event) => event.preventDefault() : () => onDialogYes({ isCloseTarget: false })}
+            onSubmit={isSubmitOnEnter ? () => onDialogYes({ isCloseTarget: false }) : (event) => event.preventDefault()}
           >
             <div className="table-container">
               <table className="table">
@@ -580,7 +579,13 @@ GetQuantityDialog.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   readAttributes: PropTypes.array,
-  cuQtyEntryPolicy: CUQtyEntryPolicyPropType,
+  // Behaviour switches (the caller maps its own mode onto them)
+  /** the dialog is reopened after every booking: the open quantity is not offered, no rejection is asked */
+  isRepeatedBooking: PropTypes.bool,
+  /** lot and best-before are always shown and come from outside (e.g. a scanned label) */
+  isLotAndBestBeforeShownReadOnly: PropTypes.bool,
+  /** Enter / the buttons submit the form; false = only the explicit buttons book */
+  isSubmitOnEnter: PropTypes.bool,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,

@@ -64,7 +64,11 @@ import { parseGraiFromRawInput } from '../../../utils/grai';
 import OpenNextTUButton from '../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 import { useOpenNextTU } from '../../../apps/picking/cuQtyEntry/useOpenNextTU';
 import { UserMessageError } from '../../../utils/UserMessageError';
-import { getCUQtyEntryPolicy, MANUAL_POLICY } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
+import {
+  getCUQtyEntryPolicy,
+  MANUAL_POLICY,
+  toQtyEntryBehaviorProps,
+} from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -243,7 +247,7 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
-      cuQtyEntryPolicy={cuQtyEntryPolicy}
+      {...toQtyEntryBehaviorProps(cuQtyEntryPolicy)}
       suggestedQty={suggestedQty}
       rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
