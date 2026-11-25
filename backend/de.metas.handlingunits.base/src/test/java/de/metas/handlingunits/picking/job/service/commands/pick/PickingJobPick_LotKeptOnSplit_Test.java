@@ -16,6 +16,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
@@ -23,7 +24,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
-import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
@@ -282,14 +282,15 @@ class PickingJobPick_LotKeptOnSplit_Test
 
 	/**
 	 * Two picks of 3 into the same LU (the second pick goes into the now pre-existing LU), no flag set:
-	 * the LU lot follows its CUs (same lot twice: that lot; two lots: empty).
+	 * the LU lot and best-before date follow its CUs (same value twice: that value; two values: empty).
 	 */
-	@ParameterizedTest(name = "secondLot={0}: expectedLuLot={1}")
+	@ParameterizedTest(name = "secondLot={0}, secondBestBefore={2}: expectedLuLot={1}, expectedLuBestBefore={3}")
 	@CsvSource(value = {
-			"LOT-A,  LOT-A",
-			"999999, null",
+			"LOT-A,  LOT-A, 2027-01-31, 2027-01-31",
+			"999999, null,  2027-01-31, 2027-01-31",
+			"LOT-A,  LOT-A, 2027-02-28, null",
 	}, nullValues = "null")
-	void secondPickIntoPreExistingLU_luLotFollowsItsCUs(final String secondLot, final String expectedLuLot)
+	void secondPickIntoPreExistingLU_luLotFollowsItsCUs(final String secondLot, final String expectedLuLot, final LocalDate secondBestBefore, final LocalDate expectedLuBestBefore)
 	{
 		final ProductId productId = createProduct();
 		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("Karton-LU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -301,7 +302,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 		huTestHelper.createHU_PI_Item_IncludedHU(luPI, tuPI, new BigDecimal("10"));
 
 		final HUInfo stockCU1 = createStockCU(productId, "QR-STOCK-CU-1", LOT, BEST_BEFORE);
-		final HUInfo stockCU2 = createStockCU(productId, "QR-STOCK-CU-2", secondLot, BEST_BEFORE);
+		final HUInfo stockCU2 = createStockCU(productId, "QR-STOCK-CU-2", secondLot, secondBestBefore);
 
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("SO-LOT-3");
 		helper.packageable().orderAndLineId(orderAndLineId).productId(productId).qtyToDeliver("6").build();
@@ -322,6 +323,7 @@ class PickingJobPick_LotKeptOnSplit_Test
 				.orElseThrow(() -> new AssertionError("no existing-LU target after the first pick"));
 		assertThat(handlingUnitsBL.isLoadingUnit(handlingUnitsBL.getById(luId))).as("target is an LU").isTrue();
 		assertThat(getLot(luId)).as("LU lot (CU lots " + LOT + " and " + secondLot + ")").isEqualTo(expectedLuLot);
+		assertThat(getBestBefore(luId)).as("LU best-before date (CU dates " + BEST_BEFORE + " and " + secondBestBefore + ")").isEqualTo(expectedLuBestBefore);
 	}
 
 	private HUInfo createStockCU(@NonNull final ProductId productId, @NonNull final String qrCode, @NonNull final String lot, @NonNull final LocalDate bestBefore)

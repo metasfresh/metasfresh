@@ -83,7 +83,7 @@ class PickedHUAttributesUpdater
 		}
 	}
 
-	/** For lot and best-before date, each one not set in {@code pickAttributes}: sets the value of {@code hu} from its children (the one common value, else null). */
+	/** For lot and best-before date, each one not set in {@code pickAttributes}: sets the value of {@code hu} from its children (the one common value, else null), only if the HU storage has that attribute. */
 	private void recomputeLotAndBestBeforeFromChildrenIfNotSet(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes)
 	{
 		final boolean recomputeLotNo = !pickAttributes.isSetLotNo();
