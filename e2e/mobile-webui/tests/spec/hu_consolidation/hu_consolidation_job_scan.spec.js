@@ -1384,7 +1384,7 @@ test.describe('Pallet type that does not take the crate type, on the customer\'s
 const OK_BEEP_HZ = 1000;
 const ERROR_BEEP_HZ = 100;
 // the scanner gives every error toast its own id: 'BarcodeScannerComponentError-<seq>' (BarcodeScannerComponent.jsx showErrorToast)
-const SCANNER_ERROR_TOAST_ID = /^BarcodeScannerComponentError(-\d+)?$/;
+const SCANNER_ERROR_TOAST_ID = /^BarcodeScannerComponentError-\d+$/;
 
 // noinspection JSUnusedLocalSymbols
 test('Slot screen: a refused GRAI scan plays the error beep with the scanner\'s one error message, an accepted scan the OK beep', async ({ page: _page }) => {

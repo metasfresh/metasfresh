@@ -38,7 +38,7 @@ export const ErrorToast = {
             });
     },
 
-    /** Asserts the DOM id of the toast that contains the given toast body (the scanner reuses one fixed id for its error toast). */
+    /** Asserts the DOM id of the toast that contains the given toast body (the scanner gives each error toast its own id, BarcodeScannerComponentError-<seq>; pass a RegExp to match it). */
     expectToastId: async (toastBody, expectedId) => {
         const toastElement = toastBody.locator('xpath=ancestor::*[contains(@class,"Toastify__toast--error")][1]');
         await expect(toastElement).toHaveAttribute('id', expectedId);
