@@ -33,9 +33,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * Covers {@link ShipmentScheduleHandlerBL#retrieveHandlerRecord(String)}.
- */
 class ShipmentScheduleHandlerBL_retrieveHandlerRecord_Test
 {
 	private static final String CLASSNAME = "de.metas.test.SomeHandler";

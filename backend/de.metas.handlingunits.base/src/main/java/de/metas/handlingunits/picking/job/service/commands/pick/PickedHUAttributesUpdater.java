@@ -138,10 +138,6 @@ class PickedHUAttributesUpdater
 		}
 	}
 
-	/**
-	 * With {@code isRecomputeFromChildren} the attribute is taken from the HU's children (only if the HU has the attribute);
-	 * otherwise the value sent with the pick is written, only when the pick sent one.
-	 */
 	private static void applyPickOrRecompute(
 			@NonNull final IAttributeStorage huAttributes,
 			@NonNull final AttributeCode attributeCode,
