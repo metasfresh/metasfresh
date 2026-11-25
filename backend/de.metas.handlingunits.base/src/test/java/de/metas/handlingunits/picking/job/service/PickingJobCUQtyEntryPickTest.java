@@ -650,6 +650,17 @@ class PickingJobCUQtyEntryPickTest
 		}
 
 		@Test
+		void cuBookedWithLabelButWithoutParentItem_isRefusedWithAClearMessage()
+		{
+			final HuId cuWithoutParent = helper.createVHU(productId, "5");
+
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuWithoutParent), ImmutableSet.of(cuWithoutParent)))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("no parent item")
+					.hasMessageContaining(String.valueOf(cuWithoutParent.getRepoId()));
+		}
+
+		@Test
 		void pickedHUWithQRCodeSharedBySeveralHUs_graiNotRequired_completes()
 		{
 			setProfile(CUQtyEntryMode.SCAN_EACH_CU);

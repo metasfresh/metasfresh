@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -151,6 +152,7 @@ public class PickingJobHUService
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
 	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
+	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
 	{
@@ -175,6 +177,10 @@ public class PickingJobHUService
 			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 			if (cusBookedWithLabel.contains(huId))
 			{
+				if (hu.getM_HU_Item_Parent_ID() <= 0)
+				{
+					throw new AdempiereException("HU " + huId.getRepoId() + " is booked with a label scan but has no parent item, so there is no TU to carry the GRAI");
+				}
 				result.add(computeOncePerParentItem(carrierHuIdByParentItemId, hu, this::getTUIdOrSelf));
 			}
 			else

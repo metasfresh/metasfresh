@@ -226,7 +226,7 @@ class PickingJobGraiScanPickEndToEndTest
 	 * TC1 (scan→pick→validate seam): after scanning a valid GRAI (which stores a new-TU target carrying the GRAI) and
 	 * then <b>picking</b> the line, the scanned GRAI must end up on the materialised picked HU <b>at exactly the HU
 	 * the completion-time GRAI validator reads it from</b> — i.e. {@code PickingJobGRAIValidator} resolves
-	 * {@code line.getPickedHUIds()}, loads their GRAI snapshots via {@code PickingJobHUService#getGraiSnapshots} and
+	 * {@code line.getPickedHUIds()}, loads their GRAI snapshots via {@code PickingJobHUService#getGraiSnapshotsOfPicked} and
 	 * calls {@code assertAllGraisAssigned()}. This drives the real {@code PickingJobPickCommand#stampGraiIfPresent}
 	 * path end-to-end through {@link PickingJobService#processStepEvent} and asserts the validator's own check, closing
 	 * the gap the sibling stamp test below leaves (which stamps a hand-materialised TU rather than a picked one).
