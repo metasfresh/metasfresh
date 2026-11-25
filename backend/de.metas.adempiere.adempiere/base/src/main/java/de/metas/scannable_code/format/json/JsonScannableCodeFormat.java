@@ -9,7 +9,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -20,12 +19,9 @@ public class JsonScannableCodeFormat
 	@NonNull ScannableCodeFormatId id;
 	@NonNull String name;
 	@NonNull ImmutableList<JsonScannableCodeFormatPart> parts;
-	@Nullable Integer packIdZoneStart;
-	@Nullable Integer packIdZoneEnd;
 
 	public static JsonScannableCodeFormat of(@NonNull final ScannableCodeFormat format)
 	{
-		final ScannableCodeFormat.PackIdZone packIdZone = format.getPackIdZone().orElse(null);
 		return builder()
 				.id(format.getId())
 				.name(format.getName())
@@ -33,8 +29,6 @@ public class JsonScannableCodeFormat
 						.stream()
 						.map(JsonScannableCodeFormatPart::of)
 						.collect(ImmutableList.toImmutableList()))
-				.packIdZoneStart(packIdZone != null ? packIdZone.getStart() : null)
-				.packIdZoneEnd(packIdZone != null ? packIdZone.getEnd() : null)
 				.build();
 	}
 

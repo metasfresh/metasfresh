@@ -354,7 +354,7 @@ class PickingCULabelServiceTest
 		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo("10");
 
 		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 46); // ends before "92"
-		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
@@ -385,7 +385,7 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
-	void packIdPartWithAnotherMarker_labelEndingBeforeIt_hasNoPackId()
+	void packIdPartWithAnotherMarker_labelEndingBeforeIt_isAFormatMismatch()
 	{
 		final ScannableCodeFormat otherMarkerFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name("CU label with PackId behind marker 93")
@@ -405,7 +405,7 @@ class PickingCULabelServiceTest
 				.build());
 		final String endsBeforeMarker = label(GTIN, PRODUCT_NO, "2").substring(0, 46);
 
-		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_EACH_CU, otherMarkerFormat.getId()), CU_LABEL_NO_PACK_ID);
+		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_EACH_CU, otherMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 		assertFails(() -> resolve(endsBeforeMarker, CUQtyEntryMode.SCAN_ONCE_ENTER_QTY, otherMarkerFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
 	}
 
@@ -419,11 +419,11 @@ class PickingCULabelServiceTest
 	class ScanEachCU
 	{
 		@Test
-		void labelEndingBeforeTheMarker_hasNoPackId()
+		void labelEndingBeforeTheMarker_isAFormatMismatch()
 		{
 			final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
 
-			assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+			assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
 
 		@Test
@@ -436,7 +436,7 @@ class PickingCULabelServiceTest
 			try
 			{
 				final String beforeMarker = label(GTIN, PRODUCT_NO, "7").substring(0, 46);
-				assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+				assertFails(() -> resolve(beforeMarker, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 
 				assertThat(logAppender.list).hasSize(1);
 				final ILoggingEvent event = logAppender.list.get(0);
@@ -450,11 +450,11 @@ class PickingCULabelServiceTest
 		}
 
 		@Test
-		void labelEndingBeforeThePackIdPart_hasNoPackId()
+		void labelEndingBeforeThePackIdPart_isAFormatMismatch()
 		{
 			final String markerOnly = label(GTIN, PRODUCT_NO, "7").substring(0, 48);
 
-			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_NO_PACK_ID);
+			assertFails(() -> resolve(markerOnly, CUQtyEntryMode.SCAN_EACH_CU, format.getId()), CU_LABEL_FORMAT_MISMATCH);
 		}
 
 		@Test

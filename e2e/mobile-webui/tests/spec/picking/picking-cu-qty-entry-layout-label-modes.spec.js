@@ -20,7 +20,6 @@ const TEXTS = {
     en_US: {
         noOpenTU: MSG_NO_OPEN_TU,
         alreadyPicked: 'This CU was already picked in this job',
-        noPackId: 'The label contains no pack ID',
         formatMismatch: 'does not match the label format',
         pickFromRequired: "Please scan 'Pick From' first.",
         noCapacity: 'has no capacity configured for this product',
@@ -29,7 +28,6 @@ const TEXTS = {
     de_DE: {
         noOpenTU: 'Bitte öffnen Sie zuerst eine Kiste',
         alreadyPicked: 'Diese Packung wurde',
-        noPackId: 'Packungs-ID',
         formatMismatch: 'Etikettenformat',
     },
 };
@@ -172,7 +170,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickLineScanScreen.scanCULabelRefused(pack(1), T.alreadyPicked, {
                     whileToastShown: async () => await layout('Each refusal CU already picked (scan screen + toast)'),
                 });
-                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, gtin, packId: null }), T.noPackId, {
+                await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, gtin, packId: null }), T.formatMismatch, {
                     whileToastShown: async () => await layout('Each refusal label without pack ID (scan screen + toast)'),
                 });
                 await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', T.formatMismatch, {

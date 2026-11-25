@@ -242,7 +242,7 @@ test('buyer B line (Scan each CU, pack-ID format): a label without counter (L0) 
 
     await test.step('buyer B, label L0 (no counter): refused', async () => {
         await openScanEachLine({ index: 1 });
-        await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: null }), MSG_NO_PACK_ID);
+        await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: null }), MSG_FORMAT_MISMATCH);
         await PickLineScanScreen.goBack();
         await PickingJobLineScreen.goBack(); // line screen -> job screen
     });

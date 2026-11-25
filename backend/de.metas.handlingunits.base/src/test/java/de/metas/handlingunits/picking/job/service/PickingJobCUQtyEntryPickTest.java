@@ -1442,7 +1442,7 @@ class PickingJobCUQtyEntryPickTest
 			final HUInfo source = helper.createVHUInfo(productId, "100", "QR-S");
 			final PickingJob job = openTUFromLinePacking(createJob(tuPiipId, true));
 
-			assertFails(() -> pickEach(job, source, LOT_A, null), PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID);
+			assertFails(() -> pickEach(job, source, LOT_A, null), PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH);
 
 			assertNothingBooked(job, source, "100");
 		}

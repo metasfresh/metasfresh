@@ -143,8 +143,6 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     id: 8,
     name: 'CU label with pack ID',
     parts: [...markerParts, ...dataParts, constant(47, 48, '92'), { type: 'PACK_ID', startPosition: 49 }],
-    packIdZoneStart: 47,
-    packIdZoneEnd: 49,
   };
 
   it('reads the pack ID (open end), also with several digits', () => {
@@ -157,12 +155,13 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     expect(readCULabel({ string: LABEL + '0', format: packIdFormat }).packId).toBe('20');
   });
 
-  it('a label ending before the "92" marker or the pack ID part has no pack ID when one is required (L0)', () => {
+  it('a label ending before the "92" marker or the pack ID part is a format mismatch, whether or not a pack ID is required (L0)', () => {
     const beforeMarker = LABEL.substring(0, 46);
     const markerOnly = LABEL.substring(0, 48);
     for (const string of [beforeMarker, markerOnly]) {
       expect(readCULabel({ string, format: packIdFormat, isPackIdRequired: true })).toEqual({
-        errorKey: 'picking.cuLabel.noPackId',
+        errorKey: 'picking.cuLabel.formatMismatch',
+        errorDetails: expect.any(String),
       });
       expect(readCULabel({ string, format: packIdFormat })).toEqual({
         errorKey: 'picking.cuLabel.formatMismatch',
@@ -171,12 +170,10 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     }
   });
 
-  it('no PackId part, no published zone: a cut-off label is a format mismatch', () => {
+  it('no PackId part: a cut-off label is a format mismatch', () => {
     const noZoneFormat = {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '92'), constant(52, 53, '93')],
-      packIdZoneStart: null,
-      packIdZoneEnd: null,
     };
     expect(readCULabel({ string: LABEL.substring(0, 49), format: noZoneFormat, isPackIdRequired: true })).toEqual({
       errorKey: 'picking.cuLabel.formatMismatch',
@@ -195,13 +192,14 @@ describe('cuLabel.readCULabel with a PackId part', () => {
     });
   });
 
-  it('the pack-ID zone is the part after its own marker, not a fixed "92"', () => {
+  it('a label ending before the pack ID part is a format mismatch whatever the marker is', () => {
     const otherMarkerFormat = {
       ...packIdFormat,
       parts: [...markerParts, ...dataParts, constant(47, 48, '93'), { type: 'PACK_ID', startPosition: 49 }],
     };
     expect(readCULabel({ string: LABEL.substring(0, 46), format: otherMarkerFormat, isPackIdRequired: true })).toEqual({
-      errorKey: 'picking.cuLabel.noPackId',
+      errorKey: 'picking.cuLabel.formatMismatch',
+      errorDetails: expect.any(String),
     });
   });
 

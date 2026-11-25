@@ -10,7 +10,7 @@ export const MSG_NO_PACK_ID = 'The label contains no pack ID. Nothing was booked
 export const MSG_OVER_PICK = 'Cannot pick more than the ordered quantity for this line.';
 export const MSG_ALREADY_PICKED = (packId) => `This CU was already picked in this job (pack ID ${packId}). Nothing was booked.`;
 
-/** Raw label of one CU; `packId */
+/** Raw label of one CU */
 export const packLabelOf = ({ masterdata, lot = uniqueLot(), packId, bestBefore = BEST_BEFORE, gtin = uniqueGTIN() }) =>
     buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore, packId });
 
