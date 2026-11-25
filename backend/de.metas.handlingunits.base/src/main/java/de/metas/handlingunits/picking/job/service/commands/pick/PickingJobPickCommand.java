@@ -114,8 +114,9 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
-	private final static AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
-	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
+	public static final AdMessageKey CU_NO_OPEN_TU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_TU");
+	public static final AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
+	public static final AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
 	// Services

@@ -13,7 +13,6 @@ import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.i18n.AdMessageKey;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import lombok.Builder;
@@ -33,8 +32,6 @@ import java.util.function.Supplier;
  */
 final class CULabelBooking
 {
-	static final AdMessageKey CU_NO_OPEN_TU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_TU");
-
 	@NonNull private final CUQtyEntryPolicy policy;
 	@NonNull private final PickingCULabelService cuLabelService;
 	@NonNull private final PickingJobHUService huService;
@@ -76,7 +73,7 @@ final class CULabelBooking
 
 		if (!isOpenTUPresent)
 		{
-			throw new AdempiereException(CU_NO_OPEN_TU_ERROR_MSG);
+			throw new AdempiereException(PickingJobPickCommand.CU_NO_OPEN_TU_ERROR_MSG);
 		}
 
 		final ResolvedCULabel label = getResolvedCULabel();
