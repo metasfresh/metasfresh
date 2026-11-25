@@ -56,6 +56,9 @@
           td {
             text-align: right;
             white-space: pre-wrap;
+            // A long value without a space (an article or packing name) wraps instead of making the table wider
+            // than the dialog: the wider table gets scrolled sideways by the focused quantity field, which pushes the labels off the left edge.
+            overflow-wrap: anywhere;
             vertical-align: middle;
 
             input {

@@ -98,6 +98,39 @@ for (const viewport of PHONE_VIEWPORTS) {
             expect(tableArea.height, 'Manual table area height is 70vh').toBeCloseTo(viewport.height * 0.7, 0);
         });
 
+        // noinspection JSUnusedLocalSymbols
+        test(`Manual quantity dialog shows its labels and values uncut sideways (${viewport.name})`, async ({ page: _page }) => {
+            allureMeta('Responsive quantity block');
+
+            // the packing instruction name of the test masterdata is one long unbroken word, like a real article code
+            const masterdata = await createMasterdata({
+                formatName: uniqueFormatName(),
+                orders: [{ key: 'A', qty: 12 }],
+                customers: [{ customer: 'custA', cuQtyEntryMode: MODE_MANUAL }],
+            });
+            await startJob(masterdata, { qtyToDeliver: 12 });
+            await PickingJobScreen.clickLineButton({ index: 1 });
+            await GetQuantityDialog.waitForDialog();
+
+            const dialog = page.locator('.get-qty-dialog');
+            const tableArea = dialog.locator('.table-container');
+            const packingName = dialog.locator('#packing-name');
+            await expect(packingName, 'the dialog shows the packing instruction name').toBeVisible();
+
+            // the table area is scrolled sideways when its content is wider than it: the labels then sit off the left edge
+            const measured = await tableArea.evaluate((area) => {
+                const areaBox = area.getBoundingClientRect();
+                const labelLefts = [...area.querySelectorAll('th')].map((th) => Math.round(th.getBoundingClientRect().left - areaBox.left));
+                return { scrollLeft: area.scrollLeft, tooWide: area.scrollWidth - area.clientWidth, labelLefts };
+            });
+            console.log('MANUAL-DIALOG-SIDEWAYS ' + viewport.name + ' ' + JSON.stringify(measured));
+            expect.soft(measured.scrollLeft, 'the table area is not scrolled sideways').toBe(0);
+            expect.soft(measured.tooWide, 'the table content is not wider than the table area').toBeLessThanOrEqual(1);
+            expect.soft(Math.min(...measured.labelLefts), 'every label starts inside the table area').toBeGreaterThanOrEqual(0);
+            await expectInsideScreen(dialog.locator('th').first(), 'Manual first label', viewport);
+            await expectInsideScreen(packingName, 'Manual packing name', viewport);
+        });
+
         for (const lang of LAYOUT_LANGUAGES) {
             const T = TEXTS[lang];
 
