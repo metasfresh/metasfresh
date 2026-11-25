@@ -273,3 +273,47 @@ test('pre-existing LU target: LU lot follows its TUs', async ({ page }) => {
         { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L-B' } },
     ]);
 });
+
+// noinspection JSUnusedLocalSymbols
+test('one box, five CUs of three lots: every CU keeps its own lot, the box lot stays empty', async ({ page }) => {
+    allureMeta('CUs of several lots in one box keep their own lots');
+
+    // two CUs of lot L-A, two of lot L-B, one of lot L-C (quantities differ, so every CU is identifiable by its qty)
+    const picks = [
+        { hu: 'HU1', qty: 2, lot: 'L-A' },
+        { hu: 'HU2', qty: 3, lot: 'L-A' },
+        { hu: 'HU3', qty: 4, lot: 'L-B' },
+        { hu: 'HU4', qty: 5, lot: 'L-B' },
+        { hu: 'HU5', qty: 6, lot: 'L-C' },
+    ];
+    const masterdata = await createMasterdata({
+        readAttributes: [], orderQty: picks.reduce((sum, { qty }) => sum + qty, 0),
+        lots: picks.map(({ hu, lot }) => ({ id: hu, qty: 10, lotNo: lot }))
+    });
+    const pickingJobId = await startJob(masterdata);
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
+
+    const qtyPickedRow = ({ qty }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' });
+    for (let i = 0; i < picks.length; i++) {
+        const { hu, qty } = picks[i];
+        const isLastPick = i === picks.length - 1; // the last pick fulfills the order qty, so no "qty not found" reason is asked
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits[hu].qrCode,
+            qtyEntered: qty,
+            ...(isLastPick ? {} : { expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE }),
+        });
+    }
+
+    // lots of the box's CUs, each with its own lot; the box itself holds several lots, so its own lot is empty
+    await Backend.expect({
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: picks.map(qtyPickedRow) } } } },
+        hus: {
+            tu1: {
+                attributes: { [LOT_ATTRIBUTE]: null },
+                cus: picks.map(({ qty, lot }) => ({ qty: `${qty} PCE`, attributes: { [LOT_ATTRIBUTE]: lot } })),
+            },
+        }
+    });
+
+    await PickingJobScreen.complete();
+});
