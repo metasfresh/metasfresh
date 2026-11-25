@@ -6,6 +6,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -299,6 +300,33 @@ public class InvoiceCandDAOTest
 						tuple(candidateId1_3.getRepoId(), EXTERNAL_HEADER_ID1.getValue(), EXTERNAL_LINE_ID3.getValue()),
 						tuple(candidateId2_2.getRepoId(), EXTERNAL_HEADER_ID2.getValue(), EXTERNAL_LINE_ID2.getValue()),
 						tuple(candidateId2_3.getRepoId(), EXTERNAL_HEADER_ID2.getValue(), EXTERNAL_LINE_ID3.getValue()));
+	}
+
+	@Test
+	public void retrieveInvoiceCandidatesForOrderLineId_returnsOnlyActiveCandidatesOfTheLineOrderedById()
+	{
+		final int orderLineRepoId = 1001;
+		final int otherOrderLineRepoId = 1002;
+
+		final int firstId = createInvoiceCandidateForOrderLine(orderLineRepoId, true);
+		createInvoiceCandidateForOrderLine(orderLineRepoId, false);
+		createInvoiceCandidateForOrderLine(otherOrderLineRepoId, true);
+		final int secondId = createInvoiceCandidateForOrderLine(orderLineRepoId, true);
+
+		final List<I_C_Invoice_Candidate> result = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(OrderLineId.ofRepoId(orderLineRepoId));
+
+		assertThat(result)
+				.extracting(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.containsExactly(firstId, secondId);
+	}
+
+	private int createInvoiceCandidateForOrderLine(final int orderLineRepoId, final boolean active)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
+		invoiceCandidate.setC_OrderLine_ID(orderLineRepoId);
+		invoiceCandidate.setIsActive(active);
+		saveRecord(invoiceCandidate);
+		return invoiceCandidate.getC_Invoice_Candidate_ID();
 	}
 
 	private InvoiceCandidateId createInvoiceCandidate(

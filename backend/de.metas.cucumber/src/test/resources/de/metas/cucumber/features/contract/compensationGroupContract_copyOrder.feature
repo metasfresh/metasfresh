@@ -171,3 +171,43 @@ Feature: Copying a sales order does not copy the contract's compensation group
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_discountRecreated      | orderRecreated        | discountProduct         | 1          | true                        | -30   | mainTerm                          |
+
+  # ##############################################################################################
+  # One Bonus line per position: the copy of a two-position order gets the Bonus lines per position when it is completed itself
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC10
+  Scenario: The copy of a two-position sales order gets one Bonus line per position when it is completed itself
+    Given metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | OPT.Bill_Location_ID.Identifier |
+      | orderTwo   | true    | storeBP                  | storeBP                               | 2026-07-01  | headOfficeBP                    |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
+      | ol_tw1     | orderTwo              | goodsProduct            | 1          | position1    |
+      | ol_tw2     | orderTwo              | goodsProduct            | 2          | position2    |
+    And the order identified by orderTwo is completed
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_twBonus1               | orderTwo              | discountProduct         | 1          | true                        | -30   | mainTerm                          | position1    |
+      | ol_twBonus2               | orderTwo              | discountProduct         | 1          | true                        | -60   | mainTerm                          | position2    |
+
+    When C_Order is cloned
+      | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
+      | orderTwo              | orderTwoCopy                      |
+
+    # the copy has the goods lines with their positions and no Bonus line
+    Then the order identified by orderTwoCopy has 2 order lines
+
+    When the order identified by orderTwoCopy is completed
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier | C_Project_ID |
+      | ol_twCopyBonus1           | orderTwoCopy          | discountProduct         | 1          | true                        | -30   | mainTerm                          | position1    |
+      | ol_twCopyBonus2           | orderTwoCopy          | discountProduct         | 1          | true                        | -60   | mainTerm                          | position2    |
+    And the order identified by orderTwoCopy has 4 order lines

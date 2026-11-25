@@ -3625,3 +3625,260 @@ Feature: Compensation-group contract take-over of the customer's discount lines
       | ol_poBonusVendorDropship | 3% Bonus Vendor_24          |
       | ol_poTakeOver            | 3% Bonus Ware_24            |
       | ol_poServiceFee          | 2.6% Payment Service Fee_24 |
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC8c
+  Scenario: Sales order with goods on two positions: the drop-ship PO takes over the 3% once, not once per position
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | discountCategory |
+    And metasfresh contains M_Products:
+      | Identifier | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1    | goodsCategory                        | Y      | Y           |
+      | gala       | goodsCategory                        | Y      | Y           |
+    And metasfresh contains M_Products:
+      | Identifier          | Name                      | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusWare           | Bonus Ware_twoPositions   | discountCategory                     | Y      | Y           |
+      | bonusVendorDropship | Bonus Vendor_twoPositions | discountCategory                     | Y      | Y           |
+
+    # 1.00 EUR per PCE on both sides
+    And metasfresh contains M_ProductPrices
+      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1             | soPLV                             | elstar1                 | 1.00     | PCE               | contractTaxCategory |
+      | pp_so_gala                | soPLV                             | gala                    | 1.00     | PCE               | contractTaxCategory |
+      | pp_so_bonusWare           | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_so_bonusVendorDropship | soPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1             | poPLV                             | elstar1                 | 1.00     | PCE               | contractTaxCategory |
+      | pp_po_gala                | poPLV                             | gala                    | 1.00     | PCE               | contractTaxCategory |
+      | pp_po_bonusWare           | poPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+
+    And metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | dropshipWarehouse | Y                   |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name         | OPT.IsAdditive |
+      | customerSchema | Bonus Ware   | true           |
+      | vendorSchema   | Bonus Vendor | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
+      | vendorSchemaLine   | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
+      | customerSettings | Customer settings | customerSchema                           |
+      | vendorSettings   | Vendor settings   | vendorSchema                             |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | customerSettings                                   | docTypeSalesOrder       |
+      | vendorSettings                                     | docTypePurchaseOrder    |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver:
+      | Identifier | C_CompensationGroup_ContractSettings_ID | M_Product_Category_ID | M_Product_ID        |
+      | takeOver   | vendorSettings                          | goodsCategory         | bonusVendorDropship |
+    And metasfresh contains C_CompensationGroup_ContractSettings_TakeOver_Product:
+      | C_CompensationGroup_ContractSettings_TakeOver_ID | M_Product_ID |
+      | takeOver                                         | bonusWare    |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
+      | vendorConditions   | Vendor conditions   | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
+    # open-ended vendor term: the auto-created PO's DateOrdered is the real wall clock, not the simulated date
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
+      | vendorTerm   | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by customerTerm is completed
+    And the C_Flatrate_Term identified by vendorTerm is completed
+
+    # SO: Elstar (924) on position1, Elstar (671) and Gala (561) on position2: 2156.00 EUR goods on one schema line;
+    # the PO takes over the contract's 3% once (3% of 2156.00 = 64.68), however many Bonus groups the sales order has
+    When metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
+      | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier | C_Project_ID |
+      | ol_elstar1a | orderDropship         | elstar1                 | 924        | vendorDropship                  | position1    |
+      | ol_elstar1b | orderDropship         | elstar1                 | 671        | vendorDropship                  | position2    |
+      | ol_gala     | orderDropship         | gala                    | 561        | vendorDropship                  | position2    |
+    And the order identified by orderDropship is completed
+
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | poDropship     | orderDropship            | false   | POO         | CO            | true           |
+    And validate the created orders
+      | C_Order_ID | C_BPartner_ID  |
+      | poDropship | vendorDropship |
+
+    # goods: one PO line per SO line
+    And load C_OrderLines allocated to sales order lines:
+      | C_SO_OrderLine_ID | C_PO_OrderLine_ID | OPT.C_Order_ID |
+      | ol_elstar1a       | ol_poElstar1a     | poDropship     |
+      | ol_elstar1b       | ol_poElstar1b     | poDropship     |
+      | ol_gala           | ol_poGala         | poDropship     |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.GroupCompensation_Product_Category_ID |
+      | ol_poElstar1a             | poDropship            | elstar1                 | 924        | false                       | 1.00  | null                                      |
+      | ol_poElstar1b             | poDropship            | elstar1                 | 671        | false                       | 1.00  | null                                      |
+      | ol_poGala                 | poDropship            | gala                    | 561        | false                       | 1.00  | null                                      |
+    # discounts: the vendor's own 3% line and the take-over line, each 3% of 2156.00 = 64.68
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier | OPT.GroupCompensation_Product_Category_ID |
+      | ol_poBonusVendorDropship  | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.68 | vendorTerm                        | null                                      |
+      | ol_poTakeOver             | poDropship            | bonusVendorDropship     | 1          | true                        | 3                               | -64.68 | vendorTerm                        | goodsCategory                             |
+    # 3 goods lines + the vendor's own discount line + the take-over line
+    And the order identified by poDropship has 5 order lines
+
+
+  # ##############################################################################################
+  # A purchase order whose goods lines are on two positions: the vendor's contract gives one Bonus line per position
+  # (the contract Bonus works on purchase orders as on sales orders); no new project is created for the Bonus lines.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC15
+  Scenario: Purchase order with goods on two positions: one Bonus line per position, no new project
+    Given temporarily set sys config boolean value true for sys config "SKIP_WP_PROCESSOR_FOR_AUTOMATION"
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | discountCategory |
+    And metasfresh contains M_Products:
+      | Identifier | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1    | goodsCategory                        | Y      | Y           |
+      | gala       | goodsCategory                        | Y      | Y           |
+    And metasfresh contains M_Products:
+      | Identifier          | Name              | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusVendorDropship | Bonus Vendor_TC15 | discountCategory                     | Y      | Y           |
+    And metasfresh contains M_ProductPrices
+      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_po_elstar1             | poPLV                             | elstar1                 | 100.00   | PCE               | contractTaxCategory |
+      | pp_po_gala                | poPLV                             | gala                    | 200.00   | PCE               | contractTaxCategory |
+      | pp_po_bonusVendorDropship | poPLV                             | bonusVendorDropship     | 1        | PCE               | discountTaxCategory |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier   | Name         | OPT.IsAdditive |
+      | vendorSchema | Bonus Vendor | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier     | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | vendorLineWare | vendorSchema                             | bonusVendorDropship     | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier     | Name           | C_CompensationGroup_Schema_ID.Identifier |
+      | vendorSettings | vendorSettings | vendorSchema                             |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | vendorSettings                                     | docTypePurchaseOrder    |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier       | Name              | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | vendorConditions | vendor conditions | CompensationGroup | zeroDurTrans                            | vendorSettings                                         |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | vendorTerm | vendorConditions                    | vendorDropship              | 2026-06-15 | 2099-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by vendorTerm is completed
+    And metasfresh contains C_Projects:
+      | Identifier |
+      | position1  |
+      | position2  |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | poTwoPos   | false   | vendorDropship           | 2026-07-01  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_Project_ID |
+      | ol_po1     | poTwoPos              | elstar1                 | 1          | position1    |
+      | ol_po2     | poTwoPos              | gala                    | 1          | position2    |
+    And the order identified by poTwoPos is completed
+
+    # 3 % of 100,00 on position1 and 3 % of 200,00 on position2
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price | C_Project_ID |
+      | ol_poBonus1               | poTwoPos              | bonusVendorDropship     | 1          | true                        | 3                               | -3.00 | position1    |
+      | ol_poBonus2               | poTwoPos              | bonusVendorDropship     | 1          | true                        | 3                               | -6.00 | position2    |
+    And the order identified by poTwoPos has 4 order lines
+
+
+  # ##############################################################################################
+  # Drop-ship sales order without position at completion: the drop-ship purchase order creates its position and pushes it onto the
+  # sales order line; the Bonus line of the sales order takes it. No line is added, the Bonus amount stays.
+  # ##############################################################################################
+
+  @from:cucumber
+  @allure.label.epic:E0170_Contract_Management
+  @allure.label.feature:F2070_Compensation_Group_Contract
+  @Id:S33096_TC14
+  Scenario: The position pushed from the drop-ship purchase order onto the sales order line is copied onto the Bonus line
+    Given temporarily set project type Sales/Purchase Order to active
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | discountCategory |
+    And metasfresh contains M_Products:
+      | Identifier | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | elstar1    | goodsCategory                        | Y      | Y           |
+    And metasfresh contains M_Products:
+      | Identifier | Name                    | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
+      | bonusWare  | Bonus Ware_positionPush | discountCategory                     | Y      | Y           |
+    And metasfresh contains M_ProductPrices
+      | Identifier      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID    |
+      | pp_so_elstar1   | soPLV                             | elstar1                 | 1.00     | PCE               | contractTaxCategory |
+      | pp_so_bonusWare | soPLV                             | bonusWare               | 1        | PCE               | discountTaxCategory |
+      | pp_po_elstar1   | poPLV                             | elstar1                 | 1.00     | PCE               | contractTaxCategory |
+    And metasfresh contains M_Warehouse:
+      | Identifier        | IsDropShipWarehouse |
+      | dropshipWarehouse | Y                   |
+    And metasfresh contains C_CompensationGroup_Schema:
+      | Identifier     | Name       | OPT.IsAdditive |
+      | customerSchema | Bonus Ware | true           |
+    And metasfresh contains C_CompensationGroup_SchemaLine:
+      | Identifier         | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.M_Product_Category_ID.Identifier |
+      | customerSchemaLine | customerSchema                           | bonusWare               | 3                         | goodsCategory                        |
+    And metasfresh contains C_CompensationGroup_ContractSettings:
+      | Identifier       | Name              | C_CompensationGroup_Schema_ID.Identifier |
+      | customerSettings | Customer settings | customerSchema                           |
+    And metasfresh contains C_CompensationGroup_ContractSettings_DocType:
+      | C_CompensationGroup_ContractSettings_ID.Identifier | C_DocType_ID.Identifier |
+      | customerSettings                                   | docTypeSalesOrder       |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier         | Name                | Type_Conditions   | OPT.C_Flatrate_Transition_ID.Identifier | OPT.C_CompensationGroup_ContractSettings_ID.Identifier |
+      | customerConditions | Customer conditions | CompensationGroup | zeroDurTrans                            | customerSettings                                       |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier   | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
+      | customerTerm | customerConditions                  | customerHeadOffice          | 2026-06-15 | 2026-12-31 | DR            | false         |
+    And the C_Flatrate_Term identified by customerTerm is completed
+
+    # no position on the sales order; the vendor has no contract, so the purchase order has no Bonus line
+    When metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
+      | orderDropship | true    | customerStore            | customerStore                         | 2026-07-01  | 2026-06-30T22:00:00Z | customerHeadOffice              | dropshipWarehouse         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
+      | ol_elstar  | orderDropship         | elstar1                 | 100        | vendorDropship                  |
+    And the order identified by orderDropship is completed
+
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | price | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol_bonus                  | orderDropship         | bonusWare               | 1          | true                        | -3.00 | customerTerm                      |
+    And the order identified by orderDropship has 2 order lines
+    And the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | poDropship     | orderDropship            | false   | POO         | CO            | true           |
+
+    # the purchase order's project reaches the sales order line (asynchronously), and the Bonus line takes it
+    And after not more than 60s, validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Project_ID | LineNetAmt |
+      | ol_elstar                 | position     | 100        |
+      | ol_bonus                  | position     | -3.00      |
+    And the order identified by orderDropship has 2 order lines
+    # the Bonus candidate follows the Bonus line
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_OrderLine_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | ol_bonus                  | ic_bonus                          |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | C_Project_ID |
+      | ic_bonus                          | position     |

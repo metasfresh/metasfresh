@@ -13,6 +13,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.compensationGroup.GroupTemplateLineId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -29,9 +30,11 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -240,11 +243,13 @@ public class ContractSettingsTakeOverService
 			return ImmutableList.of();
 		}
 
-		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = orderGroupRepository.retrieveContractCreatedGroupsByOrderId(salesOrderId)
+		final ImmutableList<GroupCompensationLine> percentDiscountLines = orderGroupRepository.retrieveContractCreatedGroupsByOrderId(salesOrderId)
 				.stream()
 				.flatMap(group -> group.getCompensationLines().stream())
 				.filter(line -> GroupCompensationLineCreateRequestFactory.isPercentDiscount(line.getType(), line.getAmtType()))
 				.collect(ImmutableList.toImmutableList());
+		// the order's contract groups (one per position) share one schema: take each schema line over once, not once per group
+		final ImmutableList<GroupCompensationLine> salesOrderDiscountLines = keepFirstLinePerSchemaLine(percentDiscountLines);
 
 		final ImmutableListMultimap<ConditionsId, TakenOverRefund> refundsByConditionsId = findTakenOverRefunds(order, takeOvers);
 
@@ -252,6 +257,22 @@ public class ContractSettingsTakeOverService
 				.map(takeOver -> computeMatchOrNull(takeOver, salesOrderDiscountLines, refundsByConditionsId))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/** @return the given lines in their order, keeping only the first line of each schema line; lines without a schema line are all kept */
+	private static ImmutableList<GroupCompensationLine> keepFirstLinePerSchemaLine(@NonNull final List<GroupCompensationLine> lines)
+	{
+		final Set<GroupTemplateLineId> seenSchemaLineIds = new HashSet<>();
+		final ImmutableList.Builder<GroupCompensationLine> result = ImmutableList.builder();
+		for (final GroupCompensationLine line : lines)
+		{
+			final GroupTemplateLineId schemaLineId = line.getGroupTemplateLineId();
+			if (schemaLineId == null || seenSchemaLineIds.add(schemaLineId))
+			{
+				result.add(line);
+			}
+		}
+		return result.build();
 	}
 
 	/**

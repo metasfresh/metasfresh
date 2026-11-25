@@ -324,6 +324,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
 	/**
+	 * Like {@link #retrieveInvoiceCandidatesForOrderLineId(OrderLineId)}, but for many order lines in one query.
+	 *
+	 * @return the active invoice candidates of the given order lines, ordered by {@code C_Invoice_Candidate_ID}
+	 */
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
+
+	/**
 	 * @return those of the given order lines that have at least one invoice candidate, including inactive ones
 	 */
 	ImmutableSet<OrderLineId> retrieveOrderLineIdsWithInvoiceCandidates(@NonNull Set<OrderLineId> orderLineIds);

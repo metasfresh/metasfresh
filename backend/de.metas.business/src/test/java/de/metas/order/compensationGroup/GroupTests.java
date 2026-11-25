@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -148,6 +149,22 @@ public class GroupTests
 			assertThat(compensationLine.getPrice()).isEqualByComparingTo(new BigDecimal("-51.80")); // - (480+260-222) * 10%
 		}
 
+	}
+
+	private static GroupRegularLine regularLineInCategory(final String lineNetAmt, final ProductCategoryId productCategoryId)
+	{
+		return GroupRegularLine.builder().lineNetAmt(new BigDecimal(lineNetAmt)).productCategoryIds(ImmutableSet.of(productCategoryId)).build();
+	}
+
+	private static Group newAdditiveSalesGroup(final int orderCompensationGroupId, final GroupRegularLine... regularLines)
+	{
+		return Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, orderCompensationGroupId))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.additive(true)
+				.regularLines(Arrays.asList(regularLines))
+				.build();
 	}
 
 	private GroupRegularLine.GroupRegularLineBuilder regularLine(int lineNetAmt)
@@ -549,5 +566,27 @@ public class GroupTests
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
 				.containsExactly(new BigDecimal("-100.00"), new BigDecimal("-90.00"));
+	}
+
+	/** Rounding pair (per-position Bonus): the percentage is taken of the group's summed base, rounded half up to the price precision, whatever the number of regular lines. */
+	@Test
+	void percentageOfBase_threeLinesOf16_50_equalsOneLineOf49_50()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group threeLines = newAdditiveSalesGroup(1,
+				regularLineInCategory("16.50", goods),
+				regularLineInCategory("16.50", goods),
+				regularLineInCategory("16.50", goods));
+		threeLines.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
+		threeLines.updateAllCompensationLines();
+
+		final Group oneLine = newAdditiveSalesGroup(2, regularLineInCategory("49.50", goods));
+		oneLine.addNewCompensationLine(newPercentageDiscountRequest(3, goods));
+		oneLine.updateAllCompensationLines();
+
+		// 3 % of 49.50 = 1.485, rounded half up
+		assertThat(threeLines.getCompensationLines()).extracting(GroupCompensationLine::getBaseAmt).containsExactly(new BigDecimal("49.50"));
+		assertThat(threeLines.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt).containsExactly(new BigDecimal("-1.49"));
+		assertThat(oneLine.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt).containsExactly(new BigDecimal("-1.49"));
 	}
 }

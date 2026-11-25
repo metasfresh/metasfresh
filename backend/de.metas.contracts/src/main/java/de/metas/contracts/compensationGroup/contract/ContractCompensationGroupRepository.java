@@ -4,16 +4,20 @@ import com.google.common.collect.ImmutableList;
 import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -50,7 +54,7 @@ import java.util.List;
  * {@code InvoiceCandidateGroupRepository}.
  * <p>
  * Persistence primitives for a contract-created {@code C_Order_CompensationGroup}: stamping the term it came
- * from, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.
+ * from, the position on its discount lines, and the plumbing {@link ContractCompensationGroupService} needs to remove one again.
  */
 @Repository
 public class ContractCompensationGroupRepository
@@ -97,13 +101,71 @@ public class ContractCompensationGroupRepository
 	/** Deletes the given group's compensation (discount) lines, leaving its regular lines ungrouped so {@link OrderGroupRepository#retrieveGroupIfExists} can rebuild it. */
 	public void deleteCompensationLines(@NonNull final GroupId groupId)
 	{
-		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(groupId);
-		queryBL.createQueryBuilder(I_C_OrderLine.class)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true)
+		queryCompensationLines(groupId)
 				.create()
 				.delete();
+	}
+
+	/** Sets the given position ({@code C_OrderLine.C_Project_ID}) on all compensation (discount) lines of the given group; a {@code null} position clears it. */
+	public void setProjectOnCompensationLines(@NonNull final GroupId groupId, @Nullable final ProjectId projectId)
+	{
+		setProjectOnOrderLines(retrieveCompensationLines(groupId), projectId);
+	}
+
+	/** Sets the given position ({@code C_OrderLine.C_Project_ID}) on those of the given order lines that do not carry it yet. */
+	public void setProjectOnOrderLines(@NonNull final List<I_C_OrderLine> orderLines, @Nullable final ProjectId projectId)
+	{
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			if (hasPosition(orderLine, projectId))
+			{
+				continue;
+			}
+			orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
+			InterfaceWrapperHelper.save(orderLine);
+		}
+	}
+
+	/** @return the given group's compensation (discount) lines, active or not, like {@link OrderGroupRepository}'s own compensation-line storage */
+	public List<I_C_OrderLine> retrieveCompensationLines(@NonNull final GroupId groupId)
+	{
+		return queryCompensationLines(groupId)
+				.create()
+				.list(I_C_OrderLine.class);
+	}
+
+	/** @return the given group's active goods lines: neither compensation (discount) lines nor packing material lines */
+	public List<I_C_OrderLine> retrieveActiveGoodsLines(@NonNull final GroupId groupId)
+	{
+		return queryGroupLines(groupId)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, false)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsPackagingMaterial, false)
+				.create()
+				.list(I_C_OrderLine.class);
+	}
+
+	/** @return true if the given line carries the given position ({@code C_OrderLine.C_Project_ID}); a {@code null} position matches a line without one */
+	public static boolean hasPosition(@NonNull final I_C_OrderLine orderLine, @Nullable final ProjectId positionId)
+	{
+		return ProjectId.equals(ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()), positionId);
+	}
+
+	private IQueryBuilder<I_C_OrderLine> queryCompensationLines(@NonNull final GroupId groupId)
+	{
+		return queryGroupLines(groupId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, true);
+	}
+
+	/**
+	 * @return a new, unordered query builder for all lines of the given group, active or not; not {@link OrderGroupRepository#retrieveGroupOrderLinesQuery},
+	 * which needs an {@link OrderGroupRepository} instance (this repository uses only its static helpers) and orders by {@code Line}
+	 */
+	private IQueryBuilder<I_C_OrderLine> queryGroupLines(@NonNull final GroupId groupId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderGroupRepository.extractOrderIdFromGroupId(groupId))
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId());
 	}
 
 	/**
@@ -132,7 +194,7 @@ public class ContractCompensationGroupRepository
 	/**
 	 * @return this order's active, non-compensation regular lines (candidates for a new group — NOT filtered
 	 * by group membership; a line already in a different group is still returned here, and the caller filters
-	 * that separately via {@code OrderGroupCompensationUtils.isNotInGroup(...)})
+	 * that separately via {@code OrderGroupCompensationUtils.isNotInGroup(...)}), ordered by {@code Line}, then {@code C_OrderLine_ID}
 	 */
 	public List<I_C_OrderLine> retrieveActiveRegularOrderLines(@NonNull final OrderId orderId)
 	{
@@ -140,6 +202,9 @@ public class ContractCompensationGroupRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, false)
+				// in line order: the positions' groups, and so their Bonus lines, follow the order of their goods lines
+				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.create()
 				.list(I_C_OrderLine.class);
 	}
