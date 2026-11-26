@@ -58,12 +58,12 @@ Feature: Verify BOMs when a component was last changed by an invalid user
       | Identifier | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
       | plant      | 1000000           | Y                       | PT                        | 999             |
 
-    # a production order for a BOM product that is not verified is refused (TC5, not pinned by any other test)
+    # a production order for a BOM product that is not verified is refused, not pinned by any other test
     Then create PP_Order expecting message containing not verified:
       | PP_Order_ID  | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | refusedOrder | MOP         | bom_product  | 5          | plant         | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
 
-    When run PP_Product_BOM_Check for PP_Product_BOM bom
+    When verify the BOM bom
 
     Then the PP_Product_BOM_Check result is OK with message key OK
     And M_Product is verified:
@@ -72,7 +72,7 @@ Feature: Verify BOMs when a component was last changed by an invalid user
       | component_a  | Y          | acting    |
       | component_b  | Y          | -1        |
       | component_c  | Y          | acting    |
-    # after the verification the production order is created (TC5)
+    # after the verification the production order is created
     And create PP_Order:
       | PP_Order_ID  | DocBaseType | M_Product_ID | QtyEntered | S_Resource_ID | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | createdOrder | MOP         | bom_product  | 5          | plant         | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
@@ -117,7 +117,7 @@ Feature: Verify BOMs when a component was last changed by an invalid user
       | component_b  | -1        |
       | component_c  | -1        |
 
-    When run PP_Product_BOM_Check for PP_Product_BOM bom with M_Product_Category category_1
+    When verify the BOMs of M_Product_Category category_1 from BOM bom
 
     Then M_Product is verified:
       | M_Product_ID | IsVerified | UpdatedBy |
@@ -125,4 +125,3 @@ Feature: Verify BOMs when a component was last changed by an invalid user
     And the PP_Product_BOM_Check result is OK with message key org.eevolution.process.PP_Product_BOM_Check.CategoryRunOK and parameters:
       | Param |
       | 1     |
-

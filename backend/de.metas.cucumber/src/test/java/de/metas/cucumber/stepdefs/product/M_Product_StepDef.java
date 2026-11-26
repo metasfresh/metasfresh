@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.product;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cache.CacheMgt;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -559,29 +559,32 @@ public class M_Product_StepDef
 	@And("set M_Product.UpdatedBy by SQL:")
 	public void set_M_Product_UpdatedBy_by_SQL(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final String updatedByStr = row.getAsString(I_M_Product.COLUMNNAME_UpdatedBy).trim();
-			final int updatedBy = UPDATED_BY_NO_SUCH_USER.equals(updatedByStr)
-					? DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User")
-					: userTable.resolveUserId(updatedByStr);
+		DataTableRows.of(dataTable).forEach(this::setUpdatedByBySQL);
+	}
 
-			DB.executeUpdateAndThrowExceptionOnFail(
-					"UPDATE M_Product SET UpdatedBy=? WHERE M_Product_ID=?",
-					new Object[] { updatedBy, product.getM_Product_ID() },
-					ITrx.TRXNAME_None);
+	private void setUpdatedByBySQL(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final String updatedByStr = row.getAsString(I_M_Product.COLUMNNAME_UpdatedBy).trim();
+		final int updatedBy = UPDATED_BY_NO_SUCH_USER.equals(updatedByStr)
+				? DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User")
+				: userTable.resolveUserId(updatedByStr);
 
-			// reset the cached M_Product, so that code reading it through the cache (e.g. IProductBL.getById) sees the stored value, as on a real instance where the value was written long before
-			CacheMgt.get().reset(I_M_Product.Table_Name, product.getM_Product_ID());
-			InterfaceWrapperHelper.refresh(product);
-			assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy").isEqualTo(updatedBy);
-		});
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"UPDATE M_Product SET UpdatedBy=? WHERE M_Product_ID=?",
+				new Object[] { updatedBy, product.getM_Product_ID() },
+				ITrx.TRXNAME_None);
+
+		// reset the cached M_Product, so that code reading it through the cache (e.g. IProductBL.getById) sees the stored value, as on a real instance where the value was written long before
+		CacheMgt.get().reset(I_M_Product.Table_Name, product.getM_Product_ID());
+		InterfaceWrapperHelper.refresh(product);
+		assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy").isEqualTo(updatedBy);
 	}
 
 	/**
 	 * Verifies M_Product fields. Only checks the columns provided in the data table.
 	 * Supported columns: M_Product_ID (required), Name, GTIN, UPC, EAN13_ProductCode, IsVerified (Y/N),
-	 * UpdatedBy (an AD_User_ID such as -1, or {@code acting} for the logged-in user of the scenario).
+	 * UpdatedBy (an AD_User_ID such as -1, the identifier of an AD_User of the scenario, or {@code acting} for the logged-in user of the scenario).
 	 * The record is refreshed from DB before assertion.
 	 */
 	@Then("M_Product is verified:")
@@ -612,11 +615,11 @@ public class M_Product_StepDef
 				.ifPresent(expected -> assertThat(productRecord.getUpdatedBy()).as("UpdatedBy").isEqualTo(resolveUpdatedBy(expected)));
 	}
 
-	private static int resolveUpdatedBy(@NonNull final String expected)
+	private int resolveUpdatedBy(@NonNull final String expected)
 	{
 		return "acting".equals(expected.trim())
 				? Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId()
-				: Integer.parseInt(expected.trim());
+				: userTable.resolveUserId(expected);
 	}
 
 	@Nullable

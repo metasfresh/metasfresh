@@ -23,13 +23,13 @@
 
 package de.metas.cucumber.stepdefs.businessrule;
 
+import de.metas.business_rule.BusinessRuleService;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
-import de.metas.business_rule.BusinessRuleService;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -62,6 +62,7 @@ import org.compiere.util.DB;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -73,6 +74,7 @@ public class AD_BusinessRule_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	@NonNull private final BusinessRuleService businessRuleService = SpringContextHolder.instance.getBean(BusinessRuleService.class);
 
 	@NonNull private final AD_BusinessRule_StepDefData ruleTable;
 	@NonNull private final AD_Message_StepDefData messageTable;
@@ -217,12 +219,6 @@ public class AD_BusinessRule_StepDef
 		userDAO.save(user);
 	}
 
-	@And("deactivate AD_BusinessRule {word}")
-	public void deactivate_AD_BusinessRule(@NonNull final String ruleIdentifier)
-	{
-		deactivateRule(ruleTable.get(ruleIdentifier));
-	}
-
 	/**
 	 * Checks the AD_BusinessRule_Event(s) the save of a product created for a rule.
 	 *
@@ -242,30 +238,62 @@ public class AD_BusinessRule_StepDef
 	@Then("validate AD_BusinessRule_Events for:")
 	public void validate_AD_BusinessRule_Events(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final I_AD_BusinessRule rule = row.getAsIdentifier(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID).lookupNotNullIn(ruleTable);
-			final int expectedTriggeringUserId = userTable.resolveUserId(row.getAsString(I_AD_BusinessRule_Event.COLUMNNAME_Triggering_User_ID));
-
-			final List<I_AD_BusinessRule_Event> events = queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
-					.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Source_Table_ID, InterfaceWrapperHelper.getTableId(I_M_Product.class))
-					.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Source_Record_ID, product.getM_Product_ID())
-					.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID, rule.getAD_BusinessRule_ID())
-					.create()
-					.list();
-
-			assertThat(events).as("AD_BusinessRule_Events of M_Product_ID=" + product.getM_Product_ID() + ", AD_BusinessRule_ID=" + rule.getAD_BusinessRule_ID()).isNotEmpty();
-			assertThat(events)
-					.extracting(I_AD_BusinessRule_Event::getTriggering_User_ID)
-					.as("Triggering_User_ID of the events")
-					.containsOnly(expectedTriggeringUserId);
-		});
+		DataTableRows.of(dataTable).forEach(this::validateBusinessRuleEvents);
 	}
 
+	private void validateBusinessRuleEvents(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final I_AD_BusinessRule rule = row.getAsIdentifier(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID).lookupNotNullIn(ruleTable);
+		final int expectedTriggeringUserId = userTable.resolveUserId(row.getAsString(I_AD_BusinessRule_Event.COLUMNNAME_Triggering_User_ID));
+
+		final List<I_AD_BusinessRule_Event> events = queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
+				.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Source_Table_ID, InterfaceWrapperHelper.getTableId(I_M_Product.class))
+				.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Source_Record_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID, rule.getAD_BusinessRule_ID())
+				.create()
+				.list();
+
+		assertThat(events).as("AD_BusinessRule_Events of M_Product_ID=" + product.getM_Product_ID() + ", AD_BusinessRule_ID=" + rule.getAD_BusinessRule_ID()).isNotEmpty();
+		assertThat(events)
+				.extracting(I_AD_BusinessRule_Event::getTriggering_User_ID)
+				.as("Triggering_User_ID of the events")
+				.containsOnly(expectedTriggeringUserId);
+	}
+
+	/**
+	 * Runs {@code BusinessRuleService.processEvents} in batches of 100 until no unprocessed AD_BusinessRule_Event of a rule of the scenario is left
+	 * (at most 20 batches), so the scenario's own events are processed even when other events are pending in the database.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When process business rule events
+	 * </pre>
+	 */
 	@When("process business rule events")
 	public void process_business_rule_events()
 	{
-		SpringContextHolder.instance.getBean(BusinessRuleService.class).processEvents(QueryLimit.ofInt(100));
+		final int maxBatches = 20;
+		for (int batch = 0; batch < maxBatches && hasUnprocessedEventsOfScenarioRules(); batch++)
+		{
+			businessRuleService.processEvents(QueryLimit.ofInt(100));
+		}
+		assertThat(hasUnprocessedEventsOfScenarioRules()).as("unprocessed AD_BusinessRule_Events of the scenario's rules after " + maxBatches + " batches").isFalse();
+	}
+
+	private boolean hasUnprocessedEventsOfScenarioRules()
+	{
+		final List<Integer> ruleIds = ruleTable.getRecords().stream().map(I_AD_BusinessRule::getAD_BusinessRule_ID).collect(Collectors.toList());
+		if (ruleIds.isEmpty())
+		{
+			return false;
+		}
+		return queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
+				.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID, ruleIds)
+				.create()
+				.anyMatch();
 	}
 
 	/**
@@ -286,17 +314,20 @@ public class AD_BusinessRule_StepDef
 	public void validate_AD_Record_Warning_for_M_Product(@NonNull final String productIdentifier, @NonNull final DataTable dataTable)
 	{
 		final I_M_Product product = productTable.get(productIdentifier);
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_AD_BusinessRule rule = row.getAsIdentifier(I_AD_Record_Warning.COLUMNNAME_AD_BusinessRule_ID).lookupNotNullIn(ruleTable);
+		DataTableRows.of(dataTable).forEach(row -> validateRecordWarning(product, row));
+	}
 
-			final List<I_AD_Record_Warning> warnings = queryBL.createQueryBuilder(I_AD_Record_Warning.class)
-					.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_Product.class))
-					.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Record_ID, product.getM_Product_ID())
-					.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_BusinessRule_ID, rule.getAD_BusinessRule_ID())
-					.create()
-					.list();
-			assertThat(warnings).as("AD_Record_Warning of M_Product_ID=" + product.getM_Product_ID() + ", AD_BusinessRule_ID=" + rule.getAD_BusinessRule_ID()).hasSize(1);
-		});
+	private void validateRecordWarning(@NonNull final I_M_Product product, @NonNull final DataTableRow row)
+	{
+		final I_AD_BusinessRule rule = row.getAsIdentifier(I_AD_Record_Warning.COLUMNNAME_AD_BusinessRule_ID).lookupNotNullIn(ruleTable);
+
+		final List<I_AD_Record_Warning> warnings = queryBL.createQueryBuilder(I_AD_Record_Warning.class)
+				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_Product.class))
+				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_Record_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_AD_Record_Warning.COLUMNNAME_AD_BusinessRule_ID, rule.getAD_BusinessRule_ID())
+				.create()
+				.list();
+		assertThat(warnings).as("AD_Record_Warning of M_Product_ID=" + product.getM_Product_ID() + ", AD_BusinessRule_ID=" + rule.getAD_BusinessRule_ID()).hasSize(1);
 	}
 
 	/**

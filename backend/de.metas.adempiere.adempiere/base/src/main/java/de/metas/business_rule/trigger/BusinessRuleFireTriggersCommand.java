@@ -38,7 +38,6 @@ public class BusinessRuleFireTriggersCommand
 	@NonNull private final BusinessRuleEventRepository eventRepository;
 	@NonNull private final BusinessRuleLogger logger;
 	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
-	@NonNull private final IUserDAO userDAO;
 
 	@NonNull final BusinessRulesCollection rules;
 	@NonNull private final Object sourceModel;
@@ -62,7 +61,6 @@ public class BusinessRuleFireTriggersCommand
 		this.eventRepository = eventRepository;
 		this.logger = logger;
 		this.recordMatcher = recordMatcher;
-		this.userDAO = userDAO;
 
 		this.rules = rules;
 		this.sourceModel = sourceModel;
@@ -87,8 +85,8 @@ public class BusinessRuleFireTriggersCommand
 			return UserId.SYSTEM;
 		}
 
-		final boolean userExists = userDAO.retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
-		return userExists ? updatedBy : UserId.SYSTEM;
+		final boolean isUserExisting = userDAO.retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
+		return isUserExisting ? updatedBy : UserId.SYSTEM;
 	}
 
 	public void execute()

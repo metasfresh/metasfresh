@@ -18,4 +18,3 @@ UPDATE PP_Product_BOMLine SET UpdatedBy=0 WHERE UpdatedBy=-1;
 
 SELECT backup_table('PP_Product_BOMLine_Trl', '_updby_minus1');
 UPDATE PP_Product_BOMLine_Trl SET UpdatedBy=0 WHERE UpdatedBy=-1;
-

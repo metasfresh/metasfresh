@@ -108,7 +108,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 						addLog("{}_{}: {}", product.getValue(), product.getName(), AdempiereException.extractMessage(ex));
 						if (AdempiereException.isUserValidationError(ex))
 						{
-							log.warn("Product is not valid: {}: {}", product, AdempiereException.extractMessage(ex));
+							log.warn("Product is not valid: {}", product, ex);
 						}
 						else
 						{

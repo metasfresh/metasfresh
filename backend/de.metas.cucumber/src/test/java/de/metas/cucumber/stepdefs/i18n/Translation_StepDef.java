@@ -44,6 +44,7 @@ import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class Translation_StepDef
 	@NonNull private final M_Product_StepDefData productTable;
 
 	/** the language picked by the step "delete M_Product_Trl ... for the first active non-base system language" */
-	private I_AD_Language thatLanguage;
+	@Nullable private I_AD_Language thatLanguage;
 	/** M_Product.Updated / UpdatedBy per product identifier, as remembered by {@link #set_M_Product_Trl_of_base_language_by_SQL} */
 	private final Map<String, ProductAudit> rememberedProductAuditByIdentifier = new HashMap<>();
 
@@ -250,6 +251,7 @@ public class Translation_StepDef
 	}
 
 	/** the M_Product_Trl row of the product for the language, freshly loaded; null if there is none. */
+	@Nullable
 	private PO loadProductTrl(@NonNull final String productIdentifier, @NonNull final String adLanguage)
 	{
 		return TableModelLoader.instance.getPO(

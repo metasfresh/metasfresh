@@ -1,6 +1,7 @@
 package org.eevolution.process;
 
 import com.google.common.base.Strings;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -12,45 +13,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Pins the capped list of failed product values and the counts of the category-run summary message.
+ * Plain unit test: the 100-character boundaries are pure string logic that a Cucumber scenario would need many products to reach
+ * (the Cucumber scenarios cover the end-to-end category run with one failing product).
  */
 class PP_Product_BOM_CheckTest
 {
-	@Test
-	void cappedList_singleValue()
+	@Nested
+	class CappedList
 	{
-		assertThat(PP_Product_BOM_Check.cappedList(Collections.singletonList("P1"))).isEqualTo("P1");
-	}
+		@Test
+		void singleValue()
+		{
+			assertThat(PP_Product_BOM_Check.cappedList(Collections.singletonList("P1"))).isEqualTo("P1");
+		}
 
-	@Test
-	void cappedList_exactly100Chars_noEllipsis()
-	{
-		final String a = Strings.repeat("a", 49);
-		final String b = Strings.repeat("b", 49); // 49 + 2 + 49 = 100
-		assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b))).isEqualTo(a + ", " + b).hasSize(100);
-	}
+		@Test
+		void exactly100Chars_noEllipsis()
+		{
+			final String a = Strings.repeat("a", 49);
+			final String b = Strings.repeat("b", 49); // 49 + 2 + 49 = 100
+			assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b))).isEqualTo(a + ", " + b).hasSize(100);
+		}
 
-	@Test
-	void cappedList_101Chars_lastValueReplacedByEllipsis()
-	{
-		final String a = Strings.repeat("a", 49);
-		final String b = Strings.repeat("b", 50); // 101
-		assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b))).isEqualTo(a + ", …");
-	}
+		@Test
+		void chars101_lastValueReplacedByEllipsis()
+		{
+			final String a = Strings.repeat("a", 49);
+			final String b = Strings.repeat("b", 50); // 101
+			assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b))).isEqualTo(a + ", …");
+		}
 
-	@Test
-	void cappedList_moreFollowAfterFit()
-	{
-		final String a = Strings.repeat("a", 48); // 48 + 2 + 48 = 98, "c" would make 101
-		final String b = Strings.repeat("b", 48);
-		assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b, "c", "d"))).isEqualTo(a + ", " + b + ", …");
-	}
+		@Test
+		void moreFollowAfterFit()
+		{
+			final String a = Strings.repeat("a", 48); // 48 + 2 + 48 = 98, "c" would make 101
+			final String b = Strings.repeat("b", 48);
+			assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, b, "c", "d"))).isEqualTo(a + ", " + b + ", …");
+		}
 
-	@Test
-	void cappedList_firstValueOver100Chars_keptWhole()
-	{
-		final String a = Strings.repeat("a", 120);
-		assertThat(PP_Product_BOM_Check.cappedList(Collections.singletonList(a))).isEqualTo(a);
-		assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, "b"))).isEqualTo(a + ", …");
+		@Test
+		void firstValueOver100Chars_keptWhole()
+		{
+			final String a = Strings.repeat("a", 120);
+			assertThat(PP_Product_BOM_Check.cappedList(Collections.singletonList(a))).isEqualTo(a);
+			assertThat(PP_Product_BOM_Check.cappedList(Arrays.asList(a, "b"))).isEqualTo(a + ", …");
+		}
 	}
 
 	@Test

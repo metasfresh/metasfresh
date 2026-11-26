@@ -22,13 +22,14 @@
 
 package de.metas.cucumber.stepdefs.billofmaterial;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.process.ProcessExecutionResult;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -37,9 +38,9 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
-import org.apache.commons.lang3.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.DB;
@@ -78,11 +79,11 @@ public class PP_Product_BOM_Check_StepDef
 	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * When run PP_Product_BOM_Check for PP_Product_BOM bom
+	 * When verify the BOM bom
 	 * </pre>
 	 */
-	@When("run PP_Product_BOM_Check for PP_Product_BOM {word}")
-	public void run_PP_Product_BOM_Check(@NonNull final String bomIdentifier)
+	@When("verify the BOM {word}")
+	public void verify_BOM(@NonNull final String bomIdentifier)
 	{
 		run(bomIdentifier, null);
 	}
@@ -94,11 +95,11 @@ public class PP_Product_BOM_Check_StepDef
 	 * @cucumber.depends StepDefData: PP_Product_BOM_StepDefData, M_Product_Category_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * When run PP_Product_BOM_Check for PP_Product_BOM bom with M_Product_Category category_1
+	 * When verify the BOMs of M_Product_Category category_1 from BOM bom
 	 * </pre>
 	 */
-	@When("run PP_Product_BOM_Check for PP_Product_BOM {word} with M_Product_Category {word}")
-	public void run_PP_Product_BOM_Check_with_category(@NonNull final String bomIdentifier, @NonNull final String categoryIdentifier)
+	@When("verify the BOMs of M_Product_Category {word} from BOM {word}")
+	public void verify_BOMs_of_category(@NonNull final String categoryIdentifier, @NonNull final String bomIdentifier)
 	{
 		final I_M_Product_Category category = productCategoryTable.get(categoryIdentifier);
 		run(bomIdentifier, category);
@@ -241,13 +242,16 @@ public class PP_Product_BOM_Check_StepDef
 	{
 		final List<String> logLines = getLogLines();
 
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final String reason = expectedProductMessage(row.getAsString("ReasonMessageKey"), product);
-			assertThat(logLines)
-					.as("process log of PP_Product_BOM_Check, expected a line with product Value %s, Name %s and text '%s'", product.getValue(), product.getName(), reason)
-					.anySatisfy(line -> assertThat(line).contains(product.getValue()).contains(product.getName()).contains(reason));
-		});
+		DataTableRows.of(dataTable).forEach(row -> assertProcessLogContains(logLines, row));
+	}
+
+	private void assertProcessLogContains(@NonNull final List<String> logLines, @NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final String reason = expectedProductMessage(row.getAsString("ReasonMessageKey"), product);
+		assertThat(logLines)
+				.as("process log of PP_Product_BOM_Check, expected a line with product Value %s, Name %s and text '%s'", product.getValue(), product.getName(), reason)
+				.anySatisfy(line -> assertThat(line).contains(product.getValue()).contains(product.getName()).contains(reason));
 	}
 
 	/**

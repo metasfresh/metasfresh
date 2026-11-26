@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Start-up tasks must run as the System user (AD_User_ID=0) and the caller's user must be restored afterwards.
+ * Plain unit test: the start-up runner cannot be triggered from a Cucumber scenario or the UI.
  */
 public class HouseKeepingServiceTest
 {

@@ -45,7 +45,7 @@ Feature: Verify BOMs with a product category, report the products that failed
       | failing_product   | Failing BOM product | N          |
       | failing_component | Failing component   | Y          |
 
-    When run PP_Product_BOM_Check for PP_Product_BOM valid_bom with M_Product_Category category_1
+    When verify the BOMs of M_Product_Category category_1 from BOM valid_bom
 
     Then the PP_Product_BOM_Check result is OK with message key org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed and parameters:
       | Param           |
@@ -89,7 +89,7 @@ Feature: Verify BOMs with a product category, report the products that failed
       | failing_product   | Failing BOM product | N          |
       | failing_component | Failing component   | Y          |
 
-    When run PP_Product_BOM_Check for PP_Product_BOM failing_bom
+    When verify the BOM failing_bom
 
     Then the PP_Product_BOM_Check result is user validation error with message key NO_Default_PP_Product_BOM_For_Product for M_Product failing_product
     And M_Product is verified:
