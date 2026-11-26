@@ -242,9 +242,20 @@ Feature: Jasper Report Tests
   # runs (tag @report) against customer databases, which do not carry the core-only default routing
   # (StepDefConstants.WORKFLOW_ID = 540075) -> FK violation adworkflow_ppproductplanning there.
   Scenario: Order Checkup Warehouse Report Test
-    Given create S_Resource:
-      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
-      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    # The resource type is created here, never taken as S_ResourceType_ID 1000000: this feature also runs
+    # against customer databases (baseandcustom), which need not carry that record -> FK sresourcetype_sresource.
+    # The category identifier is kept short on purpose: its auto-generated Value is <identifier>_<timestamp>
+    # and M_Product_Category.Value holds 40 characters, so a long identifier cuts the timestamp and the second
+    # scenario collides with the first one (m_product_category_value).
+    Given metasfresh contains M_Product_Categories:
+      | Identifier |
+      | resCat     |
+    And metasfresh contains S_ResourceType:
+      | S_ResourceType_ID.Identifier | Name                | Value               | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
+      | checkupResourceType          | checkupResourceType | checkupResourceType | resCat                           | MJ      | false      |
+    And create S_Resource:
+      | Identifier   | S_ResourceType_ID   | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | checkupResourceType | Y                       | PT                        | 999             |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID   | PP_Plant_ID  |
       | checkupWarehouse | checkupPlant |
@@ -287,9 +298,20 @@ Feature: Jasper Report Tests
   # warehouse+plant, so the shared Background 'wh' (no PP_Plant_ID) stays untouched for the sibling
   # scenarios above.
   Scenario: Order Checkup Plant Report Test
-    Given create S_Resource:
-      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
-      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    # The resource type is created here, never taken as S_ResourceType_ID 1000000: this feature also runs
+    # against customer databases (baseandcustom), which need not carry that record -> FK sresourcetype_sresource.
+    # The category identifier is kept short on purpose: its auto-generated Value is <identifier>_<timestamp>
+    # and M_Product_Category.Value holds 40 characters, so a long identifier cuts the timestamp and the second
+    # scenario collides with the first one (m_product_category_value).
+    Given metasfresh contains M_Product_Categories:
+      | Identifier |
+      | resCat     |
+    And metasfresh contains S_ResourceType:
+      | S_ResourceType_ID.Identifier | Name                | Value               | M_Product_Category_ID.Identifier | UomCode | IsTimeSlot |
+      | checkupResourceType          | checkupResourceType | checkupResourceType | resCat                           | MJ      | false      |
+    And create S_Resource:
+      | Identifier   | S_ResourceType_ID   | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | checkupResourceType | Y                       | PT                        | 999             |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID   | PP_Plant_ID  |
       | checkupWarehouse | checkupPlant |

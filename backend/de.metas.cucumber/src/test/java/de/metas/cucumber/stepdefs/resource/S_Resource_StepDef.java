@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ManufacturingResourceType;
 import de.metas.material.planning.ResourceTypeId;
@@ -51,6 +52,7 @@ public class S_Resource_StepDef
 	@NonNull private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final S_ResourceType_StepDefData resourceTypeTable;
 
 	@And("load S_Resource:")
 	public void load_S_Resource(@NonNull final DataTable dataTable)
@@ -92,7 +94,9 @@ public class S_Resource_StepDef
 	 * Creates {@code S_Resource} record(s) from the DataTable.
 	 * <p>
 	 * Required columns: {@code Identifier} and {@code S_ResourceType_ID}; the value/name pair is derived via
-	 * {@code row.suggestValueAndName()}.
+	 * {@code row.suggestValueAndName()}. {@code S_ResourceType_ID} is the identifier of an {@code S_ResourceType}
+	 * created by {@code metasfresh contains S_ResourceType:}, or the numeric {@code S_ResourceType_ID} of an
+	 * existing record (e.g. {@code 1000000}, which exists in the core DB only).
 	 * <p>
 	 * Optional columns:
 	 * <ul>
@@ -120,7 +124,7 @@ public class S_Resource_StepDef
 
 	private void createResource(@NonNull final DataTableRow row)
 	{
-		final ResourceTypeId resourceTypeId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_ResourceType_ID).getAsId(ResourceTypeId.class);
+		final ResourceTypeId resourceTypeId = resourceTypeTable.getIdOrParse(row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_ResourceType_ID));
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
 		final I_S_Resource record = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
