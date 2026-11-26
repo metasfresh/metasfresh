@@ -1237,6 +1237,11 @@ public class M_ShipmentSchedule_StepDef
 	 * Runs, on the copy kept by {@link #load_copy_for_later_recompute(String)}, the first part of the schedule recompute
 	 * (as {@code ShipmentScheduleUpdater} does: update from the referenced order line and order, the header aggregation key,
 	 * the picked quantity) and saves the copy.
+	 * <p>
+	 * Stands in for the schedule recompute that {@code ShipmentScheduleUpdater} runs in production when a schedule is
+	 * invalidated (e.g. its order line changed). It calls the business logic directly because the scenario needs a
+	 * deterministic order of two events (this save between the run's async batch stamp and the workpackage enqueue); the
+	 * asynchronous recompute pass would make that timing flaky.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -1256,6 +1261,9 @@ public class M_ShipmentSchedule_StepDef
 	/**
 	 * Like {@link #recompute_earlier_loaded_copy(String)}, but loads the schedule now (a recompute that reads the
 	 * current state).
+	 * <p>
+	 * Stands in for the same production recompute ({@code ShipmentScheduleUpdater}), called directly for the same reason:
+	 * a deterministic order of the events in the race scenario, which the asynchronous recompute pass cannot give.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
