@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
@@ -59,6 +60,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
@@ -107,6 +109,7 @@ public class M_InOut_Line_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
@@ -327,12 +330,7 @@ public class M_InOut_Line_StepDef
 			{
 				continue;
 			}
-			queryBL.createQueryBuilder(I_M_HU_Assignment.class)
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(line))
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, line.getM_InOutLine_ID())
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list().forEach(assignment -> unconsumed.add(new ActualAssignment(line, assignment)));
+			huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(line).create().list().forEach(assignment -> unconsumed.add(new ActualAssignment(line, assignment)));
 		}
 
 		final List<DataTableRow> expectedRows = DataTableRows.of(table).stream().collect(ImmutableList.toImmutableList());
@@ -353,7 +351,7 @@ public class M_InOut_Line_StepDef
 		}
 
 		final List<String> unconsumedDescriptions = unconsumed.stream()
-				.map(actual -> describeLine(actual.line, expectedRows) + " M_TU_HU_ID=" + actual.assignment.getM_TU_HU_ID() + " VHU_ID=" + actual.assignment.getVHU_ID() + " M_LU_HU_ID=" + actual.assignment.getM_LU_HU_ID())
+				.map(actual -> describeLine(actual.getLine(), expectedRows) + " M_TU_HU_ID=" + actual.getAssignment().getM_TU_HU_ID() + " VHU_ID=" + actual.getAssignment().getVHU_ID() + " M_LU_HU_ID=" + actual.getAssignment().getM_LU_HU_ID())
 				.collect(Collectors.toList());
 		assertThat(unmatchedExpectedRows)
 				.as("Expected HU assignments that no actual assignment matched (unconsumed actual assignments: %s)", unconsumedDescriptions)
@@ -361,30 +359,25 @@ public class M_InOut_Line_StepDef
 		assertThat(unconsumedDescriptions).as("Actual HU assignments that no expected row consumed").isEmpty();
 	}
 
-	private static final class ActualAssignment
+	@Value
+	private static class ActualAssignment
 	{
-		private final I_M_InOutLine line;
-		private final I_M_HU_Assignment assignment;
-
-		private ActualAssignment(@NonNull final I_M_InOutLine line, @NonNull final I_M_HU_Assignment assignment)
-		{
-			this.line = line;
-			this.assignment = assignment;
-		}
+		@NonNull I_M_InOutLine line;
+		@NonNull I_M_HU_Assignment assignment;
 	}
 
 	private boolean matchesExpectedAssignment(@NonNull final ActualAssignment actual, @NonNull final DataTableRow expectedRow)
 	{
-		if (!matchesExpectedRow(actual.line, expectedRow))
+		if (!matchesExpectedRow(actual.getLine(), expectedRow))
 		{
 			return false;
 		}
-		if (huTable.getId(expectedRow.getAsIdentifier(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID)).getRepoId() != actual.assignment.getM_TU_HU_ID())
+		if (huTable.getId(expectedRow.getAsIdentifier(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID)).getRepoId() != actual.getAssignment().getM_TU_HU_ID())
 		{
 			return false;
 		}
 		final StepDefDataIdentifier expectedCU = expectedRow.getAsOptionalIdentifier(I_M_HU_Assignment.COLUMNNAME_VHU_ID).orElse(null);
-		if (expectedCU != null && huTable.getId(expectedCU).getRepoId() != actual.assignment.getVHU_ID())
+		if (expectedCU != null && huTable.getId(expectedCU).getRepoId() != actual.getAssignment().getVHU_ID())
 		{
 			return false;
 		}
@@ -394,8 +387,8 @@ public class M_InOut_Line_StepDef
 			return true;
 		}
 		return expectedLU.isNullPlaceholder()
-				? actual.assignment.getM_LU_HU_ID() <= 0
-				: huTable.getId(expectedLU).getRepoId() == actual.assignment.getM_LU_HU_ID();
+				? actual.getAssignment().getM_LU_HU_ID() <= 0
+				: huTable.getId(expectedLU).getRepoId() == actual.getAssignment().getM_LU_HU_ID();
 	}
 
 	private boolean matchesExpectedRow(final I_M_InOutLine line, final DataTableRow expectedRow)
