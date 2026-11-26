@@ -103,7 +103,6 @@ const ScanHUAndGetQtyComponent = ({
   isShowCloseTargetButton = false,
   nextTUActions,
   suggestedQty,
-  rememberedCULabel,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -204,17 +203,6 @@ const ScanHUAndGetQtyComponent = ({
           toastErrorFromObj(error);
           setProgressStatus(STATUS_READ_HU_BARCODE);
         });
-    } else if (isRepeatedBooking && rememberedCULabel?.cuLabel) {
-      // back on a line the picker already booked on: the quantity block opens with the remembered label
-      setResolvedBarcodeData((prev) => ({
-        ...prev,
-        scannedBarcode: rememberedCULabel.cuLabel,
-        cuLabel: rememberedCULabel.cuLabel,
-        lotNo: rememberedCULabel.lotNo,
-        bestBeforeDate: rememberedCULabel.bestBeforeDate,
-        isTUToBePickedAsWhole: false,
-      }));
-      setProgressStatus(STATUS_READ_QTY);
     } else {
       setProgressStatus(STATUS_READ_HU_BARCODE);
     }
@@ -615,11 +603,6 @@ ScanHUAndGetQtyComponent.propTypes = {
   isShowCloseTargetButton: PropTypes.bool,
   nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   suggestedQty: PropTypes.number,
-  rememberedCULabel: PropTypes.shape({
-    cuLabel: PropTypes.string,
-    lotNo: PropTypes.string,
-    bestBeforeDate: PropTypes.string,
-  }),
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,

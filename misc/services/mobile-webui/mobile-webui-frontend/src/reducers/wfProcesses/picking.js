@@ -1,17 +1,25 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { REMEMBER_CU_ENTRY } from '../../apps/picking/redux/PickingActionTypes';
+import { FORGET_CU_ENTRY, REMEMBER_CU_ENTRY } from '../../apps/picking/redux/PickingActionTypes';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 
 export const pickingReducer = ({ draftState, action }) => {
   switch (action.type) {
     case REMEMBER_CU_ENTRY: {
-      const { wfProcessId, activityId, lineId, lastTypedQty, label } = action.payload;
+      const { wfProcessId, activityId, lineId, lastTypedQty } = action.payload;
       const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
       if (draftActivity?.dataStored) {
-        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty, label };
+        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty };
+      }
+      return draftState;
+    }
+    case FORGET_CU_ENTRY: {
+      const { wfProcessId, activityId } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        delete draftActivity.dataStored.cuEntry;
       }
       return draftState;
     }

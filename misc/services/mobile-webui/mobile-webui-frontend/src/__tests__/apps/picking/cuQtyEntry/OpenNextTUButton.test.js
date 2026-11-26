@@ -544,7 +544,8 @@ describe('OpenNextTUButton owns the hidden scanner of the quantity block', () =>
 });
 
 describe('hidden scanner inside the quantity block', () => {
-  const renderBlock = (nextTUActions) =>
+  // renders the scan step and scans the first label: the quantity block opens (nothing is remembered from an earlier visit)
+  const renderBlock = async (nextTUActions) => {
     render(
       <Provider store={store()}>
         <ScanHUAndGetQtyComponent
@@ -552,17 +553,24 @@ describe('hidden scanner inside the quantity block', () => {
           qtyTarget={12}
           uom="PCE"
           {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
-          rememberedCULabel={{ cuLabel: 'RAW-A', lotNo: 'LOTA', bestBeforeDate: '2026-11-07' }}
           resolveScannedBarcode={async (code) => ({ cuLabel: code, lotNo: `LOT-${code}` })}
           nextTUActions={nextTUActions}
           onResult={jest.fn()}
         />
       </Provider>
     );
+    await act(async () => {});
+    const input = screen.getByTestId('scanHUBarcode-input');
+    input.value = 'RAW-A';
+    await act(async () => {
+      fireEvent.keyUp(input, { key: 'Enter' });
+    });
+    await act(async () => {});
+  };
   const asButton = ({ scanner }) => <OpenNextTUButton onNextTU={jest.fn()} scanner={scanner} />;
 
   it('pop-up: no scanner visuals at all, the scanner input is outside the OK / Abbrechen submit flow', async () => {
-    renderBlock(asButton);
+    await renderBlock(asButton);
     await act(async () => {});
     expect(screen.getByTestId('rescanCULabel-input')).toBeInTheDocument();
     expect(document.querySelector('.scan-prompt')).toBeNull();
@@ -575,7 +583,7 @@ describe('hidden scanner inside the quantity block', () => {
   });
 
   it('pop-up: a label scanned on the hidden scanner switches the lot', async () => {
-    renderBlock(asButton);
+    await renderBlock(asButton);
     await act(async () => {});
     const input = screen.getByTestId('rescanCULabel-input');
     input.value = 'RAW-B';
@@ -587,7 +595,7 @@ describe('hidden scanner inside the quantity block', () => {
   });
 
   it('pop-up with a plain node (no scanner support): no scanner is added', async () => {
-    renderBlock(<button data-testid="next-tu-button">x</button>);
+    await renderBlock(<button data-testid="next-tu-button">x</button>);
     await act(async () => {});
     expect(screen.queryByTestId('rescanCULabel-input')).toBeNull();
   });

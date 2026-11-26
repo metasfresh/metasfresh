@@ -86,17 +86,9 @@ export const computeLastTypedQty = ({ storedLastTypedQty, suggestedQty, qtyBooke
 
 export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == null || Number(qtyBooked) >= qtyOpen;
 
-/** What the screen remembers after a scan once booking of a line */
-export const computeCUEntryToRemember = ({
-  storedLastTypedQty,
-  suggestedQty,
-  qtyBooked,
-  cuLabel,
-  lotNo,
-  bestBeforeDate,
-}) => ({
+/** What the screen remembers after a scan once booking of a line: the count, for the next TU of this round. No label. */
+export const computeCUEntryToRemember = ({ storedLastTypedQty, suggestedQty, qtyBooked }) => ({
   lastTypedQty: computeLastTypedQty({ storedLastTypedQty, suggestedQty, qtyBooked }),
-  label: { cuLabel, lotNo, bestBeforeDate },
 });
 
 /** The backend decides per job (profile switch, no line requiring a label) and publishes the answer */

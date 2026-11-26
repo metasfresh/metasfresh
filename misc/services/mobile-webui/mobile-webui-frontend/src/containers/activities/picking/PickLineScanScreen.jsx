@@ -85,7 +85,6 @@ const PickLineScanScreen = () => {
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
   const next = urlParams.get('next');
-  const isResume = urlParams.get('resume') === 'Y';
 
   const {
     activity,
@@ -252,7 +251,6 @@ const PickLineScanScreen = () => {
       readAttributes={readAttributes}
       {...toQtyEntryBehaviorProps(cuQtyEntryPolicy)}
       suggestedQty={suggestedQty}
-      rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextTUActions={
         isLabelRequiredLine
@@ -311,10 +309,6 @@ export const computePickFromHUQRCode = ({ cuQtyEntryPolicy = MANUAL_POLICY, sour
 /** The source HU of a label-required-mode pick */
 // @VisibleForTesting
 export const computeSourceHUQRCode = ({ qrCode, activity }) => qrCode || activity?.dataStored?.pickFromHU?.code;
-
-// @VisibleForTesting
-export const computeRememberedCULabel = ({ isScanOnce, isResume, cuEntry }) =>
-  isScanOnce && isResume ? cuEntry?.label : undefined;
 
 // @VisibleForTesting
 export const isInlineGraiCaptureEnabled = ({ graiScanEnabled, tuPickingTarget, cuQtyEntryPolicy = MANUAL_POLICY }) =>
@@ -643,9 +637,6 @@ export const usePostQtyPicked = ({
           storedLastTypedQty: scanOnceMemory.lastTypedQty,
           suggestedQty: scanOnceMemory.suggestedQty,
           qtyBooked: qty,
-          cuLabel,
-          lotNo,
-          bestBeforeDate,
         });
         dispatch(rememberCUEntry({ wfProcessId, activityId, lineId: lineIdEffective, ...cuEntryToRemember }));
       }

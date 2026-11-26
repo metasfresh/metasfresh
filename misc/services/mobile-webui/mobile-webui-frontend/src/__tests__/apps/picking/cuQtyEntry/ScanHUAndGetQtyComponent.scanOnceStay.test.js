@@ -173,27 +173,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
     expect(onResult).not.toHaveBeenCalled();
   });
 
-  it('re-entry: a remembered label opens the quantity block directly, with the suggestion', async () => {
-    const onResult = jest.fn().mockResolvedValue();
-    renderComponent({
-      onResult,
-      qtyMax: 7,
-      qtyTarget: 7,
-      suggestedQty: 5,
-      rememberedCULabel: { cuLabel: 'RAW-A', lotNo: 'LOTA', bestBeforeDate: '2026-11-07' },
-    });
-    await act(async () => {});
-    expect(screen.queryByTestId('scanHUBarcode-input')).toBeNull();
-    expect(screen.getByTestId('lotNo').value).toBe('LOTA');
-    expect(document.querySelector('#qty-input').value).toBe('5');
-
-    await clickOk();
-    expect(onResult).toHaveBeenCalledWith(
-      expect.objectContaining({ qty: '5', cuLabel: 'RAW-A', lotNo: 'LOTA', isDone: false })
-    );
-  });
-
-  it('without a remembered label the scan step comes first and the field starts empty', async () => {
+  it('nothing is remembered: the scan step comes first and the field starts empty', async () => {
     renderComponent({ onResult: jest.fn() });
     await act(async () => {});
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();

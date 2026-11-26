@@ -160,7 +160,7 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Re-entry via "HU verpacken": the quantity block reopens with the remembered label and the pinned count, the TU is kept', async ({ page }) => {
+test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the count starts empty), the TU is kept', async ({ page }) => {
     allureMeta('Re-entry keeps the TU');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
@@ -175,8 +175,12 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
     await PickingJobScreen.clickLineButton({ index: 1 });
     await PickingJobLineScreen.waitForScreen();
 
-    await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": the block reopens, no new label scan
-    await GetQuantityDialog.expectQtyEntered(4);              // MIN(last typed 6, open 4)
+    await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": a new round, nothing is remembered
+    await PickLineScanScreen.waitForScreen();
+    await GetQuantityDialog.expectNotShown();                 // no quantity block before a label is scanned
+    await scanLabel(labelOf({ masterdata, lot }));
+    await GetQuantityDialog.expectQtyEntered('');             // the count starts empty (not MIN(last typed 6, open 4))
+    await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.clickDoneStayOpen();              // books 4 into the kept TU: the line is done
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.goBack();
@@ -192,7 +196,7 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
             }
         },
         hus: {
-            // both bookings sit in the one TU, on the remembered lot
+            // both bookings sit in the one TU, on the lot of each scanned label
             tu1: { qtyTUs: 1, storages: { P1: '10 PCE' } },
             vhu1: { storages: { P1: '6 PCE' }, attributes: { 'Lot-Nummer': lot } },
             vhu2: { storages: { P1: '4 PCE' }, attributes: { 'Lot-Nummer': lot } },

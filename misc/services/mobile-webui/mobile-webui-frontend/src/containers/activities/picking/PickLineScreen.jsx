@@ -17,6 +17,7 @@ import {
 } from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
+import { forgetCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
@@ -103,6 +104,8 @@ const PickLineScreen = () => {
     );
 
   const onPickButtonClick = () => {
+    // a new round on the line: nothing is remembered from the last one (the open TU stays open)
+    dispatch(forgetCUEntry({ wfProcessId, activityId }));
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -110,8 +113,6 @@ const PickLineScreen = () => {
         activityId,
         lineId,
         qrCode: pickFromHUQRCode,
-        // a line in a CU quantity entry mode continues where the picker left it: the quantity block reopens
-        isResume: cuQtyEntryPolicy.isLabelRequired,
       })
     );
   };

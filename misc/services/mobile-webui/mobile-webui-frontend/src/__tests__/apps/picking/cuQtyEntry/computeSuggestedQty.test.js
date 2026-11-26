@@ -69,17 +69,20 @@ describe('isLineDoneAfterBooking', () => {
 });
 
 describe('computeCUEntryToRemember', () => {
-  const booking = { cuLabel: 'RAW', lotNo: 'LOTA', bestBeforeDate: '2026-11-07' };
-
-  it('remembers the typed count and the label of the booking', () => {
+  it('remembers the typed count only, no label (nothing survives leaving the line)', () => {
     expect(
-      computeCUEntryToRemember({ storedLastTypedQty: null, suggestedQty: null, qtyBooked: '5', ...booking })
-    ).toEqual({ lastTypedQty: 5, label: booking });
+      computeCUEntryToRemember({
+        storedLastTypedQty: null,
+        suggestedQty: null,
+        qtyBooked: '5',
+        cuLabel: 'RAW',
+        lotNo: 'LOTA',
+        bestBeforeDate: '2026-11-07',
+      })
+    ).toEqual({ lastTypedQty: 5 });
   });
 
   it('keeps the typed count when the capped suggestion was confirmed', () => {
-    expect(
-      computeCUEntryToRemember({ storedLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2, ...booking }).lastTypedQty
-    ).toBe(5);
+    expect(computeCUEntryToRemember({ storedLastTypedQty: 5, suggestedQty: 2, qtyBooked: 2 }).lastTypedQty).toBe(5);
   });
 });
