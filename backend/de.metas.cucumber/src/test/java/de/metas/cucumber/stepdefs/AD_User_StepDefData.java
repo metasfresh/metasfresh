@@ -41,4 +41,15 @@ public class AD_User_StepDefData extends StepDefData<I_AD_User> implements StepD
 	{
 		return UserId.ofRepoId(record.getAD_User_ID());
 	}
+
+	/**
+	 * Resolves the user column of a data table row: either an AD_User_ID (e.g. {@code -1}, {@code 100}) or the identifier of an AD_User of the scenario.
+	 */
+	public int resolveUserId(@NonNull final String userIdOrIdentifier)
+	{
+		final String trimmed = userIdOrIdentifier.trim();
+		return trimmed.matches("-?\\d+")
+				? Integer.parseInt(trimmed)
+				: get(trimmed).getAD_User_ID();
+	}
 }

@@ -4,12 +4,14 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +71,8 @@ public class HouseKeepingService
 		final Stopwatch allTasksWatch = Stopwatch.createStarted();
 
 		final ILoggable loggable = Loggables.logback(logger, Level.INFO);
-		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(loggable);)
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(loggable);
+				final IAutoCloseable ignoredUser = Env.temporaryChangeLoggedUserId(UserId.SYSTEM))
 		{
 			for (final IStartupHouseKeepingTask task : startupTasks)
 			{

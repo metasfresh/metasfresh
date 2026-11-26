@@ -9,7 +9,7 @@ import { createMasterdata, ORDER_LINE_TAB_ID } from '../utils/OrderLineHarness';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 
 /**
- * The grid Date cell fix is app-wide, not specific to one column (TC6a keyboard, TC6b view-month).
+ * The grid Date cell fix is app-wide, not specific to one column (keyboard entry, view-month).
  *
  * Repeats the keyboard, no-auto-open and view-month assertions on a SECOND injected Date column with
  * a DIFFERENT field name, so a fix that only worked for one column (or one field name) fails here.
@@ -131,7 +131,7 @@ async function serveOrderLinesWithDateColumn(page, { field, caption, initialValu
   return state;
 }
 
-/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the customer's time zone */
+/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the user's time zone */
 function patchedDay(patchValue) {
   const date = new Date(patchValue);
   const parts = new Intl.DateTimeFormat('de-DE', {
@@ -196,7 +196,7 @@ test.describe('Grid Date cell - app-wide on a second Date column (de_DE)', () =>
     allure.severity('critical');
   });
 
-  test('TC6a: a second Date column gets keyboard entry (replace) and no auto-open on keyboard entry', async ({
+  test('a second Date column gets keyboard entry (replace) and no auto-open on keyboard entry', async ({
     page,
   }) => {
     test.setTimeout(300000);
@@ -225,14 +225,14 @@ test.describe('Grid Date cell - app-wide on a second Date column (de_DE)', () =>
     });
   });
 
-  test('TC6b: a second Date column opens its calendar on the value month, not today (display-string value)', async ({
+  test('a second Date column opens its calendar on the value month, not today (display-string value)', async ({
     page,
   }) => {
     test.setTimeout(300000);
     await page.clock.setFixedTime(FIXED_NOW); // before navigating: moment reads Date.now
     await page.setViewportSize({ width: 1920, height: 1080 });
     // the value is injected as the display string, which does not parse to a valid moment: react-datetime
-    // then has no selectedDate and opens on today's month (see grid-date-cell-calendar.spec.js, TC3)
+    // then has no selectedDate and opens on today's month (see the view-month test in grid-date-cell-calendar.spec.js)
     const state = await serveOrderLinesWithDateColumn(page, {
       field: DATE_FIELD,
       caption: 'Second date',
