@@ -67,9 +67,11 @@ const testCases = [
 
 /**
  * One quick entry case: new order, customer picked by keyboard or mouse, quick entry opened with
- * Alt+Q or the button, three lines by keyboard only, order completed, DB end state asserted.
+ * Alt+Q or the button, optionally closed and reopened with Alt+Q, three lines by keyboard only,
+ * order completed, DB end state asserted. pickCustomer 'mouseOfSeveral': two customers share the typed
+ * prefix, the first one is picked by mouse from the option list.
  */
-async function runQuickEntryCase(page, { language, packingInstructionsField, pickCustomer, openBy }) {
+async function runQuickEntryCase(page, { language, packingInstructionsField, pickCustomer, openBy, reopen = false }) {
   allure.epic('E0100: Sales');
   allure.tag('F00101: Sales Order Quick Entry');
   allure.tag('F00101');
@@ -83,8 +85,15 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   test.setTimeout(240000);
 
   const recorder = installDocumentEventRecorder(page);
+  const runId = Date.now().toString(36).toUpperCase();
+  const codeA = `QIM${runId}A`;
+  const codeB = `QIM${runId}B`;
   const masterdata = await createMasterdata(language, {
     packingInstructionsField,
+    customers:
+      pickCustomer === 'mouseOfSeveral'
+        ? { CUSTOMER1: { bpartnerCode: codeA, name: codeA }, CUSTOMER2: { bpartnerCode: codeB, name: codeB } }
+        : { CUSTOMER1: {} },
   });
   allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 
@@ -96,10 +105,26 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   await SalesOrderPage.goto();
   await SalesOrderPage.clickNew();
   const bpartnerCode = masterdata.bpartners.CUSTOMER1.bpartnerCode;
-  const recordId =
-    pickCustomer === 'keyboard'
-      ? await pickCustomerByKeyboard({ bpartnerCode })
-      : await pickCustomerByMouse({ searchText: bpartnerCode, bpartnerCode });
+  let recordId;
+  if (pickCustomer === 'keyboard') {
+    recordId = await pickCustomerByKeyboard({ bpartnerCode });
+  } else if (pickCustomer === 'mouseOfSeveral') {
+    const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
+    await partnerInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await partnerInput.click();
+    await partnerInput.fill(`QIM${runId}`);
+    await expect
+      .poll(() => page.locator('.input-dropdown-list-option').count(), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'several partners shown for the typed prefix',
+      })
+      .toBeGreaterThanOrEqual(2);
+    // Reset the lookup, so the shared mouse pick types the text again and gets a fresh option list.
+    await partnerInput.fill('');
+    recordId = await pickCustomerByMouse({ searchText: `QIM${runId}`, bpartnerCode });
+  } else {
+    recordId = await pickCustomerByMouse({ searchText: bpartnerCode, bpartnerCode });
+  }
   const windowId = SALES_ORDER_WINDOW_ID;
 
   const toggle = page.getByTestId('batch-entry-toggle');
@@ -114,6 +139,13 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   await quickInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   const productInput = quickInput.locator('#lookup_M_Product_ID input.input-field');
   await expectFocusOn(productInput, openBy === 'altQ' ? 'opened: cursor in Produkt' : 'opened by button: cursor in Produkt');
+  if (reopen) {
+    await page.keyboard.press('Alt+Q');
+    await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
+    await page.keyboard.press('Alt+Q');
+    await quickInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await expectFocusOn(productInput, 'reopened with Alt+Q: cursor in Produkt');
+  }
 
   await enterLinesKeyboardOnly({
     recorder,
@@ -171,6 +203,39 @@ testCases.forEach(({ language, label }) => {
         packingInstructionsField: 'Y',
         pickCustomer: 'mouse',
         openBy: 'button',
+      });
+    });
+
+    test(`TC9 keyboard, Alt+Q, close and reopen with Alt+Q (${label})`, async ({ page }) => {
+      await runQuickEntryCase(page, {
+        language,
+        packingInstructionsField: 'N',
+        pickCustomer: 'keyboard',
+        openBy: 'altQ',
+        reopen: true,
+      });
+    });
+
+    test(`TC12 keyboard partner, button, PI off (${label})`, async ({ page }) => {
+      await runQuickEntryCase(page, {
+        language,
+        packingInstructionsField: 'N',
+        pickCustomer: 'keyboard',
+        openBy: 'button',
+      });
+    });
+
+    [
+      { packingInstructionsField: 'N', piLabel: 'PI off' },
+      { packingInstructionsField: 'Y', piLabel: 'PI on' },
+    ].forEach(({ packingInstructionsField, piLabel }) => {
+      test(`TC10 mouse pick from several, Alt+Q, ${piLabel} (${label})`, async ({ page }) => {
+        await runQuickEntryCase(page, {
+          language,
+          packingInstructionsField,
+          pickCustomer: 'mouseOfSeveral',
+          openBy: 'altQ',
+        });
       });
     });
   });
