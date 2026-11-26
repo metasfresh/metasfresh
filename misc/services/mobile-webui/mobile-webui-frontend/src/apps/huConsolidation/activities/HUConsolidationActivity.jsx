@@ -1,7 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { isGRAIScanEnabled as isGRAIScanEnabledFunc, isUserEditable as isUserEditableFunc } from '../reducers';
+import {
+  isGRAIScanEnabled as isGRAIScanEnabledFunc,
+  isUserEditable as isUserEditableFunc,
+  wasGRAIScanButtonShown as wasGRAIScanButtonShownFunc,
+} from '../reducers';
 import { trl } from '../../../utils/translations';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { graiScanScreenLocation, pickingSlotScreenLocation, selectTargetScreenLocation } from '../routes';
@@ -18,6 +22,7 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
   const isUserEditable = isUserEditableFunc({ activity });
   const isCurrentTargetSet = !!currentTarget;
   const isGRAIScanEnabled = isGRAIScanEnabledFunc({ activity });
+  const wasGRAIScanButtonShown = wasGRAIScanButtonShownFunc({ activity });
 
   const onSelectTargetClicked = () => {
     history.push(selectTargetScreenLocation({ applicationId, wfProcessId, activityId }));
@@ -46,6 +51,18 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
           disabled={!isUserEditable || !isCurrentTargetSet}
           onClick={onScanGRAIClicked}
         />
+      )}
+      {!isGRAIScanEnabled && wasGRAIScanButtonShown && (
+        // The button vanished (no GRAI crate left): keep its place, so the buttons below do not move under the worker's finger.
+        // Same button, so same height; invisible (visibility: hidden also makes it untappable and hides it from screen readers).
+        <div data-testid="scanGRAI-slot" style={{ visibility: 'hidden' }}>
+          <ButtonWithIndicator
+            testId="scanGRAI-slot-button"
+            caption={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
+            disabled={true}
+            onClick={() => {}}
+          />
+        </div>
       )}
       <PickingSlots
         applicationId={applicationId}

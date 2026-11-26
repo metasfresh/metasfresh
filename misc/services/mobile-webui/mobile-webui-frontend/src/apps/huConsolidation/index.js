@@ -3,6 +3,7 @@ import { registerHandler } from '../../reducers/wfProcesses/activityStateHandler
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import HUConsolidationCompleteActivity from './activities/HUConsolidationCompleteActivity';
 import { huConsolidationRoutes } from './routes';
+import { mergeJobIntoActivityDataStored } from './reducers';
 import messages_en from './i18n/en.json';
 import messages_de from './i18n/de.json';
 
@@ -23,7 +24,7 @@ registerHandler({
   componentType: COMPONENT_TYPE_huConsolidation_consolidate,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
-    draftActivityDataStored.job = fromActivity.componentProps.job;
+    mergeJobIntoActivityDataStored({ draftActivityDataStored, job: fromActivity.componentProps.job });
   },
 });
 
