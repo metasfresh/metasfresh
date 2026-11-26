@@ -152,17 +152,6 @@ $footer-height: $btn-height * $footer-button-slots + $btn-gap * ($footer-button-
     }
   }
 
-  // Compact variant (`isCompact`): the scanner shares the screen with other fields (label rescan in the Scan once quantity block), so the
-  // scan prompt shows a smaller icon instead of half a phone screen.
-  &.is-compact .hardware-mode-panel.scan-prompt {
-    min-height: 0;
-
-    .scan-prompt-icon {
-      font-size: 3rem;
-      margin-bottom: 0.25rem;
-    }
-  }
-
   // In-progress scan signal — when the off-screen hardware input has content (i.e. the
   // useKeyboardBarcodeReader hook is mid-burst, chars accumulating), switch the icon to a
   // yellow "scanning" hue and double the pulse rate. CSS-only — :placeholder-shown evaluates

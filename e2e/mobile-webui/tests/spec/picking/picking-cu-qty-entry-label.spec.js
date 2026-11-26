@@ -271,8 +271,6 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
     const gtin = uniqueGTIN();
     const productValue = masterdata.products.P1.productCode;
     const lot = uniqueLot();
-    const shotsDir = process.env.AFTER_SHOTS_DIR;
-    const shot = async (name) => { if (shotsDir) await page.screenshot({ path: `${shotsDir}/after-${name}.png` }); };
     await page.setViewportSize({ width: 360, height: 720 });
     await openLineScanScreen(masterdata);
     await PickLineScanScreen.openTU();
@@ -283,7 +281,6 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
         await expect(page.getByTestId('rescanCULabel-input')).toHaveCount(0);
         await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
         await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
-        await shot('first-scan-screen-360x720');
     });
 
     await PickLineScanScreen.scanCULabel(buildCULabel({ gtin, productValue, lot, packId: 1 }));
@@ -311,14 +308,11 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
     });
 
     const viewports = [{ width: 360, height: 720 }, { width: 393, height: 727 }];
-    const withIcon = {};
     for (const viewport of viewports) {
         await test.step(`pop-up at ${viewport.width}x${viewport.height}: "Weitere Kiste" with icon is as high as OK and Abbrechen`, async () => {
             await page.setViewportSize(viewport);
             await expect(page.getByTestId('next-tu-button')).toBeVisible();
             const { ok, cancel, nextTU } = await measureButtons(page);
-            withIcon[viewport.width] = { ok, cancel, nextTU };
-            console.log(`BUTTONS ${viewport.width}x${viewport.height} | ${JSON.stringify({ ok, cancel, nextTU })}`);
             expect.soft(nextTU.height, 'height of Weitere Kiste vs OK').toBe(ok.height);
             expect.soft(nextTU.height, 'height of Weitere Kiste vs Abbrechen').toBe(cancel.height);
             for (const key of ['fontSize', 'fontFamily', 'lineHeight', 'paddingTop', 'paddingBottom', 'borderTopWidth']) {
@@ -327,22 +321,8 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
             expect.soft(nextTU.x + nextTU.width, 'Weitere Kiste inside the screen').toBeLessThanOrEqual(viewport.width);
             await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: 15000 }); // clean picture: no toast over the buttons
             await page.getByTestId('next-tu-button').scrollIntoViewIfNeeded();
-            await shot(`pop-up-${viewport.width}x${viewport.height}`);
         });
     }
 
-    // At 393 px the three buttons just fit one row without the icon (57 + 111 + 129 px + 3 x 8 px margins = 321 of 329 px) and the
-    // icon (16 px + gap) cannot fit: "Weitere Kiste" then takes its own row, the layout the Zebra TC22 (360 px) has anyway.
-    await test.step('Zebra TC22 360x720: the icon moves no button (same boxes without it; icon removed from the DOM for this check only)', async () => {
-        await page.getByTestId('next-tu-button').locator('.dialog-button-icon').evaluate((el) => el.remove());
-        for (const viewport of viewports.slice(0, 1)) {
-            await page.setViewportSize(viewport);
-            const without = await measureButtons(page);
-            for (const key of ['ok', 'cancel', 'nextTU']) {
-                for (const dim of ['x', 'y', 'height']) {
-                    expect.soft(withIcon[viewport.width][key][dim], `${viewport.width}: ${key}.${dim} with the icon vs without`).toBe(without[key][dim]);
-                }
-            }
-        }
-    });
+    // The row arrangement at 360 and 393 px with vs without the icon is pinned in picking-cu-qty-entry-layout-label-modes.spec.js.
 });

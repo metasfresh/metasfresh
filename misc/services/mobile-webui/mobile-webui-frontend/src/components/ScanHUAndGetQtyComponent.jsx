@@ -37,6 +37,8 @@ const EMPTY_LU_GRAIS = [];
 /**
  * @param nextTUActions the node as is, or a function `({ scanner }) => node` for a button that owns the hidden scanner of the
  *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
+ *   The pop-up's rescan scanner exists ONLY through the function form: a plain node adds no scanner, so a line that is repeated-booking
+ *   but passes no function has no rescan (today every scan-once line passes it, see PickLineScanScreen).
  * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
  * @return the node to render, or undefined when there are no next-TU actions
  */

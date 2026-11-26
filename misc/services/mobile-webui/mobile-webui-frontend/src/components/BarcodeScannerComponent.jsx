@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import React, { useCallback, useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
 import { useIsSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
@@ -21,7 +20,6 @@ const BarcodeScannerComponent = ({
   inputPlaceholderText,
   invisible,
   isCoexistingWithTypedInput,
-  isCompact,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -107,7 +105,7 @@ const BarcodeScannerComponent = ({
   );
 
   return (
-    <div className={classnames('barcode-scanner', { 'is-compact': isCompact })}>
+    <div className={'barcode-scanner'}>
       {!invisible && isProcessing && <Spinner />}
       {/* HardwareModePanel is rendered in EVERY visible mode:
             HARDWARE → full scan-prompt UI + off-screen <input>
@@ -167,14 +165,11 @@ BarcodeScannerComponent.propTypes = {
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
   isCoexistingWithTypedInput: PropTypes.bool,
-  /** the scan prompt shows a smaller icon */
-  isCompact: PropTypes.bool,
 };
 
 BarcodeScannerComponent.defaultProps = {
   invisible: false,
   isCoexistingWithTypedInput: false,
-  isCompact: false,
 };
 
 export default BarcodeScannerComponent;

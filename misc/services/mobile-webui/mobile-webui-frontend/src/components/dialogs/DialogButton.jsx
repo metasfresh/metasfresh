@@ -31,7 +31,7 @@ const DialogButton = ({
     <button
       id={id}
       data-testid={testId}
-      className={cx('button', className)}
+      className={cx('button', className, { 'has-dialog-icon': !!icon })}
       disabled={disabled}
       type={type}
       onClick={fireOnClick}

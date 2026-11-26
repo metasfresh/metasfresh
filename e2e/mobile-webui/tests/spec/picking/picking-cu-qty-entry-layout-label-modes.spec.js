@@ -297,3 +297,86 @@ for (const viewport of PHONE_VIEWPORTS) {
         });
     });
 }
+
+
+/**
+ * Rows of the given buttons: box of each (Playwright boundingBox), height and font of its computed style.
+ * The barcode icon of "Weitere Kiste" must not change which buttons share a row, so the rows are compared with and without the icon.
+ */
+const measureRow = async (page, scope, testIds) => {
+    const result = {};
+    for (const testId of testIds) {
+        const button = scope(page).getByTestId(testId);
+        await expect(button).toBeVisible();
+        const box = await button.boundingBox();
+        const font = await button.evaluate((el) => getComputedStyle(el).fontSize);
+        result[testId] = { x: box.x, y: box.y, width: box.width, height: box.height, font };
+    }
+    return result;
+};
+
+/** Number of the row (0 = topmost) a button sits in: the buttons with the same y share a row. (The dialog is bottom-anchored, so absolute y shifts with the row count.) */
+const rowIndexOf = (boxes, id) => [...new Set(Object.values(boxes).map((b) => Math.round(b.y)))].sort((p, q) => p - q).indexOf(Math.round(boxes[id].y));
+
+const ICON_LAYOUT_VIEWPORTS = [{ width: 360, height: 720 }, { width: 393, height: 727 }];
+
+/**
+ * The barcode icon of "Weitere Kiste" (next-tu-button) is a decoration: at every Zebra width the buttons are arranged in the same rows
+ * as without it (same y per button), all buttons are equally high, and the font is not shrunk.
+ */
+const expectIconKeepsTheRows = async (page, { scope, testIds, label }) => {
+    const withIcon = {};
+    for (const viewport of ICON_LAYOUT_VIEWPORTS) {
+        await page.setViewportSize(viewport);
+        withIcon[viewport.width] = await measureRow(page, scope, testIds);
+        const heights = testIds.map((id) => withIcon[viewport.width][id].height);
+        expect.soft(new Set(heights).size, `${label} ${viewport.width}: all buttons equally high ${JSON.stringify(heights)}`).toBe(1);
+        const next = withIcon[viewport.width]['next-tu-button'];
+        expect.soft(next.x + next.width, `${label} ${viewport.width}: Weitere Kiste inside the screen`).toBeLessThanOrEqual(viewport.width);
+    }
+    // reference: the same buttons without the icon (icon span removed, icon class of the button removed for this check only)
+    await scope(page).getByTestId('next-tu-button').evaluate((el) => {
+        el.querySelector('.dialog-button-icon')?.remove();
+        el.classList.remove('has-dialog-icon');
+    });
+    for (const viewport of ICON_LAYOUT_VIEWPORTS) {
+        await page.setViewportSize(viewport);
+        const without = await measureRow(page, scope, testIds);
+        for (const id of testIds) {
+            const a = withIcon[viewport.width][id];
+            const b = without[id];
+            expect.soft(rowIndexOf(withIcon[viewport.width], id), `${label} ${viewport.width}: ${id} row number with the icon vs without`).toBe(rowIndexOf(without, id));
+            expect.soft(a.height, `${label} ${viewport.width}: ${id} height with the icon vs without`).toBe(b.height);
+            expect.soft(a.font, `${label} ${viewport.width}: ${id} font size with the icon vs without`).toBe(b.font);
+        }
+    }
+};
+
+// noinspection JSUnusedLocalSymbols
+test('The barcode icon of "Weitere Kiste" keeps the button rows of the pop-up (next to OK and Abbrechen) at 360 and 393 px', async ({ page }) => {
+    allureMeta('Responsive quantity block');
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: 'de_DE' });
+    await startJob(masterdata, { qtyToDeliver: 12 });
+    await openLine({ index: 1 });
+    await PickLineScanScreen.openTU();
+    await scanLabel(labelOf({ masterdata }));
+    await GetQuantityDialog.waitForDialog();
+    await expectIconKeepsTheRows(page, {
+        scope: (p) => p.locator('.get-qty-dialog'),
+        testIds: ['done-button', 'cancel-button', 'next-tu-button'],
+        label: 'pop-up',
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('The barcode icon of "Weitere Kiste" keeps the button rows of the first scan screen (next to Schließen) at 360 and 393 px', async ({ page }) => {
+    allureMeta('Responsive quantity block');
+    const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }], language: 'de_DE' });
+    await startJob(masterdata, { qtyToDeliver: 3 });
+    await openScanEachLine({ index: 1, openTU: false });
+    await expectIconKeepsTheRows(page, {
+        scope: (p) => p.locator('body'),
+        testIds: ['next-tu-button', 'scan-each-close-button'],
+        label: 'first-scan screen',
+    });
+});
