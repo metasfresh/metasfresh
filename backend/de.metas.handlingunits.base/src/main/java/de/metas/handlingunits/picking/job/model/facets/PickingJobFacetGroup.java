@@ -38,12 +38,14 @@ import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_AD_Refer
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_Customer;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_DeliveryDate;
 import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_HandoverLocation;
+import static de.metas.picking.model.X_PickingProfile_Filter.FILTERTYPE_PreparationDate;
 
 @Getter
 public enum PickingJobFacetGroup implements ReferenceListAwareEnum
 {
 	CUSTOMER(FILTERTYPE_Customer),
 	DELIVERY_DATE(FILTERTYPE_DeliveryDate),
+	PREPARATION_DATE(FILTERTYPE_PreparationDate),
 	HANDOVER_LOCATION(FILTERTYPE_HandoverLocation),
 	;
 

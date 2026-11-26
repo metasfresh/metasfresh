@@ -26,7 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -402,104 +405,49 @@ public class BPartnerEffectiveBLTest
 	// ------- getEffectiveBillBPartner tests -------
 
 	@Test
-	public void getEffectiveBillBPartner_relationWinsOverAssociationGroup()
+	public void getEffectiveBillBPartner_partnerWideRelationWinsOverAssociationGroup()
 	{
-		// central billing BP (association group bill-to)
-		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		saveRecord(centralBillingBP);
-		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
-
-		// association group pointing to centralBillingBP
+		final I_C_BPartner centralBillingBP = createBPartner(null);
 		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		assocGroup.setIsDeviatingBillBPartner(true);
-		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
+		assocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
 		saveRecord(assocGroup);
 
-		// member BP in the association group
-		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		memberBP.setC_BP_Group_ID(assocGroup.getC_BP_Group_ID());
-		saveRecord(memberBP);
-		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		final I_C_BPartner memberBP = createBPartner(assocGroup);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, null, billLocX1);
 
-		// per-member-BP bill-to location
-		final I_C_BPartner_Location memberBillToLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		memberBillToLoc.setC_BPartner_ID(memberBP.getC_BPartner_ID());
-		saveRecord(memberBillToLoc);
-
-		// per-member-BP bill-to partner (separate from centralBilling)
-		final I_C_BPartner memberBillToBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		saveRecord(memberBillToBP);
-		final BPartnerId memberBillToBPId = BPartnerId.ofRepoId(memberBillToBP.getC_BPartner_ID());
-
-		// per-member-BP bill-to location on the target BP
-		final I_C_BPartner_Location memberBillToBPLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		memberBillToBPLoc.setC_BPartner_ID(memberBillToBP.getC_BPartner_ID());
-		saveRecord(memberBillToBPLoc);
-
-		// C_BP_Relation: memberBP → memberBillToBP (IsBillTo=Y)
-		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
-		relation.setC_BPartner_ID(memberBP.getC_BPartner_ID());
-		relation.setC_BPartner_Location_ID(memberBillToLoc.getC_BPartner_Location_ID());
-		relation.setC_BPartnerRelation_ID(memberBillToBP.getC_BPartner_ID());
-		relation.setC_BPartnerRelation_Location_ID(memberBillToBPLoc.getC_BPartner_Location_ID());
-		relation.setIsBillTo(true);
-		relation.setIsActive(true);
-		saveRecord(relation);
-
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
-
-		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(memberBillToBPId, memberBillToBPLoc.getC_BPartner_Location_ID());
-		assertThat(resolution).isNotNull();
-		assertThat(resolution.getBillBPartnerId()).isEqualTo(memberBillToBPId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), billLocX1);
 	}
 
 	@Test
 	public void getEffectiveBillBPartner_associationGroupUsedWhenNoRelation()
 	{
-		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		saveRecord(centralBillingBP);
-		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
-
-		final I_C_BPartner_Location centralLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		centralLoc.setC_BPartner_ID(centralBillingBP.getC_BPartner_ID());
-		saveRecord(centralLoc);
+		final I_C_BPartner centralBillingBP = createBPartner(null);
+		final BPartnerLocationId centralLoc = createLocation(centralBillingBP);
 
 		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		assocGroup.setIsDeviatingBillBPartner(true);
-		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
-		assocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
+		assocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		assocGroup.setBill_Location_ID(centralLoc.getRepoId());
 		saveRecord(assocGroup);
 
-		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		memberBP.setC_BP_Group_ID(assocGroup.getC_BP_Group_ID());
-		saveRecord(memberBP);
-		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		final I_C_BPartner memberBP = createBPartner(assocGroup);
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
-
-		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
-		assertThat(resolution).isNotNull();
-		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), centralLoc);
 	}
 
 	@Test
 	public void getEffectiveBillBPartner_parentAssociationGroupUsedWhenMemberGroupIsNotAssociation()
 	{
-		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		saveRecord(centralBillingBP);
-		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
-
-		final I_C_BPartner_Location centralLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-		centralLoc.setC_BPartner_ID(centralBillingBP.getC_BPartner_ID());
-		saveRecord(centralLoc);
+		final I_C_BPartner centralBillingBP = createBPartner(null);
+		final BPartnerLocationId centralLoc = createLocation(centralBillingBP);
 
 		// parent group is the association
 		final I_C_BP_Group parentAssocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		parentAssocGroup.setIsDeviatingBillBPartner(true);
-		parentAssocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
-		parentAssocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
+		parentAssocGroup.setBill_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		parentAssocGroup.setBill_Location_ID(centralLoc.getRepoId());
 		saveRecord(parentAssocGroup);
 
 		// member's direct group is NOT an association
@@ -508,34 +456,116 @@ public class BPartnerEffectiveBLTest
 		childGroup.setParent_BP_Group_ID(parentAssocGroup.getC_BP_Group_ID());
 		saveRecord(childGroup);
 
-		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		memberBP.setC_BP_Group_ID(childGroup.getC_BP_Group_ID());
-		saveRecord(memberBP);
-		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+		final I_C_BPartner memberBP = createBPartner(childGroup);
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
-
-		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
-		assertThat(resolution).isNotNull();
-		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), centralLoc);
 	}
 
 	@Test
 	public void getEffectiveBillBPartner_neitherRelationNorAssociationGroup_returnsNull()
 	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID()))).isNull();
+	}
+
+	/**
+	 * Without a location, only the partner-wide relation ({@code C_BPartner_Location_ID IS NULL}) counts.
+	 */
+	@Test
+	public void getEffectiveBillBPartner_ignoresLocationBoundRelation()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		createBillToRelation(memberBP, memberLocA, createLocation(createBPartner(null)));
+
+		assertThat(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID()))).isNull();
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_usesPartnerWideRelationNextToLocationBoundOne()
+	{
+		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId memberLocA = createLocation(memberBP);
+		final BPartnerLocationId billLocX1 = createLocation(createBPartner(null));
+		final BPartnerLocationId billLocZ1 = createLocation(createBPartner(null));
+		createBillToRelation(memberBP, memberLocA, billLocX1);
+		createBillToRelation(memberBP, null, billLocZ1);
+
+		assertBillTo(bpartnerEffectiveBL.getEffectiveBillBPartner(BPartnerId.ofRepoId(memberBP.getC_BPartner_ID())), billLocZ1);
+	}
+
+	static I_C_BP_Group createPlainBPGroup()
+	{
 		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		plainGroup.setIsDeviatingBillBPartner(false);
 		saveRecord(plainGroup);
+		return plainGroup;
+	}
 
-		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		memberBP.setC_BP_Group_ID(plainGroup.getC_BP_Group_ID());
-		saveRecord(memberBP);
-		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+	static I_C_BPartner createBPartner(@Nullable final I_C_BP_Group bpGroup)
+	{
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		if (bpGroup != null)
+		{
+			bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		}
+		saveRecord(bpartner);
+		return bpartner;
+	}
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
+	static BPartnerLocationId createLocation(final I_C_BPartner bpartner)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(location);
+		return BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+	}
 
-		assertThat(resolution).isNull();
+	static void createBillToRelation(
+			final I_C_BPartner bpartner,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationId billLocationId)
+	{
+		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		relation.setC_BPartnerRelation_ID(billLocationId.getBpartnerId().getRepoId());
+		relation.setC_BPartnerRelation_Location_ID(billLocationId.getRepoId());
+		relation.setIsBillTo(true);
+		relation.setIsActive(true);
+		saveRecord(relation);
+	}
+
+	static void assertBillTo(@Nullable final BillBPartnerResolution resolution, final BPartnerLocationId expectedBillLocationId)
+	{
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(expectedBillLocationId.getBpartnerId());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocationId);
+	}
+
+	@Test
+	public void getEffectiveValue_deliveryAndFreight()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpartner_DeliveryRule(DeliveryRule.MANUAL)
+				.bpartner_DeliveryViaRule(DeliveryViaRule.Shipper)
+				.bpartner_poDeliveryViaRule(DeliveryViaRule.NormalPost)
+				.bpartner_FreightCostRule(FreightCostRule.Line)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+
+		// DeliveryRule is sales-only: the getter returns null for purchase so no caller can leak the sales value
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.SALES)).isEqualTo(DeliveryRule.MANUAL);
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.PURCHASE)).isNull();
+
+		// DeliveryViaRule has an SO/PO split (DeliveryViaRule vs PO_DeliveryViaRule)
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.SALES)).isEqualTo(DeliveryViaRule.Shipper);
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.PURCHASE)).isEqualTo(DeliveryViaRule.NormalPost);
+
+		// FreightCostRule is not SOTrx-split
+		assertThat(bPartnerEffective.getFreightCostRule()).isEqualTo(FreightCostRule.Line);
 	}
 
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
@@ -551,6 +581,10 @@ public class BPartnerEffectiveBLTest
 			@Nullable final Boolean bpartner_isAutoInvoice,
 			@Nullable final Incoterms bpartner_incoterms,
 			@Nullable final Incoterms bpartner_poIncoterms,
+			@Nullable final DeliveryRule bpartner_DeliveryRule,
+			@Nullable final DeliveryViaRule bpartner_DeliveryViaRule,
+			@Nullable final DeliveryViaRule bpartner_poDeliveryViaRule,
+			@Nullable final FreightCostRule bpartner_FreightCostRule,
 			@Nullable final PricingSystemId bpGroup_PricingSystemId,
 			@Nullable final PricingSystemId bpGroup_poPricingSystemId,
 			@Nullable final PaymentTermId bpGroup_PaymentTermId,
@@ -619,6 +653,10 @@ public class BPartnerEffectiveBLTest
 		partner.setIncotermLocation(extractIncotermsLocation(bpartner_incoterms));
 		partner.setC_Incoterms_Vendor_ID(createIncoterms(bpartner_poIncoterms));
 		partner.setPO_IncotermLocation(extractIncotermsLocation(bpartner_poIncoterms));
+		partner.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner_DeliveryRule));
+		partner.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_DeliveryViaRule));
+		partner.setPO_DeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_poDeliveryViaRule));
+		partner.setFreightCostRule(FreightCostRule.toCodeOrNull(bpartner_FreightCostRule));
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());

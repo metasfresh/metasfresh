@@ -23,7 +23,7 @@
 package de.metas.externalsystem.process;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -46,7 +46,7 @@ import java.util.Map;
 public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 {
 	private final InvokePCMService invokePCMService = SpringContextHolder.instance.getBean(InvokePCMService.class);
-	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	public final ExternalSystemConfigRepository externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()

@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
+import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ class DynamicReferencesCache
 	
 	private static final ImmutableSet<String> TABLENAMES_TO_AVOID_CACHING = ImmutableSet.<String>builder()
 			.add(I_AD_Issue.Table_Name) // because it's often written => often cache reset
+			.add(I_AD_ChangeLog.Table_Name) // because change-log rows are written by plain JDBC without cache invalidation
 			.build();
 
 	// we have no actual cache here, because tableRecordIdDAO has one.

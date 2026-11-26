@@ -8,6 +8,7 @@ import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsPro
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -103,12 +104,21 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 	public void markPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
 	{
 		getRowsData().markPreparedForAllocation(rowIds);
-		invalidateAll();
+		notifyViewChanged();
 	}
 
 	public void unmarkPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
 	{
 		getRowsData().unmarkPreparedForAllocation(rowIds);
-		invalidateAll();
+		notifyViewChanged();
+	}
+
+	/**
+	 * Marking/unmarking flips the prepared flag in place (no DB state changes), so there is no repository rebuild:
+	 * the rows keep the user's typed-but-not-yet-persisted amounts. Only the frontend is told to re-fetch the view.
+	 */
+	private void notifyViewChanged()
+	{
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(getViewId());
 	}
 }

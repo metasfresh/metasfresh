@@ -120,6 +120,8 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	@Override
 	public void validate(@NonNull final I_C_OLCand olCand)
 	{
+		updateManualQtyItemCapacity(olCand); // first, so that it is decided even if a later check fails
+
 		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
 		{
 			throw new AdempiereException(ERR_MISSING_PRODUCT);
@@ -239,7 +241,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 			if (olCandPackingInstructionId == null)
 			{
-				olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+				setPackingInstructionFromPricing(olCand, pricingResult);
 			}
 
 			if (pricingResult.getTaxCategoryId() == null)
@@ -297,8 +299,33 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		if (olCandPackingInstructionId == null)
 		{
-			olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+			setPackingInstructionFromPricing(olCand, pricingResult);
 		}
+	}
+
+	/**
+	 * {@code IsManualQtyItemCapacity} is derived from the effective packing instruction: {@code 'Y'} iff it gives no finite TU capacity (none, virtual or infinite),
+	 * so that the candidate's own {@code QtyItemCapacity} is used. Decided on every validation, so it also follows a packing instruction
+	 * that was set by the creator, the user, or an earlier validator.
+	 */
+	private void updateManualQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+	{
+		olCand.setIsManualQtyItemCapacity(olCandCapacityProvider.isInfiniteCapacityTU(olCand));
+	}
+
+	/**
+	 * Also decides {@code IsManualQtyItemCapacity} from the packing instruction taken from the price,
+	 * because {@link #updateManualQtyItemCapacity(I_C_OLCand)} ran before it was assigned.
+	 */
+	private void setPackingInstructionFromPricing(@NonNull final I_C_OLCand olCand, @NonNull final IPricingResult pricingResult)
+	{
+		final HUPIItemProductId packingInstructionId = pricingResult.getPackingMaterialId();
+		if (HUPIItemProductId.equals(packingInstructionId, HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID())))
+		{
+			return;
+		}
+		olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(packingInstructionId));
+		updateManualQtyItemCapacity(olCand);
 	}
 
 	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)

@@ -185,7 +185,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+		// a term without product (e.g. a refund term with a category base) has candidates that carry their own product
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID() > 0 ? term.getM_Product_ID() : ic.getM_Product_ID());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 

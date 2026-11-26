@@ -20,6 +20,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.OptionalAssert;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,21 +28,31 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.Optional;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.gs1.GTIN;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUPIItemProductDAOTest
@@ -400,6 +411,170 @@ public class HUPIItemProductDAOTest
 			assertDefaultForProduct(product1, bpartner3, "2010-10-01").isEmpty();
 			assertDefaultForProduct(product1, bpartner3, "2011-10-01").contains(pip3);
 			assertDefaultForProduct(product1, bpartner3, "2012-10-01").contains(pip3);
+		}
+
+		/**
+		 * A packing instruction that no product price of the given price list version references must not be
+		 * offered as a default — it cannot be priced, so a document line carrying it cannot be completed.
+		 */
+		@Test
+		public void priceListVersionGiven_noProductPriceReferencesIt_returnsEmpty()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			createProductPrice(plvId, product1, null); // a price, but with no packing instruction
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+			assertThat(dao.retrieveDefaultIdForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+
+			// the unrestricted overloads are unchanged
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"))).contains(pip);
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), null)).contains(pip);
+		}
+
+		@Test
+		public void priceListVersionGiven_aProductPriceReferencesIt_returnsIt()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			createProductPrice(plvId, product1, pip);
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).contains(pip);
+			assertThat(dao.retrieveDefaultIdForProduct(product1, bpartner1, date("2011-10-01"), plvId))
+					.contains(HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * The price of a <em>different</em> price list version must not qualify a packing instruction.
+		 */
+		@Test
+		public void priceListVersionGiven_onlyAnotherVersionsPriceReferencesIt_returnsEmpty()
+		{
+			final I_M_HU_PI_Item_Product pip = huPIItemProduct()
+					.productId(product1).bpartnerId(null).validFrom("2011-10-01")
+					.huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true).build();
+			final PriceListVersionId plvId = createPriceListVersion();
+			final PriceListVersionId otherPlvId = createPriceListVersion();
+			createProductPrice(otherPlvId, product1, pip);
+
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), plvId)).isEmpty();
+			assertThat(dao.retrieveDefaultForProduct(product1, bpartner1, date("2011-10-01"), otherPlvId)).contains(pip);
+		}
+	}
+
+	private PriceListVersionId createPriceListVersion()
+	{
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class);
+		plv.setIsActive(true);
+		saveRecord(plv);
+		return PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
+	}
+
+	private void createProductPrice(
+			@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull final ProductId productId,
+			@Nullable final I_M_HU_PI_Item_Product huPiItemProduct)
+	{
+		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
+		productPrice.setM_PriceList_Version_ID(priceListVersionId.getRepoId());
+		productPrice.setM_Product_ID(productId.getRepoId());
+		if (huPiItemProduct != null)
+		{
+			productPrice.setM_HU_PI_Item_Product(huPiItemProduct);
+		}
+		saveRecord(productPrice);
+	}
+
+	@Nested
+	public class findFirstByGtin
+	{
+		private final GTIN sharedGtin = GTIN.ofString("3333333333336");
+
+		private I_M_HU_PI_Item_Product piipWithGtin(final String name, final BPartnerId bpartnerId, final String validFrom)
+		{
+			final I_M_HU_PI_Item_Product piip = huPIItemProduct()
+					.instanceName(name).productId(product1).bpartnerId(bpartnerId)
+					.validFrom(validFrom).huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+			piip.setGTIN(sharedGtin.getAsString());
+			saveRecord(piip);
+			return piip;
+		}
+
+		/**
+		 * A barcode shared across partners must not let the DatePromised re-resolution cross to another
+		 * partner's packing instruction. The partner-scoped lookup must stay within the given partner.
+		 */
+		@Test
+		public void scopesToBPartner_whenBarcodeSharedAcrossPartners()
+		{
+			// the order's partner (bpartner1): an old row valid on the date + a future row (newest, invalid on the date)
+			final I_M_HU_PI_Item_Product p1_old = piipWithGtin("p1_old", bpartner1, "2019-01-01");
+			piipWithGtin("p1_future", bpartner1, "2023-01-01");
+			// another partner (bpartner2) shares the barcode; a later ValidFrom makes it win a partner-blind lookup
+			final I_M_HU_PI_Item_Product p2 = piipWithGtin("p2", bpartner2, "2020-01-01");
+
+			final ZonedDateTime datePromised = date("2022-11-20");
+
+			// partner-blind (documents the defect): the OTHER partner's later-ValidFrom row wins
+			final Optional<ProductAndHUPIItemProductId> blind = dao.findFirstByGtin(sharedGtin, datePromised);
+			assertThat(blind).isPresent();
+			assertThat(blind.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(p2.getM_HU_PI_Item_Product_ID()));
+
+			// partner-scoped (the fix): stays within bpartner1 -> its old, valid row
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, datePromised);
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(p1_old.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * When the partner has no own row for the barcode, a generic (partner-less) row is still resolved,
+		 * while another partner's row stays excluded.
+		 */
+		@Test
+		public void fallsBackToGenericRow_whenNoPartnerSpecificOne()
+		{
+			final I_M_HU_PI_Item_Product generic = piipWithGtin("generic", null, "2019-01-01");
+			piipWithGtin("otherPartner", bpartner2, "2020-01-01"); // must stay excluded
+
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2022-11-20"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(generic.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * On and after a version's switch date both the old and the new row are valid; the row with the
+		 * latest ValidFrom (the new version) must win — even when the OLD row is the product default.
+		 */
+		@Test
+		public void selectsLatestValidFrom_onAndAfterSwitch_evenWhenOldRowIsDefaultForProduct()
+		{
+			final I_M_HU_PI_Item_Product oldRow = piipWithGtin("old", bpartner1, "2019-01-01");
+			oldRow.setIsDefaultForProduct(true);
+			saveRecord(oldRow);
+			final I_M_HU_PI_Item_Product newRow = piipWithGtin("new", bpartner1, "2023-01-01");
+
+			// delivery date on/after the new row's ValidFrom -> both valid -> latest ValidFrom (new) wins
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2024-01-01"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(newRow.getM_HU_PI_Item_Product_ID()));
+		}
+
+		/**
+		 * A partner-specific row wins over a generic one even when the generic row has a later ValidFrom.
+		 */
+		@Test
+		public void prefersPartnerSpecificOverGeneric_whenBothValid()
+		{
+			final I_M_HU_PI_Item_Product partnerSpecific = piipWithGtin("partnerSpecific", bpartner1, "2019-01-01");
+			piipWithGtin("generic", null, "2020-01-01"); // later ValidFrom, but generic -> must not win
+
+			final Optional<ProductAndHUPIItemProductId> scoped = dao.findFirstByGtin(sharedGtin, bpartner1, date("2022-11-20"));
+			assertThat(scoped).isPresent();
+			assertThat(scoped.get().getHupiItemProductId()).isEqualTo(HUPIItemProductId.ofRepoId(partnerSpecific.getM_HU_PI_Item_Product_ID()));
 		}
 	}
 }

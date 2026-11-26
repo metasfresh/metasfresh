@@ -8,18 +8,6 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 import { generateEAN13 } from '../../utils/ean13';
 
-let previousSysconfigs = null;
-
-// Restore the sysconfig in an afterEach so it runs even if the test body fails or times out.
-// An in-body restore step is skipped on failure, which would leak
-// M_ShipmentSchedule_Close_PartiallyShipped=Y to sibling picking specs (they complete partial
-// picking jobs too) and fail them in lockstep with a 120s job-launcher timeout.
-test.afterEach(async () => {
-    if (previousSysconfigs && Object.keys(previousSysconfigs).length > 0) {
-        await Backend.setSysconfigs(previousSysconfigs);
-    }
-});
-
 const createMasterdata = async () => {
     const masterdata = await Backend.createMasterdata({
       language: "en_US",
@@ -74,7 +62,6 @@ const createMasterdata = async () => {
         }
     });
 
-    previousSysconfigs = masterdata.previousSysconfigs;
     return masterdata;
 }
 

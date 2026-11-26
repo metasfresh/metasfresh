@@ -3,11 +3,13 @@ package de.metas.frontend_testing.masterdata.hu;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Value
 @Builder
@@ -18,8 +20,24 @@ public class JsonCreateHURequest
 	@Nullable Identifier warehouse;
 	/** Optional: when set, the HU is created on this specific locator (must belong to {@link #warehouse}); when null, the warehouse's default locator is used. */
 	@Nullable Identifier locator;
+
+	/**
+	 * When {@link #packingInstructions} has a FINITE capacity, an explicit {@code qty} here means:
+	 * load this total across the LU's TUs, under-filling the last TU — forcing it to be created as a
+	 * real, individually addressable (non-aggregate) HU instead of coalescing into an aggregate row.
+	 * When absent, the total is derived from the packing instructions (exact fill).
+	 */
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
+	/**
+	 * Partner of the created top-level HU (the LU, or the TU when the packing instructions have no LU). Identifier of a partner created in the same request.
+	 */
+	@Nullable Identifier bpartner;
+	/**
+	 * Partner of the HUs included in the created top-level HU (TUs and their VHUs). Absent means no partner ({@code C_BPartner_ID} NULL).
+	 * Only applied when {@code bpartner} or {@code tuBPartner} is set.
+	 */
+	@Nullable Identifier tuBPartner;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean generateHUQRCodesForAllTUs;
 	@Nullable Integer splitOutTUsCountAfterQRCodes;
@@ -28,6 +46,13 @@ public class JsonCreateHURequest
 	@Nullable String lotNo;
 	@Nullable String bestBeforeDate;
 	@Nullable String externalBarcode;
+
+	/**
+	 * Additional products to stock onto the SAME HU created by this request, on top of {@link #product}/{@link #qty}.
+	 * Each entry is loaded onto the already-created HU (not into a separate one), so the resulting {@code M_HU}
+	 * ends up with one {@code M_HU_Storage} row per distinct product.
+	 */
+	@Nullable List<AdditionalProduct> additionalProducts;
 
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
@@ -50,4 +75,13 @@ public class JsonCreateHURequest
 
 	@JsonIgnore
 	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class AdditionalProduct
+	{
+		@NonNull Identifier product;
+		@NonNull BigDecimal qty;
+	}
 }

@@ -28,6 +28,9 @@ public class DDOrderCandidateQuery
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
 	@Nullable DDOrderCandidateId ddOrderCandidateId;
 	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
+	@Nullable PPOrderId ppOrderId;
+	/** Matches candidates whose BOM line is this one or not set (PP_Orders made from PP_Order_Candidates have no BOM line on their DD candidates). */
+	@Nullable PPOrderBOMLineId ppOrderBOMLineIdOrEmpty;
 	@Nullable InputDataSourceId inputDataSourceId;
 	@Nullable IQueryFilter<I_DD_Order_Candidate> userSelectionFilter;
 	@Nullable Boolean onlyPositiveQtyToProcess;

@@ -30,8 +30,10 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -52,6 +54,13 @@ import java.util.List;
 @Service
 public class DropshipPOFromSOService
 {
+	/**
+	 * Set on a drop-ship purchase order only while {@link #createDropshipPOForSO} completes it, i.e. inside its sales order's completion;
+	 * at that time the sales order is not yet completed, so its DocStatus alone cannot tell this from a sales order that is reactivated.
+	 */
+	private static final ModelDynAttributeAccessor<I_C_Order, Boolean> DYNATTR_CompletedWithinSalesOrderCompletion =
+			new ModelDynAttributeAccessor<>(DropshipPOFromSOService.class.getName(), "CompletedWithinSalesOrderCompletion", Boolean.class);
+
 	private final IC_Order_CreatePOFromSOsDAO orderCreatePOFromSOsDAO = Services.get(IC_Order_CreatePOFromSOsDAO.class);
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
@@ -146,9 +155,18 @@ public class DropshipPOFromSOService
 			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 			for (final I_C_Order po : createdPOs)
 			{
-				documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				try (final IAutoCloseable ignored = DYNATTR_CompletedWithinSalesOrderCompletion.temporarySetValue(po, true))
+				{
+					documentBL.processEx(po, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				}
 			}
 		}
+	}
+
+	/** @return whether the given drop-ship purchase order is being completed inside its sales order's completion */
+	public static boolean isCompletedWithinSalesOrderCompletion(@NonNull final I_C_Order purchaseOrder)
+	{
+		return DYNATTR_CompletedWithinSalesOrderCompletion.is(purchaseOrder, true);
 	}
 
 	/**

@@ -72,6 +72,8 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
@@ -115,10 +117,12 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
+	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
@@ -133,6 +137,7 @@ public class PickingJobPickCommand
 
 	//
 	// Params
+	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final PickingJobLineId _lineId;
 	@NonNull private final PickingUnit pickingUnit;
 	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
@@ -201,6 +206,7 @@ public class PickingJobPickCommand
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
+		this.productService = productService;
 		this.bpartnerService = bpartnerService;
 		this.warehouseService = warehouseService;
 		this.shipmentScheduleService = shipmentScheduleService;
@@ -221,13 +227,12 @@ public class PickingJobPickCommand
 		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
+		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
 		this.isPickWholeTU = isPickWholeTU;
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
-
-		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
@@ -351,6 +356,53 @@ public class PickingJobPickCommand
 				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
+	/**
+	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
+	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
+	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
+	 * is never refused; neither is a FIRST pick (nothing yet picked on the line), so a flow that over-delivers by design on
+	 * the first pick (e.g. AlwaysSplitHU "pick more than available") is unaffected - only a REPEAT pick that would push an
+	 * already-picked line above ordered is blocked.
+	 * <p>
+	 * Guards the sequential repeat-save: the first pick already committed (line full), a second request would otherwise be
+	 * booked again, because {@link #computeQtyToPickCUs} caps only when remaining &gt; 0 and (independently) only when
+	 * {@code isConsiderSalesOrderCapacity}; on a full line it falls through to the full packing qty. This check is
+	 * deliberately independent of both that cap and {@code isConsiderSalesOrderCapacity}.
+	 * <p>
+	 * The already-picked qty is summed from the job's steps ({@link PickingJobLine#getQtyPicked()}), which each pick
+	 * persists synchronously (M_Picking_Job_Step), so the reloaded job a sequential second request works from already
+	 * reflects the first pick's committed qty - no recompute wait and no row lock are needed to catch the observed
+	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
+	 * guard. Must run inside {@link #executeInTrx()}.
+	 */
+	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
+	{
+		if (pickingJobOptions.isShowConfirmationPromptWhenOverPick() || qtyToPickCUs.signum() <= 0)
+		{
+			return;
+		}
+
+		final PickingJobLine line = getLine();
+		final Quantity qtyAlreadyPicked = line.getQtyPicked();
+
+		if (qtyAlreadyPicked.signum() <= 0)
+		{
+			return;
+		}
+
+		final Quantity qtyAllowedToPick = line.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
+		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
+		{
+			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("pickingJobId", _pickingJob.getId())
+					.setParameter("pickingJobLineId", getLineId())
+					.setParameter("qtyToPick", qtyToPickCUs)
+					.setParameter("qtyOrdered", line.getQtyToPick())
+					.setParameter("qtyAlreadyPicked", line.getQtyPicked());
+		}
+	}
+
 	public PickingJob execute()
 	{
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
@@ -359,6 +411,10 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
+
+		productService.assertPickAllowed(getProductId());
+
+		assertNotAboveOrderedQtyWhenOverPickBlocked();
 
 		checkOrAllocatePickingSlot();
 
@@ -909,13 +965,17 @@ public class PickingJobPickCommand
 					final ImmutableList<TUPart> cus = tu.getCUsNotEmpty();
 					final List<Quantity> catchWeights = getCatchWeight() != null ? getCatchWeight().spreadEqually(cus.size()) : null;
 
-					Quantity qtyPickedThisTU = null;
+					StockQtyAndUOMQty qtysPickedThisTU = null;
 					for (int i = 0; i < cus.size(); i++)
 					{
 						final TUPart cu = cus.get(i);
 						final Quantity catchWeightPerCU = catchWeights != null ? catchWeights.get(i) : null;
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
-						qtyPickedThisTU = qtyPickedThisTU == null ? qtyPicked : qtyPickedThisTU.add(qtyPicked);
+						if (recordTUOnShipmentSchedule)
+						{
+							final StockQtyAndUOMQty qtysPickedThisCU = CatchWeightHelper.extractQtys(HUContextHolder.getCurrent(), productId, qtyPicked, cu.toHU());
+							qtysPickedThisTU = qtysPickedThisTU == null ? qtysPickedThisCU : StockQtyAndUOMQtys.add(qtysPickedThisTU, qtysPickedThisCU);
+						}
 						if (!recordTUOnShipmentSchedule)
 						{
 							addShipmentScheduleQtyPicked(cu, qtyPicked);
@@ -924,13 +984,14 @@ public class PickingJobPickCommand
 						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
 					}
 
-					if (recordTUOnShipmentSchedule && qtyPickedThisTU != null)
+					if (recordTUOnShipmentSchedule && qtysPickedThisTU != null)
 					{
 						// Record THIS pick's qty (sum of its CU parts), NOT the container TU's cumulative
 						// product storage: picking the same product more than once into one bare TU would
 						// otherwise record the running total, which the shipment-schedule expansion over-counts
 						// into a spurious extra per-COO line (nShiftShipment COO "mixed TUs" scenarios).
-						addShipmentScheduleQtyPicked(tu, qtyPickedThisTU);
+						// Likewise the catch weight is this pick's CU parts' WeightNet, not the TU's running total.
+						addShipmentScheduleQtyPicked(tu.toHU(), qtysPickedThisTU);
 					}
 				}
 			}
@@ -952,13 +1013,18 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final I_M_HU hu, @NonNull final Quantity qtyPicked)
 	{
+		addShipmentScheduleQtyPicked(hu, CatchWeightHelper.extractQtys(HUContextHolder.getCurrent(), getProductId(), qtyPicked, hu));
+	}
+
+	private void addShipmentScheduleQtyPicked(@NonNull final I_M_HU hu, @NonNull final StockQtyAndUOMQty qtyPicked)
+	{
 		final IMutableHUContext huContext = HUContextHolder.getCurrent();
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 
 		shipmentScheduleService.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
-				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
+				.qtyPicked(qtyPicked)
 				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
@@ -1035,8 +1101,9 @@ public class PickingJobPickCommand
 		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
 		// Picked inside the TU.
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
-		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
-		assertEnoughQRCodes(huQRCodes, 1);
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// tolerates a surplus (rationale in its Javadoc).
+			assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(

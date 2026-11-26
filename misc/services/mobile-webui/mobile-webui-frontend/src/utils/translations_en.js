@@ -13,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -79,6 +84,14 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation is currently unavailable',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -114,6 +127,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'This will write off the remaining %(qty)s and empty the HU. Continue?',
+    },
     picking: {
       PickingLine: 'Packing line',
       PickFromManufacturingOrder: 'Manufacture',
@@ -129,12 +145,14 @@ const translations = {
       unPickBtn: 'Unpack',
       target: 'To pack',
       picked: 'Packed',
+      available: 'Available',
       switchToManualInput: 'Manually',
       switchToQrCodeInput: 'Scan',
       scanSerialNo: 'Scan Serial No',
       scanSerialNoAgain: 'Scan again',
       serialNoCount: '%(scanned)s of %(total)s scanned',
       serialNoCountExtra: '(%(extra)s too many)',
+      serialNoAlreadyScanned: 'Serial number already scanned',
       serialNoScanDone: 'Done',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
@@ -149,6 +167,10 @@ const translations = {
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
+        invalidQRCode: 'The scanned QR code is not readable!',
+        missingLotNo: 'The scanned QR code contains no lot number!',
+        missingBestBeforeDate: 'The scanned QR code contains no best-before date!',
+        invalidBestBeforeDate: 'The scanned QR code contains an invalid best-before date!',
         differentProduct: 'The scanned QR Product does not match',
       },
       pickingTarget: {
@@ -201,13 +223,16 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanProduct: 'Scan Product',
+      scanHUBarcodePlaceholder: 'Scan HU barcode',
+      scanProductGtinPlaceholder: 'Scan product (GTIN)',
       scanDropToLocator: 'Scan drop to Locator',
       switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      cannotPickFromSelectedHU: 'Cannot pick from the selected HU: %(reason)s. Please scan the HU to pick from.',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
+        productCodeWhereHUExpected: 'This is an article barcode (GTIN), not an HU barcode. Please scan the HU first.',
       },
       printMaterialInTransitReport: 'In Transit Report',
     },

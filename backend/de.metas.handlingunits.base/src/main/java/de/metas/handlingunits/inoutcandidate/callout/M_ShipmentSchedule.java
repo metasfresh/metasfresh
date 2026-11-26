@@ -27,6 +27,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 
+import lombok.NonNull;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
@@ -37,6 +38,8 @@ import de.metas.util.Services;
 public class M_ShipmentSchedule
 {
 	public static final M_ShipmentSchedule instance = new M_ShipmentSchedule();
+
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	@CalloutMethod(columnNames = {
 			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Calculated,
@@ -53,9 +56,7 @@ public class M_ShipmentSchedule
 
 		//
 		// Calculate and set QtyEntered(CU) from M_HU_PI_Item_Product and QtyEnteredTU(aka QtyPacks)
-		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
-		final int qtyTU = packingAware.getQtyTU().intValueExact();
-		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyTU);
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 }

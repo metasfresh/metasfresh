@@ -74,6 +74,7 @@ public class JsonDeliveryAdvisorRequest
 	@Nullable String customerReference;
 	@Nullable String incotermsValue;
 	@Nullable String externalSystemValue;
+	@Nullable String preAdviceRequired;
 	// PARCEL-level fields (mirror JsonDeliveryOrderParcel) — describe the physical HU / parcel being advised
 	@NonNull BigDecimal grossWeightKg;
 	@Nullable JsonPackageDimensions packageDimensions;
@@ -116,6 +117,8 @@ public class JsonDeliveryAdvisorRequest
 				return deliveryAddress.getAttention();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
 				return pickupAddress.getAttention();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED:
+				return preAdviceRequired;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE:
 				return incotermsValue;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE:
@@ -187,6 +190,11 @@ public class JsonDeliveryAdvisorRequest
 						.map(JsonQuantity::getUomCode)
 						.collect(ImmutableSet.toImmutableSet());
 				return uomCodes.size() == 1 ? uomCodes.iterator().next() : null;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_2:
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_3:
+				// the attribute value name IS the Carrier_Config column / shipper-config property key
+				return shipperConfig.getAdditionalProperty(attributeValue);
 			default:
 				return null; // attribute not available at advise time — filtered out by caller
 		}

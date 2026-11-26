@@ -4,8 +4,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
@@ -43,6 +45,9 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT = I_C_OrderLine.COLUMNNAME_QtyOrdered;
 	private static final String SYSCONFIG_COMPLETE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO";
+	private static final String SYSCONFIG_CREATE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CreateDropshipPO";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
@@ -66,8 +71,6 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public String getConfigPurchaseQtySource()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 		// afaiu, qtyReserved would make more sense, but there seem to be problems in C_OrderLine.QtyReserved
 		final String purchaseQtySource = sysConfigBL.getValue(SYSCONFIG_PURCHASE_QTY_SOURCE, SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
 
@@ -85,6 +88,13 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public boolean isCompleteDropshipPO()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
+	}
+
+	@Override
+	public boolean isCreateDropshipPO(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		// resolved for the given client/org so an org-level AD_SysConfig row overrides the system default (ConfigurationLevel 'O')
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_DROPSHIP_PO, false, clientAndOrgId);
 	}
 }

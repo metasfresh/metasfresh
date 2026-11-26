@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO implements I_PickingProfile_PickingJobConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 578159988L;
+	private static final long serialVersionUID = 1198804962L;
 
     /** Standard Constructor */
     public X_PickingProfile_PickingJobConfig (final Properties ctx, final int PickingProfile_PickingJobConfig_ID, @Nullable final String trxName)
@@ -44,6 +44,18 @@ public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO imp
 	public java.lang.String getFormatPattern() 
 	{
 		return get_ValueAsString(COLUMNNAME_FormatPattern);
+	}
+
+	@Override
+	public void setIsBlockLayout (final boolean IsBlockLayout)
+	{
+		set_Value (COLUMNNAME_IsBlockLayout, IsBlockLayout);
+	}
+
+	@Override
+	public boolean isBlockLayout() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBlockLayout);
 	}
 
 	@Override
@@ -108,6 +120,8 @@ public class X_PickingProfile_PickingJobConfig extends org.compiere.model.PO imp
 	public static final String PICKINGJOBFIELD_QtyToDeliver = "QtyToDeliver";
 	/** ProductNo = ProductNo */
 	public static final String PICKINGJOBFIELD_ProductNo = "ProductNo";
+	/** ProductNames = ProductNames */
+	public static final String PICKINGJOBFIELD_ProductNames = "ProductNames";
 	@Override
 	public void setPickingJobField (final java.lang.String PickingJobField)
 	{

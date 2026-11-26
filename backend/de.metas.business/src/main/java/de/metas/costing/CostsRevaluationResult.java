@@ -1,10 +1,8 @@
 package de.metas.costing;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 @Value
@@ -12,8 +10,6 @@ import lombok.Value;
 public class CostsRevaluationResult
 {
 	@NonNull CurrentCostBeforeEvaluation currentCostBeforeEvaluation;
-	@NonNull @Singular ImmutableList<CostDetailAdjustment> costDetailAdjustments;
-	@NonNull CurrentCostAfterEvaluation currentCostAfterEvaluation;
 
 	//
 	//
@@ -38,14 +34,6 @@ public class CostsRevaluationResult
 			this.costPriceOld = costPriceOld;
 			this.costPriceNew = costPriceNew;
 		}
-	}
-
-	@Value
-	@Builder
-	public static class CurrentCostAfterEvaluation
-	{
-		@NonNull Quantity qty;
-		@NonNull CostAmount costPriceComputed;
 	}
 
 }

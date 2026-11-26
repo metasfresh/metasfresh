@@ -3,12 +3,15 @@ package de.metas.contracts.impl;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupSettingsRepository;
+import de.metas.contracts.compensationGroup.contract.ContractCompensationGroupTermRepository;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
@@ -22,6 +25,8 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +94,90 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		assertPartnerData(contract);
 	}
 
+	/**
+	 * A compensation-group term entered without a drop-ship partner (the drop-ship partner and location are optional for
+	 * that type) can be extended; its follow-up term has no drop-ship partner either.
+	 */
+	@Test
+	public void extendContractWithoutDropShipPartner_test()
+	{
+		final I_C_Flatrate_Term contract = prepareCompensationGroupContractForTest();
+		contract.setDropShip_BPartner_ID(-1);
+		contract.setDropShip_Location_ID(-1);
+		contract.setDropShip_Location_Value_ID(-1);
+		contract.setDropShip_User_ID(-1);
+		save(contract);
+
+		final I_C_Flatrate_Term nextTerm = extendAndGetCompletedNextTerm(contract);
+
+		assertThat(nextTerm.getDropShip_BPartner_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_Value_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_User_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * A compensation-group term with a drop-ship partner and contact, but without a drop-ship location, can be extended;
+	 * its follow-up term has the same drop-ship partner and contact, and no drop-ship location either.
+	 */
+	@Test
+	public void extendContractWithDropShipPartnerButWithoutLocation_test()
+	{
+		final I_C_Flatrate_Term contract = prepareCompensationGroupContractForTest();
+		final int dropShipPartnerId = getBpartner().getC_BPartner_ID();
+		final int dropShipUserId = getUser().getAD_User_ID();
+		contract.setDropShip_BPartner_ID(dropShipPartnerId);
+		contract.setDropShip_Location_ID(-1);
+		contract.setDropShip_Location_Value_ID(-1);
+		contract.setDropShip_User_ID(dropShipUserId);
+		save(contract);
+
+		final I_C_Flatrate_Term nextTerm = extendAndGetCompletedNextTerm(contract);
+
+		assertThat(nextTerm.getDropShip_BPartner_ID()).isEqualTo(dropShipPartnerId);
+		assertThat(nextTerm.getDropShip_User_ID()).isEqualTo(dropShipUserId);
+		assertThat(nextTerm.getDropShip_Location_ID()).isLessThanOrEqualTo(0);
+		assertThat(nextTerm.getDropShip_Location_Value_ID()).isLessThanOrEqualTo(0);
+	}
+
+	private I_C_Flatrate_Term prepareCompensationGroupContractForTest()
+	{
+		SpringContextHolder.registerJUnitBean(new ContractCompensationGroupSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ContractCompensationGroupTermRepository());
+		addCalendarYear(2019); // unlike subscriptions, the follow-up term's periods are validated against the contract calendar
+
+		prepareBPartner();
+		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
+		createProductAcct(productAndPricingSystem);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne);
+		conditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
+		save(conditions);
+
+		return createFlatrateTerm(conditions, productAndPricingSystem.getProductAndCategoryId(), startDate);
+	}
+
+	private I_C_Flatrate_Term extendAndGetCompletedNextTerm(@NonNull final I_C_Flatrate_Term contract)
+	{
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(PInstanceId.ofRepoId(1))
+				.contract(contract)
+				.forceExtend(false)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
+
+		final I_C_Flatrate_Term nextTerm = contract.getC_FlatrateTerm_Next();
+		assertThat(nextTerm).isNotNull();
+		assertThat(nextTerm.getType_Conditions()).isEqualTo(X_C_Flatrate_Conditions.TYPE_CONDITIONS_CompensationGroup);
+		assertThat(nextTerm.getStartDate()).isEqualTo(TimeUtil.addDays(contract.getEndDate(), 1));
+		assertThat(nextTerm.getDocStatus()).isEqualTo(X_C_Flatrate_Term.DOCSTATUS_Completed);
+		assertThat(nextTerm.getBill_BPartner_ID()).isEqualTo(contract.getBill_BPartner_ID());
+		assertThat(nextTerm.getBill_Location_ID()).isEqualTo(contract.getBill_Location_ID());
+		return nextTerm;
+	}
+
 	@Test
 	public void extendContractWithExtendingAll_test()
 	{
@@ -143,6 +232,23 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 		}).isInstanceOf(AdempiereException.class)
 				.hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP.toAD_Message());
+	}
+
+	private void addCalendarYear(final int year)
+	{
+		final I_C_Year yearRecord = newInstance(I_C_Year.class);
+		yearRecord.setC_Calendar_ID(getCalendar().getC_Calendar_ID());
+		save(yearRecord);
+
+		for (int month = 1; month <= 12; month++)
+		{
+			final Timestamp periodStartDate = TimeUtil.getDay(year, month, 1);
+			final I_C_Period period = newInstance(I_C_Period.class);
+			period.setStartDate(periodStartDate);
+			period.setEndDate(TimeUtil.getMonthLastDay(periodStartDate));
+			period.setC_Year_ID(yearRecord.getC_Year_ID());
+			save(period);
+		}
 	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)

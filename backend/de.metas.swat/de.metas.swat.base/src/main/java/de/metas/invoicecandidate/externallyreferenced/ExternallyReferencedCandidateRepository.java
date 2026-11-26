@@ -125,6 +125,7 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setPriceActual(ic.getPriceActual().toBigDecimal());
 
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
+			icRecord.setC_Tax_Override_ID(TaxId.toRepoId(ic.getTaxOverrideId()));
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
 		}
@@ -298,6 +299,7 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+		candidate.taxOverrideId(TaxId.ofRepoIdOrNull(icRecord.getC_Tax_Override_ID()));
 		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 
 		return candidate.build();

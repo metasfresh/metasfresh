@@ -71,7 +71,6 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandSPIRegistry;
@@ -200,7 +199,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SpringContextHolder.registerJUnitBean(new ADReferenceService(new AdRefListRepositoryMocked(), new AdRefTableRepositoryMocked()));
 
-		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		olCandBL = OLCandBL.newInstanceForUnitTesting();
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -313,6 +312,12 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
 			return Optional.of(Quantitys.zero(ProductId.ofRepoId(olCand.getM_Product_ID())));
+		}
+
+		@Override
+		public boolean isInfiniteCapacityTU(@NonNull final I_C_OLCand olCand)
+		{
+			return true;
 		}
 	}
 

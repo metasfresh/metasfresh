@@ -51,6 +51,15 @@ public interface ISysConfigDAO extends ISingletonService
 
 	void setValue(@NonNull final String name, final int value, @NonNull final ClientAndOrgId clientAndOrgId);
 
+	/**
+	 * @return the raw {@code Value} of exactly the given row, without falling back to other client/org rows and without
+	 * normalizing the no-value marker {@code "-"}; empty if there is no such row
+	 */
+	Optional<String> getValueOfExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
+
+	/** Deletes exactly the given row, if it exists; reads then fall back to the next less specific row. */
+	void deleteExactRow(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
+
 	/** @return the ConfigurationLevel ('S'/'C'/'O') declared on the System-level (client=0,org=0) record, or empty if none. */
 	Optional<String> getConfigurationLevel(@NonNull String name);
 }

@@ -33,6 +33,8 @@ public class ProductsProposalViewFilter
 
 	public static final String FILTER_ID = "defaultFilter";
 	static final String PARAM_ProductName = "ProductName";
+	public static final String PARAM_OnlyDelivered = "OnlyProductsWithDeliveryHistory";
 
 	String productName;
+	boolean onlyDelivered;
 }

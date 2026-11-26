@@ -144,6 +144,7 @@ public interface I_M_Picking_Job_Step
 
 	/**
 	 * Set Workplace.
+	 * The assignment applies to all users assigned to this workstation
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -153,6 +154,7 @@ public interface I_M_Picking_Job_Step
 
 	/**
 	 * Get Workplace.
+	 * The assignment applies to all users assigned to this workstation
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

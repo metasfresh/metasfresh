@@ -1105,6 +1105,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			value = null;
 		}
 
+		if (value == null
+				&& !attributeSetInstanceBL.getImmutableAttributeSetById(asiId).hasAttribute(AttributeConstants.ATTR_Project))
+		{
+			// No ProjectValue instance on this ASI and no project on the schedule: nothing to clear.
+			// Creating one here would materialize an empty attribute (and clone the ASI)
+			// on every project-less shipment schedule.
+			return;
+		}
+
 		final AttributeSetInstanceId newAsiId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, value);
 		shipmentSchedule.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
 	}

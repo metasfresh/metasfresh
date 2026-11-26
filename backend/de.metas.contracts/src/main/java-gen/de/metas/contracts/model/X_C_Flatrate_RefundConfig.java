@@ -1,287 +1,217 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_RefundConfig
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements I_C_Flatrate_RefundConfig, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -2052796655L;
+	private static final long serialVersionUID = 394528154L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_RefundConfig (Properties ctx, int C_Flatrate_RefundConfig_ID, String trxName)
+    public X_C_Flatrate_RefundConfig (final Properties ctx, final int C_Flatrate_RefundConfig_ID, @Nullable final String trxName)
     {
       super (ctx, C_Flatrate_RefundConfig_ID, trxName);
-      /** if (C_Flatrate_RefundConfig_ID == 0)
-        {
-			setC_Flatrate_Conditions_ID (0);
-			setC_Flatrate_RefundConfig_ID (0);
-			setC_InvoiceSchedule_ID (0);
-			setIsUseInProfitCalculation (false); // N
-			setMinQty (BigDecimal.ZERO);
-			setM_Product_ID (0);
-			setRefundBase (null); // P
-			setRefundInvoiceType (null); // Invoice
-			setRefundMode (null); // S
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_RefundConfig (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Flatrate_RefundConfig (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	public void setBonus_Product_ID (final int Bonus_Product_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+		if (Bonus_Product_ID < 1) 
+			set_Value (COLUMNNAME_Bonus_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bonus_Product_ID, Bonus_Product_ID);
 	}
 
-	/** Set Währung.
-		@param C_Currency_ID 
-		Die Währung für diesen Eintrag
-	  */
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public int getBonus_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bonus_Product_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
-	/** Get Währung.
-		@return Die Währung für diesen Eintrag
-	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Conditions getC_Flatrate_Conditions() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class);
-	}
-
-	@Override
-	public void setC_Flatrate_Conditions(de.metas.contracts.model.I_C_Flatrate_Conditions C_Flatrate_Conditions)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Conditions_ID, de.metas.contracts.model.I_C_Flatrate_Conditions.class, C_Flatrate_Conditions);
-	}
-
-	/** Set Vertragsbedingungen.
-		@param C_Flatrate_Conditions_ID Vertragsbedingungen	  */
-	@Override
-	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
+	public void setC_Flatrate_Conditions_ID (final int C_Flatrate_Conditions_ID)
 	{
 		if (C_Flatrate_Conditions_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, C_Flatrate_Conditions_ID);
 	}
 
-	/** Get Vertragsbedingungen.
-		@return Vertragsbedingungen	  */
 	@Override
-	public int getC_Flatrate_Conditions_ID () 
+	public int getC_Flatrate_Conditions_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_ID);
 	}
 
-	/** Set C_Flatrate_RefundConfig.
-		@param C_Flatrate_RefundConfig_ID C_Flatrate_RefundConfig	  */
 	@Override
-	public void setC_Flatrate_RefundConfig_ID (int C_Flatrate_RefundConfig_ID)
+	public void setC_Flatrate_RefundConfig_ID (final int C_Flatrate_RefundConfig_ID)
 	{
 		if (C_Flatrate_RefundConfig_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_RefundConfig_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_RefundConfig_ID, Integer.valueOf(C_Flatrate_RefundConfig_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_RefundConfig_ID, C_Flatrate_RefundConfig_ID);
 	}
 
-	/** Get C_Flatrate_RefundConfig.
-		@return C_Flatrate_RefundConfig	  */
 	@Override
-	public int getC_Flatrate_RefundConfig_ID () 
+	public int getC_Flatrate_RefundConfig_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_RefundConfig_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_RefundConfig_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule() throws RuntimeException
+	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class);
 	}
 
 	@Override
-	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule)
+	public void setC_InvoiceSchedule(final org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule)
 	{
 		set_ValueFromPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class, C_InvoiceSchedule);
 	}
 
-	/** Set Terminplan Rechnung.
-		@param C_InvoiceSchedule_ID 
-		Plan für die Rechnungsstellung
-	  */
 	@Override
-	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
+	public void setC_InvoiceSchedule_ID (final int C_InvoiceSchedule_ID)
 	{
 		if (C_InvoiceSchedule_ID < 1) 
 			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
+			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, C_InvoiceSchedule_ID);
 	}
 
-	/** Get Terminplan Rechnung.
-		@return Plan für die Rechnungsstellung
-	  */
 	@Override
-	public int getC_InvoiceSchedule_ID () 
+	public int getC_InvoiceSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_InvoiceSchedule_ID);
 	}
 
-	/** Set In Roherlösberechnung.
-		@param IsUseInProfitCalculation 
-		Legt fest, ob die Rückvergütungsparameter in die Berechnung des erwarteten Roherlöses (d.h. Ertrag/Marge) einfließen soll.
-	  */
 	@Override
-	public void setIsUseInProfitCalculation (boolean IsUseInProfitCalculation)
+	public void setIsDeductedAtPayment (final boolean IsDeductedAtPayment)
 	{
-		set_Value (COLUMNNAME_IsUseInProfitCalculation, Boolean.valueOf(IsUseInProfitCalculation));
+		set_Value (COLUMNNAME_IsDeductedAtPayment, IsDeductedAtPayment);
 	}
 
-	/** Get In Roherlösberechnung.
-		@return Legt fest, ob die Rückvergütungsparameter in die Berechnung des erwarteten Roherlöses (d.h. Ertrag/Marge) einfließen soll.
-	  */
 	@Override
-	public boolean isUseInProfitCalculation () 
+	public boolean isDeductedAtPayment() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsUseInProfitCalculation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDeductedAtPayment);
 	}
 
-	/** Set Mindestmenge.
-		@param MinQty Mindestmenge	  */
 	@Override
-	public void setMinQty (java.math.BigDecimal MinQty)
+	public void setIsPackingOptionFiltered (final boolean IsPackingOptionFiltered)
+	{
+		set_Value (COLUMNNAME_IsPackingOptionFiltered, IsPackingOptionFiltered);
+	}
+
+	@Override
+	public boolean isPackingOptionFiltered() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPackingOptionFiltered);
+	}
+
+	@Override
+	public void setIsUseInProfitCalculation (final boolean IsUseInProfitCalculation)
+	{
+		set_Value (COLUMNNAME_IsUseInProfitCalculation, IsUseInProfitCalculation);
+	}
+
+	@Override
+	public boolean isUseInProfitCalculation() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUseInProfitCalculation);
+	}
+
+	@Override
+	public void setMinQty (final BigDecimal MinQty)
 	{
 		set_Value (COLUMNNAME_MinQty, MinQty);
 	}
 
-	/** Get Mindestmenge.
-		@return Mindestmenge	  */
 	@Override
-	public java.math.BigDecimal getMinQty () 
+	public BigDecimal getMinQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MinQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MinQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		if (M_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID);
 	}
 
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public int getM_Product_Category_ID() 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Rückvergütungsbetrag.
-		@param RefundAmt 
-		Rückvergütungsbetrag pro Produkt-Einheit
-	  */
 	@Override
-	public void setRefundAmt (java.math.BigDecimal RefundAmt)
+	public void setRefundAmt (final @Nullable BigDecimal RefundAmt)
 	{
 		set_Value (COLUMNNAME_RefundAmt, RefundAmt);
 	}
 
-	/** Get Rückvergütungsbetrag.
-		@return Rückvergütungsbetrag pro Produkt-Einheit
-	  */
 	@Override
-	public java.math.BigDecimal getRefundAmt () 
+	public BigDecimal getRefundAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RefundAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_RefundAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
@@ -293,21 +223,16 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	public static final String REFUNDBASE_Percentage = "P";
 	/** amount = F */
 	public static final String REFUNDBASE_Amount = "F";
-	/** Set Vergütung basiert auf.
-		@param RefundBase Vergütung basiert auf	  */
 	@Override
-	public void setRefundBase (java.lang.String RefundBase)
+	public void setRefundBase (final java.lang.String RefundBase)
 	{
-
 		set_Value (COLUMNNAME_RefundBase, RefundBase);
 	}
 
-	/** Get Vergütung basiert auf.
-		@return Vergütung basiert auf	  */
 	@Override
-	public java.lang.String getRefundBase () 
+	public java.lang.String getRefundBase() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_RefundBase);
+		return get_ValueAsString(COLUMNNAME_RefundBase);
 	}
 
 	/** 
@@ -319,21 +244,16 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	public static final String REFUNDINVOICETYPE_Invoice = "Invoice";
 	/** Creditmemo = Creditmemo */
 	public static final String REFUNDINVOICETYPE_Creditmemo = "Creditmemo";
-	/** Set Rückvergütung per.
-		@param RefundInvoiceType Rückvergütung per	  */
 	@Override
-	public void setRefundInvoiceType (java.lang.String RefundInvoiceType)
+	public void setRefundInvoiceType (final java.lang.String RefundInvoiceType)
 	{
-
 		set_Value (COLUMNNAME_RefundInvoiceType, RefundInvoiceType);
 	}
 
-	/** Get Rückvergütung per.
-		@return Rückvergütung per	  */
 	@Override
-	public java.lang.String getRefundInvoiceType () 
+	public java.lang.String getRefundInvoiceType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_RefundInvoiceType);
+		return get_ValueAsString(COLUMNNAME_RefundInvoiceType);
 	}
 
 	/** 
@@ -345,39 +265,28 @@ public class X_C_Flatrate_RefundConfig extends org.compiere.model.PO implements 
 	public static final String REFUNDMODE_Tiered = "T";
 	/** Accumulated = A */
 	public static final String REFUNDMODE_Accumulated = "A";
-	/** Set Staffel-Modus.
-		@param RefundMode Staffel-Modus	  */
 	@Override
-	public void setRefundMode (java.lang.String RefundMode)
+	public void setRefundMode (final java.lang.String RefundMode)
 	{
-
 		set_Value (COLUMNNAME_RefundMode, RefundMode);
 	}
 
-	/** Get Staffel-Modus.
-		@return Staffel-Modus	  */
 	@Override
-	public java.lang.String getRefundMode () 
+	public java.lang.String getRefundMode() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_RefundMode);
+		return get_ValueAsString(COLUMNNAME_RefundMode);
 	}
 
-	/** Set Rückvergütung %.
-		@param RefundPercent Rückvergütung %	  */
 	@Override
-	public void setRefundPercent (java.math.BigDecimal RefundPercent)
+	public void setRefundPercent (final @Nullable BigDecimal RefundPercent)
 	{
 		set_Value (COLUMNNAME_RefundPercent, RefundPercent);
 	}
 
-	/** Get Rückvergütung %.
-		@return Rückvergütung %	  */
 	@Override
-	public java.math.BigDecimal getRefundPercent () 
+	public BigDecimal getRefundPercent() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RefundPercent);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_RefundPercent);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

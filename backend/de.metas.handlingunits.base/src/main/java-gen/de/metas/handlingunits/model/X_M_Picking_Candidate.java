@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_Picking_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -947143956L;
+	private static final long serialVersionUID = 1164578273L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (final Properties ctx, final int M_Picking_Candidate_ID, @Nullable final String trxName)
@@ -314,6 +314,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String REJECTREASON_NotFound = "N";
 	/** Damaged = D */
 	public static final String REJECTREASON_Damaged = "D";
+	/** Emptied = E */
+	public static final String REJECTREASON_Emptied = "E";
 	@Override
 	public void setRejectReason (final @Nullable java.lang.String RejectReason)
 	{

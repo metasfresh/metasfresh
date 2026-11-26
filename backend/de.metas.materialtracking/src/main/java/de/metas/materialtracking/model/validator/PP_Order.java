@@ -28,7 +28,7 @@ import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.materialtracking.IMaterialTrackingBL;
@@ -197,6 +197,6 @@ public class PP_Order
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Candidates(final I_PP_Order ppOrder)
 	{
-		Services.get(IInvoiceCandDAO.class).deleteAllReferencingInvoiceCandidates(ppOrder);
+		Services.get(IInvoiceCandBL.class).deleteAllReferencingInvoiceCandidates(ppOrder);
 	}
 }

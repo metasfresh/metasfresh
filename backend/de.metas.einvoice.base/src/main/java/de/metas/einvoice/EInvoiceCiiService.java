@@ -207,5 +207,11 @@ public class EInvoiceCiiService
 		{
 			return validationResult.getFatalAndErrorRuleIds();
 		}
+
+		/** Convenience: returns ruleId, message and location of any FATAL/ERROR violations, one per line. */
+		public String getFatalAndErrorDetails()
+		{
+			return validationResult.getFatalAndErrorDetails();
+		}
 	}
 }

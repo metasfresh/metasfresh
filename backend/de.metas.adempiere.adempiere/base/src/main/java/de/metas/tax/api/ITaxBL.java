@@ -57,7 +57,30 @@ public interface ITaxBL extends ISingletonService
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			SOTrx soTrx);
-	
+
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 */
+	@NonNull
+	TaxQuery buildTaxQuery(
+			@NonNull TaxCategoryId taxCategoryId,
+			@NonNull Timestamp shipDate,
+			@NonNull OrgId orgId,
+			@Nullable WarehouseId warehouseId,
+			@NonNull BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull SOTrx soTrx);
+
+	/**
+	 * Retrieves the {@code C_Tax} matching the given query.
+	 * If more than one {@code C_Tax} matches, the one with the lowest {@code SeqNo} wins; a tie on {@code SeqNo} is an error.
+	 *
+	 * @return the matching tax, or empty if there is none.
+	 */
+	@NonNull
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	/**
 	 * Calculate Tax - no rounding
 	 *
@@ -95,6 +118,12 @@ public interface ITaxBL extends ISingletonService
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	/**
+	 * @return the given tax category id, or empty if there is no {@code C_TaxCategory} record with that id, or if that record is inactive.
+	 */
+	@NonNull
+	Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull TaxCategoryId taxCategoryId);
 
 	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }

@@ -71,6 +71,20 @@ public class CarrierProductGoodsTypeAllocRepository
 		return carrierProductId + "#" + goodsTypeId;
 	}
 
+	/**
+	 * Returns all {@link CarrierGoodsTypeId}s allocated to the given carrier product.
+	 * Derived from the in-memory cache (consistent with {@link #exists}).
+	 * Returns an empty set if no allocations exist.
+	 */
+	public ImmutableSet<CarrierGoodsTypeId> getGoodsTypeIdsByCarrierProductId(@NonNull final CarrierProductId carrierProductId)
+	{
+		final String prefix = carrierProductId.getRepoId() + "#";
+		return getAllocSet().stream()
+				.filter(key -> key.startsWith(prefix))
+				.map(key -> CarrierGoodsTypeId.ofRepoId(Integer.parseInt(key.substring(prefix.length()))))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public void save(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierGoodsTypeId goodsTypeId)
 	{
 		final I_Carrier_Product_GoodsType_Alloc record = InterfaceWrapperHelper.newInstance(I_Carrier_Product_GoodsType_Alloc.class);

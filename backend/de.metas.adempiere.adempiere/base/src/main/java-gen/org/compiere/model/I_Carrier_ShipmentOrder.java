@@ -180,7 +180,8 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
-	 * Set Externes System.
+	 * Set External system.
+	 * Name of an external system (e.g. Github )
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -189,7 +190,8 @@ public interface I_Carrier_ShipmentOrder
 	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
 
 	/**
-	 * Get Externes System.
+	 * Get External system.
+	 * Name of an external system (e.g. Github )
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -264,6 +266,27 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IsActive = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPreAdviceRequired();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Shipper.

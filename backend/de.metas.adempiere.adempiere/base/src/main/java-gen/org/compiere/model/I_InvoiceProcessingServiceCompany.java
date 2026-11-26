@@ -1,18 +1,19 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for InvoiceProcessingServiceCompany
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_InvoiceProcessingServiceCompany 
 {
 
-    /** TableName=InvoiceProcessingServiceCompany */
-    public static final String Table_Name = "InvoiceProcessingServiceCompany";
+	String Table_Name = "InvoiceProcessingServiceCompany";
 
-    /** AD_Table_ID=541493 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541493 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +24,9 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +36,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +46,9 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Get Created.
@@ -59,12 +58,10 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Created = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -74,33 +71,32 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Description = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Invoice Processing Service Company.
@@ -109,7 +105,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID);
+	void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID);
 
 	/**
 	 * Get Invoice Processing Service Company.
@@ -118,12 +114,10 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getInvoiceProcessingServiceCompany_ID();
+	int getInvoiceProcessingServiceCompany_ID();
 
-    /** Column definition for InvoiceProcessingServiceCompany_ID */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_InvoiceProcessingServiceCompany_ID = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "InvoiceProcessingServiceCompany_ID", null);
-    /** Column name InvoiceProcessingServiceCompany_ID */
-    public static final String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_InvoiceProcessingServiceCompany_ID = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "InvoiceProcessingServiceCompany_ID", null);
+	String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
 
 	/**
 	 * Set Active.
@@ -133,7 +127,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -143,12 +137,10 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_IsActive = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Service Company.
@@ -157,7 +149,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setServiceCompany_BPartner_ID (int ServiceCompany_BPartner_ID);
+	void setServiceCompany_BPartner_ID (int ServiceCompany_BPartner_ID);
 
 	/**
 	 * Get Service Company.
@@ -166,10 +158,36 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getServiceCompany_BPartner_ID();
+	int getServiceCompany_BPartner_ID();
 
-    /** Column name ServiceCompany_BPartner_ID */
-    public static final String COLUMNNAME_ServiceCompany_BPartner_ID = "ServiceCompany_BPartner_ID";
+	String COLUMNNAME_ServiceCompany_BPartner_ID = "ServiceCompany_BPartner_ID";
+
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setServiceCompany_BPartner_Name (@Nullable java.lang.String ServiceCompany_BPartner_Name);
+
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getServiceCompany_BPartner_Name();
+
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_ServiceCompany_BPartner_Name = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "ServiceCompany_BPartner_Name", null);
+	String COLUMNNAME_ServiceCompany_BPartner_Name = "ServiceCompany_BPartner_Name";
 
 	/**
 	 * Set Service Fee Product.
@@ -178,7 +196,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setServiceFee_Product_ID (int ServiceFee_Product_ID);
+	void setServiceFee_Product_ID (int ServiceFee_Product_ID);
 
 	/**
 	 * Get Service Fee Product.
@@ -187,10 +205,9 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getServiceFee_Product_ID();
+	int getServiceFee_Product_ID();
 
-    /** Column name ServiceFee_Product_ID */
-    public static final String COLUMNNAME_ServiceFee_Product_ID = "ServiceFee_Product_ID";
+	String COLUMNNAME_ServiceFee_Product_ID = "ServiceFee_Product_ID";
 
 	/**
 	 * Set Service Invoice Doc Type.
@@ -199,7 +216,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setServiceInvoice_DocType_ID (int ServiceInvoice_DocType_ID);
+	void setServiceInvoice_DocType_ID (int ServiceInvoice_DocType_ID);
 
 	/**
 	 * Get Service Invoice Doc Type.
@@ -208,10 +225,9 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getServiceInvoice_DocType_ID();
+	int getServiceInvoice_DocType_ID();
 
-    /** Column name ServiceInvoice_DocType_ID */
-    public static final String COLUMNNAME_ServiceInvoice_DocType_ID = "ServiceInvoice_DocType_ID";
+	String COLUMNNAME_ServiceInvoice_DocType_ID = "ServiceInvoice_DocType_ID";
 
 	/**
 	 * Get Updated.
@@ -221,12 +237,10 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_Updated = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -236,10 +250,9 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Valid From.
@@ -248,7 +261,7 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
 
 	/**
 	 * Get Valid From.
@@ -257,10 +270,8 @@ public interface I_InvoiceProcessingServiceCompany
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	@Nullable java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany, Object>(I_InvoiceProcessingServiceCompany.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_InvoiceProcessingServiceCompany, Object> COLUMN_ValidFrom = new ModelColumn<>(I_InvoiceProcessingServiceCompany.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 }

@@ -180,7 +180,7 @@ public interface I_M_Forecast
 	 * Set Date Promised.
 	 * Date Order was promised
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -190,7 +190,7 @@ public interface I_M_Forecast
 	 * Get Date Promised.
 	 * Date Order was promised
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -332,6 +332,29 @@ public interface I_M_Forecast
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Budget Forecast.
+	 * Marks this forecast as a budget forecast
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBudgetForecast (boolean IsBudgetForecast);
+
+	/**
+	 * Get Budget Forecast.
+	 * Marks this forecast as a budget forecast
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBudgetForecast();
+
+	ModelColumn<I_M_Forecast, Object> COLUMN_IsBudgetForecast = new ModelColumn<>(I_M_Forecast.class, "IsBudgetForecast", null);
+	String COLUMNNAME_IsBudgetForecast = "IsBudgetForecast";
+
+	/**
 	 * Set Default.
 	 * Default value
 	 *
@@ -403,8 +426,8 @@ public interface I_M_Forecast
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Warehouse_ID (int M_Warehouse_ID);
@@ -413,8 +436,8 @@ public interface I_M_Forecast
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Warehouse_ID();

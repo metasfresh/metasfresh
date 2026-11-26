@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for InvoiceProcessingServiceCompany
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO implements I_InvoiceProcessingServiceCompany, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 394872485L;
+	private static final long serialVersionUID = 84175160L;
 
     /** Standard Constructor */
-    public X_InvoiceProcessingServiceCompany (Properties ctx, int InvoiceProcessingServiceCompany_ID, String trxName)
+    public X_InvoiceProcessingServiceCompany (final Properties ctx, final int InvoiceProcessingServiceCompany_ID, @Nullable final String trxName)
     {
       super (ctx, InvoiceProcessingServiceCompany_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_InvoiceProcessingServiceCompany (Properties ctx, ResultSet rs, String trxName)
+    public X_InvoiceProcessingServiceCompany (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,13 +29,13 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -42,16 +43,16 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setInvoiceProcessingServiceCompany_ID (int InvoiceProcessingServiceCompany_ID)
+	public void setInvoiceProcessingServiceCompany_ID (final int InvoiceProcessingServiceCompany_ID)
 	{
 		if (InvoiceProcessingServiceCompany_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, Integer.valueOf(InvoiceProcessingServiceCompany_ID));
+			set_ValueNoCheck (COLUMNNAME_InvoiceProcessingServiceCompany_ID, InvoiceProcessingServiceCompany_ID);
 	}
 
 	@Override
@@ -61,12 +62,12 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setServiceCompany_BPartner_ID (int ServiceCompany_BPartner_ID)
+	public void setServiceCompany_BPartner_ID (final int ServiceCompany_BPartner_ID)
 	{
 		if (ServiceCompany_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_ServiceCompany_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_ServiceCompany_BPartner_ID, Integer.valueOf(ServiceCompany_BPartner_ID));
+			set_Value (COLUMNNAME_ServiceCompany_BPartner_ID, ServiceCompany_BPartner_ID);
 	}
 
 	@Override
@@ -76,12 +77,23 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setServiceFee_Product_ID (int ServiceFee_Product_ID)
+	public void setServiceCompany_BPartner_Name (final @Nullable java.lang.String ServiceCompany_BPartner_Name)
+	{
+		throw new IllegalArgumentException ("ServiceCompany_BPartner_Name is virtual column");	}
+
+	@Override
+	public java.lang.String getServiceCompany_BPartner_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_ServiceCompany_BPartner_Name);
+	}
+
+	@Override
+	public void setServiceFee_Product_ID (final int ServiceFee_Product_ID)
 	{
 		if (ServiceFee_Product_ID < 1) 
 			set_Value (COLUMNNAME_ServiceFee_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_ServiceFee_Product_ID, Integer.valueOf(ServiceFee_Product_ID));
+			set_Value (COLUMNNAME_ServiceFee_Product_ID, ServiceFee_Product_ID);
 	}
 
 	@Override
@@ -91,12 +103,12 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setServiceInvoice_DocType_ID (int ServiceInvoice_DocType_ID)
+	public void setServiceInvoice_DocType_ID (final int ServiceInvoice_DocType_ID)
 	{
 		if (ServiceInvoice_DocType_ID < 1) 
 			set_Value (COLUMNNAME_ServiceInvoice_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_ServiceInvoice_DocType_ID, Integer.valueOf(ServiceInvoice_DocType_ID));
+			set_Value (COLUMNNAME_ServiceInvoice_DocType_ID, ServiceInvoice_DocType_ID);
 	}
 
 	@Override
@@ -106,7 +118,7 @@ public class X_InvoiceProcessingServiceCompany extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}

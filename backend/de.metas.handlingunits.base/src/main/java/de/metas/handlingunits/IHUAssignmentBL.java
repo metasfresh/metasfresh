@@ -132,4 +132,9 @@ public interface IHUAssignmentBL extends ISingletonService
 	List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
 			@NonNull ImmutableSet<HuId> huIds,
 			@NonNull String tableName);
+
+	/**
+	 * @return all active {@code M_HU_Assignment} rows (regardless of {@code IsTransferPackingMaterials}) referencing any of the given records, which must all belong to the same table.
+	 */
+	List<I_M_HU_Assignment> retrieveActiveHUAssignments(@NonNull TableRecordReferenceSet recordRefs);
 }

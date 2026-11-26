@@ -35,7 +35,9 @@ import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.MathContext;
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Optional;
 import java.util.Properties;
 
 public interface IAttributesBL extends ISingletonService
@@ -106,6 +108,14 @@ public interface IAttributesBL extends ISingletonService
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
 	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);
+
+	/**
+	 * Computes the default Best-Before date (MHD) from <code>M_Product.BestBeforeDays</code>.
+	 * The receipt day counts as day 0, i.e. result = <code>receiptDate + BestBeforeDays</code>.
+	 *
+	 * @return the default best-before date, or empty if the product's BestBeforeDays is not set (value &lt;= 0)
+	 */
+	Optional<LocalDate> computeBestBeforeDefault(ProductId productId, LocalDate receiptDate);
 
 	int getNumberDisplayType(I_M_Attribute attribute);
 

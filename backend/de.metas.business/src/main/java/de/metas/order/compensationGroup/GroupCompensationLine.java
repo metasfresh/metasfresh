@@ -6,6 +6,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -18,6 +19,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -80,6 +83,23 @@ public final class GroupCompensationLine
 	@Getter
 	private final GroupTemplateLineId groupTemplateLineId;
 
+	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	@Getter
+	@Nullable
+	private final ProductCategoryId appliesToProductCategoryId;
+
+	/** Packing-material category the discount is restricted to; {@code null} = no packing restriction */
+	@Getter
+	@Nullable
+	private final ProductCategoryId packingMaterialProductCategoryId;
+
+	private final boolean isOwnBase;
+
+	/** Free-text description written onto the created {@code C_OrderLine}; {@code null} = none */
+	@Getter
+	@Nullable
+	private final String description;
+
 	@Builder
 	public GroupCompensationLine(
 			final RepoIdAware repoId,
@@ -93,10 +113,22 @@ public final class GroupCompensationLine
 			final BigDecimal qtyEntered,
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
-			final GroupTemplateLineId groupTemplateLineId)
+			final GroupTemplateLineId groupTemplateLineId,
+			@Nullable final ProductCategoryId appliesToProductCategoryId,
+			@Nullable final ProductCategoryId packingMaterialProductCategoryId,
+			final boolean isOwnBase,
+			@Nullable final String description)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
+		this.appliesToProductCategoryId = appliesToProductCategoryId;
+		this.packingMaterialProductCategoryId = packingMaterialProductCategoryId;
+		// the order line stores the product category only: an own-base line without category would come back as a compounding line,
+		// and a packing-material category would be lost on reload
+		Check.assume(!isOwnBase || appliesToProductCategoryId != null, "A compensation line with own base has an applies-to product category");
+		Check.assume(!isOwnBase || packingMaterialProductCategoryId == null, "A compensation line with own base has no packing-material category");
+		this.isOwnBase = isOwnBase;
+		this.description = description;
 
 		this.seqNo = seqNo;
 
@@ -130,6 +162,11 @@ public final class GroupCompensationLine
 		{
 			throw new AdempiereException("Unknown " + GroupCompensationAmtType.class + ": " + amtType);
 		}
+	}
+
+	public GroupCompensationBase getBase()
+	{
+		return GroupCompensationBase.of(appliesToProductCategoryId, packingMaterialProductCategoryId);
 	}
 
 	public boolean isPercentage()
@@ -168,6 +205,15 @@ public final class GroupCompensationLine
 	public boolean isManualLine()
 	{
 		return !isGeneratedLine();
+	}
+
+	/**
+	 * @return {@code true} if this line's applies-to category is stored on its own order line instead of coming from a schema line.
+	 * Its base is always the full regular-lines amount of that category, even if the group is not additive.
+	 */
+	public boolean isOwnBase()
+	{
+		return isOwnBase;
 	}
 
 }

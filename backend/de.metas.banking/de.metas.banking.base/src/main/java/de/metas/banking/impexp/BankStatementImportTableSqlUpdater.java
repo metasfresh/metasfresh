@@ -74,12 +74,11 @@ public class BankStatementImportTableSqlUpdater
 		{
 			sql = new StringBuilder("UPDATE ")
 					.append(I_I_BankStatement.Table_Name + " i ")
-					.append(" SET Name = "
-									+ "'" + bankStatementName + "'")
+					.append(" SET Name = ?") // a parameter, because the name is user input
 					.append(" WHERE NAME IS NULL ")
 					.append(" AND i.I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));
-			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), new Object[] { bankStatementName }, ITrx.TRXNAME_ThreadInherited);
 		}
 
 		sql = new StringBuilder("UPDATE ")

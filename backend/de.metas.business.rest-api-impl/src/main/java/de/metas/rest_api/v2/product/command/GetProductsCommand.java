@@ -50,7 +50,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMConversionsMap;

@@ -1,16 +1,18 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -29,6 +31,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -43,8 +46,8 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -93,12 +96,19 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns a sub-query selecting all live (Completed), active {@link I_DD_Order} records.
-	 *
-	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
-	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
-	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
+	 * The batch flavour of {@link #getById(DDOrderId)}.
 	 */
+	public List<I_DD_Order> getByIds(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderIds, I_DD_Order.class);
+	}
+
+	/** This DAO owns the DD_Order side only; the caller's service composes the cross-model join. */
 	public IQuery<I_DD_Order> queryCompletedDDOrders()
 	{
 		return queryBL
@@ -109,57 +119,89 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
-	 * or empty if none exists.
+	 * This DAO owns the DD_Order/DD_OrderLine side only; the caller's service joins the result to whatever else it needs.
 	 */
-	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	public IQuery<I_DD_OrderLine> queryCompletedDDOrderLines()
 	{
 		return queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.createQueryBuilder(I_DD_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.create()
-				.firstOptional(I_DD_Order.class)
-				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						queryCompletedDDOrders())
+				.create();
 	}
 
 	/**
-	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
-	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
-	 *
-	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
-	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
-	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
+	 * {@code replenishmentLineIdsQuery} restricts to actual replenishment lines — the group-key columns alone could also match a foreign manual/MRP DD_Order, which this reconcile must never void.
 	 */
-	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	public List<I_DD_Order> findActiveDDOrdersForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
 	{
+		final IQuery<I_DD_OrderLine> groupLinesQuery = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.create();
+
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				// A disconnected DD_Order (IsPickingDisconnected=Y) is the in-progress close-out disposition: the
-				// shipment schedule was already closed out, the DD_Order survives as a standalone replenishment the
-				// worker finishes. The picker-busy guard and the reconcile must NOT see it (else they would re-block
-				// the close-out / re-void the standalone job), so it is filtered out here.
+				// A disconnected order is a standalone replenishment the worker still finishes; the guard and the
+				// reconcile must not see it, or they re-block the close-out.
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						groupLinesQuery)
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.list(I_DD_Order.class);
 	}
 
 	/**
-	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
+	 * The group's DISCONNECTED ({@code IsPickingDisconnected=Y}) replenishment lines — the ones {@link #findActiveDDOrdersForReplenishmentGroup} hides; their contributor shares are netted off the group's remaining demand.
 	 */
-	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
+	public ImmutableSet<DDOrderLineId> findDisconnectedLineIdsForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
 	{
-		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
+		final IQuery<I_DD_Order> disconnectedGroupOrders = queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, true)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						disconnectedGroupOrders)
 				.create()
-				.firstOnlyNotNull(I_DD_Order.class);
-		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
+				.listDistinctAsImmutableSet(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
 	}
 
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
@@ -177,6 +219,41 @@ public class DDOrderLowLevelDAO
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			ddOrderLine.setDD_Order(ddOrder);
+		}
+
+		return ddOrderLines;
+	}
+
+	/**
+	 * The batch flavour of {@link #retrieveLines(I_DD_Order)}: the result equals the concatenation of the per-order results taken in ascending order id.
+	 */
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final Set<I_DD_Order> ddOrders)
+	{
+		final ImmutableSet<DDOrderId> ddOrderIds = ddOrders.stream()
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (ddOrderIds.isEmpty())
+		{
+			// An empty IN-array filter would match every line, so the query must not be run at all.
+			return ImmutableList.of();
+		}
+
+		final List<I_DD_OrderLine> ddOrderLines = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.list();
+
+		// Optimization: set DD_Order_ID link, as the single-order flavour does.
+		final HashMap<Integer, I_DD_Order> ddOrderById = new HashMap<>();
+		ddOrders.forEach(ddOrder -> ddOrderById.putIfAbsent(ddOrder.getDD_Order_ID(), ddOrder));
+		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
+		{
+			ddOrderLine.setDD_Order(ddOrderById.get(ddOrderLine.getDD_Order_ID()));
 		}
 
 		return ddOrderLines;
@@ -303,9 +380,40 @@ public class DDOrderLowLevelDAO
 		return record;
 	}
 
+	/**
+	 * The batch flavour of {@link #getLineById(DDOrderLineId)}; unlike it, a missing id is silently absent from the result.
+	 */
+	public List<I_DD_OrderLine> getLinesByIds(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderLineIds, I_DD_OrderLine.class);
+	}
+
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
 		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
+	}
+
+	/**
+	 * The flavour of {@link #streamDDOrders(DDOrderQuery)} that also restricts on the order's lines via opaque,
+	 * caller-built queries. Each entry in {@code lineIdRestrictions} MUST be a query over {@link I_DD_OrderLine};
+	 * entries are AND-ed (a facet OR-ing several routes internally builds its own single entry with a composite
+	 * {@code setJoinOr()} filter — see {@code DDOrderLineDemandSqlHelper}). The list is generic on purpose: it is
+	 * not specific to any one demand-side attribute (carrier, sales order, ...), so later facets reuse it.
+	 */
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
+	{
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query, lineIdRestrictions);
 		if (sqlQuery == null)
 		{
 			return Stream.empty();
@@ -352,6 +460,22 @@ public class DDOrderLowLevelDAO
 	}
 
 	private IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query)
+	{
+		return toSqlQuery(query, ImmutableList.of());
+	}
+
+	/**
+	 * Package-private (not {@code private}) so {@code DDOrderLowLevelDAOTest} can inspect the emitted SQL of the
+	 * applied {@code lineIdRestrictions} directly, without going through {@link #streamDDOrders(DDOrderQuery, ImmutableList)}'s
+	 * execution.
+	 *
+	 * @param lineIdRestrictions each entry MUST be a query over {@link I_DD_OrderLine}; entries are AND-ed. Applied
+	 *                           on the order-to-line join ({@code I_DD_Order.DD_Order_ID -> I_DD_OrderLine.DD_Order_ID}),
+	 *                           never line-id to line-id, so parent and sub table differ and {@link org.adempiere.ad.dao.impl.InSubQueryFilter}
+	 *                           renders a correlated {@code EXISTS} rather than an {@code IN}.
+	 */
+	@VisibleForTesting
+	IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
 	{
 		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
 		setOrderBys(queryBuilder, query.getOrderBys());
@@ -422,13 +546,6 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Sales Order
-		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_C_Order_ID, query.getSalesOrderIds());
-		}
-
-		//
 		// Manufacturing Order
 		if (query.getManufacturingOrderIds() != null && !query.getManufacturingOrderIds().isEmpty())
 		{
@@ -491,6 +608,18 @@ public class DDOrderLowLevelDAO
 			{
 				queryBuilder.addInSubQueryFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, lineQueryBuilder.create());
 			}
+		}
+
+		//
+		// Demand-side line restrictions (e.g. carrier, sales order): applied on the order-to-line join so that
+		// parent (DD_Order) and sub (DD_OrderLine) table differ, making InSubQueryFilter render a correlated
+		// EXISTS instead of falling back to IN (which it would emit for a same-table sub-query).
+		for (final IQuery<?> lineIdRestriction : lineIdRestrictions)
+		{
+			queryBuilder.addInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+					lineIdRestriction);
 		}
 
 		//
@@ -571,6 +700,43 @@ public class DDOrderLowLevelDAO
 				.create()
 				.update(ddOrder -> {
 					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+	}
+
+	public ImmutableSetMultimap<PPOrderBOMLineId, DDOrderId> getIdsByForwardPPOrderBOMLineIds(@NonNull final Collection<PPOrderBOMLineId> ppOrderBOMLineIds)
+	{
+		if (ppOrderBOMLineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, ppOrderBOMLineIds)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						ddOrder -> PPOrderBOMLineId.ofRepoId(ddOrder.getForward_PP_Order_BOMLine_ID()),
+						ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID())));
+	}
+
+	/**
+	 * Re-points the given DD_Orders to a (re-created) PP_Order_BOMLine.
+	 *
+	 * @return number of updated DD_Orders
+	 */
+	public int updateForwardPPOrderBOMLineByIds(@NonNull final Set<DDOrderId> ddOrderIds, @NonNull final PPOrderBOMLineId newPPOrderBOMLineId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return 0;
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_BOMLine_ID(newPPOrderBOMLineId.getRepoId());
 					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}

@@ -318,6 +318,15 @@ public class PickingJobRestService
 		return pickingJobService.getNextEligibleLineToPack(request);
 	}
 
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		return pickingJobService.resolvePickFromHU(pickingJobId, lineId, scannedCode, callerId);
+	}
+
 	@NonNull
 	public JsonUnpickResolveResponse resolveUnpick(
 			@NonNull final PickingJobId pickingJobId,

@@ -25,9 +25,9 @@ package de.metas.shipper.client.nshift;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
-import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -141,7 +141,7 @@ public class NShiftShipmentService
 		final JsonShipmentOptions bookingOptions = JsonShipmentOptions.builder()
 				.labelType(baseOptions.getLabelType())
 				.trackingURL(baseOptions.getTrackingURL())
-				.useShippingRules(baseOptions.getUseShippingRules())
+				//.useShippingRules(baseOptions.getUseShippingRules()) always active on this Endpoint
 				.serviceLevel(baseOptions.getServiceLevel())
 				.submit(true)
 				// OrderAdvice returns product/carrier (+ goods type) detail only with Visibility=extended — same as the advise (Submit=0) path
@@ -157,30 +157,28 @@ public class NShiftShipmentService
 	public static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
-		final String useShippingRulesStr = config.getAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES);
-		final Boolean useShippingRules = useShippingRulesStr != null ? Boolean.valueOf(useShippingRulesStr) : null;
+		final boolean isSelectionRules = StringUtils.toBoolean(config.getAdditionalProperty(NShiftConstants.SELECTION_RULES), false);
 		// with shipping/selection rules active nShift resolves the product from the rules, so ServiceLevel must not be sent (omitted via NON_NULL)
-		final String serviceLevel = Boolean.TRUE.equals(useShippingRules) ? null : config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
+		final String serviceLevel = isSelectionRules ? null : config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
 
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
 				.trackingURL(true)
-				.useShippingRules(useShippingRules)
+				.useShippingRules(isSelectionRules)
 				.serviceLevel(serviceLevel)
 				.build();
 
 		final String actorId = config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID);
 
-		final boolean useRules = Boolean.TRUE.equals(useShippingRules);
-
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
-				.orderNo(String.valueOf(deliveryRequest.getDeliveryOrderId()))
+				// nShift requires OrderNo (its refNo) to be 8..35 chars long
+				.orderNo(String.format("%08d", deliveryRequest.getDeliveryOrderId()))
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
 		// With shipping rules active (non-manual) nShift re-resolves product / goods type / services from the rules,
 		// so they must NOT be pre-sent on the request; only send them when rules are off (manual / fixed product).
-		if (!useRules)
+		if (!isSelectionRules)
 		{
 			dataBuilder.prodConceptID(Integer.parseInt(deliveryRequest.getShipperProduct().getCode()));
 			deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
@@ -188,12 +186,14 @@ public class NShiftShipmentService
 
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
-		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue));
+		// Add Addresses. While test mode is on, the configured text IS the Attention for both roles.
+		final String testModeAttention = NShiftUtil.resolveTestModeAttention(config);
 
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
-				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
+				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
+
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue, testModeAttention));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
@@ -204,7 +204,7 @@ public class NShiftShipmentService
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, useRules));
+			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, isSelectionRules));
 			allDetailGroups.addAll(NShiftUtil.buildLineLevelDetailGroups(buildContentValueProviders(deliveryLine, deliveryRequest), lineNoCounter, mappingConfigs));
 			lineNoCounter++;
 		}
@@ -225,9 +225,14 @@ public class NShiftShipmentService
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
-		final int lengthMM = deliveryLine.getPackageDimensions().getLengthInCM() * 10;
-		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
-		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
+		final JsonPackageDimensions dims = deliveryLine.getPackageDimensions();
+		if (dims.getLengthInCM() <= 0 && dims.getWidthInCM() <= 0 && dims.getHeightInCM() <= 0)
+		{
+			throw new IllegalStateException("Package dimensions are mandatory but were not specified (all dimensions are zero or unspecified).");
+		}
+		final int lengthMM = dims.getLengthInCM() * 10;
+		final int widthMM = dims.getWidthInCM() * 10;
+		final int heightMM = dims.getHeightInCM() * 10;
 
 		final Function<String, Optional<String>> valueProvider =
 				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
@@ -329,7 +334,7 @@ public class NShiftShipmentService
 				.shipperProduct(extractResolvedShipperProduct(response));
 
 		extractResolvedGoodsTypes(responseLines).forEach(responseBuilder::resolvedGoodsType);
-		extractResolvedServices(response).forEach(responseBuilder::resolvedService);
+		NShiftUtil.extractResolvedServices(response).forEach(responseBuilder::resolvedService);
 
 		return responseBuilder.build();
 	}
@@ -380,21 +385,6 @@ public class NShiftShipmentService
 							.id(id)
 							.name(line.getGoodsTypeName() != null ? line.getGoodsTypeName() : id)
 							.build();
-				})
-				.collect(Collectors.toCollection(LinkedHashSet::new));
-	}
-
-	private static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
-	{
-		if (response.getServices() == null)
-		{
-			return Collections.emptySet();
-		}
-		// services come back as bare ids; use the id as the name as well
-		return response.getServices().stream()
-				.map(svcId -> {
-					final String id = String.valueOf(svcId);
-					return JsonCarrierService.builder().id(id).name(id).build();
 				})
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}

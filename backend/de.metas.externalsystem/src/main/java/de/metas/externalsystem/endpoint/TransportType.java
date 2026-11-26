@@ -34,7 +34,8 @@ import lombok.RequiredArgsConstructor;
 public enum TransportType implements ReferenceListAwareEnum
 {
 	HTTP(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP),
-	SFTP(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+	SFTP(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP),
+	LOCAL_FILE(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<TransportType> index = ReferenceListAwareEnums.index(values());
 
@@ -44,4 +45,10 @@ public enum TransportType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isHttp() {return HTTP.equals(this);}
+
+	public boolean isSftp() {return SFTP.equals(this);}
+
+	public boolean isLocalFile() {return LOCAL_FILE.equals(this);}
 }

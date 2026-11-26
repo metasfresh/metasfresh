@@ -36,6 +36,7 @@ public class Shipper
 	@NonNull ShipperId id;
 	@NonNull String name;
 	boolean apiCarrierAdvise;
+	boolean createDeliveryPlanning;
 	@Nullable String trackingUrl;
 	@Nullable LocalTime pickupTimeFrom;
 	@Nullable LocalTime pickupTimeTo;

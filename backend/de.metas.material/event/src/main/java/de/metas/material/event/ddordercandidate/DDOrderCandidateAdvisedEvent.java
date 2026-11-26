@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.eevolution.api.PPOrderAndBOMLineId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -58,11 +59,11 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 	private final boolean pickIfFeasible;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public DDOrderCandidateAdvisedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ddOrderCandidate") final DDOrderCandidateData ddOrderCandidate,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("eventDescriptor") @Builder.ObtainVia(method = "getEventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("ddOrderCandidate") @Builder.ObtainVia(method = "getDdOrderCandidate") final DDOrderCandidateData ddOrderCandidate,
+			@JsonProperty("supplyRequiredDescriptor") @Builder.ObtainVia(method = "getSupplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("advisedToCreateDDOrderCandidate") final boolean advisedToCreateDDOrder,
 			@JsonProperty("pickIfFeasible") final boolean pickIfFeasible)
 	{
@@ -77,6 +78,23 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 		return (DDOrderCandidateAdvisedEvent)event;
 	}
 
+	public DDOrderCandidateAdvisedEvent withPPOrderAndBOMLineId(@Nullable final PPOrderAndBOMLineId newPPOrderAndBOMLineId)
+	{
+		if (PPOrderAndBOMLineId.equals(getPPOrderAndBOMLineId(), newPPOrderAndBOMLineId))
+		{
+			return this;
+		}
+
+		return toBuilder().ddOrderCandidate(getDdOrderCandidate().withPPOrderAndBOMLineId(newPPOrderAndBOMLineId)).build();
+	}
+
+	@Nullable
+	private PPOrderAndBOMLineId getPPOrderAndBOMLineId()
+	{
+		final PPOrderRef forwardPPOrderRef = getForwardPPOrderRef();
+		return forwardPPOrderRef != null ? forwardPPOrderRef.getPpOrderAndBOMLineId() : null;
+	}
+
 	public DDOrderCandidateAdvisedEvent withPPOrderId(@Nullable final PPOrderId newPPOrderId)
 	{
 		if (PPOrderId.equals(getPPOrderId(), newPPOrderId))
@@ -84,13 +102,7 @@ public class DDOrderCandidateAdvisedEvent extends AbstractDDOrderCandidateEvent
 			return this;
 		}
 
-		return new DDOrderCandidateAdvisedEvent(
-				getEventDescriptor(),
-				getDdOrderCandidate().withPPOrderId(newPPOrderId),
-				getSupplyRequiredDescriptorNotNull(),
-				advisedToCreateDDOrder,
-				pickIfFeasible
-		);
+		return toBuilder().ddOrderCandidate(getDdOrderCandidate().withPPOrderId(newPPOrderId)).build();
 	}
 
 	@Nullable

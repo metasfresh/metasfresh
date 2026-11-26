@@ -24,6 +24,7 @@ package de.metas.product.impexp;
 
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
@@ -50,6 +51,8 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_C_UOM_ID;
 public class MProductImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
+
+	private static final String VALID_PRODUCT_TYPE_CODES_SQL = ProductType.getCodesAsSqlList();
 
 	private final ImportRecordsSelection selection;
 	private final Properties ctx;
@@ -617,7 +620,7 @@ public class MProductImportTableSqlUpdater
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid ProductType,' ")
-				.append("WHERE ProductType NOT IN ('E','I','R','S')")
+				.append("WHERE ProductType NOT IN (" + VALID_PRODUCT_TYPE_CODES_SQL + ")")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);

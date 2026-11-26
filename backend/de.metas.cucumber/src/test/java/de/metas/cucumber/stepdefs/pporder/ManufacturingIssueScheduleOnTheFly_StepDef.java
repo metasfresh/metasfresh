@@ -12,7 +12,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.cache.CacheMgt;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -23,7 +22,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_MobileUI_MFG_Config;
 import org.compiere.SpringContextHolder;
 
 import java.util.List;
@@ -46,43 +44,6 @@ public class ManufacturingIssueScheduleOnTheFly_StepDef
 	@NonNull private final TestContext testContext;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
-
-	/**
-	 * Sets the global {@code MobileUI_MFG_Config.IsAllowIssuingAnyHU} flag.
-	 * Creates a config record if none exists.
-	 */
-	@And("set MobileUI_MFG_Config IsAllowIssuingAnyHU to {string}")
-	public void setIsAllowIssuingAnyHU(@NonNull final String value)
-	{
-		Check.assumeNotEmpty(value, "value");
-		final boolean isAllow = "Y".equals(value);
-
-		// Update ALL existing config records (across all clients)
-		final java.util.List<I_MobileUI_MFG_Config> configs = queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-
-		if (!configs.isEmpty())
-		{
-			for (final I_MobileUI_MFG_Config config : configs)
-			{
-				config.setIsAllowIssuingAnyHU(isAllow);
-				org.adempiere.model.InterfaceWrapperHelper.save(config);
-			}
-		}
-		else
-		{
-			final I_MobileUI_MFG_Config newConfig = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class);
-			newConfig.setIsAllowIssuingAnyHU(isAllow);
-			org.adempiere.model.InterfaceWrapperHelper.save(newConfig);
-		}
-
-		// Reset ALL caches — the globalConfigsCache in MobileUIManufacturingConfigRepository
-		// has a bug: it's keyed on MobileUI_UserProfile_MFG table (wrong) instead of MobileUI_MFG_Config.
-		// So updating MobileUI_MFG_Config doesn't auto-invalidate it. Force a full cache reset.
-		CacheMgt.get().reset();
-	}
 
 	/**
 	 * Sets the HUStatus of an M_HU record via {@link IHUStatusBL}.

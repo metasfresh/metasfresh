@@ -51,4 +51,11 @@ public interface IOLCandWithUOMForTUsCapacityProvider
 	 */
 	@NonNull
 	Optional<Quantity> computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
+
+	/**
+	 * @param olCand shall not be changed by this method.
+	 * @return {@code true} iff the {@code olCand}'s effective packing instruction gives no finite TU capacity (none, virtual or infinite capacity),
+	 * so the capacity has to come from the candidate's own {@code QtyItemCapacity} ({@code IsManualQtyItemCapacity='Y'}).
+	 */
+	boolean isInfiniteCapacityTU(@NonNull I_C_OLCand olCand);
 }

@@ -52,8 +52,9 @@ import java.util.function.UnaryOperator;
  * <p>Repository Cluster: sole owner of {@code ExternalSystem_ScriptedExportConversion_Status}.
  * Service layer: {@link ExternalSystemExportStatusService}.
  *
- * <p>Grain: ONE row per (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID).
- * All status transitions are done via in-place update on that single row (upsert).
+ * <p>Grain: ONE row per export ATTEMPT. Each enqueue / re-send inserts a fresh row (the per-attempt
+ * history for a given config + source record); lifecycle transitions then update the relevant attempt
+ * row in place (the pInstance-bound one, or the latest for the pre-enqueue Pending→Enqueued binding).
  */
 @Repository
 public class ExternalSystemExportStatusRepository
@@ -72,28 +73,47 @@ public class ExternalSystemExportStatusRepository
 	// ------------------------------------------------------------------
 
 	/**
-	 * Upserts the status row for the given (config, sourceRecord) key.
-	 * Creates the row if it does not exist yet; updates it in-place otherwise.
+	 * Inserts a NEW status row — one row per export attempt. Each enqueue / re-send / don't-send
+	 * records its own row (the per-attempt history); prior attempts for the same (config, sourceRecord)
+	 * remain untouched. Lifecycle transitions ({@link #update}, {@link #updateLatestByPInstanceId})
+	 * then update the LATEST attempt row. (Was an in-place single-row upsert; the single-row unique
+	 * index has been dropped so multiple attempt rows coexist.)
 	 */
 	@NonNull
-	public ScriptedExportConversionStatus upsert(@NonNull final ScriptedExportConversionStatusCreateRequest request)
+	public ScriptedExportConversionStatus insertNewAttempt(@NonNull final ScriptedExportConversionStatusCreateRequest request)
 	{
 		final I_ExternalSystem_ScriptedExportConversion_Status record =
-				queryStatusRecord(request.getConfigId(), request.getSourceRecord())
-						.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class));
+				InterfaceWrapperHelper.newInstance(I_ExternalSystem_ScriptedExportConversion_Status.class);
 		updateRecord(record, request);
 		InterfaceWrapperHelper.saveRecord(record);
 		return fromRecord(record);
 	}
 
 	/**
-	 * Persists the loaded status identified by its (config, sourceRecord) key.
-	 * No-op (no throw) when no row exists for that key.
+	 * Persists the loaded status to its own attempt row.
+	 * <p>
+	 * When a row is already bound to the status's {@code PInstanceId} (the case for every outcome
+	 * transition — Sent / Error / Invalid — on an already-enqueued attempt), THAT row is updated, so
+	 * a transition always lands on its own attempt and never clobbers a newer sibling attempt of the
+	 * same (config, sourceRecord).
+	 * <p>
+	 * Otherwise — the Pending→Enqueued transition that first BINDS a freshly-allocated pInstance to
+	 * the just-inserted Pending attempt (no row carries that pInstance yet), or a transition with no
+	 * pInstance at all — the latest attempt row for (config, sourceRecord) is updated.
+	 * <p>
+	 * No-op (no throw) when no matching row exists.
 	 */
 	public void update(@NonNull final ScriptedExportConversionStatus status)
 	{
-		final I_ExternalSystem_ScriptedExportConversion_Status record =
-				queryStatusRecord(status.getConfigId(), status.getSourceRecord()).orElse(null);
+		I_ExternalSystem_ScriptedExportConversion_Status record = null;
+		if (status.getPInstanceId() != null)
+		{
+			record = queryRecordByPInstanceId(status.getPInstanceId()).orElse(null);
+		}
+		if (record == null)
+		{
+			record = queryStatusRecord(status.getConfigId(), status.getSourceRecord()).orElse(null);
+		}
 		if (record == null)
 		{
 			return;
@@ -165,7 +185,7 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
-	 * Returns the distinct config IDs whose status row for the given source record is
+	 * Returns the distinct config IDs whose LATEST status row for the given source record is
 	 * not yet fully processed (i.e. neither {@link ExternalSystemExportStatus#Sent} nor
 	 * {@link ExternalSystemExportStatus#DontSend}).
 	 */
@@ -173,19 +193,72 @@ public class ExternalSystemExportStatusRepository
 	public List<ExternalSystemScriptedExportConversionConfigId> getConfigsWithNonSentAttemptBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		final List<ScriptedExportConversionStatus> allEntries = getLatestBySourceRecord(sourceRecord);
+		return getLatestPerConfigBySourceRecord(sourceRecord).stream()
+				.filter(latest -> !latest.getStatus().isProcessed())
+				.map(ScriptedExportConversionStatus::getConfigId)
+				.collect(ImmutableList.toImmutableList());
+	}
 
+	/**
+	 * Returns the distinct config IDs whose <b>active</b> status row for the given source record is
+	 * in-flight — {@link ExternalSystemExportStatus#Enqueued} or
+	 * {@link ExternalSystemExportStatus#SendingStarted} (i.e. dispatched to the external system but
+	 * not yet confirmed/failed). Only ACTIVE rows are considered, so deactivating a status row
+	 * (e.g. via its WebUI tab) removes it from this result — the sanctioned way to release a shipment
+	 * whose in-flight export is stuck (the external system never called back).
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getInflightConfigsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
 		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
 				new LinkedHashMap<>();
-		for (final ScriptedExportConversionStatus entry : allEntries)
+		for (final ScriptedExportConversionStatus entry : getActiveBySourceRecord(sourceRecord))
 		{
 			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
 		}
 
 		return latestPerConfig.entrySet().stream()
-				.filter(e -> !e.getValue().getStatus().isProcessed())
+				.filter(e -> e.getValue().getStatus().isProcessing())
 				.map(Map.Entry::getKey)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Returns the ACTIVE status rows for the given source record, ordered newest-first.
+	 */
+	@NonNull
+	private List<ScriptedExportConversionStatus> getActiveBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, sourceRecord.getRecord_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
+				.create()
+				.stream()
+				.map(ExternalSystemExportStatusRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Returns the LATEST attempt row PER config for the given source record (one row per config, all
+	 * states). {@link #getLatestBySourceRecord} returns ALL historical rows newest-first, so
+	 * {@code putIfAbsent} keeps the newest per config — the same latest-per-config reduction used by
+	 * {@link #getConfigsWithNonSentAttemptBySourceRecord} / {@link #getInflightConfigsBySourceRecord}.
+	 * Callers that want "the current status" MUST use this, not the raw {@link #getLatestBySourceRecord}
+	 * (which would surface stale earlier attempts once a config has &gt;=2 rows, e.g. after a re-send).
+	 */
+	@NonNull
+	public List<ScriptedExportConversionStatus> getLatestPerConfigBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
+				new LinkedHashMap<>();
+		for (final ScriptedExportConversionStatus entry : getLatestBySourceRecord(sourceRecord))
+		{
+			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
+		}
+		return ImmutableList.copyOf(latestPerConfig.values());
 	}
 
 	/**
@@ -219,8 +292,21 @@ public class ExternalSystemExportStatusRepository
 						configId.getRepoId())
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
 				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, sourceRecord.getRecord_ID())
-				// the unique index guarantees at most one row per (config, table, record); the explicit
-				// orderBy satisfies the framework's "first() without ORDER BY" developer-guard (which throws otherwise)
+				// per-attempt history: several rows may share (config, table, record); return the LATEST
+				// (newest by Status_ID). The orderBy is load-bearing (picks the current attempt) and also
+				// satisfies the framework's "first() without ORDER BY" developer-guard (which throws otherwise).
+				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
+				.create()
+				.firstOptional(I_ExternalSystem_ScriptedExportConversion_Status.class);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_ScriptedExportConversion_Status> queryRecordByPInstanceId(
+			@NonNull final PInstanceId pInstanceId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_PInstance_ID, pInstanceId.getRepoId())
+				// at most one row is bound to a given pInstance; orderBy satisfies the first()-without-ORDER-BY guard
 				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
 				.create()
 				.firstOptional(I_ExternalSystem_ScriptedExportConversion_Status.class);

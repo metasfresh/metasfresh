@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 public final class TablePermission implements Permission
 {
-	public static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(Access.READ, Access.WRITE, Access.REPORT, Access.EXPORT);
+	public static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(Access.READ, Access.WRITE, Access.REPORT, Access.EXPORT, Access.CREATE);
 
 	public static final TablePermission NONE = builder()
 			.resource(TableResource.ANY_TABLE)
