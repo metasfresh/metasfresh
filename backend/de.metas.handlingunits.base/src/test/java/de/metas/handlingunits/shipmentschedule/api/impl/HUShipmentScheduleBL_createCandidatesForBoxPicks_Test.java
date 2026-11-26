@@ -41,6 +41,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -262,6 +264,55 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 				.containsExactlyInAnyOrder(new BigDecimal("3.5"), new BigDecimal("5.25"));
 	}
 
+	@Test
+	void restoreAfterReversal_ofBoxRowWithoutVHU_restoresOnlyTheUnitsItsPickingJobStepsRecorded()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(box);
+		final I_M_HU cuFR = cus.stream().filter(cu -> HUTestHelper.COUNTRYMADEIN_FR.equals(getCountry(cu))).findFirst().get();
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		// the box is shared: its first unit (DE) belongs to another schedule; this schedule's step recorded only the FR unit
+		final I_M_Picking_Job_Step step = newInstance(I_M_Picking_Job_Step.class);
+		step.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
+		saveRecord(step);
+		final I_M_Picking_Job_Step_PickedHU pickedHU = newInstance(I_M_Picking_Job_Step_PickedHU.class);
+		pickedHU.setM_Picking_Job_Step_ID(step.getM_Picking_Job_Step_ID());
+		pickedHU.setPicked_HU_ID(cuFR.getM_HU_ID());
+		saveRecord(pickedHU);
+		final I_M_ShipmentSchedule_QtyPicked row = createBoxRow(schedule, box, "2");
+		row.setM_InOutLine_ID(1);
+		saveRecord(row);
+
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(ImmutableList.of(row));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveOpenRows(schedule);
+		assertThat(openRows).hasSize(1);
+		assertThat(openRows.get(0).getVHU_ID()).isEqualTo(cuFR.getM_HU_ID());
+	}
+
+	@Test
+	void restoreAfterReversal_ofBoxRowWithoutVHU_nextToAUnitTheReopenAlreadyRestored_doesNotRestoreThatUnitTwice()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(box);
+		final I_M_HU cuDE = cus.stream().filter(cu -> HUTestHelper.COUNTRYMADEIN_DE.equals(getCountry(cu))).findFirst().get();
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = createBoxRow(schedule, box, "4");
+		row.setM_InOutLine_ID(1);
+		saveRecord(row);
+		// the reopen of the completed picking job already restored the DE unit as an open row
+		final I_M_ShipmentSchedule_QtyPicked reopened = createBoxRow(schedule, box, "2");
+		reopened.setVHU_ID(cuDE.getM_HU_ID());
+		saveRecord(reopened);
+
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(ImmutableList.of(row));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveOpenRows(schedule);
+		assertThat(openRows).hasSize(2);
+		assertThat(openRows).extracting(I_M_ShipmentSchedule_QtyPicked::getVHU_ID).doesNotHaveDuplicates();
+		assertThat(openRows.stream().map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked).reduce(BigDecimal.ZERO, BigDecimal::add)).isEqualByComparingTo("4");
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -352,6 +403,11 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	{
 		final IAttributeStorage attributes = helper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(load(huId, I_M_HU.class));
 		return Weightables.wrap(attributes).getWeightNet();
+	}
+
+	private String getCountry(final I_M_HU cu)
+	{
+		return helper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(cu).getValueAsString(countryAttributeCode);
 	}
 
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveOpenRows(final I_M_ShipmentSchedule schedule)

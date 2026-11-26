@@ -76,6 +76,7 @@ import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
@@ -168,6 +169,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final Logger logger = LogManager.getLogger(getClass());
 	private final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -352,7 +354,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public void restoreUnshippedQtyPickedIfMissing(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations)
 	{
-		final RestoreState state = RestoreState.of(reversedAllocations, huContextFactory.createMutableHUContext());
+		final RestoreState state = RestoreState.of(reversedAllocations, huContextFactory.createMutableHUContext(), productBL);
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
 		{
 			final HuId vhuId = HuId.ofRepoIdOrNull(alloc.getVHU_ID());
@@ -391,7 +393,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final StockQtyAndUOMQty unitQtys = CatchWeightHelper.extractQtys(huContext, productId, unitQty, unit);
 			// a box shared by several schedules or picks: restore no more than the reversed rows of this schedule picked from it
 			// (whole units, in the order the box lists them: when the unit sizes do not add up to the quantity picked, less is restored)
-			if (!state.takeFromBoxBudget(boxKey, unitQtys.getStockQty().toBigDecimal()))
+			if (!state.takeFromBoxBudget(boxKey, unitQtys.getStockQty()))
 			{
 				continue;
 			}
@@ -1700,12 +1702,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		/** (schedule, unit) pairs already handled */
 		@NonNull private final Set<String> processedKeys = new HashSet<>();
 		/** per (schedule, box): the quantity of the reversed box rows that is not restored yet */
-		@NonNull @Getter(AccessLevel.NONE) private final Map<BoxKey, BigDecimal> boxQtyLeft;
+		@NonNull @Getter(AccessLevel.NONE) private final Map<BoxKey, Quantity> boxQtyLeft;
 
-		static RestoreState of(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations, @NonNull final IHUContext huContext)
+		static RestoreState of(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations, @NonNull final IHUContext huContext, @NonNull final IProductBL productBL)
 		{
 			final Set<HuId> unitIds = new HashSet<>();
-			final Map<BoxKey, BigDecimal> boxQtyLeft = new HashMap<>();
+			final Map<BoxKey, Quantity> boxQtyLeft = new HashMap<>();
 			for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
 			{
 				final HuId vhuId = HuId.ofRepoIdOrNull(alloc.getVHU_ID());
@@ -1716,7 +1718,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				}
 				else if (tuId != null)
 				{
-					boxQtyLeft.merge(new BoxKey(ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID()), tuId), alloc.getQtyPicked(), BigDecimal::add);
+					// QtyPicked is in the stock UOM of the product
+					final ProductId productId = ProductId.ofRepoId(alloc.getM_ShipmentSchedule().getM_Product_ID());
+					final Quantity qtyPicked = Quantity.of(alloc.getQtyPicked(), productBL.getStockUOM(productId));
+					boxQtyLeft.merge(new BoxKey(ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID()), tuId), qtyPicked, Quantity::add);
 				}
 			}
 			return new RestoreState(huContext, unitIds, boxQtyLeft);
@@ -1725,10 +1730,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		/**
 		 * @return true (and reduces what is left) if the box still has {@code qty} left to restore
 		 */
-		boolean takeFromBoxBudget(@NonNull final BoxKey boxKey, @NonNull final BigDecimal qty)
+		boolean takeFromBoxBudget(@NonNull final BoxKey boxKey, @NonNull final Quantity qty)
 		{
-			final BigDecimal left = boxQtyLeft.getOrDefault(boxKey, BigDecimal.ZERO);
-			if (left.compareTo(qty) < 0)
+			final Quantity left = boxQtyLeft.get(boxKey);
+			if (left == null || left.isLessThan(qty))
 			{
 				return false;
 			}
