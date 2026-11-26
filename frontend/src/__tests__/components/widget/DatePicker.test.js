@@ -675,5 +675,60 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
       expect(patch).not.toHaveBeenCalled();
     });
   });
+
+  it('non-grid: a click outside with the calendar closed still saves the typing', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({ value: stored(), patch });
+    typeInto(wrapper, '4.1.27');
+    expect(picker().state.isCalendarOpen).toBe(false);
+    picker().handleClickOutside();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-01-04');
+  });
+
+  it('grid: a typed full date replaced in the input by a new value is not saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().picker.setSelectedDateAndInputValue({
+      selectedDate: MomentTZ('2026-11-22', 'YYYY-MM-DD'),
+      inputValue: '22.11.2026',
+    });
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('empty grid cell: a calendar pick after typing a full date saves only the picked day', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    const picked = MomentTZ('2026-12-05', 'YYYY-MM-DD');
+    // react-datetime's order for a field without value: onBlur(date), then onChange(date)
+    picker().handleBlur(picked);
+    picker().handleDateChange(picked);
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2026-12-05');
+  });
+
+  it('empty grid cell: Tab after typing a full date saves it (react-datetime blurs with the typed moment)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().handleBlur(MomentTZ('2026-11-21', 'YYYY-MM-DD'));
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2026-11-21');
+  });
 });
 

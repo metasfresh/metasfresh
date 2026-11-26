@@ -154,26 +154,31 @@ class DatePicker extends PureComponent {
   };
 
   /**
-   * Grid date cell: saves what was typed since the cell was entered: the typed moment
-   * (`pendingTypedDate`), or the clearing of the date (`isTypedClearPending`).
+   * Saves what was typed since the input was entered, and forgets it: in a grid date cell the typed
+   * moment (`pendingTypedDate`) or the clearing of the date (`isTypedClearPending`); in any date widget
+   * a typed text the exact format did not take (`typedText`, see commitTypedText). Typing counts only
+   * while the input still shows it.
+   * @returns {boolean} whether there was typing to save
    */
   commitTypedDate = () => {
     const { pendingTypedDate, isTypedClearPending, typedText } = this;
     this.discardTypedDate();
+    if (
+      typedText !== undefined &&
+      this.inputElement &&
+      this.inputElement.value !== typedText
+    ) {
+      // a new value replaced the typing in the input
+      return false;
+    }
     if (pendingTypedDate) {
       this.callPatchIfNeeded(pendingTypedDate);
       return true;
     } else if (isTypedClearPending) {
       this.callPatchIfNeeded(null);
       return true;
-    } else if (
-      typedText &&
-      typedText.trim() &&
-      this.props.dateFormat &&
-      (!this.inputElement || this.inputElement.value === typedText)
-    ) {
-      // (only while the input still shows what was typed: a new value may have replaced it;
-      // a time-only field keeps react-datetime's own handling of the typed time)
+    } else if (typedText && typedText.trim() && this.props.dateFormat) {
+      // (a time-only field keeps react-datetime's own handling of the typed time)
       this.commitTypedText(typedText);
       return true;
     }
@@ -326,7 +331,15 @@ class DatePicker extends PureComponent {
     // react-datetime passes a moment when a date was picked or typed in full (for a field without value it
     // blurs on a calendar pick BEFORE reporting the change), so earlier typing must not be reported then
     if (MomentTZ.isMoment(dateObj)) {
-      this.typedText = undefined;
+      if (
+        this.pendingTypedDate &&
+        !this.isSameMoment(dateObj, this.pendingTypedDate)
+      ) {
+        // a calendar pick, not the typed date: the pick is saved by handleDateChange
+        this.discardTypedDate();
+      } else {
+        this.typedText = undefined;
+      }
     }
 
     // A date typed into the input is saved (grid date cell: only) when the input is left; a short form
@@ -545,9 +558,14 @@ class DatePicker extends PureComponent {
     // we have to narrow this down to the current date field.
     // For that reason we check the isCalendarOpen to see if it has the calendar open.
 
-    // (a grid date cell exists only while it is edited, and may have no calendar open)
+    // (a grid date cell exists only while it is edited, and may have no calendar open; typing into
+    // a field with its calendar closed, e.g. after Escape, is left by a click outside too)
     const { isCalendarOpen } = this.state;
-    if (isCalendarOpen || this.props.isGridCell) {
+    if (
+      isCalendarOpen ||
+      this.props.isGridCell ||
+      this.typedText !== undefined
+    ) {
       this.handleBlur();
     }
   };
