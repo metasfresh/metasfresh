@@ -63,7 +63,7 @@ const translations = {
     },
     pickFromRequired: "Bitte zuerst 'Kommissionieren aus' scannen.",
     nextTU: 'Weiteres TU',
-    nextTUOpened: 'Neues TU geöffnet: %(caption)s',
+    nextTUOpened: 'Neues TU geöffnet',
     nextTUBusy: 'Es wird gerade ein TU geöffnet. Bitte gleich nochmal scannen.',
   },
   login: {

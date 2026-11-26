@@ -59,7 +59,7 @@ const translations = {
     },
     pickFromRequired: "Please scan 'Pick From' first.",
     nextTU: 'Next TU',
-    nextTUOpened: 'New TU opened: %(caption)s',
+    nextTUOpened: 'New TU opened',
     nextTUBusy: 'A TU is just being opened. Scan again in a moment.',
   },
   login: {

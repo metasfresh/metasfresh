@@ -144,7 +144,7 @@ export const PickLineScanScreen = {
     scanGrai: async (graiString) => await step(`${NAME} - Scan GRAI ${graiString}`, async () => {
         await PickLineScanScreen.waitForScreen();
         await PickLineScanScreen.typeQRCode(graiString);
-        await expect(page.locator('.Toastify__toast--success', { hasText: graiString })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('.Toastify__toast--success', { hasText: 'New TU opened' })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Scans a GRAI inside the open quantity block */

@@ -159,7 +159,7 @@ export const useOpenNextTU = ({
           ),
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
-        toastNotification({ plainMessage: trl('picking.nextTUOpened', { caption: packingItemName }) });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened') });
       }
     });
 
@@ -167,7 +167,7 @@ export const useOpenNextTU = ({
     runExclusive(
       async () => {
         await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
-        toastNotification({ plainMessage: trl('picking.nextTUOpened', { caption: graiString }) });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened') });
       },
       { isRethrow: true }
     );
