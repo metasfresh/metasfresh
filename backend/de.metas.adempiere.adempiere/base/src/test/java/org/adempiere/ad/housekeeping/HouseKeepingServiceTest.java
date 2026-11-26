@@ -1,6 +1,7 @@
 package org.adempiere.ad.housekeeping;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.user.UserId;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
@@ -18,10 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class HouseKeepingServiceTest
 {
-	private static final int SYSTEM_USER_ID = 0;
-	private static final int OTHER_USER_ID = 100;
+	private static final UserId OTHER_USER_ID = UserId.ofRepoId(100);
 
-	private List<Integer> seenUserIds;
+	private List<UserId> seenUserIds;
 
 	@BeforeEach
 	public void beforeEach()
@@ -32,7 +32,7 @@ public class HouseKeepingServiceTest
 
 	private IStartupHouseKeepingTask recordingTask()
 	{
-		return () -> seenUserIds.add(Env.getAD_User_ID(Env.getCtx()));
+		return () -> seenUserIds.add(Env.getLoggedUserIdIfExists(Env.getCtx()).orElse(null));
 	}
 
 	private static void run(final IStartupHouseKeepingTask... tasks)
@@ -45,19 +45,19 @@ public class HouseKeepingServiceTest
 	{
 		run(recordingTask());
 
-		assertThat(seenUserIds).containsExactly(SYSTEM_USER_ID);
-		assertThat(Env.getAD_User_ID(Env.getCtx())).isEqualTo(-1);
+		assertThat(seenUserIds).containsExactly(UserId.SYSTEM);
+		assertThat(Env.getLoggedUserIdIfExists(Env.getCtx())).isEmpty();
 	}
 
 	@Test
 	public void restoresPreviouslySetUser()
 	{
-		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, OTHER_USER_ID);
+		Env.setLoggedUserId(Env.getCtx(), OTHER_USER_ID);
 
 		run(recordingTask());
 
-		assertThat(seenUserIds).containsExactly(SYSTEM_USER_ID);
-		assertThat(Env.getAD_User_ID(Env.getCtx())).isEqualTo(OTHER_USER_ID);
+		assertThat(seenUserIds).containsExactly(UserId.SYSTEM);
+		assertThat(Env.getLoggedUserIdIfExists(Env.getCtx())).contains(OTHER_USER_ID);
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class HouseKeepingServiceTest
 
 		run(throwingTask, recordingTask());
 
-		assertThat(seenUserIds).containsExactly(SYSTEM_USER_ID);
-		assertThat(Env.getAD_User_ID(Env.getCtx())).isEqualTo(-1);
+		assertThat(seenUserIds).containsExactly(UserId.SYSTEM);
+		assertThat(Env.getLoggedUserIdIfExists(Env.getCtx())).isEmpty();
 	}
 }
