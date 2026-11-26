@@ -64,7 +64,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.ShipperId;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -81,8 +80,6 @@ import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.storage.IHUStorageFactory;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -93,7 +90,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
@@ -239,7 +235,7 @@ public class ShipmentScheduleWithHU
 	 * <p>
 	 * Caller contract: {@code qtyPicked.getQtyPicked()} equals {@code qty}, so the record's catch weight
 	 * ({@code QtyDeliveredCatch}/{@code Catch_UOM_ID}) belongs to this candidate and is carried over as-is.
-	 * Both callers in {@code createCandidatesForQtyPicked} meet this.
+	 * Both callers in {@code QtyPickedCandidatesCreator} meet this.
 	 */
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,

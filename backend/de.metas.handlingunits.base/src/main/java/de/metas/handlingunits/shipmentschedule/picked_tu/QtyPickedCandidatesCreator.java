@@ -310,7 +310,7 @@ public class QtyPickedCandidatesCreator
 		{
 			return null;
 		}
-		return Quantity.of(CoalesceUtil.coalesceNotNull(row.getQtyDeliveredCatch(), BigDecimal.ZERO), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
+		return Quantity.of(row.getQtyDeliveredCatch(), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
 	}
 
 	/**

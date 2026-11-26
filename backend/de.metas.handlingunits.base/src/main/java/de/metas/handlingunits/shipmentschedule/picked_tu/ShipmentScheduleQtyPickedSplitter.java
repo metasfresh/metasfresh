@@ -39,6 +39,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -47,6 +48,7 @@ import javax.annotation.Nullable;
  * Write side of the candidate creation: lets a {@code M_ShipmentSchedule_QtyPicked} row stand for one part of its quantity
  * (the row itself for the first part, a row split off it for every further part), saves it and makes the candidate of it.
  */
+@RequiredArgsConstructor
 class ShipmentScheduleQtyPickedSplitter
 {
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -55,14 +57,6 @@ class ShipmentScheduleQtyPickedSplitter
 
 	@NonNull private final IHUContext huContext;
 	@NonNull private final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
-
-	ShipmentScheduleQtyPickedSplitter(
-			@NonNull final IHUContext huContext,
-			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
-	{
-		this.huContext = huContext;
-		this.qtyTypeToUse = qtyTypeToUse;
-	}
 
 	/**
 	 * The part of a row's quantity that becomes one candidate.

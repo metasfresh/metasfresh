@@ -110,7 +110,7 @@ Feature: Shipment line per TU content
       | p_coo        | 2           | DE           |
 
   @Id:S34165_80
-  Scenario: Equal-quantity picks of two origins into one TU that sits on a pallet ship as two lines
+  Scenario: Equal-quantity picks of two origins into one TU that sits on a LU ship as two lines
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
@@ -165,7 +165,7 @@ Feature: Shipment line per TU content
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_80      | so_80_l1       | N             |
-    # Two equal-quantity picks of different origins into the same new TU (the TU's packing instruction has a parent pallet)
+    # Two equal-quantity picks of different origins into the same new TU (the TU's packing instruction has a parent LU)
     When start picking job for sales order identified by so_80
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu80_pi

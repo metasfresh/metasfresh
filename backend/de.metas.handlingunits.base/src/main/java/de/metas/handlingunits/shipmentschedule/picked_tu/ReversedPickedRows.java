@@ -306,7 +306,7 @@ class ReversedPickedRows
 			final Quantity qty = Quantity.of(row.getQtyPicked(), qtyLeft.getUOM()); // QtyPicked is in the stock UOM of the product
 			qtyLeft = qtyLeft.add(qty);
 			qtyTotal = qtyTotal.add(qty);
-			if (row.getCatch_UOM_ID() > 0 && row.getQtyDeliveredCatch() != null)
+			if (row.getCatch_UOM_ID() > 0)
 			{
 				final Quantity weight = Quantity.of(row.getQtyDeliveredCatch(), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
 				weightTotal = weightTotal == null ? weight : weightTotal.add(weight);
