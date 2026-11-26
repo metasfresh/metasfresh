@@ -33,8 +33,12 @@ import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
@@ -45,12 +49,17 @@ import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -64,6 +73,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_timeOutSec;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -73,11 +83,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class M_ShipmentSchedule_QtyPicked_StepDef
 {
+	private static final String ATTRIBUTE_COLUMN_PREFIX = "attr.";
 	private final Logger logger = LogManager.getLogger(M_ShipmentSchedule_QtyPicked_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_ShipmentSchedule_QtyPicked_StepDefData shipmentScheduleQtyPickedTable;
@@ -346,6 +361,221 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 				assertThat(actualShipmentLineId).isEqualTo(expectedShipmentLineId);
 			}
 		}
+	}
+
+	/**
+	 * Asserts the sum of {@code QtyPicked} over the active rows of a shipment schedule: {@code all} rows, or only the {@code open} ones (not on a shipment line).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text)
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example <pre>
+	 * And open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_1 sum to 8
+	 * </pre>
+	 */
+	@And("^(open|all) M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by (.*) sum to (.*)$")
+	public void assertQtyPickedSum(
+			@NonNull final String openOrAll,
+			@NonNull final String shipmentScheduleIdentifier,
+			@NonNull final String expectedSum) throws InterruptedException
+	{
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
+		final boolean onlyOpen = "open".equals(openOrAll);
+		final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows = retrieveRecordsOrdered(shipmentScheduleId)
+				.stream()
+				.filter(row -> !onlyOpen || row.getM_InOutLine_ID() <= 0)
+				.collect(ImmutableList.toImmutableList());
+		final BigDecimal actualSum = rows.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		final StringBuilder rowsInfo = new StringBuilder();
+		for (final I_M_ShipmentSchedule_QtyPicked row : rows)
+		{
+			rowsInfo.append("\n M_ShipmentSchedule_QtyPicked_ID=").append(row.getM_ShipmentSchedule_QtyPicked_ID())
+					.append(" QtyPicked=").append(row.getQtyPicked())
+					.append(" M_InOutLine_ID=").append(row.getM_InOutLine_ID())
+					.append(" VHU_ID=").append(row.getVHU_ID())
+					.append(" M_TU_HU_ID=").append(row.getM_TU_HU_ID());
+		}
+		assertThat(actualSum)
+				.as("sum of QtyPicked of the %s rows of %s:%s", openOrAll, shipmentScheduleIdentifier, rowsInfo)
+				.isEqualByComparingTo(expectedSum);
+	}
+
+	/**
+	 * Registers the TU the active picked rows of a schedule point to, and its CUs, under identifiers.
+	 * The TU is the one distinct {@code M_TU_HU_ID} of those rows. A row with an empty {@code Lot-Nummer} cell registers the TU itself,
+	 * a row with a value registers the one CU of the TU that carries that lot number. The picking steps register no picked TU,
+	 * and {@code validate M_HUs:} with {@code M_HU_Parent} loads only one child.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_HU_ID</b> — (required, identifier) the identifier to register<br>
+	 * <b>Lot-Nummer</b> — (optional) the lot number of the CU to register; empty: the TU
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And register the picked TU and its CUs of M_ShipmentSchedule identified by ss:
+	 *   | M_HU_ID | Lot-Nummer |
+	 *   | shipped_tu  |            |
+	 *   | cu_l2   | L2         |
+	 * </pre>
+	 */
+	@And("^register the picked TU and its CUs of M_ShipmentSchedule identified by (.*):$")
+	public void registerPickedTUAndCUs(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final I_M_HU tu = retrievePickedTU(shipmentScheduleIdentifier);
+
+		final AttributeId lotAttributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString("Lot-Nummer"));
+		DataTableRows.of(dataTable).forEach(row -> registerTUOrItsCU(row, tu, lotAttributeId));
+	}
+
+	/**
+	 * Registers the TU the active picked rows of a schedule point to under an identifier (see {@code register the picked TU and its CUs ...},
+	 * which also registers CUs by lot number).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And register the picked TU of M_ShipmentSchedule identified by ss as shipped_tu
+	 * </pre>
+	 */
+	@And("^register the picked TU of M_ShipmentSchedule identified by (.*) as (.*)$")
+	public void registerPickedTU(@NonNull final String shipmentScheduleIdentifier, @NonNull final String tuIdentifier) throws InterruptedException
+	{
+		huTable.putOrReplace(StepDefDataIdentifier.ofString(tuIdentifier), retrievePickedTU(shipmentScheduleIdentifier));
+	}
+
+	/**
+	 * Registers the LU that a TU sits on under an identifier.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And register the LU of the TU identified by shipped_tu as shipped_lu
+	 * </pre>
+	 */
+	@And("^register the LU of the TU identified by (.*) as (.*)$")
+	public void registerLUOfTU(@NonNull final String tuIdentifier, @NonNull final String luIdentifier)
+	{
+		final I_M_HU tu = StepDefDataIdentifier.ofString(tuIdentifier).lookupNotNullIn(huTable);
+		final I_M_HU lu = handlingUnitsBL.getLoadingUnitHU(tu);
+		assertThat(lu).as("LU of the TU %s", tuIdentifier).isNotNull();
+		huTable.putOrReplace(StepDefDataIdentifier.ofString(luIdentifier), lu);
+	}
+
+	private I_M_HU retrievePickedTU(@NonNull final String shipmentScheduleIdentifier) throws InterruptedException
+	{
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
+		final ImmutableSet<HuId> tuIds = retrieveRecordsOrdered(shipmentScheduleId).stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_TU_HU_ID)
+				.filter(tuId -> tuId > 0)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (tuIds.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one distinct M_TU_HU_ID on the active M_ShipmentSchedule_QtyPicked rows of " + shipmentScheduleIdentifier + " but found " + tuIds);
+		}
+		return handlingUnitsBL.getById(tuIds.iterator().next());
+	}
+
+	/**
+	 * Asserts that a TU holds exactly the given CUs, nothing else: the TU's virtual child HUs are compared to the rows, one row per CU,
+	 * and a CU is registered under the identifier of its row.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_HU_ID</b> — (optional, identifier) the identifier to register the matching CU under<br>
+	 * <b>Qty</b> — (required) the CU's quantity of its product<br>
+	 * <b>attr.&lt;M_Attribute.Value&gt;</b> — (optional, any number of columns) the CU's value of that attribute; an empty cell expects no value
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And the CUs of the TU identified by shipped_tu are exactly, in any order:
+	 *   | M_HU_ID | Qty | attr.1000001 |
+	 *   | cu_it   | 2   | IT           |
+	 *   | cu_de   | 2   | DE           |
+	 * </pre>
+	 */
+	@And("^the CUs of the TU identified by (.*) are exactly, in any order:$")
+	public void validateCUsOfTU(@NonNull final String tuIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_M_HU tu = StepDefDataIdentifier.ofString(tuIdentifier).lookupNotNullIn(huTable);
+		final List<I_M_HU> unmatchedCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
+				.filter(handlingUnitsBL::isVirtual)
+				.collect(Collectors.toCollection(ArrayList::new));
+		final DataTableRows expectedRows = DataTableRows.of(dataTable);
+		final List<String> unmatchedExpectedRows = expectedRows.consumeMatching(
+				unmatchedCUs,
+				this::matchesExpectedCU,
+				(matchedCU, expectedRow) -> expectedRow.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).ifPresent(identifier -> huTable.putOrReplace(identifier, matchedCU)));
+		assertThat(unmatchedExpectedRows).as("Expected CUs of the TU %s that no actual CU matched", tuIdentifier).isEmpty();
+		assertThat(unmatchedCUs.stream().map(cu -> describeCU(cu, expectedRows)).collect(Collectors.toList()))
+				.as("CUs of the TU %s that no expected row consumed", tuIdentifier)
+				.isEmpty();
+	}
+
+	private boolean matchesExpectedCU(@NonNull final I_M_HU cu, @NonNull final DataTableRow expectedRow)
+	{
+		if (getQtyOfCU(cu).compareTo(expectedRow.getAsBigDecimal("Qty")) != 0)
+		{
+			return false;
+		}
+		for (final String column : expectedRow.getColumnNames())
+		{
+			if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+			{
+				if (!expectedRow.isCellMatching(column, getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()))))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private BigDecimal getQtyOfCU(@NonNull final I_M_HU cu)
+	{
+		return huContextFactory.createMutableHUContext().getHUStorageFactory().getStorage(cu).getQtyForProductStorages().toBigDecimal();
+	}
+
+	@Nullable
+	private String getAttributeValueOrNull(@NonNull final I_M_HU cu, @NonNull final String attributeCode)
+	{
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(cu, attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeCode)));
+		return huAttribute == null ? null : huAttribute.getValue();
+	}
+
+	private String describeCU(@NonNull final I_M_HU cu, @NonNull final DataTableRows expectedRows)
+	{
+		final StringBuilder sb = new StringBuilder("{M_HU_ID=" + cu.getM_HU_ID() + ", Qty=" + getQtyOfCU(cu));
+		expectedRows.getColumnNames().stream()
+				.filter(column -> column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+				.forEach(column -> sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()))));
+		return sb.append('}').toString();
+	}
+
+	private void registerTUOrItsCU(@NonNull final DataTableRow row, @NonNull final I_M_HU tu, @NonNull final AttributeId lotAttributeId)
+	{
+		final String lot = row.getAsOptionalString("Lot-Nummer").orElse(null);
+		final I_M_HU hu = Check.isBlank(lot) ? tu : retrieveCUWithLot(tu, lot, lotAttributeId);
+		huTable.putOrReplace(row.getAsIdentifier("M_HU_ID"), hu);
+	}
+
+	private I_M_HU retrieveCUWithLot(@NonNull final I_M_HU tu, @NonNull final String lot, @NonNull final AttributeId lotAttributeId)
+	{
+		final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
+				.filter(handlingUnitsBL::isVirtual)
+				.filter(cu -> hasLot(cu, lot, lotAttributeId))
+				.collect(ImmutableList.toImmutableList());
+		if (matchingCUs.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the TU " + tu.getM_HU_ID() + " but found " + matchingCUs.size());
+		}
+		return matchingCUs.get(0);
+	}
+
+	private boolean hasLot(@NonNull final I_M_HU cu, @NonNull final String lot, @NonNull final AttributeId lotAttributeId)
+	{
+		final I_M_HU_Attribute lotAttribute = huAttributesDAO.retrieveAttribute(cu, lotAttributeId);
+		return lotAttribute != null && lot.equals(lotAttribute.getValue());
 	}
 
 	@And("^M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule (.*) can be located in specified order$")

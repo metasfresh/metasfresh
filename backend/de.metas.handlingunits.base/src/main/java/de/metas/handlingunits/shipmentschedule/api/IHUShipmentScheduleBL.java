@@ -4,7 +4,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -204,13 +203,14 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
 
 	/**
-	 * Creates shipment candidates for a QtyPicked record, expanding mixed-origin TUs into
-	 * per-VHU or per-COO-group candidates so each gets its own InOutLine with the correct ASI.
+	 * Creates shipment candidates for picked {@code M_ShipmentSchedule_QtyPicked} rows, expanding mixed-origin TUs into
+	 * per-CU or per-attribute-combination candidates so each gets its own InOutLine with the correct ASI.
+	 * <p>
+	 * A TU (rows with {@code M_TU_HU_ID} and without {@code VHU_ID}) whose content was picked in several rows is expanded to
+	 * one candidate per attribute combination of its CUs, so that the shipment gets one line per combination,
+	 * also when the picked quantities are equal.
 	 */
-	List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
-			@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked,
-			@NonNull IHUContext huContext,
-			@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse);
+	List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(@NonNull CreateCandidatesRequest request);
 
 	/**
 	 * Retrieves all undelivered shipment schedule candidates for a list of top-level HUs,

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
@@ -37,6 +38,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -350,6 +352,20 @@ class ShipmentScheduleWithHUServiceTest
 		assertThat(result).hasSize(1);
 		assertThat(result.get(0).getShipmentScheduleId()).isEqualTo(ShipmentScheduleId.ofRepoId(701));
 		assertThat(result.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("5");
+	}
+
+	/**
+	 * {@link ShipmentScheduleWithHUService#retrieveNotShippedRecords} returns the rows as {@link QtyPickedRecords}, so no caller wraps a raw list.
+	 */
+	@Test
+	void retrieveNotShippedRecords_returnsQtyPickedRecords()
+	{
+		final I_M_ShipmentSchedule schedule = createClosedSchedule(ShipmentScheduleId.ofRepoId(711), true);
+		createPick(schedule, new BigDecimal("5"), null);
+
+		final QtyPickedRecords result = shipmentScheduleWithHUService.retrieveNotShippedRecords(ShipmentScheduleAndJobScheduleIdSet.of(ShipmentScheduleId.ofRepoId(711)), null);
+
+		assertThat(result.extractScheduleIds()).containsExactly(ShipmentScheduleId.ofRepoId(711));
 	}
 
 	/**

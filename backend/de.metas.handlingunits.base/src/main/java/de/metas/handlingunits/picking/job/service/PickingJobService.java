@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUIdsAndTopLevelTUIdsCollector;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -1026,6 +1027,15 @@ public class PickingJobService implements PickingSlotListener
 				.map(this::getById)
 				.flatMap(pickingJob -> pickingJob.getAllPickedHuIds().stream())
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return per shipment schedule, the HUs recorded as picked by its active picking job steps
+	 */
+	@NonNull
+	public PickedHUsBySchedule getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(shipmentScheduleIds);
 	}
 
 	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)

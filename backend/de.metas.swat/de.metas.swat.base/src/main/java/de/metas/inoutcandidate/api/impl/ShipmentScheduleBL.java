@@ -198,7 +198,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final ShipmentScheduleHeaderAggregationKeyBuilder shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);
-		sched.setHeaderAggregationKey(headerAggregationKey);
+
+		// Set only on a real change: PO writes a column that was set to its loaded value, too, so a save of a schedule
+		// loaded before a shipment run assigned its batch would otherwise overwrite the stored key that has the batch.
+		if (!Objects.equals(sched.getHeaderAggregationKey(), headerAggregationKey))
+		{
+			sched.setHeaderAggregationKey(headerAggregationKey);
+		}
 	}
 
 	@Override

@@ -22,9 +22,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -34,28 +31,24 @@ import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.vendor.VendorReturnFromReceiptHUHandler;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentReversalPickRestoreService;
 import de.metas.handlingunits.shipping.IHUPackageBL;
-import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -75,6 +68,7 @@ import java.util.TreeSet;
 
 @Interceptor(I_M_InOut.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOut
 {
 	private static final String SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned = "CustomerReturnsInOut.FailIfNoHUsAssigned";
@@ -84,23 +78,13 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
-	private final ReturnsServiceFacade returnsServiceFacade;
-	private final PickingJobService pickingJobService;
-
-	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade,
-			@NonNull final PickingJobService pickingJobService)
-	{
-		this.returnsServiceFacade = returnsServiceFacade;
-		this.pickingJobService = pickingJobService;
-	}
+	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
+	@NonNull private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
 
 	@Init
 	public void init()
@@ -127,6 +111,7 @@ public class M_InOut
 	public void addPackingMaterialLinesForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
+		//noinspection StatementWithEmptyBody
 		if (movementType.isOutboundTransaction() && shipment.isSOTrx())
 		{
 			huInOutBL.createPackingMaterialLines(shipment);
@@ -263,8 +248,8 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_ShipmentSchedule_QtyPicked> assignedQuantities =
-				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
+		final QtyPickedRecords assignedQuantities = huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
+
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -273,44 +258,7 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = assignedQuantities.stream()
-				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
-				.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
-				.map(ShipmentScheduleId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-		final List<HUWithPickOnTheFlyStatus> allHusInvolved = assignedQuantities.stream()
-				.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0)
-				.map(qtyPicked -> HUWithPickOnTheFlyStatus.builder()
-						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
-						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
-						.build())
-				.distinct() // one HU might be in multiple qtyPicked records if inouts are completed and reversed multiple times
-				.collect(ImmutableList.toImmutableList());
-
-		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
-				.shipmentScheduleIds(allShipmentSchedulesInvolved)
-				.huInfoList(allHusInvolved)
-				.build();
-
-		pickingJobService.reopenPickingJobs(request);
-
-		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment
-		// was recreated via "Generate Shipments" the job is left Drafted, so a subsequent reverse restores nothing
-		// and the shipment can no longer be recreated (me03#29561). Re-create the picked rows directly from the
-		// just-reversed allocations for any (schedule, VHU) the reopen did not restore.
-		//
-		// Gate this to allocations whose VHU is covered by a picking job: a QtyToDeliver / on-the-fly shipment has
-		// NO picking job and its reverse must instead clear the HU's BPartner + return it to Active stock (so it
-		// can be shipped to a different customer) — that behaviour must stay untouched.
-		final ImmutableSet<HuId> huIdsCoveredByPickingJobs = pickingJobService.getHuIdsCoveredByPickingJobs(allShipmentSchedulesInvolved);
-		if (!huIdsCoveredByPickingJobs.isEmpty())
-		{
-			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
-					.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0
-							&& huIdsCoveredByPickingJobs.contains(HuId.ofRepoId(qtyPicked.getVHU_ID())))
-					.collect(ImmutableList.toImmutableList());
-			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
-		}
+		shipmentReversalPickRestoreService.restorePickedQtys(assignedQuantities);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
@@ -324,6 +272,7 @@ public class M_InOut
 
 		//
 		// Shipment
+		//noinspection StatementWithEmptyBody
 		if (inout.isSOTrx())
 		{
 			// TODO: change HUStatus from Shipped back to Picked
