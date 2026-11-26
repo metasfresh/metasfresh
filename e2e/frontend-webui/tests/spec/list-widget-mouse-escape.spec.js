@@ -99,10 +99,27 @@ testCases.forEach(({ language, label }) => {
       await SalesOrderPage.goto();
       await SalesOrderPage.clickNew();
       const bp = masterdata.bpartners.CUST;
-      // the header walks the cursor partner -> address -> contact after the pick; wait until that walk has settled
+      // After the pick the header walks the cursor partner -> address -> contact. What each wait guarantees:
+      // - pickCustomerAndSettle: the contact list request of the walk was answered, then 2 animation frames
+      //   passed. It does not prove that the cursor already sits in the contact field, and a later header
+      //   reload is not waited for.
+      // - the waitForFunction below: the cursor reached the contact field (the last hop of the walk).
+      // - the hold below: the cursor stays in the contact field for 500 ms, so a second late hop (the contact
+      //   list re-taking the cursor on a re-render) would show here and not inside the pin that follows.
+      // The race itself (a click during the walk steals the cursor) is an app defect that this pin does not
+      // cover; the nearest pins are in quick-input-keyboard-focus.spec.js (TC1/TC2/TC7: the cursor must survive
+      // the walk into the quick entry). No spec pins a list-field click during the walk: this is not covered.
       const recordId = await pickCustomerAndSettle(() =>
         pickCustomerByMouse({ searchText: bp.bpartnerCode, bpartnerCode: bp.bpartnerCode })
       );
+      const inContact = () => page.evaluate(() => !!document.activeElement?.closest('#lookup_AD_User_ID'));
+      await page.waitForFunction(() => !!document.activeElement?.closest('#lookup_AD_User_ID'), null, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      for (const deadline = Date.now() + 500; Date.now() < deadline; ) {
+        expect(await inContact(), 'the header walk ended: cursor stays in the contact field for 500 ms').toBe(true);
+        await page.waitForTimeout(100);
+      }
       await expect(page.locator(PAYMENT_RULE)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       return recordId;
     };
@@ -204,8 +221,7 @@ testCases.forEach(({ language, label }) => {
       const recordId = await start(page);
 
       const before = await savedKey(recordId, 'PaymentRule');
-      // the partner pick advances location -> contact; let that hop land before taking the cursor
-      await page.waitForFunction(() => !!document.activeElement?.closest('#lookup_AD_User_ID'), null, { timeout: SLOW_ACTION_TIMEOUT });
+      // start() has waited for the header walk to end (cursor held in the contact field)
       await page.locator(PAYMENT_RULE).focus();
       await expectFocusOn(page.locator(PAYMENT_RULE), 'PaymentRule focused before ArrowDown');
       await page.keyboard.press('ArrowDown');
