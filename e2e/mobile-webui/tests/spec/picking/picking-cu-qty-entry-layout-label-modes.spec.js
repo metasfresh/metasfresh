@@ -2,7 +2,7 @@ import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { delayRequests } from "../../utils/network";
 import { LoadingSpinner, LOADING_SCOPE } from "../../utils/components/LoadingSpinner";
-import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen, DIALOG_SCOPE } from "../../utils/layout";
+import { expectLayoutSound, expectOnScreenWithoutScrolling, expectReachable, PHONE_VIEWPORTS, LAYOUT_LANGUAGES, expectInsideScreen, DIALOG_SCOPE, setViewport } from "../../utils/layout";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -327,7 +327,7 @@ const ICON_LAYOUT_VIEWPORTS = [{ width: 360, height: 720 }, { width: 393, height
 const expectIconKeepsTheRows = async (page, { scope, testIds, label }) => {
     const withIcon = {};
     for (const viewport of ICON_LAYOUT_VIEWPORTS) {
-        await page.setViewportSize(viewport);
+        await setViewport(viewport);
         withIcon[viewport.width] = await measureRow(page, scope, testIds);
         const heights = testIds.map((id) => withIcon[viewport.width][id].height);
         expect.soft(new Set(heights).size, `${label} ${viewport.width}: all buttons equally high ${JSON.stringify(heights)}`).toBe(1);
@@ -340,7 +340,7 @@ const expectIconKeepsTheRows = async (page, { scope, testIds, label }) => {
         el.classList.remove('has-dialog-icon');
     });
     for (const viewport of ICON_LAYOUT_VIEWPORTS) {
-        await page.setViewportSize(viewport);
+        await setViewport(viewport);
         const without = await measureRow(page, scope, testIds);
         for (const id of testIds) {
             const a = withIcon[viewport.width][id];

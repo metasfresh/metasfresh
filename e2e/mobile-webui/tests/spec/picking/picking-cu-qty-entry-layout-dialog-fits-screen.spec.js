@@ -1,6 +1,7 @@
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
 import { expectInsideScreen } from "../../utils/layout";
+import { ErrorToast } from "../../utils/dialogs/ErrorToast";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -99,8 +100,8 @@ test.describe(`error toast on a tiny screen ${TINY_SCREEN.width}x${TINY_SCREEN.h
 
         await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot: uniqueLot(), gtin: uniqueGTIN(), packId: 1 }), txt('en_US', 'noOpenTU'), {
             whileToastShown: async () => {
-                await expectInsideScreen(page.locator('.Toastify__toast--error').first(), 'error toast', TINY_SCREEN);
-                await expectInsideScreen(page.locator('.Toastify__close-button--error').first(), 'error toast close button', TINY_SCREEN);
+                await expectInsideScreen(ErrorToast.toastElement(), 'error toast', TINY_SCREEN);
+                await expectInsideScreen(ErrorToast.closeButtonElement(), 'error toast close button', TINY_SCREEN);
             },
         });
     });

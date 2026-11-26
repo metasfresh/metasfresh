@@ -119,6 +119,11 @@ const measureLayout = ({ scope, minTapSize }) => {
 };
 
 /** Scope of a layout check: the whole app, or only the dialog (the dialog states say so: whether a dialog is open is the scenario's fact, not measured here) */
+/** Resizes the browser window (e.g. to another phone width) */
+export const setViewport = async (viewport) => await test.step(`Layout - Set viewport ${viewport.width}x${viewport.height}`, async () => {
+    await page.setViewportSize(viewport);
+});
+
 export const ROOT_SCOPE = '#root';
 export const DIALOG_SCOPE = '.prompt-dialog';
 

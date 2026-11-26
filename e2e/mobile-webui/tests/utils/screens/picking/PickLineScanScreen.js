@@ -128,6 +128,39 @@ export const PickLineScanScreen = {
         await expect(nextTUButton()).toBeEnabled();
     }),
 
+    /** Asserts the Next TU button is shown */
+    expectNextTUButtonVisible: async () => await step(`${NAME} - Expect Next TU button visible`, async () => {
+        await expect(nextTUButton()).toBeVisible();
+    }),
+
+    scrollNextTUButtonIntoView: async () => await step(`${NAME} - Scroll Next TU button into view`, async () => {
+        await nextTUButton().scrollIntoViewIfNeeded();
+    }),
+
+    /** First scan screen of a CU label line: its own visible scanner stays (and "Weiteres TU" with its second scanner is absent, see expectNextTUButtonHiddenOnLabelLine) */
+    expectFirstScreenScannerVisuals: async () => await step(`${NAME} - Expect the first scan screen's own visible scanner`, async () => {
+        await expect(page.getByTestId('scanHUBarcode-input')).toBeAttached();
+        await expect(page.locator('.scan-prompt')).toHaveCount(1);
+        await expect(page.getByTestId('rescanCULabel-input')).toHaveCount(0);
+        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
+    }),
+
+    /** Quantity block (Scan once): no scanner visuals (icon, "Barcode scannen", "Manuell eingeben"), one hidden scanner; the only barcode icon is the one inside "Weiteres TU" */
+    expectQtyBlockHasNoScannerVisuals: async () => await step(`${NAME} - Expect the quantity block has no scanner visuals`, async () => {
+        await expect(page.locator('.scan-prompt')).toHaveCount(0);
+        await expect(page.locator('.barcode-scanner-footer')).toHaveCount(0);
+        await expect(page.getByTestId('barcode-scanner-enter-manually')).toHaveCount(0);
+        await expect(page.getByText('Barcode scannen')).toHaveCount(0);
+        await expect(page.getByText('Manuell eingeben')).toHaveCount(0);
+        await expect(page.getByTestId('scanHUBarcode-input')).toHaveCount(0);
+        await expect(page.getByTestId('rescanCULabel-input')).toBeAttached();
+        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
+        // the only barcode icon of the dialog is the one inside "Weiteres TU"
+        await expect(page.locator('.get-qty-dialog [class*="fa-barcode"]')).toHaveCount(1);
+        await expect(nextTUButton().locator('[class*="fa-barcode"]')).toHaveCount(1);
+        await expect(nextTUButton()).toContainText('Weiteres TU');
+    }),
+
     /** Scans one raw CU label into the quantity block's own scanner (Scan once */
     rescanCULabel: async (label) => await step(`${NAME} - Rescan CU label in the quantity block`, async () => {
         await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' });

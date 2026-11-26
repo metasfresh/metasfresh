@@ -1,6 +1,8 @@
 import { expect } from "@playwright/test";
 import { test } from "../../../playwright.config";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { setViewport } from "../../utils/layout";
+import { ErrorToast } from "../../utils/dialogs/ErrorToast";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -246,20 +248,6 @@ test('product match uses the label product part against M_Product.Value, the GTI
 });
 
 
-/** Box (Playwright boundingBox) and the styles that decide the look of the quantity block's buttons */
-const measureButtons = async (page) => {
-    const read = async (testId) => {
-        const button = page.locator('.get-qty-dialog').getByTestId(testId);
-        const box = await button.boundingBox();
-        const style = await button.evaluate((el) => {
-            const cs = getComputedStyle(el);
-            return { fontSize: cs.fontSize, fontFamily: cs.fontFamily, lineHeight: cs.lineHeight, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, borderTopWidth: cs.borderTopWidth };
-        });
-        return { ...box, ...style };
-    };
-    return { ok: await read('done-button'), cancel: await read('cancel-button'), nextTU: await read('next-tu-button') };
-};
-
 // noinspection JSUnusedLocalSymbols
 test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weiteres TU", which is as big as OK and Abbrechen', async ({ page }) => {
     allureMeta('CU label reading');
@@ -269,55 +257,41 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
     const gtin = uniqueGTIN();
     const productValue = masterdata.products.P1.productCode;
     const lot = uniqueLot();
-    await page.setViewportSize({ width: 360, height: 720 });
+    await setViewport({ width: 360, height: 720 });
     await openLineScanScreen(masterdata);
 
     await test.step('first scan screen: its own visible scanner stays, no "Weiteres TU" and so no second scanner', async () => {
         await PickLineScanScreen.expectNextTUButtonHiddenOnLabelLine();
-        await expect(page.getByTestId('scanHUBarcode-input')).toBeAttached();
-        await expect(page.locator('.scan-prompt')).toHaveCount(1);
-        await expect(page.getByTestId('rescanCULabel-input')).toHaveCount(0);
-        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
+        await PickLineScanScreen.expectFirstScreenScannerVisuals();
     });
 
     await PickLineScanScreen.scanCULabel(buildCULabel({ gtin, productValue, lot, packId: 1 }));
     await GetQuantityDialog.waitForDialog();
 
     await test.step('pop-up: no scanner visuals (icon, "Barcode scannen", "Manuell eingeben"), one hidden scanner', async () => {
-        await expect(page.locator('.scan-prompt')).toHaveCount(0);
-        await expect(page.locator('.barcode-scanner-footer')).toHaveCount(0);
-        await expect(page.getByTestId('barcode-scanner-enter-manually')).toHaveCount(0);
-        await expect(page.getByText('Barcode scannen')).toHaveCount(0);
-        await expect(page.getByText('Manuell eingeben')).toHaveCount(0);
-        await expect(page.getByTestId('scanHUBarcode-input')).toHaveCount(0);
-        await expect(page.getByTestId('rescanCULabel-input')).toBeAttached();
-        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
-        // the only barcode icon of the dialog is the one inside "Weiteres TU"
-        await expect(page.locator('.get-qty-dialog [class*="fa-barcode"]')).toHaveCount(1);
-        await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
-        await expect(page.getByTestId('next-tu-button')).toContainText('Weiteres TU');
+        await PickLineScanScreen.expectQtyBlockHasNoScannerVisuals();
     });
 
     await test.step('pop-up: a pack label of a new lot, scanned on the hidden scanner, switches the lot', async () => {
         const newLot = uniqueLot();
         await PickLineScanScreen.rescanCULabel(buildCULabel({ gtin, productValue, lot: newLot, packId: 2 }));
-        await expect(page.getByTestId('lotNo')).toHaveValue(newLot);
+        await GetQuantityDialog.expectLotNoValue(newLot);
     });
 
     const viewports = [{ width: 360, height: 720 }, { width: 393, height: 727 }];
     for (const viewport of viewports) {
         await test.step(`pop-up at ${viewport.width}x${viewport.height}: "Weiteres TU" with icon is as high as OK and Abbrechen`, async () => {
-            await page.setViewportSize(viewport);
-            await expect(page.getByTestId('next-tu-button')).toBeVisible();
-            const { ok, cancel, nextTU } = await measureButtons(page);
+            await setViewport(viewport);
+            await PickLineScanScreen.expectNextTUButtonVisible();
+            const { ok, cancel, nextTU } = await GetQuantityDialog.measureButtons();
             expect.soft(nextTU.height, 'height of Weiteres TU vs OK').toBe(ok.height);
             expect.soft(nextTU.height, 'height of Weiteres TU vs Abbrechen').toBe(cancel.height);
             for (const key of ['fontSize', 'fontFamily', 'lineHeight', 'paddingTop', 'paddingBottom', 'borderTopWidth']) {
                 expect.soft(nextTU[key], `${key} of Weiteres TU vs OK`).toBe(ok[key]);
             }
             expect.soft(nextTU.x + nextTU.width, 'Weiteres TU inside the screen').toBeLessThanOrEqual(viewport.width);
-            await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: 15000 }); // clean picture: no toast over the buttons
-            await page.getByTestId('next-tu-button').scrollIntoViewIfNeeded();
+            await ErrorToast.expectNoToastOfAnyKind({ timeout: 15000 }); // clean picture: no toast over the buttons
+            await PickLineScanScreen.scrollNextTUButtonIntoView();
         });
     }
 

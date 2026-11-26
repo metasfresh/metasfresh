@@ -85,6 +85,25 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('lotNo')).not.toBeVisible();
     }),
 
+    /** Asserts the value of the LotNo field */
+    expectLotNoValue: async (expected) => await test.step(`${NAME} - Expect LotNo to be '${expected}'`, async () => {
+        await expect(page.getByTestId('lotNo')).toHaveValue(expected);
+    }),
+
+    /** Box (Playwright boundingBox) and the styles that decide the look of the buttons OK, Cancel and Next TU of the dialog */
+    measureButtons: async () => await test.step(`${NAME} - Measure OK, Cancel and Next TU buttons`, async () => {
+        const read = async (testId) => {
+            const button = containerElement().getByTestId(testId);
+            const box = await button.boundingBox();
+            const style = await button.evaluate((el) => {
+                const cs = getComputedStyle(el);
+                return { fontSize: cs.fontSize, fontFamily: cs.fontFamily, lineHeight: cs.lineHeight, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, borderTopWidth: cs.borderTopWidth };
+            });
+            return { ...box, ...style };
+        };
+        return { ok: await read('done-button'), cancel: await read('cancel-button'), nextTU: await read('next-tu-button') };
+    }),
+
     expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
         await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
     }),
@@ -153,6 +172,15 @@ export const GetQuantityDialog = {
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
+
+    /** The quantity (count) field */
+    qtyInputField: () => page.locator('#qty-input'),
+
+    /** The open quantity shown by the dialog (`qty-target`) */
+    qtyTargetElement: () => page.getByTestId('qty-target'),
+
+    /** The first row of the dialog's table (the one with the target quantity) */
+    firstRow: () => page.locator('tr').filter({ has: page.getByTestId('qty-target') }).first(),
 
     /** The OK button; for layout checks (see utils/layout.js) */
     doneButton: () => page.getByTestId('done-button'),

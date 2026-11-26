@@ -13,15 +13,14 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.ResolvedCULabel;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.logging.LogManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

@@ -191,7 +191,7 @@ test('GRAI of a TU type without capacity, slow refusal (count typed and OK press
         async () => {
             await PickLineScanScreen.rescanGrai(masterdata.packingInstructions.GN.grai);
             await GetQuantityDialog.typeQtyEntered(3);
-            await page.getByTestId('done-button').tap();
+            await GetQuantityDialog.tapDone();
         },
         ({ textContent }) => expect(textContent).toContain(MSG_NO_CAPACITY)
     );
@@ -274,7 +274,7 @@ test('GRAI scan whose request hangs (no answer at all): the request times out, o
         async () => {
             await PickLineScanScreen.rescanGrai(grai);
             await GetQuantityDialog.typeQtyEntered(3);
-            await page.getByTestId('done-button').tap();
+            await GetQuantityDialog.tapDone();
             await ErrorToast.waitToPopup(undefined, 40000);   // the request timeout (20 s) ends the hung opening
         },
         ({ textContent }) => expect(textContent).toContain('Connection error')   // what the app shows for a timed-out request
@@ -321,7 +321,7 @@ test('"Next TU" button whose request hangs (no answer at all): the request times
         async () => {
             await PickLineScanScreen.tapNextTUWithoutWaiting();
             await GetQuantityDialog.typeQtyEntered(3);
-            await page.getByTestId('done-button').tap();
+            await GetQuantityDialog.tapDone();
             await ErrorToast.waitToPopup(undefined, 40000);   // the request timeout (20 s) ends the hung opening
         },
         ({ textContent }) => expect(textContent).toContain('Connection error')
@@ -364,7 +364,7 @@ test('count confirmed first (OK pressed, its answer late), crate GRAI scanned me
     // OK is pressed, the server books at once but its answer is late; the next crate is scanned meanwhile
     const restoreEventSpeed = await delayResponses({ urlPattern: /\/picking\/event/, method: 'POST', delayMs: 4000 });
     await GetQuantityDialog.typeQtyEntered(5);
-    await page.getByTestId('done-button').tap();
+    await GetQuantityDialog.tapDone();
     await PickLineScanScreen.rescanGrai(grai);
     await GetQuantityDialog.expectQtyTarget(10);
     await restoreEventSpeed();
