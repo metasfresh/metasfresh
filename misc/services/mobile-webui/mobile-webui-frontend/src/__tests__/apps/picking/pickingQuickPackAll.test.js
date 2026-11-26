@@ -31,7 +31,7 @@ describe('isQuickPackAllAllowed: the backend decides, the client reads', () => {
   it('is allowed when the job says so', () => {
     expect(isQuickPackAllAllowed({ activity: activityOf(stateWithJob({ quickPackAllAllowed: true })) })).toBe(true);
   });
-  it('is refused when the job says so (profile switch off, or a line needs a label scan)', () => {
+  it('is refused when the job says so (profile switch off, or a line requires a label)', () => {
     expect(isQuickPackAllAllowed({ activity: activityOf(stateWithJob({ quickPackAllAllowed: false })) })).toBe(false);
   });
   it('is refused when the field is absent or the activity is missing', () => {

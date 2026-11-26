@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  * The steps of one pick that depend on the CU quantity entry policy of the line: resolving the scanned CU label,
  * the open-TU and duplicate-label checks, the pick attributes read from the label, stamping the pack ID on the
  * created CUs and the QR-code owner of the picked HU. {@link PickingJobPickCommand} builds one per pick and asks it
- * for these steps; the other rules of the policy (whole TU, EACH unit, CU quantity, over-pick, single-CU booking) stay in the command.
+ * for these steps; the other rules of the policy (whole TU, EACH unit, CU quantity, over-pick, single-CU booking, refusal message) stay in the command.
  */
 final class CULabelBooking
 {

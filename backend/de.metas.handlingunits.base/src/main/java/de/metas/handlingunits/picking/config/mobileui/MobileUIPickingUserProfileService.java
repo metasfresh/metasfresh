@@ -44,7 +44,7 @@ public class MobileUIPickingUserProfileService
 		return getPickingJobOptions(customerId).getCUQtyEntryPolicy();
 	}
 
-	/** True if the line's customer requires a scanned CU label to book a CU. */
+	/** True if the line's customer requires a CU label to book a CU. */
 	public boolean isLabelRequired(@NonNull final PickingJobLine line)
 	{
 		return getCUQtyEntryPolicy(line.getCustomerId()).isLabelRequired();
