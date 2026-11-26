@@ -22,7 +22,18 @@
 
 package de.metas.handlingunits.shipmentschedule.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -33,6 +44,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,7 +52,9 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.Invocation;
 
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -144,6 +158,109 @@ class ShipmentScheduleEnqueuerTest
 		assertThat(countWorkpackages()).isZero();
 	}
 
+	/**
+	 * Mirrors the production interceptor M_ShipmentSchedule.updateHeaderAggregationKey (BEFORE_NEW / BEFORE_CHANGE),
+	 * which rebuilds the header key on every save. It can be switched off for the emulated PO UPDATE below,
+	 * because PO runs the interceptor on the in-memory model and then writes the columns with plain SQL.
+	 */
+	@Interceptor(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)
+	static class M_ShipmentSchedule
+	{
+		boolean enabled = true;
+
+		@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+		public void updateHeaderAggregationKey(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule)
+		{
+			if (enabled)
+			{
+				Services.get(IShipmentScheduleBL.class).updateHeaderAggregationKey(schedule);
+			}
+		}
+	}
+
+	/**
+	 * Race of the observed red run (order 1001083): a schedule recompute loads schedule 2 BEFORE the shipment run stamps the run's async batch
+	 * (ShipmentService.groupSchedulesByAsyncBatch -> ShipmentScheduleBL.setAsyncBatchAndSave), and saves it AFTER the stamp but BEFORE the enqueuer
+	 * reads the schedules. The recompute leaves C_Async_Batch_ID alone (loaded 0 == order 0, OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder),
+	 * but its save rebuilds HeaderAggregationKey from the stale in-memory model. Both schedules belong to one run, so they get one workpackage.
+	 */
+	@Test
+	void createWorkpackages_staleRecomputeSaveBetweenBatchStampAndEnqueue_oneWorkpackage()
+	{
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
+		InOutCandidateValidator.registerSSAggregationKeyDependencies();
+		final M_ShipmentSchedule interceptor = new M_ShipmentSchedule();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
+
+		final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(841);
+		final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(842);
+
+		// the recompute loads schedule 2 before the run stamps the batch
+		final I_M_ShipmentSchedule staleSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
+
+		// the run stamps its async batch (own committed trx in production)
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
+		InterfaceWrapperHelper.save(asyncBatch);
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+		Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+		final String stampedKey2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class).getHeaderAggregationKey();
+		assertThat(stampedKey2).as("the stamp puts the batch into the stored key").isEqualTo(InterfaceWrapperHelper.load(841, I_M_ShipmentSchedule.class).getHeaderAggregationKey());
+		assertThat(staleSchedule2.getC_Async_Batch_ID()).as("the recompute's copy is stale").isZero();
+
+		// the recompute's save: a real change, then PO's BEFORE_CHANGE interceptor, then PO's UPDATE of every column a setter was called for
+		saveLikePO(staleSchedule2, stale -> stale.setQtyToDeliver(new BigDecimal("3")), interceptor);
+
+		final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
+		assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the recompute keeps the run's batch").isEqualTo(asyncBatchId.getRepoId());
+
+		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
+				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
+						.adPInstanceId(PInstanceId.ofRepoId(1))
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(841), ShipmentScheduleId.ofRepoId(842))))
+						.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.asyncBatchId(asyncBatchId)
+						.completeShipments(true)
+						.build());
+
+		assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
+	}
+
+	/**
+	 * Emulates PO.save of a model that was loaded earlier: the in-memory changes and the BEFORE_CHANGE interceptor run on the stale model,
+	 * then PO.saveUpdate writes every column whose setter was called (m_newValues != null, PO.java saveUpdate), equal to the loaded value or not;
+	 * all other columns keep what is in the DB now. The in-memory POJO save would instead write the whole stale copy.
+	 */
+	private void saveLikePO(
+			final I_M_ShipmentSchedule staleModel,
+			final java.util.function.Consumer<I_M_ShipmentSchedule> changes,
+			final M_ShipmentSchedule interceptor)
+	{
+		// record every setter call on the stale model: a proxy over a spy of its POJOWrapper (setters end in POJOWrapper.setValue)
+		final POJOWrapper recordingWrapper = Mockito.spy(POJOWrapper.getWrapper(staleModel));
+		final I_M_ShipmentSchedule recorder = (I_M_ShipmentSchedule)Proxy.newProxyInstance(
+				I_M_ShipmentSchedule.class.getClassLoader(), new Class<?>[] { I_M_ShipmentSchedule.class }, recordingWrapper);
+		changes.accept(recorder);
+		interceptor.updateHeaderAggregationKey(recorder);
+
+		final I_M_ShipmentSchedule current = InterfaceWrapperHelper.load(staleModel.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class);
+		for (final Invocation invocation : Mockito.mockingDetails(recordingWrapper).getInvocations())
+		{
+			if ("setValue".equals(invocation.getMethod().getName()))
+			{
+				POJOWrapper.getWrapper(current).setValue((String)invocation.getArgument(0), invocation.getArgument(1));
+			}
+		}
+		interceptor.enabled = false; // the UPDATE itself runs no interceptor
+		try
+		{
+			InterfaceWrapperHelper.save(current);
+		}
+		finally
+		{
+			interceptor.enabled = true;
+		}
+	}
+
 	private ShipmentScheduleEnqueuer.Result enqueue(final I_M_ShipmentSchedule schedule)
 	{
 		return enqueue(schedule, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -171,6 +288,21 @@ class ShipmentScheduleEnqueuerTest
 		pick.setM_ShipmentSchedule_ID(schedule.getM_ShipmentSchedule_ID());
 		pick.setQtyPicked(qtyPicked);
 		InterfaceWrapperHelper.save(pick);
+	}
+
+	/**
+	 * Same header values (partner, location, warehouse) for every id, so the schedules belong in one shipment.
+	 */
+	private I_M_ShipmentSchedule createScheduleOfOneOrder(final int id)
+	{
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		schedule.setM_ShipmentSchedule_ID(id);
+		schedule.setC_BPartner_ID(100);
+		schedule.setC_BPartner_Location_ID(200);
+		schedule.setM_Warehouse_ID(300);
+		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		InterfaceWrapperHelper.save(schedule);
+		return schedule;
 	}
 
 	private I_M_ShipmentSchedule createSchedule(final int id, final boolean closed)
