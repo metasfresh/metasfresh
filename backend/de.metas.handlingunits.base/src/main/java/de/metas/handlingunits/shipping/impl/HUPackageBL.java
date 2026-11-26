@@ -19,7 +19,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
@@ -42,11 +41,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 
 import java.math.BigDecimal;
@@ -353,8 +350,7 @@ public class HUPackageBL implements IHUPackageBL
 				.collect(ImmutableSet.toImmutableSet());
 
 		// One M_PackageLine per shipment line, from the pick ledger. Every shipment line — including each line an
-		// attribute-mixed TU is split into — has its own M_ShipmentSchedule_QtyPicked row
-		// (HUShipmentScheduleBL.createCandidatesForQtyPicked splits a whole-TU pick per attribute group), so the
+		// attribute-mixed TU is split into — has its own M_ShipmentSchedule_QtyPicked row, so the
 		// ledger is line-complete; group its rows for the package's HUs by M_InOutLine and sum the picked qty.
 		final Map<InOutLineId, BigDecimal> qtyByInOutLineId = new LinkedHashMap<>();
 		for (final I_M_Package_HU packageHU : huPackageDAO.retrievePackageHUs(mpackage))

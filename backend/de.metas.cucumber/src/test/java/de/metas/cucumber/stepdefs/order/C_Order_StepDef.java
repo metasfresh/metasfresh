@@ -792,6 +792,7 @@ public class C_Order_StepDef
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+		// not via DocumentProcessingInTrx: the simulated-deadlock scenarios need the engine's own deadlock retry
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
 	}

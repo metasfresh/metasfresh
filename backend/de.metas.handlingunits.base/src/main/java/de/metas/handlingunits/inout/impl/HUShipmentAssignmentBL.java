@@ -22,7 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -30,8 +29,8 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -45,16 +44,10 @@ import de.metas.material.MovementType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.InSubQueryFilter;
-import org.adempiere.ad.dao.impl.NotQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
 import java.util.List;
@@ -70,8 +63,6 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	@Override
@@ -216,29 +207,6 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		handlingUnitsBL.markDestroyed(huContext, returnedHUs);
 	}
 
-	@Override
-	public IQueryFilter<I_M_HU> createHUsNotAssignedToShipmentsFilter(final IContextAware contextProvider)
-	{
-		final int inoutLineTableId = tableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name);
-
-		final IQuery<I_M_InOut> queryShipments = queryBL.createQueryBuilder(I_M_InOut.class, contextProvider)
-				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
-				.create();
-
-		final IQuery<I_M_InOutLine> queryShipmentLines = queryBL.createQueryBuilder(I_M_InOutLine.class, contextProvider)
-				.addInSubQueryFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, I_M_InOut.COLUMNNAME_M_InOut_ID, queryShipments)
-				.create();
-
-		final IQuery<I_M_HU_Assignment> queryHUAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class, contextProvider)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inoutLineTableId)
-				.addInSubQueryFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, queryShipmentLines)
-				.create();
-
-		final IQueryFilter<I_M_HU> assignedQueryFilter = InSubQueryFilter.of(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Assignment.COLUMNNAME_M_HU_ID, queryHUAssignments);
-
-		return NotQueryFilter.of(assignedQueryFilter);
-	}
-
 	private void setHUStatus(final IHUContext huContext, final I_M_HU hu, final boolean shipped)
 	{
 		//
@@ -279,15 +247,14 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		handlingUnitsDAO.saveHU(hu);
 	}
 
-	@NonNull
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveAssignedQuantities(@NonNull final I_M_InOut shipment)
+	public QtyPickedRecords retrieveAssignedQuantities(@NonNull final I_M_InOut shipment)
 	{
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 		return lines
 				.stream()
 				.map(line -> shipmentScheduleAllocDAO.retrieveAllForInOutLine(line, I_M_ShipmentSchedule_QtyPicked.class))
 				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
+				.collect(QtyPickedRecords.collect());
 	}
 
 	@Override

@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 public class DataTableRow
@@ -883,6 +884,25 @@ public class DataTableRow
 	public List<String> getColumnNames()
 	{
 		return ImmutableList.copyOf(map.keySet());
+	}
+
+	/**
+	 * @return the cells of the row as {@code {column=value, ...}}, for messages that say which expected row had no match
+	 */
+	public String describe()
+	{
+		return getColumnNames().stream()
+				.map(column -> column + "=" + getAsOptionalString(column).orElse(""))
+				.collect(Collectors.joining(", ", "{", "}"));
+	}
+
+	/**
+	 * @return true if the cell of the given column says {@code actualValue}; an empty cell says there is no value (null or blank)
+	 */
+	public boolean isCellMatching(@NonNull final String columnName, @Nullable final String actualValue)
+	{
+		final String expectedValue = getAsOptionalString(columnName).orElse(null);
+		return Check.isBlank(expectedValue) ? Check.isBlank(actualValue) : expectedValue.equals(actualValue);
 	}
 
 	public void setValueIfMissing(@NonNull final String columnName, @NonNull final Supplier<String> valueSupplier)
