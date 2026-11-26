@@ -37,7 +37,7 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import javax.annotation.Nullable;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -56,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.Invocation;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -334,7 +335,7 @@ class ShipmentScheduleEnqueuerTest
 		return enqueue(null, quantityType, schedule);
 	}
 
-	private ShipmentScheduleEnqueuer.Result enqueueRun(@Nullable final AsyncBatchId asyncBatchId, final I_M_ShipmentSchedule... schedules)
+	private ShipmentScheduleEnqueuer.Result enqueueRun(@NonNull final AsyncBatchId asyncBatchId, final I_M_ShipmentSchedule... schedules)
 	{
 		return enqueue(asyncBatchId, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, schedules);
 	}
@@ -375,23 +376,27 @@ class ShipmentScheduleEnqueuerTest
 	 */
 	private I_M_ShipmentSchedule createScheduleOfOneOrder(final int id)
 	{
-		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-		schedule.setM_ShipmentSchedule_ID(id);
-		schedule.setC_BPartner_ID(100);
-		schedule.setC_BPartner_Location_ID(200);
-		schedule.setM_Warehouse_ID(300);
-		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
-		InterfaceWrapperHelper.save(schedule);
-		return schedule;
+		return createSchedule(id, schedule -> {
+			schedule.setC_BPartner_ID(100);
+			schedule.setC_BPartner_Location_ID(200);
+			schedule.setM_Warehouse_ID(300);
+		});
 	}
 
 	private I_M_ShipmentSchedule createSchedule(final int id, final boolean closed)
 	{
+		return createSchedule(id, schedule -> {
+			schedule.setIsClosed(closed);
+			schedule.setProcessed(false); // closed, but the recompute did not process it yet
+		});
+	}
+
+	private I_M_ShipmentSchedule createSchedule(final int id, final Consumer<I_M_ShipmentSchedule> customizer)
+	{
 		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
 		schedule.setM_ShipmentSchedule_ID(id);
-		schedule.setIsClosed(closed);
-		schedule.setProcessed(false); // closed, but the recompute did not process it yet
 		schedule.setQtyToDeliver_Override(new BigDecimal("7"));
+		customizer.accept(schedule);
 		InterfaceWrapperHelper.save(schedule);
 		return schedule;
 	}
