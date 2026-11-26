@@ -24,11 +24,12 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -244,17 +245,16 @@ public final class TUPickedRowsAllocator
 	 */
 	public static List<Quantity> splitByQty(@NonNull final Quantity totalWeight, @NonNull final List<Quantity> qtys)
 	{
-		final BigDecimal totalQty = qtys.stream()
-				.map(Quantity::getAsBigDecimal)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		final int scale = totalWeight.getUOMPrecision().toInt();
+		Check.assumeNotEmpty(qtys, "qtys is not empty");
+		final Quantity totalQty = qtys.stream().reduce(Quantity::add).get(); // fails if the quantities are not in one UOM
+		final UOMPrecision precision = totalWeight.getUOMPrecision();
 
 		final List<Quantity> shares = new ArrayList<>(qtys.size());
 		Quantity allocated = totalWeight.toZero();
 		for (int i = 0; i < qtys.size(); i++)
 		{
 			final Quantity share = i < qtys.size() - 1
-					? totalWeight.multiply(qtys.get(i).toBigDecimal()).divide(totalQty, scale, RoundingMode.HALF_UP)
+					? totalWeight.multiply(qtys.get(i).toBigDecimal()).divide(totalQty.toBigDecimal(), precision.toInt(), RoundingMode.HALF_UP)
 					: totalWeight.subtract(allocated);
 			allocated = allocated.add(share);
 			shares.add(share);
