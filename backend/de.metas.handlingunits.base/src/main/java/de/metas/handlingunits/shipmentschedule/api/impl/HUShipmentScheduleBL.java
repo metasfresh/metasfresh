@@ -1492,8 +1492,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		groupRowsByAttributeCombination(rowsWithUnit, huContext)
-				.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
+		for (final I_M_ShipmentSchedule_QtyPicked row : rowsWithUnit)
+		{
+			result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse));
+		}
 		if (!boxRows.isEmpty())
 		{
 			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
@@ -1512,32 +1514,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 		}
 		return result.build();
-	}
-
-	/**
-	 * @return the rows, those whose units have the same attribute combination (as far as it splits the shipment line) next to each other,
-	 * in first-seen order of the combinations. Consecutive candidates are merged into one shipment line, so rows of the same lot that are
-	 * kept apart by a row of another lot (lot A, lot B, lot A, as after a reversal) would give lot A two lines.
-	 */
-	private List<I_M_ShipmentSchedule_QtyPicked> groupRowsByAttributeCombination(
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rowsWithUnit,
-			@NonNull final IHUContext huContext)
-	{
-		if (rowsWithUnit.size() < 3)
-		{
-			return rowsWithUnit; // two rows cannot be kept apart by a third
-		}
-		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
-		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(rowsWithUnit.get(0));
-		final LinkedHashMap<AttributesKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByCombination = new LinkedHashMap<>();
-		for (final I_M_ShipmentSchedule_QtyPicked row : rowsWithUnit)
-		{
-			final I_M_HU unit = handlingUnitsBL.getById(HuId.ofRepoId(row.getVHU_ID()));
-			rowsByCombination
-					.computeIfAbsent(computeUseInASIFingerprint(unit, attrFactory, attributeSplitsShipmentLine), combination -> new ArrayList<>())
-					.add(row);
-		}
-		return rowsByCombination.values().stream().flatMap(List::stream).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -1691,7 +1667,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * @return per part the weight of the units it stands for, if every part has it in the row's catch UOM; else the row's own weight
-	 * split by quantity (or none, if the row stays one part)
+	 * split by quantity (or none, if the row stays one part).
+	 * The choice is made per row: a lot's line can mix both sources if only some of its units have a net weight. The unit's net weight
+	 * is the weight of the pick that made the unit (mobile picking sets it per picked unit); it is assumed that no pick is merged into an
+	 * existing unit of the same lot.
 	 */
 	private static List<Optional<Quantity>> catchWeightSharesOfParts(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked row,

@@ -304,28 +304,6 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	}
 
 	@Test
-	void picksOfTwoLotsInterleaved_afterReversal_candidatesOfOneLotComeTogether()
-	{
-		// FR, RO, FR picked into one box and shipped; the shipment is reversed, so every unit gets a row of its own, in pick order
-		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO, HUTestHelper.COUNTRYMADEIN_FR);
-		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
-		final List<I_M_ShipmentSchedule_QtyPicked> shippedRows = ImmutableList.of(
-				createBoxRow(schedule, box, "2"), createBoxRow(schedule, box, "2"), createBoxRow(schedule, box, "2"));
-		shippedRows.forEach(row -> {
-			row.setM_InOutLine_ID(1);
-			saveRecord(row);
-		});
-		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(shippedRows);
-		assertThat(retrieveOpenRows(schedule)).as("PRECONDITION: one row per unit, with its unit").hasSize(3).allMatch(row -> row.getVHU_ID() > 0);
-
-		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveOpenRows(schedule), helper.getHUContext(), QTY_TYPE);
-
-		// consecutive candidates are merged into one shipment line: a lot must not be split by another lot
-		assertThat(candidates).extracting(candidate -> getCountry(candidate.getVHU()))
-				.containsExactly(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO);
-	}
-
-	@Test
 	void restoreAfterReversal_ofBoxRowsWithoutVHU_restoresEveryUnitOfTheBox()
 	{
 		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
