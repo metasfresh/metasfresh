@@ -2,6 +2,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
+import counterpart from 'counterpart';
 import { combineReducers, createStore } from 'redux';
 
 import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
@@ -13,6 +14,7 @@ import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog'
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { reducer as settings } from '../../../../reducers/settings';
 import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
+import translations_de from '../../../../utils/translations_de';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
 
 jest.mock('../../../../utils/ui_trace', () => ({
@@ -272,6 +274,12 @@ describe('useOpenNextTU', () => {
     return { promise, resolve, reject };
   };
 
+  beforeAll(() => {
+    counterpart.registerTranslations('de', translations_de);
+    counterpart.setLocale('de');
+  });
+  afterAll(() => counterpart.setLocale('en'));
+
   beforeEach(() => {
     jest.clearAllMocks();
     pickingApi.setTUPickingTargetFromGrai.mockResolvedValue({});
@@ -301,6 +309,22 @@ describe('useOpenNextTU', () => {
     });
     expect(toastNotification).toHaveBeenCalledTimes(1);
     expect(toastErrorFromObj).not.toHaveBeenCalled();
+  });
+
+  it('success: the green message is the short German text, not an older long one', async () => {
+    const exposed = setup(jest.fn().mockResolvedValue({}));
+    await act(async () => {
+      await exposed.nextTU.onNextTU();
+    });
+    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet' });
+  });
+
+  it('GRAI scan opening a TU: the green message is the short German text', async () => {
+    const exposed = setup(jest.fn().mockResolvedValue({}));
+    await act(async () => {
+      await exposed.nextTU.onGraiScanned('graiX');
+    });
+    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet' });
   });
 
   it('failure: shows the error', async () => {

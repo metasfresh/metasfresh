@@ -359,6 +359,9 @@ class PickingCULabelServiceTest
 
 		assertThat(resolve(label(GTIN, PRODUCT_NO, "2"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("2"));
 		assertThat(resolve(label(GTIN, PRODUCT_NO, "10"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("10"));
+		// agreed range is 1-6 digits: the open end reads all of them
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "123456"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("123456"));
+		assertThat(resolve(label(GTIN, PRODUCT_NO, "000001"), CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()).getPackId()).isEqualTo(CULabelPackId.ofString("000001"));
 
 		final String withoutPackId = label(GTIN, PRODUCT_NO, "2").substring(0, 44); // ends before "92"
 		assertFails(() -> resolve(withoutPackId, CUQtyEntryMode.SCAN_EACH_CU, packIdFormat.getId()), CU_LABEL_FORMAT_MISMATCH);
