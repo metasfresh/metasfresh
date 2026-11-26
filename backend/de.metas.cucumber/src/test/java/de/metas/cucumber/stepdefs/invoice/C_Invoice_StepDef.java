@@ -1097,6 +1097,8 @@ public class C_Invoice_StepDef
 
 		final String errorMessages = collectMessages(thrown);
 		final String messageText = msgBL.getMsg(Env.getCtx(), adMessage);
+		// IMsgBL returns the key itself when the message does not exist
+		assertThat(messageText).as("AD_Message %s must exist", adMessage).isNotEqualTo(adMessage);
 		for (final String literalPart : MESSAGE_PLACEHOLDER.split(messageText))
 		{
 			final String literalPartTrimmed = literalPart.trim();

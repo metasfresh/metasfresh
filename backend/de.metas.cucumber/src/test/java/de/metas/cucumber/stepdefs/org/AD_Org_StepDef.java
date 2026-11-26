@@ -129,7 +129,7 @@ public class AD_Org_StepDef
 	{
 		final I_AD_Org org = load(orgRepoId, I_AD_Org.class);
 		isDropShipTaxFromDestCountryBeforeScenario.putIfAbsent(orgRepoId, org.isDropShipTaxFromDestCountry());
-		org.setIsDropShipTaxFromDestCountry("Y".equals(isDropShipTaxFromDestCountry));
+		org.setIsDropShipTaxFromDestCountry(parseYesNo(isDropShipTaxFromDestCountry));
 		saveRecord(org);
 	}
 
@@ -139,11 +139,30 @@ public class AD_Org_StepDef
 	@After
 	public void restoreIsDropShipTaxFromDestCountry()
 	{
-		isDropShipTaxFromDestCountryBeforeScenario.forEach((orgRepoId, value) -> {
-			final I_AD_Org org = load(orgRepoId, I_AD_Org.class);
-			org.setIsDropShipTaxFromDestCountry(value);
-			saveRecord(org);
-		});
-		isDropShipTaxFromDestCountryBeforeScenario.clear();
+		try
+		{
+			isDropShipTaxFromDestCountryBeforeScenario.forEach((orgRepoId, value) -> {
+				final I_AD_Org org = load(orgRepoId, I_AD_Org.class);
+				org.setIsDropShipTaxFromDestCountry(value);
+				saveRecord(org);
+			});
+		}
+		finally
+		{
+			isDropShipTaxFromDestCountryBeforeScenario.clear();
+		}
+	}
+
+	private static boolean parseYesNo(@NonNull final String value)
+	{
+		if ("Y".equals(value) || "true".equals(value))
+		{
+			return true;
+		}
+		if ("N".equals(value) || "false".equals(value))
+		{
+			return false;
+		}
+		throw new IllegalArgumentException("Expected Y/N/true/false but got: " + value);
 	}
 }

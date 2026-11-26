@@ -787,7 +787,11 @@ public class C_BPartner_StepDef
 		final I_C_BPartner orgPartner = bpartnerOrgBL.retrieveLinkedBPartner(OrgId.ofRepoId(orgRepoId));
 		assertThat(orgPartner).as("partner linked to organisation %s", orgRepoId).isNotNull();
 
-		orgPartnerVATaxIdBeforeScenario.putIfAbsent(orgPartner.getC_BPartner_ID(), orgPartner.getVATaxID());
+		// containsKey, not putIfAbsent: the remembered VATaxID is typically null, which putIfAbsent treats as absent
+		if (!orgPartnerVATaxIdBeforeScenario.containsKey(orgPartner.getC_BPartner_ID()))
+		{
+			orgPartnerVATaxIdBeforeScenario.put(orgPartner.getC_BPartner_ID(), orgPartner.getVATaxID());
+		}
 		orgPartner.setVATaxID(DataTableUtil.nullToken2Null(vatTaxId));
 		InterfaceWrapperHelper.save(orgPartner);
 	}
@@ -798,11 +802,17 @@ public class C_BPartner_StepDef
 	@After
 	public void restoreOrgPartnerVATaxID()
 	{
-		orgPartnerVATaxIdBeforeScenario.forEach((bpartnerId, vatTaxId) -> {
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
-			bpartner.setVATaxID(vatTaxId);
-			InterfaceWrapperHelper.save(bpartner);
-		});
-		orgPartnerVATaxIdBeforeScenario.clear();
+		try
+		{
+			orgPartnerVATaxIdBeforeScenario.forEach((bpartnerId, vatTaxId) -> {
+				final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+				bpartner.setVATaxID(vatTaxId);
+				InterfaceWrapperHelper.save(bpartner);
+			});
+		}
+		finally
+		{
+			orgPartnerVATaxIdBeforeScenario.clear();
+		}
 	}
 }

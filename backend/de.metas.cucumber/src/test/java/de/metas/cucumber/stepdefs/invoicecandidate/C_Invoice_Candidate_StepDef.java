@@ -368,6 +368,11 @@ public class C_Invoice_Candidate_StepDef
 
 					row.getAsOptionalIdentifier(COLUMN_HeaderAggregation_Override_FromCandidate)
 							.ifPresent(otherIdentifier -> {
+								if (otherIdentifier.isNullPlaceholder())
+								{
+									invoiceCandidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(0); // clears the override
+									return;
+								}
 								final I_C_Invoice_Candidate otherCandidate = otherIdentifier.lookupNotNullIn(invoiceCandTable);
 								InterfaceWrapperHelper.refresh(otherCandidate);
 								invoiceCandidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(otherCandidate.getC_Invoice_Candidate_HeaderAggregation_ID());

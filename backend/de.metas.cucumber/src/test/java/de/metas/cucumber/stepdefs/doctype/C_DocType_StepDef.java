@@ -120,7 +120,19 @@ public class C_DocType_StepDef
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 		InterfaceWrapperHelper.refresh(invoice);
 
-		final boolean newValue = "Y".equalsIgnoreCase(isOverwriteDateOnComplete) || "true".equalsIgnoreCase(isOverwriteDateOnComplete);
+		final boolean newValue;
+		if ("Y".equals(isOverwriteDateOnComplete) || "true".equals(isOverwriteDateOnComplete))
+		{
+			newValue = true;
+		}
+		else if ("N".equals(isOverwriteDateOnComplete) || "false".equals(isOverwriteDateOnComplete))
+		{
+			newValue = false;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Expected Y/N/true/false but got: " + isOverwriteDateOnComplete);
+		}
 
 		IntStream.of(invoice.getC_DocType_ID(), invoice.getC_DocTypeTarget_ID())
 				.filter(docTypeId -> docTypeId > 0)
@@ -214,18 +226,30 @@ public class C_DocType_StepDef
 	@After
 	public void restoreIsActive()
 	{
-		isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
-			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
-			docTypeRecord.setIsActive(isActive);
-			saveRecord(docTypeRecord);
-		});
-		isActiveBeforeScenario.clear();
+		try
+		{
+			isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
+				final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+				docTypeRecord.setIsActive(isActive);
+				saveRecord(docTypeRecord);
+			});
+		}
+		finally
+		{
+			isActiveBeforeScenario.clear();
+		}
 
-		isOverwriteDateOnCompleteBeforeScenario.forEach((docTypeId, isOverwriteDateOnComplete) -> {
-			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
-			docTypeRecord.setIsOverwriteDateOnComplete(isOverwriteDateOnComplete);
-			saveRecord(docTypeRecord);
-		});
-		isOverwriteDateOnCompleteBeforeScenario.clear();
+		try
+		{
+			isOverwriteDateOnCompleteBeforeScenario.forEach((docTypeId, isOverwriteDateOnComplete) -> {
+				final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+				docTypeRecord.setIsOverwriteDateOnComplete(isOverwriteDateOnComplete);
+				saveRecord(docTypeRecord);
+			});
+		}
+		finally
+		{
+			isOverwriteDateOnCompleteBeforeScenario.clear();
+		}
 	}
 }
