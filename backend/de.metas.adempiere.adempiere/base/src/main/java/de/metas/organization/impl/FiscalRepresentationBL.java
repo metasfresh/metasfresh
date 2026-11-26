@@ -36,6 +36,7 @@ import org.compiere.model.I_C_Fiscal_Representation;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 @Service
 public class FiscalRepresentationBL implements IFiscalRepresentationBL
@@ -76,6 +77,12 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 	@Override
 	public boolean hasFiscalRepresentation(@NonNull final CountryId countryId, @NonNull final OrgId orgId, @NonNull final Timestamp date)
 	{
+		return getFiscalRepresentation(countryId, orgId, date).isPresent();
+	}
+
+	@Override
+	public Optional<I_C_Fiscal_Representation> getFiscalRepresentation(@NonNull final CountryId countryId, @NonNull final OrgId orgId, @NonNull final Timestamp date)
+	{
 		final ICompositeQueryFilter<I_C_Fiscal_Representation> validToFilter = queryBL.createCompositeQueryFilter(I_C_Fiscal_Representation.class)
 				.setJoinOr()
 				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidTo, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
@@ -84,10 +91,12 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 		return queryBL.createQueryBuilder(I_C_Fiscal_Representation.class)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_To_Country_ID, countryId)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
-				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL,date)
+				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, date)
 				.filter(validToFilter)
 				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_Fiscal_Representation.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_C_Fiscal_Representation.COLUMNNAME_C_Fiscal_Representation_ID)
 				.create()
-				.anyMatch();
+				.firstOptional(I_C_Fiscal_Representation.class);
 	}
 }
