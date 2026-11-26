@@ -141,7 +141,7 @@ async function isFocused(locator) {
 }
 
 /** Describe the active element, for failure messages. */
-async function describeActiveElement(page) {
+export async function describeActiveElement(page) {
   return await page.evaluate(() => {
     const e = document.activeElement;
     if (!e) return 'none';
