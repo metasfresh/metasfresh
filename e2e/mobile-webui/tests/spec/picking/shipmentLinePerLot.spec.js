@@ -39,6 +39,7 @@ const createMasterdata = async ({ lots, orderLines }) => {
                     readAttributes: [],
                     allowCompletingPartialPickingJob: true,
                     allowSkippingRejectedReason: true,
+                    anonymousPickHUsOnTheFly: false,
                 }
             },
             shipmentScheduleAttributeConfigs: [LOT_ATTRIBUTE],
