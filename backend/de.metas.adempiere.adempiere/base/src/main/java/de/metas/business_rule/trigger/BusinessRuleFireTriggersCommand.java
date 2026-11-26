@@ -1,5 +1,6 @@
 package de.metas.business_rule.trigger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.business_rule.descriptor.model.BusinessRule;
 import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggers;
@@ -16,11 +17,15 @@ import de.metas.business_rule.util.BusinessRuleRecordMatcher;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -63,7 +68,25 @@ public class BusinessRuleFireTriggersCommand
 
 		this.sourceModelRef = TableRecordReference.of(sourceModel);
 		this.clientAndOrgId = InterfaceWrapperHelper.getClientAndOrgId(sourceModel);
-		this.triggeringUserId = InterfaceWrapperHelper.getUpdatedBy(sourceModel);
+		this.triggeringUserId = extractTriggeringUserId(sourceModel);
+	}
+
+	/**
+	 * Resolves the user to be recorded as triggering user, tolerating an invalid stored {@code UpdatedBy}
+	 * (-1, NULL or a user which no longer exists): those become {@link UserId#SYSTEM}.
+	 */
+	@VisibleForTesting
+	static UserId extractTriggeringUserId(@NonNull final Object sourceModel)
+	{
+		final Object updatedByObj = InterfaceWrapperHelper.getValueOrNull(sourceModel, "UpdatedBy");
+		final UserId updatedBy = UserId.ofRepoIdOrSystem(NumberUtils.asInt(updatedByObj, -1));
+		if (updatedBy.equals(UserId.SYSTEM))
+		{
+			return UserId.SYSTEM;
+		}
+
+		final boolean userExists = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
+		return userExists ? updatedBy : UserId.SYSTEM;
 	}
 
 	public void execute()
