@@ -150,7 +150,7 @@ class TUPickedRowsAllocatorTest
 			when(storage.getQtyInStockingUOM()).thenReturn(qty(10));
 			final TUContentGroup group = new TUContentGroup(ImmutableList.of(TUContentCU.ofStorage(storage)));
 
-			assertThat(group.uom()).isSameAs(each);
+			assertThat(group.stockingUOM()).isSameAs(each);
 			assertThat(group.totalQty().toBigDecimal()).isEqualByComparingTo("10");
 			assertThat(allocator(ImmutableMap.of(), group).allocate(row(10, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU().getCu()).isSameAs(cu));
 		}

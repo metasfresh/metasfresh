@@ -50,7 +50,10 @@ public class TUContentGroup
 		return cus.stream().map(TUContentCU::getQty).reduce(Quantity::add).get();
 	}
 
-	public I_C_UOM uom()
+	/**
+	 * @return the stocking UOM of the product of the CUs: the CUs count in it (see {@link TUContentCU#ofStorage})
+	 */
+	public I_C_UOM stockingUOM()
 	{
 		return cus.get(0).getQty().getUOM();
 	}

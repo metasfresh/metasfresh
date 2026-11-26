@@ -252,8 +252,8 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_ShipmentSchedule_QtyPicked> assignedQuantities =
-				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
+		final QtyPickedRecords assignedQuantities = QtyPickedRecords.of(
+				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment));
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -262,7 +262,7 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		shipmentReversalPickRestoreService.restorePickedQtys(QtyPickedRecords.of(assignedQuantities));
+		shipmentReversalPickRestoreService.restorePickedQtys(assignedQuantities);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

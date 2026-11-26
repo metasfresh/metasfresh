@@ -268,7 +268,7 @@ public class QtyPickedCandidatesCreator
 		for (final I_M_ShipmentSchedule_QtyPicked row : tuOnlyRows)
 		{
 			final List<TUPickedRowsAllocator.Part> parts = allocator.allocate(
-					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.uom()), extractCatchWeightOrNull(row)));
+					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.stockingUOM()), extractCatchWeightOrNull(row)));
 			if (parts.isEmpty())
 			{
 				// a row without quantity gets its candidate as on every other path

@@ -385,7 +385,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 	 */
 	private List<ShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule_QtyPicked row, final IHUContext huContext)
 	{
-		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, PickedHUsBySchedule.empty())
+		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, PickedHUsBySchedule.EMPTY)
 				.createCandidatesOfRowAlone(row);
 	}
 }

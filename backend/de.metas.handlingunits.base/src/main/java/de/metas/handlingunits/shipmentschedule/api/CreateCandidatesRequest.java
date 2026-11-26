@@ -43,5 +43,5 @@ public class CreateCandidatesRequest
 	 * The HUs that the picking of each schedule recorded as picked; if a schedule has some, only those CUs of a TU count.
 	 * Empty if nothing is known: then every CU of a TU counts.
 	 */
-	@NonNull @Builder.Default PickedHUsBySchedule pickedHuIdsBySchedule = PickedHUsBySchedule.empty();
+	@NonNull @Builder.Default PickedHUsBySchedule pickedHuIdsBySchedule = PickedHUsBySchedule.EMPTY;
 }

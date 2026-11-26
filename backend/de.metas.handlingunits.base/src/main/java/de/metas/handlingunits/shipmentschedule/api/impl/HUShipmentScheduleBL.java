@@ -1184,7 +1184,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		return new QtyPickedCandidatesCreator(huContext, qtyTypeToUse, PickedHUsBySchedule.empty()).createCandidatesOfRowAlone(qtyPicked);
+		return new QtyPickedCandidatesCreator(huContext, qtyTypeToUse, PickedHUsBySchedule.EMPTY).createCandidatesOfRowAlone(qtyPicked);
 	}
 
 	@Override

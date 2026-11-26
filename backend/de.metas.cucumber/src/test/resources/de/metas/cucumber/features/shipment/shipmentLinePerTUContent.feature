@@ -282,7 +282,7 @@ Feature: Shipment line per TU content
       | cu_de91b | 4   | DE           |
       | cu_fr91a | 2   | FR           |
       | cu_fr91b | 2   | FR           |
-    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_90 are exactly, in any order:
       | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID   |
       | p_coo        | 5           | IT           | shipped_tu91 |          |
@@ -357,7 +357,7 @@ Feature: Shipment line per TU content
       | cu_a90b | 2   | LOTA            |
       | cu_b90  | 2   | LOTB            |
       | cu_c90  | 2   | LOTC            |
-    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_3lot are exactly, in any order:
       | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
       | p_coo        | 4           | LOTA            | shipped_tu90 |         |
@@ -539,7 +539,7 @@ Feature: Shipment line per TU content
       | cu_a96b | 2   | LOTA            |
       | cu_b96  | 2   | LOTB            |
       | cu_c96  | 2   | LOTC            |
-    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_96_1 are exactly, in any order:
       | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
       | p_coo        | 4           | LOTA            | shipped_tu96 |         |
@@ -565,7 +565,7 @@ Feature: Shipment line per TU content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
-    # the reopened picks are one row per CU, so each CU of lot A is assigned to the line
+    # Base behaviour, pinned to detect changes, not asserted as the desired design: reopening a picking job repicks per CU, so after a reversal each CU of lot A is assigned to the line
     And the HU assignments of the shipment lines of inout_96_2 are exactly, in any order:
       | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
       | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96a |
@@ -589,7 +589,7 @@ Feature: Shipment line per TU content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
-    # the reopened picks are one row per CU, so each CU of lot A is assigned to the line
+    # Base behaviour, pinned to detect changes, not asserted as the desired design: reopening a picking job repicks per CU, so after a reversal each CU of lot A is assigned to the line
     And the HU assignments of the shipment lines of inout_96_3 are exactly, in any order:
       | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
       | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96a |

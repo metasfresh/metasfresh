@@ -47,6 +47,8 @@ import java.util.stream.Stream;
 @ToString
 public final class QtyPickedRecords implements Iterable<I_M_ShipmentSchedule_QtyPicked>
 {
+	public static final QtyPickedRecords EMPTY = new QtyPickedRecords(ImmutableList.of());
+
 	private final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows;
 
 	private QtyPickedRecords(@NonNull final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows)
@@ -56,7 +58,7 @@ public final class QtyPickedRecords implements Iterable<I_M_ShipmentSchedule_Qty
 
 	public static QtyPickedRecords of(@NonNull final Collection<? extends I_M_ShipmentSchedule_QtyPicked> rows)
 	{
-		return new QtyPickedRecords(ImmutableList.copyOf(rows));
+		return rows.isEmpty() ? EMPTY : new QtyPickedRecords(ImmutableList.copyOf(rows));
 	}
 
 	@Override
@@ -133,13 +135,13 @@ public final class QtyPickedRecords implements Iterable<I_M_ShipmentSchedule_Qty
 	}
 
 	/**
-	 * @param uom the UOM of the rows' {@code QtyPicked}: the stock UOM of the product
+	 * @param productStockingUOM the UOM of the rows' {@code QtyPicked}: the stock UOM of the product
 	 */
-	public Quantity totalQtyPicked(@NonNull final I_C_UOM uom)
+	public Quantity totalQtyPicked(@NonNull final I_C_UOM productStockingUOM)
 	{
 		return rows.stream()
-				.map(row -> Quantity.of(row.getQtyPicked(), uom))
+				.map(row -> Quantity.of(row.getQtyPicked(), productStockingUOM))
 				.reduce(Quantity::add)
-				.orElseGet(() -> Quantity.zero(uom));
+				.orElseGet(() -> Quantity.zero(productStockingUOM));
 	}
 }

@@ -326,7 +326,7 @@ public class PickingJobRepository
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
-			return PickedHUsBySchedule.empty();
+			return PickedHUsBySchedule.EMPTY;
 		}
 
 		final Map<PickingJobStepId, ShipmentScheduleId> scheduleIdByStepId = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
@@ -339,7 +339,7 @@ public class PickingJobRepository
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID())));
 		if (scheduleIdByStepId.isEmpty())
 		{
-			return PickedHUsBySchedule.empty();
+			return PickedHUsBySchedule.EMPTY;
 		}
 
 		final ImmutableSetMultimap.Builder<ShipmentScheduleId, HuId> result = ImmutableSetMultimap.builder();

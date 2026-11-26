@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -39,16 +40,22 @@ import java.util.List;
 @ToString
 public final class TUContentGroupList
 {
+	public static final TUContentGroupList EMPTY = new TUContentGroupList(ImmutableList.of());
+
 	private final ImmutableList<TUContentGroup> groups;
 
 	private TUContentGroupList(@NonNull final ImmutableList<TUContentGroup> groups)
 	{
+		// the groups are added up and handed out against each other, so they must count in one UOM: the stocking UOM of the product
+		// whose CUs they are made of (TUContentCU.ofStorage)
+		Check.assume(groups.stream().map(group -> group.stockingUOM().getC_UOM_ID()).distinct().count() <= 1,
+				"All content groups of a TU are in the same UOM: {}", groups);
 		this.groups = groups;
 	}
 
 	public static TUContentGroupList of(@NonNull final List<TUContentGroup> groups)
 	{
-		return new TUContentGroupList(ImmutableList.copyOf(groups));
+		return groups.isEmpty() ? EMPTY : new TUContentGroupList(ImmutableList.copyOf(groups));
 	}
 
 	public int size()
@@ -80,10 +87,10 @@ public final class TUContentGroupList
 	}
 
 	/**
-	 * @return the UOM of the content; the list must not be empty
+	 * @return the stocking UOM of the content's product; the list must not be empty
 	 */
-	public I_C_UOM uom()
+	public I_C_UOM stockingUOM()
 	{
-		return groups.get(0).uom();
+		return groups.get(0).stockingUOM();
 	}
 }

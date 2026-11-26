@@ -977,7 +977,7 @@ public class ShipmentScheduleWithHUService
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIds = schedule.toScheduleIds();
 		// final I_M_ShipmentSchedule shipmentSchedule = request.getShipmentSchedule();
 		// final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
-		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds());
+		QtyPickedRecords qtyPickedRecords = QtyPickedRecords.of(retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds()));
 		if (qtyPickedRecords.isEmpty())
 		{
 			return Collections.emptyList();
@@ -991,25 +991,21 @@ public class ShipmentScheduleWithHUService
 		createTUsLUsIfNeeded(schedule, request.getOnlyLUIds(), quantityType);
 
 		// do retrieve the qty picked entries again, some new ones might have been created on LU creation
-		qtyPickedRecords = retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds());
+		qtyPickedRecords = QtyPickedRecords.of(retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds()));
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
 
 		final IHUContext huContext = request.getHuContext();
-		final List<I_M_ShipmentSchedule_QtyPicked> activeQtyPickedRecords = new ArrayList<>();
-		for (final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
-		{
-			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecordHU = InterfaceWrapperHelper.create(qtyPickedRecord, I_M_ShipmentSchedule_QtyPicked.class);
-
+		final QtyPickedRecords activeQtyPickedRecords = qtyPickedRecords.filter(qtyPickedRecord -> {
 			// guard: Skip inactive records.
-			if (!qtyPickedRecordHU.isActive())
+			if (!qtyPickedRecord.isActive())
 			{
-				Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecordHU);
-				continue;
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecord);
+				return false;
 			}
-			activeQtyPickedRecords.add(qtyPickedRecordHU);
-		}
+			return true;
+		});
 		candidatesForPick.addAll(createCandidatesForQtyPicked(activeQtyPickedRecords, huContext, quantityType));
 
 		return candidatesForPick;
@@ -1296,7 +1292,7 @@ public class ShipmentScheduleWithHUService
 	@NonNull
 	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final IHUContext huContext)
 	{
-		final List<I_M_ShipmentSchedule_QtyPicked> pickedLines = shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class);
+		final QtyPickedRecords pickedLines = QtyPickedRecords.of(shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class));
 		return ImmutableList.copyOf(createCandidatesForQtyPicked(pickedLines, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
 	}
 
@@ -1305,16 +1301,15 @@ public class ShipmentScheduleWithHUService
 	 */
 	@NonNull
 	private List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords,
+			@NonNull final QtyPickedRecords qtyPickedRecords,
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
-		final QtyPickedRecords rows = QtyPickedRecords.of(qtyPickedRecords);
 		return huShipmentScheduleBL.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
-				.qtyPickedRecords(rows)
+				.qtyPickedRecords(qtyPickedRecords)
 				.huContext(huContext)
 				.qtyTypeToUse(quantityType)
-				.pickedHuIdsBySchedule(pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(rows.extractScheduleIds()))
+				.pickedHuIdsBySchedule(pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(qtyPickedRecords.extractScheduleIds()))
 				.build());
 	}
 

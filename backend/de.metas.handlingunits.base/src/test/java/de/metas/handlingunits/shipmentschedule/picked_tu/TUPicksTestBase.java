@@ -258,7 +258,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 
 	protected List<ShipmentScheduleWithHU> createCandidates(final List<I_M_ShipmentSchedule_QtyPicked> rows)
 	{
-		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, PickedHUsBySchedule.empty()).createCandidates(QtyPickedRecords.of(rows));
+		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, PickedHUsBySchedule.EMPTY).createCandidates(QtyPickedRecords.of(rows));
 	}
 
 	/**

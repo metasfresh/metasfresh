@@ -34,24 +34,19 @@ import lombok.ToString;
  * The HUs that the picking of each shipment schedule recorded as picked (the picking job steps' picked HUs).
  * <p>
  * A schedule that has some: only those CUs of a TU count for it. A schedule that has none (or nothing is known at all,
- * see {@link #empty()}): every CU of a TU counts for it.
+ * see {@link #EMPTY}): every CU of a TU counts for it.
  */
 @EqualsAndHashCode
 @ToString
 public final class PickedHUsBySchedule
 {
-	private static final PickedHUsBySchedule EMPTY = new PickedHUsBySchedule(ImmutableSetMultimap.of());
+	public static final PickedHUsBySchedule EMPTY = new PickedHUsBySchedule(ImmutableSetMultimap.of());
 
 	private final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule;
 
 	private PickedHUsBySchedule(@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule)
 	{
 		this.huIdsBySchedule = huIdsBySchedule;
-	}
-
-	public static PickedHUsBySchedule empty()
-	{
-		return EMPTY;
 	}
 
 	public static PickedHUsBySchedule of(@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule)
