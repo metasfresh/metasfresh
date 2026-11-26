@@ -170,7 +170,7 @@ class TableCell extends PureComponent {
    * @param {object} e
    */
   enterEditByPointer = (e) => {
-    const { property, handleDoubleClick, isReadonly } = this.props;
+    const { property, handleDoubleClick, isReadonly, isDateCell } = this.props;
 
     handleDoubleClick({
       event: e,
@@ -178,6 +178,9 @@ class TableCell extends PureComponent {
       focus: true,
       readonly: isReadonly,
       pointer: true,
+      // a date cell keeps its value in the editor: select it (as the keyboard entry does, see
+      // TableRow.handleKeyDown_RegularChar), else the caret sits at the end and typing appends
+      mark: !!isDateCell,
     });
   };
 
