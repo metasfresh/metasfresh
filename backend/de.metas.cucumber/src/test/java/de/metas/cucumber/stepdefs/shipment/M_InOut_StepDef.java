@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsResponse;
 import de.metas.common.util.StringUtils;
@@ -53,6 +54,7 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.tourplanning.M_Tour_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.cucumber.stepdefs.workpackage.C_Queue_WorkPackage_StepDefData;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
@@ -170,6 +172,7 @@ public class M_InOut_StepDef
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_Queue_WorkPackage_StepDefData workPackageTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -746,6 +749,29 @@ public class M_InOut_StepDef
 
 					softly.assertAll();
 				});
+	}
+
+	/**
+	 * Asserts that the shipment belongs to the async batch of the workpackage that created it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_Queue_WorkPackage_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the M_InOut shipment1 carries the C_Async_Batch_ID of the C_Queue_WorkPackage shipmentWorkPackage
+	 * </pre>
+	 */
+	@And("^the M_InOut (.*) carries the C_Async_Batch_ID of the C_Queue_WorkPackage (.*)$")
+	public void shipment_carries_async_batch_of_workpackage(
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String workPackageIdentifier)
+	{
+		final I_C_Queue_WorkPackage workPackage = workPackageTable.get(workPackageIdentifier);
+		assertThat(workPackage.getC_Async_Batch_ID()).as("C_Async_Batch_ID of C_Queue_WorkPackage %s", workPackageIdentifier).isGreaterThan(0);
+
+		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
+		InterfaceWrapperHelper.refresh(shipment);
+		assertThat(shipment.getC_Async_Batch_ID()).as("C_Async_Batch_ID of M_InOut %s", shipmentIdentifier).isEqualTo(workPackage.getC_Async_Batch_ID());
 	}
 
 	@And("^reset M_InOut packing lines for shipment (.*)$")

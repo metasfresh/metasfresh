@@ -301,6 +301,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilderWithoutAsyncBatch()
+	{
+		return ShipmentScheduleHeaderAggregationKeyBuilder.withoutAsyncBatch();
+	}
+
+	@Override
 	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
 		scheduleRecord.setIsClosed(true);

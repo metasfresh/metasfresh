@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -120,6 +121,12 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				.setDeliveryPlanningId(deliveryPlanningId)
+				// The enqueuer already split the workpackages by the schedules' header key, async batch included.
+				// A schedule recompute that ran since then may have cleared the batch of only some schedules; that must not split this run.
+				.setIgnoreScheduleAsyncBatch(true)
+				// The shipments belong to this workpackage's batch (the run's batch the enqueuer set), even if their schedules lost it.
+				// A workpackage without a batch (e.g. enqueued from a selection) leaves the schedules' batch in place.
+				.setAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID()))
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs that are linked to multiple shipments: you will not see them in Aggregation POS because they are already assigned, but you're not able to create a shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
