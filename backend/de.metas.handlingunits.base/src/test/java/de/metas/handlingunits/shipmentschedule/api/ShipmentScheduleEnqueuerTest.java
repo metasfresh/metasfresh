@@ -226,6 +226,54 @@ class ShipmentScheduleEnqueuerTest
 	}
 
 	/**
+	 * Fresh timing between the run's batch stamp and the enqueue: the stamp changes HeaderAggregationKey, so
+	 * M_ShipmentSchedule.invalidateSchedulesWithOldAndNewHeaderAggregationKey flags the order's schedules for a recompute. A recompute that loads
+	 * schedule 2 AFTER the stamp sees the run's batch, which differs from the order's empty batch, so
+	 * OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder (the "set only on a real change" guard) clears C_Async_Batch_ID;
+	 * the save rebuilds HeaderAggregationKey without the batch. If that save commits before the enqueuer reads the schedules,
+	 * both schedules still belong to one run, so they get one workpackage.
+	 */
+	@Test
+	void createWorkpackages_freshRecomputeClearsBatchBetweenBatchStampAndEnqueue_oneWorkpackage()
+	{
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
+		InOutCandidateValidator.registerSSAggregationKeyDependencies();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new M_ShipmentSchedule());
+
+		final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(851);
+		final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(852);
+
+		// the run stamps its async batch (own committed trx in production)
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
+		InterfaceWrapperHelper.save(asyncBatch);
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+		Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+
+		// the recompute loads schedule 2 after the stamp and copies the order's empty batch (same guard as OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder)
+		final I_M_ShipmentSchedule freshSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
+		final int orderAsyncBatchId = 0;
+		if (freshSchedule2.getC_Async_Batch_ID() != orderAsyncBatchId)
+		{
+			freshSchedule2.setC_Async_Batch_ID(orderAsyncBatchId);
+		}
+		InterfaceWrapperHelper.save(freshSchedule2);
+
+		final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
+		assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the fresh recompute cleared the run's batch").isZero();
+
+		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
+				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
+						.adPInstanceId(PInstanceId.ofRepoId(1))
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(851), ShipmentScheduleId.ofRepoId(852))))
+						.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.asyncBatchId(asyncBatchId)
+						.completeShipments(true)
+						.build());
+
+		assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
+	}
+
+	/**
 	 * Emulates PO.save of a model that was loaded earlier: the in-memory changes and the BEFORE_CHANGE interceptor run on the stale model,
 	 * then PO.saveUpdate writes every column whose setter was called (m_newValues != null, PO.java saveUpdate), equal to the loaded value or not;
 	 * all other columns keep what is in the DB now. The in-memory POJO save would instead write the whole stale copy.
