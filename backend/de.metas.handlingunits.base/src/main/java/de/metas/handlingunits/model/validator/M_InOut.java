@@ -280,7 +280,7 @@ public class M_InOut
 		// A row stands for its VHU, or for the CUs of its box when it only references the box (several CUs of one attribute combination).
 		// One entry per HU: the reopen maps its requests by HU id and rejects a duplicate. An HU might be in multiple
 		// qtyPicked records if inouts are completed and reversed multiple times.
-		// The VHUs are read once per row, before the reopen below changes the picking job.
+		// The VHUs are read once per row and reused below; the reopen does not change them.
 		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = new LinkedHashSet<>();
 		final Map<HuId, HUWithPickOnTheFlyStatus> husInvolvedById = new LinkedHashMap<>();
 		final Map<Integer, Set<HuId>> pickedVhuIdsByRowId = new HashMap<>();
