@@ -21,6 +21,8 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * - Tab into an EMPTY Date cell, type DD.MM.YYYY -> accepted, PATCHed, shown after blur
  * - Tab into a cell holding 20.11.2026, type a new date -> REPLACES (not appended), PATCHed
  * - Escape (after typing) and, separately, Enter (without typing) keep the stored value
+ * - short forms (no leading zero, two-digit year) and ISO YYYY-MM-DD are saved as the full date
+ * - a typed text that is no date is not saved: the stored value stays and an error notification names the text
  *
  * Features tested:
  * - F5010: Order Lines Grid
@@ -283,5 +285,67 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
       state.patches.filter((patch) => patchedDay(patch.value) !== STORED_DISPLAY_VALUE),
       'Enter changes nothing'
     ).toHaveLength(0);
+  });
+
+  test('short forms: "4.1.27" is saved as 04.01.2027', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { row, dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await tabIntoDateCell(page, row, dateCell);
+    await page.keyboard.type('4.1.27', { delay: 50 });
+    await expect(dateCell.locator('input').first(), 'the short form is in the input').toHaveValue('4.1.27');
+    await page.keyboard.press('Tab');
+
+    await expect.poll(() => state.patches.length, { message: 'a PATCH carries the date', timeout: 10000 }).toBe(1);
+    expect(patchedDay(state.patches[0].value), 'the PATCH denotes the full date').toBe('04.01.2027');
+    await expect(dateCellText(dateCell), 'the cell shows the full date after blur').toHaveText('04.01.2027');
+  });
+
+  test('ISO: "2027-01-04" is saved as 04.01.2027', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { row, dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await tabIntoDateCell(page, row, dateCell);
+    await page.keyboard.type('2027-01-04', { delay: 50 });
+    await page.keyboard.press('Tab');
+
+    await expect.poll(() => state.patches.length, { message: 'a PATCH carries the date', timeout: 10000 }).toBe(1);
+    expect(patchedDay(state.patches[0].value), 'the PATCH denotes the ISO date').toBe('04.01.2027');
+    await expect(dateCellText(dateCell), 'the cell shows the date after blur').toHaveText('04.01.2027');
+  });
+
+  test('a typed text that is no date keeps the stored value and shows an error naming the text', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { row, dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await tabIntoDateCell(page, row, dateCell);
+    await page.keyboard.type('31.02.2027', { delay: 50 });
+    await page.keyboard.press('Tab');
+
+    await expect(
+      page.locator('.notification-item.error .notification-content').filter({ hasText: '31.02.2027' }),
+      'an error notification names the typed text'
+    ).toContainText('ist kein gültiges Datum', { timeout: 10000 });
+    await expect(dateCellText(dateCell), 'the stored value is kept').toHaveText(STORED_DISPLAY_VALUE);
+    await page.waitForTimeout(1500); // give an (unwanted) in-flight PATCH time to arrive before asserting none was sent
+    expect(state.patches, 'nothing is saved').toHaveLength(0);
   });
 });
