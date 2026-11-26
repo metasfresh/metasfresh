@@ -187,8 +187,9 @@ describe('TableCell — grid date wiring', () => {
       );
     });
 
-    // the real browser order: the first click already enters edit and selects; the dblclick
-    // then finds the focus inside the input and leaves that selection untouched
+    // a double click arrives as click + dblclick: the click enters edit and selects the date; this
+    // checks that our dblclick handling does not disturb that selection (jsdom does not reproduce
+    // the browser's own caret placement on the second mousedown)
     it('a click followed by a double click on a Date cell leaves the date fully selected', () => {
       expectDateFullySelected(
         enterByPointer({
