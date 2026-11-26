@@ -1,8 +1,11 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 
-import { getTableId } from '../../../reducers/tables';
-import fixtures from '../../../../test_setup/fixtures/table/table_item_props.json';
+import {
+  PROPERTY,
+  createRowProps as createInitProps,
+  mountFocusedCellWithEditor as mountEditor,
+} from '../../../../test_setup/gridDateCellHelpers';
 
 import TableRow from '../../../components/table/TableRow';
 
@@ -12,46 +15,11 @@ import TableRow from '../../../components/table/TableRow';
  * instead of clearing it, its widget patches its own value, and the pointer/keyboard origin of
  * the edit is recorded for the cell.
  */
-const PROPERTY = 'PriceEntered'; // fixture field; each test gives it the widget type under test
-
-function createInitProps(widgetType) {
-  const propsSeed = fixtures.oldProps1;
-  return {
-    ...propsSeed,
-    fieldsByName: {
-      ...propsSeed.fieldsByName,
-      [PROPERTY]: {
-        ...propsSeed.fieldsByName[PROPERTY],
-        field: PROPERTY,
-        widgetType,
-      },
-    },
-    tableId: getTableId(propsSeed),
-    onClick: jest.fn(),
-    handleSelect: jest.fn(),
-    onDoubleClick: jest.fn(),
-    changeListenOnTrue: jest.fn(),
-    changeListenOnFalse: jest.fn(),
-    handleRowCollapse: jest.fn(),
-    handleRightClick: jest.fn(),
-    onItemChange: jest.fn(),
-    getSizeClass: jest.fn(),
-    updatePropertyValue: jest.fn(),
-  };
-}
-
-// a focused <td> holding the grid editor input, as the browser has it while a cell is edited
+// the shared editor DOM, with the input's select() observable
 function mountFocusedCellWithEditor() {
-  const td = document.createElement('td');
-  td.tabIndex = 0;
-  const input = document.createElement('input');
-  input.className = 'form-control js-input-field';
-  input.value = '20.11.2026';
-  td.appendChild(input);
-  document.body.appendChild(td);
-  td.focus();
-  input.select = jest.fn();
-  return { td, input };
+  const mounted = mountEditor();
+  mounted.input.select = jest.fn();
+  return mounted;
 }
 
 const keyEvent = (target) => ({
