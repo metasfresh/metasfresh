@@ -93,7 +93,11 @@ const PickLineScreen = () => {
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  const onScanButtonClick = () =>
+  // every way into the line's scan screen starts a new round: nothing is remembered from the last one (the open TU stays open)
+  const startNewRound = () => dispatch(forgetCUEntry({ wfProcessId, activityId }));
+
+  const onScanButtonClick = () => {
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -102,10 +106,10 @@ const PickLineScreen = () => {
         lineId,
       })
     );
+  };
 
   const onPickButtonClick = () => {
-    // a new round on the line: nothing is remembered from the last one (the open TU stays open)
-    dispatch(forgetCUEntry({ wfProcessId, activityId }));
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -118,6 +122,7 @@ const PickLineScreen = () => {
   };
 
   const onPickQtyButtonClick = () => {
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,

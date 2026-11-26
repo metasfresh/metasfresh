@@ -87,6 +87,15 @@ export const useOpenNextTU = ({
       closePickingTarget({ wfProcessId, lineId, type: PickingTargetType.TU }).then((wfProcess) => updateWF(wfProcess)),
   };
 
+  // best effort: the timeout error is shown anyway; a failed reload only leaves the stale state, which the next load refreshes
+  const refreshJob = useCallback(
+    () =>
+      getWFProcess({ wfProcessId })
+        .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+        .catch(() => undefined),
+    [dispatch, wfProcessId]
+  );
+
   /**
    * Runs one TU opening at a time; a second call while one is in flight is refused (`isRethrow`: with a UserMessageError, so a scanner reports an error instead of a success; otherwise silently).
    * While the opening is in flight, its promise is kept in `openingRef` for {@link bookAfterTUOpened}, which needs the raw promise of `action` (it settles when the opening settles).
@@ -101,15 +110,6 @@ export const useOpenNextTU = ({
    * @param {{isRethrow?: boolean}} options
    * @returns {Promise<void>} settles when the opening settled
    */
-  // best effort: the timeout error is shown anyway; a failed reload only leaves the stale state, which the next load refreshes
-  const refreshJob = useCallback(
-    () =>
-      getWFProcess({ wfProcessId })
-        .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-        .catch(() => undefined),
-    [dispatch, wfProcessId]
-  );
-
   const runExclusive = useCallback(
     async (action, { isRethrow = false } = {}) => {
       if (isInFlightRef.current) {

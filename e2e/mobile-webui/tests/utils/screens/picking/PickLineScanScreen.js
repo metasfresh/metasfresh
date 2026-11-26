@@ -143,8 +143,10 @@ export const PickLineScanScreen = {
     /** Scans a GRAI on the scan step (before the label) */
     scanGrai: async (graiString) => await step(`${NAME} - Scan GRAI ${graiString}`, async () => {
         await PickLineScanScreen.waitForScreen();
+        // language-independent and not satisfied by an older toast: mark the success toasts shown now, wait for one that is not marked
+        await page.locator('.Toastify__toast--success').evaluateAll((toasts) => toasts.forEach((toast) => toast.setAttribute('data-before-scan', 'true')));
         await PickLineScanScreen.typeQRCode(graiString);
-        await expect(page.locator('.Toastify__toast--success', { hasText: 'New TU opened' })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('.Toastify__toast--success:not([data-before-scan])')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Scans a GRAI inside the open quantity block */
