@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
@@ -56,6 +57,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -99,7 +101,7 @@ public class ShipmentScheduleEnqueuer
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -128,6 +130,9 @@ public class ShipmentScheduleEnqueuer
 	 * Creates async work packages for shipment schedule found by given filter.
 	 * <p>
 	 * This method will group the shipment schedules by header aggregation key and it will enqueue a working package for each header aggregation key.
+	 * If the given parameters carry an async batch (the run has its own batch), the key is built without the async batch
+	 * and not read from {@code M_ShipmentSchedule.HeaderAggregationKey}, so all schedules of the run that agree on the other key columns are grouped together
+	 * even if a schedule's stored key was rebuilt with another {@code C_Async_Batch_ID} meanwhile.
 	 */
 	public Result createWorkpackages(@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters)
 	{
@@ -180,9 +185,9 @@ public class ShipmentScheduleEnqueuer
 		final ShipmentScheduleHeaderAggregationKeyBuilder runKeyBuilder = workPackageParameters.getAsyncBatchId() != null
 				? shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilderWithoutAsyncBatch()
 				: null;
-		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = runKeyBuilder != null
+		final Iterator<KeyedShipmentSchedule> shipmentSchedules = runKeyBuilder != null
 				? sortedByKey(shipmentSchedulesByStoredKey, runKeyBuilder)
-				: shipmentSchedulesByStoredKey;
+				: Iterators.transform(shipmentSchedulesByStoredKey, sched -> new KeyedShipmentSchedule(sched.getHeaderAggregationKey(), sched));
 
 		if (!shipmentSchedules.hasNext())
 		{
@@ -200,7 +205,8 @@ public class ShipmentScheduleEnqueuer
 
 		while (shipmentSchedules.hasNext())
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
+			final KeyedShipmentSchedule keyedSchedule = shipmentSchedules.next();
+			final I_M_ShipmentSchedule shipmentSchedule = keyedSchedule.getSchedule();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(shipmentSchedule))
 			{
 				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
@@ -215,9 +221,7 @@ public class ShipmentScheduleEnqueuer
 
 				//
 				// Check if we shall close our current workpackage (if any)
-				final String headerAggregationKey = runKeyBuilder != null
-						? runKeyBuilder.buildKey(shipmentSchedule)
-						: shipmentSchedule.getHeaderAggregationKey();
+				final String headerAggregationKey = keyedSchedule.getKey();
 				if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
 				{
 					handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
@@ -281,14 +285,25 @@ public class ShipmentScheduleEnqueuer
 		return result;
 	}
 
-	private static Iterator<I_M_ShipmentSchedule> sortedByKey(
+	@Value
+	private static class KeyedShipmentSchedule
+	{
+		@Nullable String key;
+		@NonNull I_M_ShipmentSchedule schedule;
+	}
+
+	/**
+	 * Builds each schedule's key once, then sorts by key and {@code M_ShipmentSchedule_ID}.
+	 * Materializes the iterator; callers pass a run bounded by the request's schedule ids.
+	 */
+	private static Iterator<KeyedShipmentSchedule> sortedByKey(
 			@NonNull final Iterator<I_M_ShipmentSchedule> shipmentSchedules,
 			@NonNull final ShipmentScheduleHeaderAggregationKeyBuilder keyBuilder)
 	{
-		final ArrayList<I_M_ShipmentSchedule> list = new ArrayList<>();
-		shipmentSchedules.forEachRemaining(list::add);
-		list.sort(Comparator.comparing((I_M_ShipmentSchedule sched) -> keyBuilder.buildKey(sched), Comparator.nullsLast(Comparator.naturalOrder()))
-				.thenComparing(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID));
+		final ArrayList<KeyedShipmentSchedule> list = new ArrayList<>();
+		shipmentSchedules.forEachRemaining(sched -> list.add(new KeyedShipmentSchedule(keyBuilder.buildKey(sched), sched)));
+		list.sort(Comparator.comparing(KeyedShipmentSchedule::getKey, Comparator.nullsLast(Comparator.<String>naturalOrder()))
+				.thenComparing(keyed -> keyed.getSchedule().getM_ShipmentSchedule_ID()));
 		return list.iterator();
 	}
 

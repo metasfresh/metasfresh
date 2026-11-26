@@ -50,6 +50,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.Invocation;
@@ -57,6 +58,7 @@ import org.mockito.invocation.Invocation;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +67,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * A closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
  * but it is put into a new run that ships picks only (quantity type P).
+ * A run with its own async batch is one group, whatever a schedule recompute saved between the batch stamp and the enqueue.
  */
 class ShipmentScheduleEnqueuerTest
 {
@@ -105,57 +108,64 @@ class ShipmentScheduleEnqueuerTest
 	}
 
 	/**
-	 * Review scenario: run A shipped schedule X with its entered quantity and closed it; X is not processed yet (the recompute did not run).
-	 * A new "Auswahl Liefern" run C for X is attempted: no workpackage is created, so X's entered quantity is not shipped again.
-	 * The open schedule Y, enqueued the same way, gets its workpackage.
+	 * Which shipment schedules a run puts into workpackages.
 	 */
-	@Test
-	void createWorkpackages_closedScheduleIsNotEnqueued_openScheduleIs()
+	@Nested
+	class CreateWorkpackages
 	{
-		final I_M_ShipmentSchedule shippedAndClosedX = createSchedule(811, true);
-		shippedAndClosedX.setQtyDelivered(new BigDecimal("7"));
-		InterfaceWrapperHelper.save(shippedAndClosedX);
-		final I_M_ShipmentSchedule openY = createSchedule(812, false);
+		/**
+		 * Review scenario: run A shipped schedule X with its entered quantity and closed it; X is not processed yet (the recompute did not run).
+		 * A new "Auswahl Liefern" run C for X is attempted: no workpackage is created, so X's entered quantity is not shipped again.
+		 * The open schedule Y, enqueued the same way, gets its workpackage.
+		 */
+		@Test
+		void closedScheduleIsNotEnqueued_openScheduleIs()
+		{
+			final I_M_ShipmentSchedule shippedAndClosedX = createSchedule(811, true);
+			shippedAndClosedX.setQtyDelivered(new BigDecimal("7"));
+			InterfaceWrapperHelper.save(shippedAndClosedX);
+			final I_M_ShipmentSchedule openY = createSchedule(812, false);
 
-		assertThatThrownBy(() -> enqueue(shippedAndClosedX))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("NoValidRecords");
-		assertThat(countWorkpackages()).isZero();
+			assertThatThrownBy(() -> enqueue(shippedAndClosedX))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NoValidRecords");
+			assertThat(countWorkpackages()).isZero();
 
-		final ShipmentScheduleEnqueuer.Result result = enqueue(openY);
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
-		assertThat(countWorkpackages()).isEqualTo(1);
-	}
+			final ShipmentScheduleEnqueuer.Result result = enqueue(openY);
+			assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+			assertThat(countWorkpackages()).isEqualTo(1);
+		}
 
-	/**
-	 * Picks on a schedule that an earlier shipment closed (e.g. ship-on-LU-close: shipping LU1 closed X, X also has picks in LU2;
-	 * or HU consolidation; or a schedule closed by hand while its picking job is open) are shipped by a later picked-quantity run.
-	 * A pick cannot ship twice: a shipped pick has a shipment line and is no longer among the not-shipped picks the P path ships from.
-	 */
-	@Test
-	void createWorkpackages_pickedQtyRun_closedScheduleWithPicksIsEnqueued()
-	{
-		final I_M_ShipmentSchedule closedWithPicks = createSchedule(821, true);
-		createPick(closedWithPicks, new BigDecimal("5"));
+		/**
+		 * Picks on a schedule that an earlier shipment closed (e.g. ship-on-LU-close: shipping LU1 closed X, X also has picks in LU2;
+		 * or HU consolidation; or a schedule closed by hand while its picking job is open) are shipped by a later picked-quantity run.
+		 * A pick cannot ship twice: a shipped pick has a shipment line and is no longer among the not-shipped picks the P path ships from.
+		 */
+		@Test
+		void pickedQtyRun_closedScheduleWithPicksIsEnqueued()
+		{
+			final I_M_ShipmentSchedule closedWithPicks = createSchedule(821, true);
+			createPick(closedWithPicks, new BigDecimal("5"));
 
-		final ShipmentScheduleEnqueuer.Result result = enqueue(closedWithPicks, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY);
+			final ShipmentScheduleEnqueuer.Result result = enqueue(closedWithPicks, M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY);
 
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
-		assertThat(countWorkpackages()).isEqualTo(1);
-	}
+			assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+			assertThat(countWorkpackages()).isEqualTo(1);
+		}
 
-	/**
-	 * A run that ships picks and the entered quantity (PD) leaves out a closed schedule too, because it would ship the entered quantity again.
-	 */
-	@Test
-	void createWorkpackages_pickedAndEnteredQtyRun_closedScheduleIsNotEnqueued()
-	{
-		final I_M_ShipmentSchedule closed = createSchedule(831, true);
+		/**
+		 * A run that ships picks and the entered quantity (PD) leaves out a closed schedule too, because it would ship the entered quantity again.
+		 */
+		@Test
+		void pickedAndEnteredQtyRun_closedScheduleIsNotEnqueued()
+		{
+			final I_M_ShipmentSchedule closed = createSchedule(831, true);
 
-		assertThatThrownBy(() -> enqueue(closed, M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("NoValidRecords");
-		assertThat(countWorkpackages()).isZero();
+			assertThatThrownBy(() -> enqueue(closed, M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NoValidRecords");
+			assertThat(countWorkpackages()).isZero();
+		}
 	}
 
 	/**
@@ -179,98 +189,109 @@ class ShipmentScheduleEnqueuerTest
 	}
 
 	/**
-	 * Race of the observed red run (order 1001083): a schedule recompute loads schedule 2 BEFORE the shipment run stamps the run's async batch
-	 * (ShipmentService.groupSchedulesByAsyncBatch -> ShipmentScheduleBL.setAsyncBatchAndSave), and saves it AFTER the stamp but BEFORE the enqueuer
-	 * reads the schedules. The recompute leaves C_Async_Batch_ID alone (loaded 0 == order 0, OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder),
-	 * but its save rebuilds HeaderAggregationKey from the stale in-memory model. Both schedules belong to one run, so they get one workpackage.
+	 * A shipment run with its own async batch ships all its schedules of one order in one workpackage,
+	 * whatever a schedule recompute saved between the run's batch stamp and the enqueue.
 	 */
-	@Test
-	void createWorkpackages_staleRecomputeSaveBetweenBatchStampAndEnqueue_oneWorkpackage()
+	@Nested
+	class RunWithOwnAsyncBatch
 	{
-		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
-		InOutCandidateValidator.registerSSAggregationKeyDependencies();
-		final M_ShipmentSchedule interceptor = new M_ShipmentSchedule();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
+		private M_ShipmentSchedule interceptor;
 
-		final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(841);
-		final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(842);
-
-		// the recompute loads schedule 2 before the run stamps the batch
-		final I_M_ShipmentSchedule staleSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
-
-		// the run stamps its async batch (own committed trx in production)
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
-		InterfaceWrapperHelper.save(asyncBatch);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-		Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
-		final String stampedKey2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class).getHeaderAggregationKey();
-		assertThat(stampedKey2).as("the stamp puts the batch into the stored key").isEqualTo(InterfaceWrapperHelper.load(841, I_M_ShipmentSchedule.class).getHeaderAggregationKey());
-		assertThat(staleSchedule2.getC_Async_Batch_ID()).as("the recompute's copy is stale").isZero();
-
-		// the recompute's save: a real change, then PO's BEFORE_CHANGE interceptor, then PO's UPDATE of every column a setter was called for
-		saveLikePO(staleSchedule2, stale -> stale.setQtyToDeliver(new BigDecimal("3")), interceptor);
-
-		final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
-		assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the recompute keeps the run's batch").isEqualTo(asyncBatchId.getRepoId());
-
-		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
-				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
-						.adPInstanceId(PInstanceId.ofRepoId(1))
-						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(841), ShipmentScheduleId.ofRepoId(842))))
-						.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-						.asyncBatchId(asyncBatchId)
-						.completeShipments(true)
-						.build());
-
-		assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
-	}
-
-	/**
-	 * Fresh timing between the run's batch stamp and the enqueue: the stamp changes HeaderAggregationKey, so
-	 * M_ShipmentSchedule.invalidateSchedulesWithOldAndNewHeaderAggregationKey flags the order's schedules for a recompute. A recompute that loads
-	 * schedule 2 AFTER the stamp sees the run's batch, which differs from the order's empty batch, so
-	 * OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder (the "set only on a real change" guard) clears C_Async_Batch_ID;
-	 * the save rebuilds HeaderAggregationKey without the batch. If that save commits before the enqueuer reads the schedules,
-	 * both schedules still belong to one run, so they get one workpackage.
-	 */
-	@Test
-	void createWorkpackages_freshRecomputeClearsBatchBetweenBatchStampAndEnqueue_oneWorkpackage()
-	{
-		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
-		InOutCandidateValidator.registerSSAggregationKeyDependencies();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new M_ShipmentSchedule());
-
-		final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(851);
-		final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(852);
-
-		// the run stamps its async batch (own committed trx in production)
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
-		InterfaceWrapperHelper.save(asyncBatch);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-		Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
-
-		// the recompute loads schedule 2 after the stamp and copies the order's empty batch (same guard as OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder)
-		final I_M_ShipmentSchedule freshSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
-		final int orderAsyncBatchId = 0;
-		if (freshSchedule2.getC_Async_Batch_ID() != orderAsyncBatchId)
+		@BeforeEach
+		void beforeEach()
 		{
-			freshSchedule2.setC_Async_Batch_ID(orderAsyncBatchId);
+			SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
+			InOutCandidateValidator.registerSSAggregationKeyDependencies();
+			interceptor = new M_ShipmentSchedule();
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
 		}
-		InterfaceWrapperHelper.save(freshSchedule2);
 
-		final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
-		assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the fresh recompute cleared the run's batch").isZero();
+		/**
+		 * Race: a schedule recompute loads schedule 2 BEFORE the shipment run stamps the run's async batch
+		 * (ShipmentService.groupSchedulesByAsyncBatch -> ShipmentScheduleBL.setAsyncBatchAndSave), and saves it AFTER the stamp but BEFORE the enqueuer
+		 * reads the schedules. The recompute leaves C_Async_Batch_ID alone (loaded 0 == order 0, OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder),
+		 * but its save rebuilds HeaderAggregationKey from the stale in-memory model. Both schedules belong to one run, so they get one workpackage.
+		 */
+		@Test
+		void staleRecomputeSaveBetweenBatchStampAndEnqueue_oneWorkpackage()
+		{
+			final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(841);
+			final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(842);
 
-		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
-				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
-						.adPInstanceId(PInstanceId.ofRepoId(1))
-						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(851), ShipmentScheduleId.ofRepoId(852))))
-						.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-						.asyncBatchId(asyncBatchId)
-						.completeShipments(true)
-						.build());
+			// the recompute loads schedule 2 before the run stamps the batch
+			final I_M_ShipmentSchedule staleSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
 
-		assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
+			// the run stamps its async batch (own committed trx in production)
+			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
+			InterfaceWrapperHelper.save(asyncBatch);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+			Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+			final String stampedKey2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class).getHeaderAggregationKey();
+			assertThat(stampedKey2).as("the stamp puts the batch into the stored key").isEqualTo(InterfaceWrapperHelper.load(841, I_M_ShipmentSchedule.class).getHeaderAggregationKey());
+			assertThat(staleSchedule2.getC_Async_Batch_ID()).as("the recompute's copy is stale").isZero();
+
+			// the recompute's save: a real change, then PO's BEFORE_CHANGE interceptor, then PO's UPDATE of every column a setter was called for
+			saveLikePO(staleSchedule2, stale -> stale.setQtyToDeliver(new BigDecimal("3")), interceptor);
+
+			final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
+			assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the recompute keeps the run's batch").isEqualTo(asyncBatchId.getRepoId());
+			assertThat(storedSchedule2.getHeaderAggregationKey()).as("a save that changes no key column keeps the stored key, which includes the run's batch").isEqualTo(stampedKey2);
+
+			final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
+					.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
+							.adPInstanceId(PInstanceId.ofRepoId(1))
+							.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(841), ShipmentScheduleId.ofRepoId(842))))
+							.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+							.asyncBatchId(asyncBatchId)
+							.completeShipments(true)
+							.build());
+
+			assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
+		}
+
+		/**
+		 * Fresh timing between the run's batch stamp and the enqueue: the stamp changes HeaderAggregationKey, so
+		 * M_ShipmentSchedule.invalidateSchedulesWithOldAndNewHeaderAggregationKey flags the order's schedules for a recompute. A recompute that loads
+		 * schedule 2 AFTER the stamp sees the run's batch, which differs from the order's empty batch, so
+		 * OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder (the "set only on a real change" guard) clears C_Async_Batch_ID;
+		 * the save rebuilds HeaderAggregationKey without the batch. If that save commits before the enqueuer reads the schedules,
+		 * both schedules still belong to one run, so they get one workpackage.
+		 */
+		@Test
+		void freshRecomputeClearsBatchBetweenBatchStampAndEnqueue_oneWorkpackage()
+		{
+			final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(851);
+			final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(852);
+
+			// the run stamps its async batch (own committed trx in production)
+			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
+			InterfaceWrapperHelper.save(asyncBatch);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+			Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+
+			// the recompute loads schedule 2 after the stamp and copies the order's empty batch (same guard as OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder)
+			final I_M_ShipmentSchedule freshSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
+			final int orderAsyncBatchId = 0;
+			if (freshSchedule2.getC_Async_Batch_ID() != orderAsyncBatchId)
+			{
+				freshSchedule2.setC_Async_Batch_ID(orderAsyncBatchId);
+			}
+			InterfaceWrapperHelper.save(freshSchedule2);
+
+			final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
+			assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the fresh recompute cleared the run's batch").isZero();
+
+			final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
+					.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
+							.adPInstanceId(PInstanceId.ofRepoId(1))
+							.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(851), ShipmentScheduleId.ofRepoId(852))))
+							.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+							.asyncBatchId(asyncBatchId)
+							.completeShipments(true)
+							.build());
+
+			assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
+		}
 	}
 
 	/**
@@ -280,7 +301,7 @@ class ShipmentScheduleEnqueuerTest
 	 */
 	private void saveLikePO(
 			final I_M_ShipmentSchedule staleModel,
-			final java.util.function.Consumer<I_M_ShipmentSchedule> changes,
+			final Consumer<I_M_ShipmentSchedule> changes,
 			final M_ShipmentSchedule interceptor)
 	{
 		// record every setter call on the stale model: a proxy over a spy of its POJOWrapper (setters end in POJOWrapper.setValue)
