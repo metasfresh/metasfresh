@@ -87,7 +87,7 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     expect(onReadDone).not.toHaveBeenCalled();
   });
 
-  it('a key typed by a person after a scanner burst is not glued to the burst, also with a slow scan speed of the instance', () => {
+  it('a key typed after a scanner burst is not glued to the burst, also with a slow scan speed of the instance: the burst is read as AB, the later key starts its own read, delivered by Enter', () => {
     const onReadDone = jest.fn();
     const { container } = render(<Harness onReadDone={onReadDone} rateMs={300} />);
     const count = container.querySelector('#count');

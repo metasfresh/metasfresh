@@ -7,7 +7,6 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from "../../utils/screens/distribution/DistributionJobScreen";
 import { DistributionLinePickFromScreen } from "../../utils/screens/distribution/DistributionLinePickFromScreen";
 import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
-import { PickLineScanScreen as ScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { createScanEachMasterdata, openScanEachLine, packLabelOf } from "../../utils/cuQtyEntryScanEach";
 import { txt } from "../../utils/cuQtyEntryMessages";
 import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
@@ -71,7 +70,7 @@ test.describe(`quantity pop-up on a short screen ${SHORT_SCREEN.width}x${SHORT_S
                 distributionOrders: { DD1: { warehouseFrom: 'wh1', warehouseTo: 'wh2', warehouseInTransit: 'whInTransit', plant: 'plantId', lines: [{ product: 'P1', qtyEntered: 100 }] } },
             },
         });
-        await login(masterdata, 'distribution', { isTableAreaScrolling: false });
+        await login(masterdata, 'distribution');
         await DistributionJobsListScreen.waitForScreen();
         await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
         await DistributionJobScreen.waitForScreen();
@@ -91,18 +90,18 @@ const TINY_SCREEN = { width: 360, height: 120, deviceScaleFactor: 3 };
 test.describe(`error toast on a tiny screen ${TINY_SCREEN.width}x${TINY_SCREEN.height}`, () => {
     test.use({ viewport: { width: TINY_SCREEN.width, height: TINY_SCREEN.height }, deviceScaleFactor: TINY_SCREEN.deviceScaleFactor });
 
-        test('error toast (shared by every app): its close button stays on the screen', async ({ page }) => {
-            allureMeta('Responsive quantity block');
+    test('error toast (shared by every app): its close button stays on the screen', async ({ page }) => {
+        allureMeta('Responsive quantity block');
 
-            const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }], language: 'en_US' });
-            await startJob(masterdata, { qtyToDeliver: 3 });
-            await openScanEachLine({ index: 1, openTU: false });
+        const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }], language: 'en_US' });
+        await startJob(masterdata, { qtyToDeliver: 3 });
+        await openScanEachLine({ index: 1, openTU: false });
 
-            await ScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot: uniqueLot(), gtin: uniqueGTIN(), packId: 1 }), txt('en_US', 'noOpenTU'), {
-                whileToastShown: async () => {
-                    await expectInsideScreen(page.locator('.Toastify__toast--error').first(), 'error toast', TINY_SCREEN);
-                    await expectInsideScreen(page.locator('.Toastify__close-button--error').first(), 'error toast close button', TINY_SCREEN);
-                },
-            });
+        await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot: uniqueLot(), gtin: uniqueGTIN(), packId: 1 }), txt('en_US', 'noOpenTU'), {
+            whileToastShown: async () => {
+                await expectInsideScreen(page.locator('.Toastify__toast--error').first(), 'error toast', TINY_SCREEN);
+                await expectInsideScreen(page.locator('.Toastify__close-button--error').first(), 'error toast close button', TINY_SCREEN);
+            },
         });
+    });
 });
