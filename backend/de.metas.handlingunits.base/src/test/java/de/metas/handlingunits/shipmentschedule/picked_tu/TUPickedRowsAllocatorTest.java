@@ -35,7 +35,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -79,7 +78,7 @@ class TUPickedRowsAllocatorTest
 
 	private TUPickedRowsAllocator allocator(final Map<TUContentCU, String> weightsByCU, final TUContentGroup... groups)
 	{
-		final Function<TUContentCU, Quantity> weightOfCU = cu -> weightsByCU.containsKey(cu) ? kg(weightsByCU.get(cu)) : null;
+		final TUContentCUWeighter weightOfCU = cu -> weightsByCU.containsKey(cu) ? kg(weightsByCU.get(cu)) : null;
 		return new TUPickedRowsAllocator(ImmutableList.copyOf(groups), weightOfCU);
 	}
 

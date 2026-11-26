@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Hands out the content of a TU (its CUs grouped by attribute combination) to the picked rows of that TU, in the order the
@@ -50,7 +49,7 @@ import java.util.function.Function;
 public final class TUPickedRowsAllocator
 {
 	private final ImmutableList<TUContentGroup> groups;
-	private final Function<TUContentCU, Quantity> weightOfCU;
+	private final TUContentCUWeighter weightOfCU;
 	private final Quantity[] consumedByGroup;
 	private final Map<TUContentCU, Quantity> weightCache = new IdentityHashMap<>();
 	private int groupIndex = 0;
@@ -61,7 +60,7 @@ public final class TUPickedRowsAllocator
 	 */
 	public TUPickedRowsAllocator(
 			@NonNull final List<TUContentGroup> groups,
-			@NonNull final Function<TUContentCU, Quantity> weightOfCU)
+			@NonNull final TUContentCUWeighter weightOfCU)
 	{
 		this.groups = ImmutableList.copyOf(groups);
 		this.weightOfCU = weightOfCU;
@@ -204,7 +203,7 @@ public final class TUPickedRowsAllocator
 	{
 		if (!weightCache.containsKey(cu))
 		{
-			weightCache.put(cu, weightOfCU.apply(cu));
+			weightCache.put(cu, weightOfCU.getWeight(cu));
 		}
 		return weightCache.get(cu);
 	}
