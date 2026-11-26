@@ -250,6 +250,82 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	}
 
 	@Test
+	void picksOfTwoLotsInterleaved_ofCatchWeightProduct_eachLotsCandidatesCarryTheWeightOfItsOwnUnits()
+	{
+		enableCatchWeightOfSalad();
+		// picked in this order: FR 2.100 kg, RO 2.000 kg, FR 1.900 kg (2 pieces each)
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO, HUTestHelper.COUNTRYMADEIN_FR);
+		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(box);
+		setWeightNet(cus.get(0), "2.100");
+		setWeightNet(cus.get(1), "2.000");
+		setWeightNet(cus.get(2), "1.900");
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
+		createBoxRowWithWeight(schedule, box, "2", "2.100");
+		createBoxRowWithWeight(schedule, box, "2", "2.000");
+		createBoxRowWithWeight(schedule, box, "2", "1.900");
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_FR)).as("weight of the FR candidates").isEqualByComparingTo("4.000");
+		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_RO)).as("weight of the RO candidates").isEqualByComparingTo("2.000");
+	}
+
+	@Test
+	void picksOfTwoCountries_ofCatchWeightProduct_unitsWithoutWeight_keepTheWeightOfTheRows()
+	{
+		enableCatchWeightOfSalad();
+		// the units were picked by count: their net weight is 0, the rows carry the weighed values
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		createBoxRowWithWeight(schedule, box, "2", "2.100");
+		createBoxRowWithWeight(schedule, box, "2", "2.000");
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_FR)).isEqualByComparingTo("2.100");
+		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_RO)).isEqualByComparingTo("2.000");
+	}
+
+	private BigDecimal candidatesOfCountry(final List<ShipmentScheduleWithHU> candidates, final String country)
+	{
+		return candidates.stream()
+				.filter(candidate -> country.equals(getCountry(candidate.getVHU())))
+				.map(candidate -> candidate.getShipmentScheduleQtyPicked().getQtyDeliveredCatch())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	private I_M_ShipmentSchedule_QtyPicked createBoxRowWithWeight(final I_M_ShipmentSchedule schedule, final I_M_HU box, final String qty, final String weightKg)
+	{
+		final I_M_ShipmentSchedule_QtyPicked row = createBoxRow(schedule, box, qty);
+		row.setCatch_UOM_ID(uomKg.getC_UOM_ID());
+		row.setQtyDeliveredCatch(new BigDecimal(weightKg));
+		saveRecord(row);
+		return row;
+	}
+
+	@Test
+	void picksOfTwoLotsInterleaved_afterReversal_candidatesOfOneLotComeTogether()
+	{
+		// FR, RO, FR picked into one box and shipped; the shipment is reversed, so every unit gets a row of its own, in pick order
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
+		final List<I_M_ShipmentSchedule_QtyPicked> shippedRows = ImmutableList.of(
+				createBoxRow(schedule, box, "2"), createBoxRow(schedule, box, "2"), createBoxRow(schedule, box, "2"));
+		shippedRows.forEach(row -> {
+			row.setM_InOutLine_ID(1);
+			saveRecord(row);
+		});
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(shippedRows);
+		assertThat(retrieveOpenRows(schedule)).as("PRECONDITION: one row per unit, with its unit").hasSize(3).allMatch(row -> row.getVHU_ID() > 0);
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveOpenRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		// consecutive candidates are merged into one shipment line: a lot must not be split by another lot
+		assertThat(candidates).extracting(candidate -> getCountry(candidate.getVHU()))
+				.containsExactly(HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_FR, HUTestHelper.COUNTRYMADEIN_RO);
+	}
+
+	@Test
 	void restoreAfterReversal_ofBoxRowsWithoutVHU_restoresEveryUnitOfTheBox()
 	{
 		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);

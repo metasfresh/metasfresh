@@ -87,4 +87,27 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 		assertThat(group.totalQty().toBigDecimal()).isEqualByComparingTo("10");
 		assertThat(group.wholeVhuOrNull(qty(10))).isSameAs(storage.getM_HU());
 	}
+
+	@Test
+	void consume_returnsTheWeightOfTheUnitsItCovers_aUnitCoveredInPartPro_rata()
+	{
+		// two CUs of one lot, 2 pieces / 4.0 kg and 4 pieces / 6.0 kg
+		final I_C_UOM kg = mock(I_C_UOM.class);
+		final IHUProductStorage first = storage(mock(I_M_HU.class), 2);
+		final IHUProductStorage second = storage(mock(I_M_HU.class), 4);
+		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(
+				ImmutableList.of(first, second),
+				storage -> java.util.Optional.of(Quantity.of(storage == first ? new BigDecimal("4.0") : new BigDecimal("6.0"), kg)));
+
+		assertThat(group.consume(qty(4)).get().toBigDecimal()).as("first CU + half of the second").isEqualByComparingTo("7.0");
+		assertThat(group.consume(qty(2)).get().toBigDecimal()).as("rest of the second").isEqualByComparingTo("3.0");
+	}
+
+	@Test
+	void consume_whenAUnitHasNoWeight_returnsEmpty()
+	{
+		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(ImmutableList.of(storage(mock(I_M_HU.class), 2)));
+
+		assertThat(group.consume(qty(2))).isEmpty();
+	}
 }

@@ -130,7 +130,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1366,20 +1368,29 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// The candidates keep the order of the given rows: a box's candidates come where the box's first row is.
 		// The order matters because consecutive candidates are merged into one shipment line where they can be.
 		final Map<HuId, Boolean> isVirtualByTuId = new HashMap<>();
-		final LinkedHashMap<Object, List<I_M_ShipmentSchedule_QtyPicked>> rowsByBoxOrRow = new LinkedHashMap<>();
+		final LinkedHashMap<BoxKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByBox = new LinkedHashMap<>();
+		// one step per box (at the place of its first row) or per other row, in the order of the rows
+		final List<Supplier<List<ShipmentScheduleWithHU>>> steps = new ArrayList<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : qtyPickedRecords)
 		{
 			final HuId tuId = HuId.ofRepoIdOrNull(row.getM_TU_HU_ID());
 			final boolean isBoxRow = tuId != null
 					&& !isVirtualByTuId.computeIfAbsent(tuId, id -> handlingUnitsBL.isVirtual(handlingUnitsBL.getById(id)));
-			final Object key = isBoxRow ? new BoxKey(ShipmentScheduleId.ofRepoId(row.getM_ShipmentSchedule_ID()), tuId) : new Object();
-			rowsByBoxOrRow.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
+			if (!isBoxRow)
+			{
+				steps.add(() -> createCandidatesForQtyPicked(row, huContext, qtyTypeToUse));
+				continue;
+			}
+			final BoxKey boxKey = new BoxKey(ShipmentScheduleId.ofRepoId(row.getM_ShipmentSchedule_ID()), tuId);
+			if (!rowsByBox.containsKey(boxKey))
+			{
+				steps.add(() -> createCandidatesForBox(boxKey, rowsByBox.get(boxKey), huContext, qtyTypeToUse));
+			}
+			rowsByBox.computeIfAbsent(boxKey, k -> new ArrayList<>()).add(row);
 		}
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		rowsByBoxOrRow.forEach((key, rows) -> result.addAll(key instanceof BoxKey
-				? createCandidatesForBox((BoxKey)key, rows, huContext, qtyTypeToUse)
-				: createCandidatesForQtyPicked(rows.get(0), huContext, qtyTypeToUse)));
+		steps.forEach(step -> result.addAll(step.get()));
 		return result.build();
 	}
 
@@ -1481,7 +1492,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		rowsWithUnit.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
+		groupRowsByAttributeCombination(rowsWithUnit, huContext)
+				.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
 		if (!boxRows.isEmpty())
 		{
 			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
@@ -1500,6 +1512,32 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 		}
 		return result.build();
+	}
+
+	/**
+	 * @return the rows, those whose units have the same attribute combination (as far as it splits the shipment line) next to each other,
+	 * in first-seen order of the combinations. Consecutive candidates are merged into one shipment line, so rows of the same lot that are
+	 * kept apart by a row of another lot (lot A, lot B, lot A, as after a reversal) would give lot A two lines.
+	 */
+	private List<I_M_ShipmentSchedule_QtyPicked> groupRowsByAttributeCombination(
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rowsWithUnit,
+			@NonNull final IHUContext huContext)
+	{
+		if (rowsWithUnit.size() < 3)
+		{
+			return rowsWithUnit; // two rows cannot be kept apart by a third
+		}
+		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
+		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(rowsWithUnit.get(0));
+		final LinkedHashMap<AttributesKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByCombination = new LinkedHashMap<>();
+		for (final I_M_ShipmentSchedule_QtyPicked row : rowsWithUnit)
+		{
+			final I_M_HU unit = handlingUnitsBL.getById(HuId.ofRepoId(row.getVHU_ID()));
+			rowsByCombination
+					.computeIfAbsent(computeUseInASIFingerprint(unit, attrFactory, attributeSplitsShipmentLine), combination -> new ArrayList<>())
+					.add(row);
+		}
+		return rowsByCombination.values().stream().flatMap(List::stream).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -1545,8 +1583,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.forEach(fingerprintAndStorage -> storagesByFingerprint
 						.computeIfAbsent(fingerprintAndStorage.getKey(), fingerprint -> new ArrayList<>())
 						.add(fingerprintAndStorage.getValue()));
+		// The weight of a unit is read only when a row with a catch weight needs it. A unit without a weight (net weight 0, e.g. picked
+		// by count) has none: the row's own weight stays then.
+		final Function<IHUProductStorage, Optional<Quantity>> weightOfStorage = storage -> Optional.ofNullable(
+						CatchWeightHelper.extractQtys(huContext, productId, storage.getQty(), storage.getM_HU()))
+				.flatMap(StockQtyAndUOMQty::getUOMQtyOpt)
+				.filter(weight -> weight.signum() > 0);
 		return storagesByFingerprint.values().stream()
-				.map(BoxContentGroup::new)
+				.map(storages -> new BoxContentGroup(storages, weightOfStorage))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -1582,9 +1626,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	/**
 	 * Walks rows and content groups together, consuming quantity: every overlap of a row part and a group is one candidate.
 	 * <p>
-	 * Limit: rows are given to the groups in row-id order. When the picks of one lot are interleaved with picks of another
-	 * (lot A, lot B, lot A), the catch weight and the unit a lot's line carries can come from the other lot's pick.
-	 * Quantities and totals stay right.
+	 * Rows are given to the groups in row-id order, so when the picks of one lot are interleaved with picks of another
+	 * (lot A, lot B, lot A) a row can land on the other lot's group. The catch weight of a part therefore comes from the
+	 * units of the group it lands on, never from the row: the weight follows the physical unit, not the pick order.
 	 */
 	private List<ShipmentScheduleWithHU> createCandidatesPerContentGroup(
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> boxRows,
@@ -1603,13 +1647,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				final BoxContentGroup group = contentGroups.get(groupIndex);
 				final Quantity partQty = rowRemaining.min(group.remainingQty());
-				parts.add(new RowPart(group, partQty, group.wholeVhuOrNull(partQty)));
+				final I_M_HU wholeVhu = group.wholeVhuOrNull(partQty);
+				final boolean isGroupUsedUp = group.remainingQty().compareTo(partQty) == 0;
+				final Optional<Quantity> unitsWeight = group.consume(partQty);
+				parts.add(new RowPart(group, partQty, wholeVhu, unitsWeight));
 				rowRemaining = rowRemaining.subtract(partQty);
-				if (group.remainingQty().compareTo(partQty) == 0)
+				if (isGroupUsedUp)
 				{
 					groupIndex++;
 				}
-				group.consume(partQty);
 			}
 
 			if (parts.isEmpty())
@@ -1631,9 +1677,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		final List<Optional<Quantity>> catchWeightShares = parts.size() > 1
-				? splitCatchWeightByQty(row, parts.stream().map(RowPart::getQty).collect(ImmutableList.toImmutableList()))
-				: ImmutableList.of(Optional.<Quantity>empty());
+		final List<Optional<Quantity>> catchWeightShares = catchWeightSharesOfParts(row, parts);
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		for (int i = 0; i < parts.size(); i++)
@@ -1643,6 +1687,29 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			result.add(saveRowAndCreateCandidate(partRecord, new CandidatePart(part.getQty(), part.getWholeVhu(), part.getGroup().firstVhu()), huContext, qtyTypeToUse));
 		}
 		return result.build();
+	}
+
+	/**
+	 * @return per part the weight of the units it stands for, if every part has it in the row's catch UOM; else the row's own weight
+	 * split by quantity (or none, if the row stays one part)
+	 */
+	private static List<Optional<Quantity>> catchWeightSharesOfParts(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked row,
+			@NonNull final List<RowPart> parts)
+	{
+		if (row.getCatch_UOM_ID() <= 0)
+		{
+			return parts.stream().map(part -> Optional.<Quantity>empty()).collect(ImmutableList.toImmutableList());
+		}
+		final boolean isWeightOfEveryPartKnown = parts.stream()
+				.allMatch(part -> part.getUnitsWeight().isPresent() && part.getUnitsWeight().get().getUomId().getRepoId() == row.getCatch_UOM_ID());
+		if (isWeightOfEveryPartKnown)
+		{
+			return parts.stream().map(RowPart::getUnitsWeight).collect(ImmutableList.toImmutableList());
+		}
+		return parts.size() > 1
+				? splitCatchWeightByQty(row, parts.stream().map(RowPart::getQty).collect(ImmutableList.toImmutableList()))
+				: ImmutableList.of(Optional.<Quantity>empty());
 	}
 
 	/**
@@ -1831,6 +1898,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		@NonNull BoxContentGroup group;
 		@NonNull Quantity qty;
 		@Nullable I_M_HU wholeVhu;
+		/** the weight of the units of the group that the part stands for; empty if not known */
+		@NonNull Optional<Quantity> unitsWeight;
 	}
 
 	/**
@@ -1841,11 +1910,20 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	static final class BoxContentGroup
 	{
 		private final List<IHUProductStorage> storages;
+		/** the weight of one storage's unit; empty if the product has no catch weight or the unit has none */
+		private final Function<IHUProductStorage, Optional<Quantity>> weightOfStorage;
+		private final Map<IHUProductStorage, Optional<Quantity>> weightByStorage = new HashMap<>();
 		private Quantity consumed;
 
 		BoxContentGroup(@NonNull final List<IHUProductStorage> storages)
 		{
+			this(storages, storage -> Optional.empty());
+		}
+
+		BoxContentGroup(@NonNull final List<IHUProductStorage> storages, @NonNull final Function<IHUProductStorage, Optional<Quantity>> weightOfStorage)
+		{
 			this.storages = storages;
+			this.weightOfStorage = weightOfStorage;
 			this.consumed = storages.get(0).getQtyInStockingUOM().toZero();
 		}
 
@@ -1882,9 +1960,52 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return storages.get(0).getQtyInStockingUOM().compareTo(partQty) == 0 ? storages.get(0).getM_HU() : null;
 		}
 
-		void consume(@NonNull final Quantity qty)
+		/**
+		 * Hands out the next {@code qty} of the group.
+		 *
+		 * @return the weight of that part of the group: the weights of the units it covers, a unit that is covered in part counted
+		 * pro rata; empty if one of the covered units has no weight
+		 */
+		Optional<Quantity> consume(@NonNull final Quantity qty)
 		{
+			final Quantity before = consumed;
 			consumed = consumed.add(qty);
+			final Optional<Quantity> weightUpToBefore = weightOfFirst(before);
+			final Optional<Quantity> weightUpToNow = weightOfFirst(consumed);
+			return weightUpToBefore.isPresent() && weightUpToNow.isPresent() ? Optional.of(weightUpToNow.get().subtract(weightUpToBefore.get())) : Optional.empty();
+		}
+
+		/**
+		 * @return the weight of the first {@code qty} of the group, going through the units in order
+		 */
+		private Optional<Quantity> weightOfFirst(@NonNull final Quantity qty)
+		{
+			Quantity unitStart = qty.toZero();
+			Quantity weight = null;
+			for (final IHUProductStorage storage : storages)
+			{
+				final Quantity unitQty = storage.getQtyInStockingUOM();
+				final Quantity unitEnd = unitStart.add(unitQty);
+				final Quantity taken = qty.min(unitEnd).subtract(unitStart);
+				if (taken.signum() > 0)
+				{
+					final Optional<Quantity> unitWeight = weightByStorage.computeIfAbsent(storage, weightOfStorage);
+					if (!unitWeight.isPresent())
+					{
+						return Optional.empty();
+					}
+					final Quantity unitWeightTaken = taken.compareTo(unitQty) == 0
+							? unitWeight.get()
+							: unitWeight.get().multiply(taken.toBigDecimal()).divide(unitQty.toBigDecimal(), unitWeight.get().getUOMPrecision().toInt(), RoundingMode.HALF_UP);
+					weight = weight == null ? unitWeightTaken : weight.add(unitWeightTaken);
+				}
+				unitStart = unitEnd;
+			}
+			if (weight == null) // nothing taken: a zero weight in the unit of the group's weights
+			{
+				return weightByStorage.computeIfAbsent(storages.get(0), weightOfStorage).map(Quantity::toZero);
+			}
+			return Optional.of(weight);
 		}
 	}
 
