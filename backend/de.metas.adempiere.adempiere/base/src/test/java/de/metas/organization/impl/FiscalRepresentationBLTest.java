@@ -72,17 +72,31 @@ public class FiscalRepresentationBLTest
 		assertThat(fiscalRepresentationBL.hasFiscalRepresentation(GR, ORG, DATE)).isTrue();
 	}
 
+	/**
+	 * The latest-ValidFrom row is created FIRST (lowest ID), so an ID-only ordering would pick the older row.
+	 */
 	@Test
-	public void overlappingRows_latestValidFromThenHighestId()
+	public void overlappingRows_latestValidFromWinsOverHigherId()
 	{
-		createRow(GR, ORG, "2026-01-01", null, "OLDER");
-		final I_C_Fiscal_Representation latestValidFromFirstId = createRow(GR, ORG, "2026-06-01", null, "LATEST_A");
-		final I_C_Fiscal_Representation latestValidFromHighestId = createRow(GR, ORG, "2026-06-01", null, "LATEST_B");
+		final I_C_Fiscal_Representation latestValidFrom = createRow(GR, ORG, "2026-06-01", null, "LATEST");
+		final I_C_Fiscal_Representation older = createRow(GR, ORG, "2026-01-01", null, "OLDER");
 
 		final I_C_Fiscal_Representation result = fiscalRepresentationBL.getFiscalRepresentation(GR, ORG, DATE).orElseThrow(AssertionError::new);
 
-		assertThat(latestValidFromHighestId.getC_Fiscal_Representation_ID()).isGreaterThan(latestValidFromFirstId.getC_Fiscal_Representation_ID());
-		assertThat(result.getC_Fiscal_Representation_ID()).isEqualTo(latestValidFromHighestId.getC_Fiscal_Representation_ID());
+		assertThat(older.getC_Fiscal_Representation_ID()).isGreaterThan(latestValidFrom.getC_Fiscal_Representation_ID());
+		assertThat(result.getC_Fiscal_Representation_ID()).isEqualTo(latestValidFrom.getC_Fiscal_Representation_ID());
+	}
+
+	@Test
+	public void overlappingRows_sameValidFrom_highestId()
+	{
+		final I_C_Fiscal_Representation first = createRow(GR, ORG, "2026-06-01", null, "FIRST");
+		final I_C_Fiscal_Representation second = createRow(GR, ORG, "2026-06-01", null, "SECOND");
+
+		final I_C_Fiscal_Representation result = fiscalRepresentationBL.getFiscalRepresentation(GR, ORG, DATE).orElseThrow(AssertionError::new);
+
+		assertThat(second.getC_Fiscal_Representation_ID()).isGreaterThan(first.getC_Fiscal_Representation_ID());
+		assertThat(result.getC_Fiscal_Representation_ID()).isEqualTo(second.getC_Fiscal_Representation_ID());
 	}
 
 	@Test

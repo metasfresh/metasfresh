@@ -103,6 +103,39 @@ public class InvoiceVATaxIdServiceTest
 				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
 	}
 
+	@Test
+	public void grLocation_ownRegistration_keepsBuyerVAT()
+	{
+		final BPartnerLocationId location = createLocation(gr, "EL111111111");
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				"EL111111111",
+				"EL094259216",
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	/**
+	 * A registration without any VAT ID (own or representative's): the registration is still recorded,
+	 * the seller VAT ID stays NULL (readers fall back to the organization's main VAT ID).
+	 */
+	@Test
+	public void grLocation_registrationWithoutAnyVAT_sellerNullButRegistrationRecorded()
+	{
+		final BPartnerLocationId location = createLocation(gr, null);
+		final I_C_BPartner representative = createBPartner(null);
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, null, representative);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				null,
+				null,
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
 	/**
 	 * D16: the registration applies only if the line's tax has IsFiscalRepresentation='Y'.
 	 */

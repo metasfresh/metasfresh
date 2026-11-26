@@ -28,7 +28,9 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * The VAT IDs of an invoice. A {@code null} seller VAT ID means the organization's main VAT ID.
+ * The VAT IDs of an invoice. A {@code null} seller VAT ID means the organization's main VAT ID;
+ * the fiscal representation may be set while the seller VAT ID is {@code null}
+ * (a registration that has no VAT ID of its own and no representative VAT ID).
  */
 @Value
 public class InvoiceVATaxIds
