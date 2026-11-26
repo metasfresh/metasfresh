@@ -122,7 +122,7 @@ Feature: Verify BOMs when a component was last changed by an invalid user
     Then M_Product is verified:
       | M_Product_ID | IsVerified | UpdatedBy |
       | bom_product  | Y          | acting    |
-    And the PP_Product_BOM_Check result is OK with message key PP_Product_BOM_Check.CategoryRunOK and parameters:
+    And the PP_Product_BOM_Check result is OK with message key org.eevolution.process.PP_Product_BOM_Check.CategoryRunOK and parameters:
       | Param |
       | 1     |
 
