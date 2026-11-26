@@ -31,7 +31,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -147,13 +146,16 @@ final class PackageableRowsRepository
 		return builder.build();
 	}
 
-	private static ArrayKey extractGroupingKey(final Packageable packageable)
+	/**
+	 * Groups by the row's ID only, so that each {@link PackageableRowId} yields exactly one row.
+	 * The lock owner is not part of the key: an order whose shipment schedules are only partly locked (or locked by different users)
+	 * is still one row; its lock state is derived from all its packageables (see {@link PackageableRow#isLocked()}).
+	 */
+	private static PackageableRowId extractGroupingKey(final Packageable packageable)
 	{
-		return ArrayKey.of(
-				PackageableRowId.of(
-						Objects.requireNonNull(packageable.getSalesOrderId()),
-						packageable.getWarehouseTypeId()),
-				packageable.getLockedBy());
+		return PackageableRowId.of(
+				Objects.requireNonNull(packageable.getSalesOrderId()),
+				packageable.getWarehouseTypeId());
 	}
 
 	@Nullable
@@ -196,6 +198,7 @@ final class PackageableRowsRepository
 		final String salesOrderDocumentNo = packageables.getSingleValue(Packageable::getSalesOrderDocumentNo).get();
 		final String poReference = packageables.getSingleValue(Packageable::getPoReference).orElse(null);
 
+		// set only if all locked schedules share one locker; if they are locked by different users, no single locker is displayed
 		final UserId lockedByUserId = packageables.getSingleValue(Packageable::getLockedBy).orElse(null);
 		final LookupValue lockedByUser = userLookup.get().findById(lockedByUserId);
 
