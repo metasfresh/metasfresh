@@ -54,6 +54,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -74,7 +75,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
-import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -86,10 +86,10 @@ import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
-import de.metas.project.ProjectId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -665,9 +665,9 @@ public class ShipmentScheduleWithHUService
 				}
 				final Quantity qtyCapForThisReservation = effectiveQty.min(remainingQtyToAllocate);
 				final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(ShipmentScheduleAndQtyReservation.of(scheduleRecord, qtyReservation))
-					.stream()
-					.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
-					.collect(Collectors.toList());
+						.stream()
+						.filter(hu -> !alreadyUsedSourceHuIds.contains(HuId.ofRepoId(hu.getM_HU_ID())))
+						.collect(Collectors.toList());
 				final Quantity remainingAfterPass = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, qtyCapForThisReservation, loggableWithLogger, !anyHUProcessed, result, false, alreadyUsedSourceHuIds);
 				final Quantity actuallyPicked = qtyCapForThisReservation.subtract(remainingAfterPass);
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(actuallyPicked);
@@ -982,8 +982,6 @@ public class ShipmentScheduleWithHUService
 			return Collections.emptyList();
 		}
 
-		final List<ShipmentScheduleWithHU> candidatesForPick = new ArrayList<>();
-
 		//
 		// Create necessary TUs/LUs (if any)
 		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
@@ -1005,9 +1003,8 @@ public class ShipmentScheduleWithHUService
 			}
 			return true;
 		});
-		candidatesForPick.addAll(createCandidatesForQtyPicked(activeQtyPickedRecords, huContext, quantityType));
 
-		return candidatesForPick;
+		return createCandidatesForQtyPicked(activeQtyPickedRecords, huContext, quantityType);
 	}
 
 	/**
