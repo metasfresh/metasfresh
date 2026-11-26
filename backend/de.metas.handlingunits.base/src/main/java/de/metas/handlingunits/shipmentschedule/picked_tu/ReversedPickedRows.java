@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -76,7 +75,7 @@ class ReversedPickedRows
 
 	private final QtyPickedRecords rows;
 	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedulesById = new HashMap<>();
-	private final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule;
+	private final PickedHUsBySchedule pickedHuIdsBySchedule;
 	private final Map<ScheduleTUKey, List<TUContentCU>> cusByTU = new HashMap<>();
 	private final Map<I_M_ShipmentSchedule_QtyPicked, ScheduleTUKey> tuKeyByTUOnlyRow = new IdentityHashMap<>();
 
@@ -85,7 +84,7 @@ class ReversedPickedRows
 	 */
 	ReversedPickedRows(
 			@NonNull final QtyPickedRecords rows,
-			@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule)
+			@NonNull final PickedHUsBySchedule pickedHuIdsBySchedule)
 	{
 		this.rows = rows;
 		this.pickedHuIdsBySchedule = pickedHuIdsBySchedule;
@@ -261,7 +260,7 @@ class ReversedPickedRows
 	private List<TUContentCU> retrieveCUsOfTU(@NonNull final ScheduleTUKey tuKey)
 	{
 		final I_M_HU tu = handlingUnitsBL.getById(tuKey.getTuId());
-		return tuContentLoader.retrieveCUsPickedBySchedule(tu, tuKey.getProductId(), pickedHuIdsBySchedule.get(tuKey.getShipmentScheduleId()), huContext.getHUStorageFactory())
+		return tuContentLoader.retrieveCUsPickedBySchedule(tu, tuKey.getProductId(), pickedHuIdsBySchedule.getPickedHuIds(tuKey.getShipmentScheduleId()), huContext.getHUStorageFactory())
 				.stream()
 				.map(cu -> toTUContentCU(cu, tuKey.getProductId()))
 				.collect(ImmutableList.toImmutableList());

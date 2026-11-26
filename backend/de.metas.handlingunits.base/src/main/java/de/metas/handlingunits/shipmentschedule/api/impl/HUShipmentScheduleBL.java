@@ -2,7 +2,6 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
@@ -44,6 +43,7 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
+import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -1184,7 +1184,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		return new QtyPickedCandidatesCreator(huContext, qtyTypeToUse, ImmutableSetMultimap.of()).createCandidatesOfRowAlone(qtyPicked);
+		return new QtyPickedCandidatesCreator(huContext, qtyTypeToUse, PickedHUsBySchedule.empty()).createCandidatesOfRowAlone(qtyPicked);
 	}
 
 	@Override

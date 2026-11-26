@@ -18,6 +18,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
@@ -321,11 +322,11 @@ public class PickingJobRepository
 	 * ({@code M_Picking_Job_Step_PickedHU.Picked_HU_ID}); a schedule without any has no entry
 	 */
 	@NonNull
-	public ImmutableSetMultimap<ShipmentScheduleId, HuId> getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	public PickedHUsBySchedule getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return PickedHUsBySchedule.empty();
 		}
 
 		final Map<PickingJobStepId, ShipmentScheduleId> scheduleIdByStepId = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
@@ -338,7 +339,7 @@ public class PickingJobRepository
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID())));
 		if (scheduleIdByStepId.isEmpty())
 		{
-			return ImmutableSetMultimap.of();
+			return PickedHUsBySchedule.empty();
 		}
 
 		final ImmutableSetMultimap.Builder<ShipmentScheduleId, HuId> result = ImmutableSetMultimap.builder();
@@ -354,7 +355,7 @@ public class PickingJobRepository
 						result.put(scheduleIdByStepId.get(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID())), huId);
 					}
 				});
-		return result.build();
+		return PickedHUsBySchedule.of(result.build());
 	}
 
 	/**

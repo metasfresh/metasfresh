@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.SetMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -78,7 +77,7 @@ public class QtyPickedCandidatesCreator
 
 	@NonNull private final IHUContext huContext;
 	@NonNull private final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
-	@NonNull private final SetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule;
+	@NonNull private final PickedHUsBySchedule pickedHuIdsBySchedule;
 	@NonNull private final ShipmentScheduleQtyPickedSplitter splitter;
 
 	private final Map<HuId, Boolean> isTUByHuId = new HashMap<>();
@@ -91,7 +90,7 @@ public class QtyPickedCandidatesCreator
 	public QtyPickedCandidatesCreator(
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse,
-			@NonNull final SetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule)
+			@NonNull final PickedHUsBySchedule pickedHuIdsBySchedule)
 	{
 		this.huContext = huContext;
 		this.qtyTypeToUse = qtyTypeToUse;
@@ -230,7 +229,7 @@ public class QtyPickedCandidatesCreator
 		final List<I_M_HU> cus = tuContentLoader.retrieveCUsPickedBySchedule(
 						tu,
 						tuKey.getProductId(),
-						pickedHuIdsBySchedule.get(tuKey.getShipmentScheduleId()),
+						pickedHuIdsBySchedule.getPickedHuIds(tuKey.getShipmentScheduleId()),
 						huContext.getHUStorageFactory())
 				.stream()
 				.filter(cu -> !cuIdsToSkip.contains(HuId.ofRepoId(cu.getM_HU_ID())))

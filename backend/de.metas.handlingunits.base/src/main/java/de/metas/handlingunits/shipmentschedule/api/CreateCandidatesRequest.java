@@ -22,11 +22,9 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
-import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,5 +43,5 @@ public class CreateCandidatesRequest
 	 * The HUs that the picking of each schedule recorded as picked; if a schedule has some, only those CUs of a TU count.
 	 * Empty if nothing is known: then every CU of a TU counts.
 	 */
-	@NonNull @Builder.Default ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule = ImmutableSetMultimap.of();
+	@NonNull @Builder.Default PickedHUsBySchedule pickedHuIdsBySchedule = PickedHUsBySchedule.empty();
 }

@@ -24,7 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -385,7 +385,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 	 */
 	private List<ShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule_QtyPicked row, final IHUContext huContext)
 	{
-		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, ImmutableSetMultimap.of())
+		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, PickedHUsBySchedule.empty())
 				.createCandidatesOfRowAlone(row);
 	}
 }

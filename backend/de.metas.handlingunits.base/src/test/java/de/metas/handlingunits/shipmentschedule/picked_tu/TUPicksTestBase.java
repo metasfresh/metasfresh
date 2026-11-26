@@ -23,7 +23,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  */
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.inout.ShipmentScheduleId;
@@ -259,7 +258,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 
 	protected List<ShipmentScheduleWithHU> createCandidates(final List<I_M_ShipmentSchedule_QtyPicked> rows)
 	{
-		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, ImmutableSetMultimap.of()).createCandidates(QtyPickedRecords.of(rows));
+		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, PickedHUsBySchedule.empty()).createCandidates(QtyPickedRecords.of(rows));
 	}
 
 	/**
@@ -267,7 +266,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 	 */
 	protected void restoreAfterReversal(final List<I_M_ShipmentSchedule_QtyPicked> reversedRows)
 	{
-		final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule = PickingJobRepository.newInstanceForUnitTesting()
+		final PickedHUsBySchedule pickedHuIdsBySchedule = PickingJobRepository.newInstanceForUnitTesting()
 				.getPickedHuIdsByShipmentScheduleIds(QtyPickedRecords.of(reversedRows).extractScheduleIds());
 		final Set<HuId> coveredHuIds = new HashSet<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : reversedRows)
