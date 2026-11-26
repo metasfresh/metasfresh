@@ -390,6 +390,7 @@ public class QtyPickedCandidatesCreator
 		final List<List<IHUProductStorage>> groups = ImmutableList.copyOf(storagesByAttributes.asMap().values()).stream()
 				.map(ImmutableList::copyOf)
 				.collect(ImmutableList.toImmutableList());
+		//noinspection OptionalGetWithoutIsPresent
 		final List<Quantity> groupQtys = groups.stream()
 				.map(group -> group.stream().map(IHUProductStorage::getQty).reduce(Quantity::add).get())
 				.collect(ImmutableList.toImmutableList());

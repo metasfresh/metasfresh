@@ -166,7 +166,6 @@ public class ShipmentScheduleWithHUService
 	{
 		Adempiere.assertUnitTestMode();
 		// Spring context returns non-null in unit test mode even though static analysis can't prove it
-		// noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(

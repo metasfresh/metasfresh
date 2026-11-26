@@ -76,6 +76,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Harness for tests of picks into a TU that holds CUs of several attribute values.
  */
+@SuppressWarnings("SameParameterValue")
 abstract class TUPicksTestBase extends AbstractHUTest
 {
 	protected static final M_ShipmentSchedule_QuantityTypeToUse QTY_TYPE = M_ShipmentSchedule_QuantityTypeToUse.TYPE_PICKED_QTY;
@@ -135,6 +136,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 	/**
 	 * A TU with one CU of 2 per given country, created in the given order.
 	 */
+	@SuppressWarnings("DataFlowIssue")
 	protected I_M_HU createTU(final String... countries)
 	{
 		final IHUContext huContext = helper.getHUContext();
@@ -162,7 +164,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 			}
 		}
 		refresh(tu);
-		assertThat(handlingUnitsDAO.retrieveIncludedHUs(tu)).as("PRECONDITION: one CU per country").hasSize(countries.length);
+		assertThat(handlingUnitsDAO.retrieveIncludedHUs(tu)).as("PRECONDITION: one CU per country").hasSameSizeAs(countries);
 		return tu;
 	}
 
@@ -206,6 +208,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 		catchUOMConversion.setC_UOM_ID(uomEach.getC_UOM_ID());
 		catchUOMConversion.setC_UOM_To_ID(uomKg.getC_UOM_ID());
 		catchUOMConversion.setMultiplyRate(BigDecimal.TEN);
+		//noinspection BigDecimalMethodWithoutRoundingCalled
 		catchUOMConversion.setDivideRate(BigDecimal.ONE.divide(BigDecimal.TEN));
 		catchUOMConversion.setIsCatchUOMForProduct(true);
 		catchUOMConversion.setIsActive(true);

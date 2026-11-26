@@ -240,7 +240,7 @@ class ReversedPickedRows
 			return ImmutableSet.of();
 		}
 		return cusByTU.get(tuKey).stream()
-				.map(cu -> cu.getCuId())
+				.map(TUContentCU::getCuId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
