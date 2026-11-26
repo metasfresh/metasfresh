@@ -245,7 +245,7 @@ public class AD_BusinessRule_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 			final I_AD_BusinessRule rule = row.getAsIdentifier(I_AD_BusinessRule_Event.COLUMNNAME_AD_BusinessRule_ID).lookupNotNullIn(ruleTable);
-			final int expectedTriggeringUserId = resolveUserId(row.getAsString(I_AD_BusinessRule_Event.COLUMNNAME_Triggering_User_ID));
+			final int expectedTriggeringUserId = userTable.resolveUserId(row.getAsString(I_AD_BusinessRule_Event.COLUMNNAME_Triggering_User_ID));
 
 			final List<I_AD_BusinessRule_Event> events = queryBL.createQueryBuilder(I_AD_BusinessRule_Event.class)
 					.addEqualsFilter(I_AD_BusinessRule_Event.COLUMNNAME_Source_Table_ID, InterfaceWrapperHelper.getTableId(I_M_Product.class))
@@ -260,14 +260,6 @@ public class AD_BusinessRule_StepDef
 					.as("Triggering_User_ID of the events")
 					.containsOnly(expectedTriggeringUserId);
 		});
-	}
-
-	private int resolveUserId(@NonNull final String userIdOrIdentifier)
-	{
-		final String trimmed = userIdOrIdentifier.trim();
-		return trimmed.matches("-?\\d+")
-				? Integer.parseInt(trimmed)
-				: userTable.get(trimmed).getAD_User_ID();
 	}
 
 	@When("process business rule events")

@@ -562,19 +562,9 @@ public class M_Product_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 			final String updatedByStr = row.getAsString(I_M_Product.COLUMNNAME_UpdatedBy).trim();
-			final int updatedBy;
-			if (UPDATED_BY_NO_SUCH_USER.equals(updatedByStr))
-			{
-				updatedBy = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User");
-			}
-			else if (updatedByStr.matches("-?\\d+"))
-			{
-				updatedBy = Integer.parseInt(updatedByStr);
-			}
-			else
-			{
-				updatedBy = userTable.get(updatedByStr).getAD_User_ID();
-			}
+			final int updatedBy = UPDATED_BY_NO_SUCH_USER.equals(updatedByStr)
+					? DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User")
+					: userTable.resolveUserId(updatedByStr);
 
 			DB.executeUpdateAndThrowExceptionOnFail(
 					"UPDATE M_Product SET UpdatedBy=? WHERE M_Product_ID=?",
