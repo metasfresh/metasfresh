@@ -91,8 +91,8 @@ Feature: Shipment line per TU content
       | so_tu_l1   | so_tu      | p_coo        | 4          |
     When the order identified by so_tu is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_tu      | so_tu_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_tu      | so_tu_l1       | N             | 4            |
     # Two equal-quantity picks of different origins into the same new TU
     When start picking job for sales order identified by so_tu
     And scan picking slot identified by slot_tu
@@ -174,8 +174,8 @@ Feature: Shipment line per TU content
       | so_80_l1   | so_80      | p_coo        | 4          |
     When the order identified by so_80 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_80      | so_80_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_80      | so_80_l1       | N             | 4            |
     # Two equal-quantity picks of different origins into the same new TU (the TU's packing instruction has a parent LU)
     When start picking job for sales order identified by so_80
     And scan picking slot identified by slot_tu
@@ -249,8 +249,8 @@ Feature: Shipment line per TU content
       | so_90_l1   | so_90      | p_coo        | 14         |
     When the order identified by so_90 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_90      | so_90_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_90      | so_90_l1       | N             | 14           |
     # Six picks into the same new TU: two CUs per origin, unequal quantities, origins interleaved
     When start picking job for sales order identified by so_90
     And scan picking slot identified by slot_tu
@@ -328,8 +328,8 @@ Feature: Shipment line per TU content
       | so_3lot_l1 | so_3lot    | p_coo        | 8          |
     When the order identified by so_3lot is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_3lot    | so_3lot_l1     | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_3lot    | so_3lot_l1     | N             | 8            |
     # Four picks of 2 into the same new TU: lot A twice from the same stock HU, then lot B, then lot C
     When start picking job for sales order identified by so_3lot
     And scan picking slot identified by slot_tu
@@ -437,8 +437,8 @@ Feature: Shipment line per TU content
       | so_95_l1   | so_95      | p_coo        | 6          |
     When the order identified by so_95 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_95      | so_95_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_95      | so_95_l1       | N             | 6            |
     # Three equal-quantity picks of three lots into ONE new TU (one TU, not three)
     When start picking job for sales order identified by so_95
     And scan picking slot identified by slot_tu
@@ -511,8 +511,8 @@ Feature: Shipment line per TU content
       | so_96_l1   | so_96      | p_coo        | 8          |
     When the order identified by so_96 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_96      | so_96_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_96      | so_96_l1       | N             | 8            |
     When start picking job for sales order identified by so_96
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -551,8 +551,8 @@ Feature: Shipment line per TU content
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
     # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_96      | so_96_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_96      | so_96_l1       | N             | 8            |
     # The reopened picks ship again with the right lots
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -576,8 +576,8 @@ Feature: Shipment line per TU content
     When the shipment identified by inout_96_2 is reversed as inout_96_2_reversal
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_96      | so_96_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_96      | so_96_l1       | N             | 8            |
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_96                 |
@@ -630,8 +630,8 @@ Feature: Shipment line per TU content
       | so_20_l1   | so_20      | p_coo        | 4          |
     When the order identified by so_20 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_20      | so_20_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_20      | so_20_l1       | N             | 4            |
     When start picking job for sales order identified by so_20
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -692,9 +692,9 @@ Feature: Shipment line per TU content
       | so_25_lB   | so_25      | p_coo        | 2          |
     When the order identified by so_25 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_25_A    | so_25_lA       | N             |
-      | ss_25_B    | so_25_lB       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_25_A    | so_25_lA       | N             | 2            |
+      | ss_25_B    | so_25_lB       | N             | 2            |
     # One new TU for the whole job: the picks for both order lines land in the same TU
     When start picking job for sales order identified by so_25
     And scan picking slot identified by slot_tu
@@ -762,8 +762,8 @@ Feature: Shipment line per TU content
       | so_30_l1   | so_30      | p_coo        | 6          |
     When the order identified by so_30 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_30      | so_30_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_30      | so_30_l1       | N             | 6            |
     When start picking job for sales order identified by so_30
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -825,8 +825,8 @@ Feature: Shipment line per TU content
       | so_40_l1   | so_40      | p_coo        | 5          |
     When the order identified by so_40 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_40      | so_40_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_40      | so_40_l1       | N             | 5            |
     When start picking job for sales order identified by so_40
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -890,8 +890,8 @@ Feature: Shipment line per TU content
       | so_50_l1   | so_50      | p_coo        | 6          |
     When the order identified by so_50 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_50      | so_50_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_50      | so_50_l1       | N             | 6            |
     When start picking job for sales order identified by so_50
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -926,8 +926,8 @@ Feature: Shipment line per TU content
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_50 sum to 6
     # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_50      | so_50_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_50      | so_50_l1       | N             | 6            |
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_50                 |
@@ -973,8 +973,8 @@ Feature: Shipment line per TU content
       | so_60_l1   | so_60      | p_coo        | 4          |
     When the order identified by so_60 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_60      | so_60_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_60      | so_60_l1       | N             | 4            |
     When start picking job for sales order identified by so_60
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
@@ -1042,8 +1042,8 @@ Feature: Shipment line per TU content
       | so_70_l1   | so_70      | p_coo        | 6          |
     When the order identified by so_70 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_70      | so_70_l1       | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | ss_70      | so_70_l1       | N             | 6            |
     When start picking job for sales order identified by so_70
     And scan picking slot identified by slot_tu
     And set picking target as new TU identified by tu_pi
