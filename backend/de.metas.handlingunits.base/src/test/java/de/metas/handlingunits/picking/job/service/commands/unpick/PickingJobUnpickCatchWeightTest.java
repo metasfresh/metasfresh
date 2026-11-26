@@ -48,7 +48,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -132,7 +131,7 @@ class PickingJobUnpickCatchWeightTest
 	void unpickCuFromTU_toFloor_mustNotFailQRAssignment()
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P-CW-UNPICK", helper.uomEach);
-		
+
 		{
 			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 			product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("P-CW-UNPICK-Cat", null).getRepoId());
@@ -295,7 +294,7 @@ class PickingJobUnpickCatchWeightTest
 				.catchWeight(new BigDecimal("4.100"))
 				.build());
 
-		pickingJob.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AdempiereException("no TU target")).getTuIdNotNull();
+		assertThat(pickingJob.getTuPickingTargetEffective(line.getId())).as("TU picking target of the line").isPresent();
 
 		// second pick: 2 pcs, 3.900 kg
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()

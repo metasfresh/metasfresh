@@ -265,7 +265,7 @@ public final class TUPickedRowsAllocator
 	/**
 	 * @return the part of {@code weight} that the first {@code qty} of {@code totalQty} stand for, rounded in the rounding mode of the
 	 * weight's UOM (one unit below its precision cannot be split, so it is taken whole); all of {@code weight} when {@code qty} is all of it.
-	 * Callers that hand out a weight in parts take the difference of two such values, so the parts never go negative and sum up to the weight.
+	 * The value never decreases as {@code qty} grows and never exceeds {@code weight}.
 	 */
 	static Quantity weightShareOfFirst(@NonNull final Quantity weight, @NonNull final Quantity qty, @NonNull final Quantity totalQty)
 	{

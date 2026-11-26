@@ -43,7 +43,7 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
-import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -1198,9 +1198,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				throw new HUException("HU " + hu + " shall be top level");
 			}
-			// Each row alone, not the list based creator: the caller (HUShippingFacade) only needs the schedules, and the work package that
-			// generates the shipments (another thread) creates the candidates of the whole TU itself. The list based creator saves the rows
-			// it splits, which would keep them locked in the caller's open transaction while the caller waits for that work package.
+			// Each row alone, not the list based creator: that one saves the rows it splits, which would lock them in this transaction.
 			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
 			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu))
 			{

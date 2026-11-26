@@ -18,7 +18,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
-import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
@@ -348,14 +348,20 @@ public class PickingJobRepository
 				.addInArrayFilter(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_M_Picking_Job_Step_ID, scheduleIdByStepId.keySet())
 				.create()
 				.stream()
-				.forEach(pickedHU -> {
-					final HuId huId = HuId.ofRepoIdOrNull(pickedHU.getPicked_HU_ID());
-					if (huId != null)
-					{
-						result.put(scheduleIdByStepId.get(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID())), huId);
-					}
-				});
+				.forEach(pickedHU -> putPickedHuIfSet(result, scheduleIdByStepId, pickedHU));
 		return PickedHUsBySchedule.of(result.build());
+	}
+
+	private static void putPickedHuIfSet(
+			@NonNull final ImmutableSetMultimap.Builder<ShipmentScheduleId, HuId> result,
+			@NonNull final Map<PickingJobStepId, ShipmentScheduleId> scheduleIdByStepId,
+			@NonNull final I_M_Picking_Job_Step_PickedHU pickedHU)
+	{
+		final HuId huId = HuId.ofRepoIdOrNull(pickedHU.getPicked_HU_ID());
+		if (huId != null)
+		{
+			result.put(scheduleIdByStepId.get(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID())), huId);
+		}
 	}
 
 	/**

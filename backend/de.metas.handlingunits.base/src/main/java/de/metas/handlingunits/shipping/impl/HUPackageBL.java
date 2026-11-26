@@ -350,8 +350,7 @@ public class HUPackageBL implements IHUPackageBL
 				.collect(ImmutableSet.toImmutableSet());
 
 		// One M_PackageLine per shipment line, from the pick ledger. Every shipment line — including each line an
-		// attribute-mixed TU is split into — has its own M_ShipmentSchedule_QtyPicked row
-		// (QtyPickedCandidatesCreator splits a whole-TU pick per attribute group), so the
+		// attribute-mixed TU is split into — has its own M_ShipmentSchedule_QtyPicked row, so the
 		// ledger is line-complete; group its rows for the package's HUs by M_InOutLine and sum the picked qty.
 		final Map<InOutLineId, BigDecimal> qtyByInOutLineId = new LinkedHashMap<>();
 		for (final I_M_Package_HU packageHU : huPackageDAO.retrievePackageHUs(mpackage))

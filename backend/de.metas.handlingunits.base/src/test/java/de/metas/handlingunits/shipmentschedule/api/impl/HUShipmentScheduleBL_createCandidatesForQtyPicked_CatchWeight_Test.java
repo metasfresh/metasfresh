@@ -24,7 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;

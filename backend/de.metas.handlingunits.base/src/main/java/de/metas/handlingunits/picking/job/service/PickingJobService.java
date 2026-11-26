@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUIdsAndTopLevelTUIdsCollector;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -1012,6 +1013,12 @@ public class PickingJobService implements PickingSlotListener
 	 * on-the-fly shipments (which have no picking job and whose reverse must clear the HU's BPartner + return it
 	 * to Active stock).
 	 */
+	@NonNull
+	public PickedHUsBySchedule getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(shipmentScheduleIds);
+	}
+
 	public ImmutableSet<HuId> getHuIdsCoveredByPickingJobs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())

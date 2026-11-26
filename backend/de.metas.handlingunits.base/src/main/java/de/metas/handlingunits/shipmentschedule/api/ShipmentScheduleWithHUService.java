@@ -165,7 +165,6 @@ public class ShipmentScheduleWithHUService
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		// Spring context returns non-null in unit test mode even though static analysis can't prove it
 		return SpringContextHolder.getBeanOrSupply(
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(
@@ -994,17 +993,19 @@ public class ShipmentScheduleWithHUService
 		// Iterate all QtyPicked records and create candidates from them
 
 		final IHUContext huContext = request.getHuContext();
-		final QtyPickedRecords activeQtyPickedRecords = qtyPickedRecords.filter(qtyPickedRecord -> {
-			// guard: Skip inactive records.
-			if (!qtyPickedRecord.isActive())
-			{
-				Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecord);
-				return false;
-			}
-			return true;
-		});
+		final QtyPickedRecords activeQtyPickedRecords = qtyPickedRecords.filter(this::isActiveOrLogSkipped);
 
 		return createCandidatesForQtyPicked(activeQtyPickedRecords, huContext, quantityType);
+	}
+
+	private boolean isActiveOrLogSkipped(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord)
+	{
+		if (!qtyPickedRecord.isActive())
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("Skipped inactive qtyPickedRecordHU={}", qtyPickedRecord);
+			return false;
+		}
+		return true;
 	}
 
 	/**

@@ -83,8 +83,8 @@ public class M_InOut
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final ReturnsServiceFacade returnsServiceFacade;
-	private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
+	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
+	@NonNull private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
 
 	@Init
 	public void init()
@@ -249,7 +249,7 @@ public class M_InOut
 		}
 
 		final QtyPickedRecords assignedQuantities = huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
-		
+
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);

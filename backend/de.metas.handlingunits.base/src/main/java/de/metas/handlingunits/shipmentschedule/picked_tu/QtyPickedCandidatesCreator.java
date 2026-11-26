@@ -22,13 +22,13 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -71,7 +71,6 @@ import java.util.function.Predicate;
 public class QtyPickedCandidatesCreator
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final TUContentLoader tuContentLoader = new TUContentLoader();
@@ -332,7 +331,7 @@ public class QtyPickedCandidatesCreator
 		// and are in the same UOM, so no conversion is needed.
 		// Split only by attributes whitelisted in M_ShipmentSchedule_AttributeConfig: the same criterion
 		// the M_InOutLine aggregation uses (ShipmentScheduleWithHU#computeAttributeValues).
-		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(huToInspect).stream()
+		final List<I_M_HU> cus = handlingUnitsBL.retrieveIncludedHUs(huToInspect).stream()
 				.filter(handlingUnitsBL::isVirtual)
 				.collect(ImmutableList.toImmutableList());
 		final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByAttributes =

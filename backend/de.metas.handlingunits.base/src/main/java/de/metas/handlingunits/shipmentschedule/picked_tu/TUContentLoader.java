@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -65,7 +64,6 @@ import java.util.function.Predicate;
 public class TUContentLoader
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -77,14 +75,17 @@ public class TUContentLoader
 			@NonNull final ProductId productId,
 			@NonNull final IHUStorageFactory storageFactory)
 	{
-		return handlingUnitsDAO.retrieveIncludedHUs(tu)
+		return handlingUnitsBL.retrieveIncludedHUs(tu)
 				.stream()
 				.filter(handlingUnitsBL::isVirtual)
-				.filter(cu -> {
-					final IHUProductStorage productStorage = storageFactory.getStorage(cu).getProductStorageOrNull(productId);
-					return productStorage != null && !productStorage.isEmpty();
-				})
+				.filter(cu -> holdsProduct(cu, productId, storageFactory))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static boolean holdsProduct(@NonNull final I_M_HU cu, @NonNull final ProductId productId, @NonNull final IHUStorageFactory storageFactory)
+	{
+		final IHUProductStorage productStorage = storageFactory.getStorage(cu).getProductStorageOrNull(productId);
+		return productStorage != null && !productStorage.isEmpty();
 	}
 
 	/**

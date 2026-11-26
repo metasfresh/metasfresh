@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.QtyPickedRecords;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.util.Services;
@@ -44,7 +43,6 @@ public class ShipmentReversalPickRestoreService
 	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
 	@NonNull private final PickingJobService pickingJobService;
-	@NonNull private final PickingJobRepository pickingJobRepository;
 
 	/**
 	 * @param reversedRows the rows that were assigned to the reversed shipment
@@ -53,7 +51,7 @@ public class ShipmentReversalPickRestoreService
 	{
 		final ReversedPickedRows rows = new ReversedPickedRows(
 				reversedRows,
-				pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(reversedRows.extractScheduleIds()));
+				pickingJobService.getPickedHuIdsByShipmentScheduleIds(reversedRows.extractScheduleIds()));
 		pickingJobService.reopenPickingJobs(rows.toReopenRequest());
 
 		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment

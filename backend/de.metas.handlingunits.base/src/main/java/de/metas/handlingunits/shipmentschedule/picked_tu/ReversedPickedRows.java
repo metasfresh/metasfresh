@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -47,6 +48,7 @@ import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import de.metas.common.util.CoalesceUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -74,6 +76,7 @@ class ReversedPickedRows
 
 	private final QtyPickedRecords rows;
 	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedulesById = new HashMap<>();
+	private final Map<HuId, I_M_HU> tusById = new HashMap<>();
 	private final PickedHUsBySchedule pickedHuIdsBySchedule;
 	private final Map<ScheduleTUKey, List<TUContentCU>> cusByTU = new HashMap<>();
 	private final Map<I_M_ShipmentSchedule_QtyPicked, ScheduleTUKey> tuKeyByTUOnlyRow = new IdentityHashMap<>();
@@ -217,7 +220,7 @@ class ReversedPickedRows
 		// the CU's weight comes from the CU itself, as the reopen of a completed job takes it; a CU without weight
 		// (net weight 0, e.g. picked by count) takes its share of the weight of the reversed rows
 		final Quantity cuWeight = TUContentLoader.extractCatchWeightOrNull(huContext, tuKey.getProductId(), cu);
-		final Quantity catchWeight = cuWeight != null ? cuWeight : budget.takeWeightShareOrNull(cu.getQty());
+		final Quantity catchWeight = CoalesceUtil.coalesceSuppliers(() -> cuWeight, () -> budget.takeWeightShareOrNull(cu.getQty()));
 		if (catchWeight != null)
 		{
 			rowOfCU.setCatch_UOM_ID(catchWeight.getUomId().getRepoId());
@@ -247,7 +250,7 @@ class ReversedPickedRows
 	private ScheduleTUKey extractTUKeyOfTUOnlyRowOrNull(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
 	{
 		final HuId tuId = HuId.ofRepoIdOrNull(row.getM_TU_HU_ID());
-		if (HuId.ofRepoIdOrNull(row.getVHU_ID()) != null || tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
+		if (HuId.ofRepoIdOrNull(row.getVHU_ID()) != null || tuId == null || handlingUnitsBL.isVirtual(getTU(tuId)))
 		{
 			return null;
 		}
@@ -256,9 +259,14 @@ class ReversedPickedRows
 		return new ScheduleTUKey(scheduleId, tuId, ProductId.ofRepoId(schedule.getM_Product_ID()));
 	}
 
+	private I_M_HU getTU(@NonNull final HuId tuId)
+	{
+		return tusById.computeIfAbsent(tuId, handlingUnitsBL::getById);
+	}
+
 	private List<TUContentCU> retrieveCUsOfTU(@NonNull final ScheduleTUKey tuKey)
 	{
-		final I_M_HU tu = handlingUnitsBL.getById(tuKey.getTuId());
+		final I_M_HU tu = getTU(tuKey.getTuId());
 		return tuContentLoader.retrieveCUsPickedBySchedule(tu, tuKey.getProductId(), pickedHuIdsBySchedule.getPickedHuIds(tuKey.getShipmentScheduleId()), huContext.getHUStorageFactory())
 				.stream()
 				.map(cu -> toTUContentCU(cu, tuKey.getProductId()))
@@ -328,7 +336,7 @@ class ReversedPickedRows
 			{
 				return null;
 			}
-			final Quantity weightSharedBefore = weightShared != null ? weightShared : weightTotal.toZero();
+			final Quantity weightSharedBefore = CoalesceUtil.coalesceNotNull(weightShared, weightTotal.toZero());
 			qtyShared = qtyShared.add(qty);
 			weightShared = TUPickedRowsAllocator.weightShareOfFirst(weightTotal, qtyShared, qtyTotal);
 			return weightShared.subtract(weightSharedBefore);

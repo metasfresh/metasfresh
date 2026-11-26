@@ -235,7 +235,6 @@ public class ShipmentScheduleWithHU
 	 * <p>
 	 * Caller contract: {@code qtyPicked.getQtyPicked()} equals {@code qty}, so the record's catch weight
 	 * ({@code QtyDeliveredCatch}/{@code Catch_UOM_ID}) belongs to this candidate and is carried over as-is.
-	 * Both callers in {@code QtyPickedCandidatesCreator} meet this.
 	 */
 	public static ShipmentScheduleWithHU ofShipmentScheduleQtyPickedForVHU(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
