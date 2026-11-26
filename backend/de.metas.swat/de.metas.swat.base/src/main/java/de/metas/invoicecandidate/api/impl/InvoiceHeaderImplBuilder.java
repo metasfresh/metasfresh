@@ -8,6 +8,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -118,6 +119,13 @@ public class InvoiceHeaderImplBuilder
 	@Nullable
 	private PromotionCodeId promotionCode2Id;
 
+	/**
+	 * The VAT IDs of the invoice; {@code null} for a purchase invoice.
+	 */
+	@Getter
+	@Nullable
+	private InvoiceVATaxIds invoiceVATaxIds;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -177,6 +185,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPromotionCodeId(getPromotionCodeId());
 		invoiceHeader.setPromotionCode2Id(getPromotionCode2Id());
 
+		invoiceHeader.setInvoiceVATaxIds(getInvoiceVATaxIds());
+
 		return invoiceHeader;
 	}
 
@@ -214,6 +224,14 @@ public class InvoiceHeaderImplBuilder
 	public void setPromotionCode2Id(@Nullable final PromotionCodeId promotionCode2Id)
 	{
 		this.promotionCode2Id = checkOverride("PromotionCode2Id", this.promotionCode2Id, promotionCode2Id);
+	}
+
+	/**
+	 * Fails if another candidate of this header already brought different VAT IDs, so one candidate's VAT IDs are never stored on another's lines.
+	 */
+	public void setInvoiceVATaxIds(@Nullable final InvoiceVATaxIds invoiceVATaxIds)
+	{
+		this.invoiceVATaxIds = checkOverride("InvoiceVATaxIds", this.invoiceVATaxIds, invoiceVATaxIds);
 	}
 
 	public String getIncotermLocation()

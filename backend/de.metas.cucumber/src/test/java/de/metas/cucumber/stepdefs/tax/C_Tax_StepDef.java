@@ -97,10 +97,10 @@ public class C_Tax_StepDef
 	 *     <li>{@code IsActive} — {@code Y}/{@code N}/{@code true}/{@code false}; defaults to {@code Y}.
 	 *         Set it to {@code N} to make a tax invisible to tax determination, which only ever
 	 *         considers active records</li>
-	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
-	 *         (blank/omitted leaves the DB default {@code N} on a new record) — this tax only applies to a BPartner
-	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
-	 *         {@code TaxDAO}</li>
+	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column —
+	 *         this tax only applies to a BPartner that holds (or lacks) a tax certificate, as resolved during tax
+	 *         determination in {@code TaxDAO}. An empty cell stores NULL (matches regardless, e.g. a domestic rate);
+	 *         omitting the column leaves the DB default {@code N} on a new record</li>
 	 *     <li>{@code IsFiscalRepresentation} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column —
 	 *         this tax only applies when the organisation has (or lacks) a fiscal representation in the
 	 *         destination country. An empty cell stores NULL (matches regardless); omitting the column leaves
@@ -184,16 +184,22 @@ public class C_Tax_StepDef
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
-		// an empty IsFiscalRepresentation cell means NULL (matches with and without fiscal representation);
+		// an empty IsFiscalRepresentation / RequiresTaxCertificate cell means NULL (matches either way);
 		// the insert skips NULL values, so the column's DB default 'N' applies -> reload and write the NULL with an update
-		if (isEmptyCell(tableRow, I_C_Tax.COLUMNNAME_IsFiscalRepresentation))
+		final boolean fiscalRepresentationNull = isEmptyCell(tableRow, I_C_Tax.COLUMNNAME_IsFiscalRepresentation);
+		final boolean requiresTaxCertificateNull = isEmptyCell(tableRow, I_C_Tax.COLUMNNAME_RequiresTaxCertificate);
+		if (fiscalRepresentationNull || requiresTaxCertificateNull)
 		{
 			InterfaceWrapperHelper.refresh(taxRecord);
-			if (taxRecord.getIsFiscalRepresentation() != null)
+			if (fiscalRepresentationNull)
 			{
 				taxRecord.setIsFiscalRepresentation(null);
-				InterfaceWrapperHelper.saveRecord(taxRecord);
 			}
+			if (requiresTaxCertificateNull)
+			{
+				taxRecord.setRequiresTaxCertificate(null);
+			}
+			InterfaceWrapperHelper.saveRecord(taxRecord);
 		}
 
 		tableRow.getAsOptionalIdentifier()

@@ -8,6 +8,7 @@ import de.metas.document.impl.DocTypeBL;
 import de.metas.document.impl.DocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.money.MoneyService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.util.Services;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,6 +51,9 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		// these fixtures lack the master data a real sales invoice candidate has (partner group, shipment location, taxes per country);
+		// the VAT IDs of the invoice are not what they test, so they are not resolved here (InvoiceCandidateLineTaxResolverTest and the vatIdByDelivery cucumber features do)
+		SpringContextHolder.registerJUnitBean(InvoiceCandidateVATaxIdResolver.class, Mockito.mock(InvoiceCandidateVATaxIdResolver.class));
 
 		// Register the real DocTypeDAO + DocTypeBL instead of mocking IDocTypeBL.
 		// Each test creates the I_C_DocType records it needs via InterfaceWrapperHelper.newInstance + save;

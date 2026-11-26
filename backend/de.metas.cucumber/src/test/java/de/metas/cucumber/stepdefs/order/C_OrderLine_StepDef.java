@@ -184,7 +184,7 @@ public class C_OrderLine_StepDef
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
-	 *   <li>{@code C_BPartner_Location_ID} (optional, identifier-ref) — the line's location, e.g. a location of the order's partner or drop-ship partner; replaces the one copied from the order header</li>
+	 *   <li>{@code C_BPartner_Location_ID} (optional, identifier-ref) — the line's location, e.g. a location of the order's partner or drop-ship partner; replaces the one copied from the order header, together with its captured address ({@code C_BPartner_Location_Value_ID})</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -328,11 +328,15 @@ public class C_OrderLine_StepDef
 					orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
 				});
 
-		// after orderLineBL.setOrder, which copies the order header's location onto the line
+		// after orderLineBL.setOrder, which copies the order header's location onto the line;
+		// the captured address (C_BPartner_Location_Value_ID) is set too, as tax determination reads its country
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
-				.map(partnerLocationTable::getId)
-				.ifPresent(bpartnerLocationId -> orderLine.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId()));
+				.map(partnerLocationTable::get)
+				.ifPresent(bpartnerLocation -> {
+					orderLine.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+					orderLine.setC_BPartner_Location_Value_ID(bpartnerLocation.getC_Location_ID());
+				});
 
 		saveRecord(orderLine);
 

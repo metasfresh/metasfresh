@@ -75,6 +75,7 @@ import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.location.CountryId;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
@@ -132,6 +133,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.mockito.Mockito;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -205,6 +207,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		// these fixtures lack the master data a real sales invoice candidate has (partner group, shipment location, taxes per country);
+		// the VAT IDs of the invoice are not what they test, so they are not resolved here (InvoiceCandidateLineTaxResolverTest and the vatIdByDelivery cucumber features do)
+		SpringContextHolder.registerJUnitBean(InvoiceCandidateVATaxIdResolver.class, Mockito.mock(InvoiceCandidateVATaxIdResolver.class));
 
 		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
 		saveRecord(client);

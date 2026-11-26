@@ -29,8 +29,10 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxQuery;
 import de.metas.util.ISingletonService;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -53,6 +55,13 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <b>IMPORTANT:</b> if the il has M_InoutLine_ID<=0, the method does nothing!
 	 */
 	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
+
+	/**
+	 * The tax query {@link #setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine, String)} uses for an invoice line of the given shipment:
+	 * the shipment's org, movement date, delivery location and SO flag, plus the given ship-from country, warehouse and tax category.
+	 * Shared with callers that must predict that tax before the invoice line exists.
+	 */
+	TaxQuery createShipmentTaxQuery(I_M_InOut shipment, CountryId countryFromId, @Nullable WarehouseId warehouseId, @Nullable TaxCategoryId taxCategoryId);
 
 	/**
 	 * @return true if invoice line's prices are locked (i.e. should be the same as linked OrderLine)

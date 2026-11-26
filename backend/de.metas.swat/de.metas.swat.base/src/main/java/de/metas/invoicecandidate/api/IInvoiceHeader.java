@@ -7,6 +7,7 @@ import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -102,6 +103,12 @@ public interface IInvoiceHeader
 	PromotionCodeId getPromotionCode2Id();
 
 	void setPromotionCode2Id(@Nullable PromotionCodeId promotionCode2Id);
+
+	/**
+	 * @return the buyer / seller VAT IDs and fiscal representation to store on the invoice; {@code null} for a purchase invoice
+	 */
+	@Nullable
+	InvoiceVATaxIds getInvoiceVATaxIds();
 
 	String getPaymentRule();
 
