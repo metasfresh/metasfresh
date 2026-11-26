@@ -1611,6 +1611,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return null;
 		}
 
+		// same shipment lookup as in getFromCountryId
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
 		final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));

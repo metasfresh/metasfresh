@@ -448,7 +448,9 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * @return the warehouse the given line ships from: the invoice's warehouse, else the warehouse of the line's shipment, else {@code null}.
-	 * Same order as {@link #getFromCountryId(I_C_Invoice, org.compiere.model.I_C_InvoiceLine)}.
+	 * Same order as {@link #getFromCountryId(I_C_Invoice, org.compiere.model.I_C_InvoiceLine)}, so the country and the warehouse
+	 * of a tax query always come from the same warehouse (a warehouse always has a country: {@code IWarehouseBL#getCountryId} throws otherwise).
+	 * Note: a warehouse on the invoice header applies to all its lines, also to lines that belong to a shipment from another warehouse.
 	 */
 	@Nullable
 	WarehouseId getFromWarehouseId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);

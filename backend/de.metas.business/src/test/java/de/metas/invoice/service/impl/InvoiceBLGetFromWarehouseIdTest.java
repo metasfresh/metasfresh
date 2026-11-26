@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests {@link InvoiceBL#getFromWarehouseId(I_C_Invoice, I_C_InvoiceLine)}: the warehouse an invoice line ships from,
  * which the invoice-line tax paths pass into the tax query.
  */
-class InvoiceLineFromWarehouseTest
+class InvoiceBLGetFromWarehouseIdTest
 {
 	private InvoiceBL invoiceBL;
 

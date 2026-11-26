@@ -394,16 +394,17 @@ public class C_Tax_StepDef
 	}
 
 	/**
-	 * @return {@code true} if the table has the given column and the row's cell is empty
+	 * @return {@code true} if the table has the given column (bare or with {@code OPT.} prefix) and the row's cell is empty
 	 */
 	private static boolean isEmptyCell(@NonNull final DataTableRow row, @NonNull final String columnName)
 	{
 		final Map<String, String> map = row.asMap();
-		if (!map.containsKey(columnName))
+		final String effectiveColumnName = map.containsKey(columnName) ? columnName : "OPT." + columnName;
+		if (!map.containsKey(effectiveColumnName))
 		{
 			return false;
 		}
-		final String value = map.get(columnName);
+		final String value = map.get(effectiveColumnName);
 		return value == null || value.trim().isEmpty();
 	}
 
