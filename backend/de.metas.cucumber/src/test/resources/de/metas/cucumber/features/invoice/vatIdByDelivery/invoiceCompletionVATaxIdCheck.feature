@@ -4,7 +4,8 @@
 @ghActions:run_on_executor7
 Feature: The VAT IDs of a sales invoice are checked when it is completed
   A manually created sales invoice gets its buyer and seller VAT IDs at completion, from the addresses its
-  lines were taxed with; lines with different VAT IDs on one manual invoice are rejected.
+  lines were taxed with; lines with different VAT IDs on one manual invoice are rejected. A manual invoice none of
+  whose lines resolves a VAT ID of an address or a fiscal representation completes as before and stores none.
   A prepared candidate invoice (created by invoicing with "complete invoices" = N) keeps the VAT IDs it got
   from its candidates; a line added to it by hand is taxed from the billing address and is accepted, unless
   its tax is exempt on a VAT ID other than the one the invoice shows.
@@ -141,6 +142,55 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
       | invoice_NL | CO        | NL123456782B01 |               |                            |
+
+  @Id:S32533_TC10d2
+  Scenario: TC10(d2) - a manual invoice for shipments to two partners with VAT IDs on the partners only (no address VAT ID, no fiscal representation) completes as before, without stored VAT IDs
+    Given metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode |
+      | location_partner1        | DE          |
+      | location_partner2        | DE          |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | M_PricingSystem_ID.Identifier | IsCustomer | InvoiceRule | VATaxID     |
+      | partner1   | ps_1                          | Y          | D           | DE136695976 |
+      | partner2   | ps_1                          | Y          | D           | DE811111113 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier        | GLN           | C_BPartner_ID.Identifier | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | partner1_location | 0123456789306 | partner1                 | Y        | Y               | Y        | Y               | location_partner1            |
+      | partner2_location | 0123456789307 | partner2                 | Y        | Y               | Y        | Y               | location_partner2            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order_1    | true    | partner1                 | 2026-10-02  | partner1_location                     | wh_DE                         | F            |
+      | order_2    | true    | partner2                 | 2026-10-02  | partner2_location                     | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_1 | order_1               | product                 | 10         |
+      | orderLine_2 | order_2               | product                 | 5          |
+    And the order identified by order_1 is completed
+    And the order identified by order_2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule_1 | orderLine_1               | N             |
+      | shipmentSchedule_2 | orderLine_2               | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment_1            | shipmentSchedule_1               | D                 | Y                  |
+      | shipment_2            | shipmentSchedule_2               | D                 | Y                  |
+    And validate the created shipment lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | MovementQty |
+      | shipmentLine_1 | shipment_1 | product      | 10          |
+      | shipmentLine_2 | shipment_2 | product      | 5           |
+
+    When metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | partner1      | partner1_location      | pl_DE          | Ausgangsrechnung        | 2026-10-02   | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | M_InOutLine_ID | C_Tax_ID  |
+      | invoiceL1  | invoice      | product      | 10 PCE      | shipmentLine_1 | taxDEDE19 |
+      | invoiceL2  | invoice      | product      | 5 PCE       | shipmentLine_2 | taxDEDE19 |
+    And the invoice identified by invoice is completed
+    Then validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        |              |               |                            |
 
   @Id:S32533_TC10i
   Scenario: TC10(i) - a line added by hand to a prepared Dutch candidate invoice gets the German domestic tax; the invoice completes with the Dutch VAT ID

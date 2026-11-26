@@ -30,12 +30,14 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,11 +48,13 @@ import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The completion check of a prepared candidate invoice (lines with invoice candidate allocations) to which lines were added by hand.
+ * The VAT IDs of a sales invoice at completion: the check of a prepared candidate invoice (lines with invoice candidate allocations) to which lines were added by hand,
+ * and which documents are not resolved as manual invoices.
  */
 class C_InvoiceVATaxIdCheckTest
 {
@@ -58,11 +62,14 @@ class C_InvoiceVATaxIdCheckTest
 	private static final Timestamp DATE = TimeUtil.parseTimestamp("2026-09-02");
 	private static final String DE_VAT = "DE123456788";
 	private static final String NL_VAT = "NL123456782B01";
+	private static final String OTHER_DE_VAT = "DE136695976";
 
 	private InvoiceVATaxIdStamper stamper;
 
+	private I_C_BP_Group group;
 	private I_C_BPartner_Location billToDE;
 	private I_C_BPartner_Location deliveryNL;
+	private int deId;
 	private I_C_Tax taxDENL0Exempt;
 	private I_C_Tax taxDEDE19;
 
@@ -72,17 +79,14 @@ class C_InvoiceVATaxIdCheckTest
 		AdempiereTestHelper.get().init();
 		stamper = InvoiceVATaxIdStamper.newInstanceForUnitTesting();
 
-		final int deId = createCountry("DE");
+		deId = createCountry("DE");
 		final int nlId = createCountry("NL");
 
-		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group = newInstance(I_C_BP_Group.class);
 		group.setIsDeviatingBillBPartner(false);
 		save(group);
 
-		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
-		customer.setC_BP_Group_ID(group.getC_BP_Group_ID());
-		customer.setVATaxID(DE_VAT);
-		save(customer);
+		final I_C_BPartner customer = createBPartner(DE_VAT);
 
 		billToDE = createLocation(customer, deId, DE_VAT);
 		deliveryNL = createLocation(customer, nlId, NL_VAT);
@@ -157,6 +161,58 @@ class C_InvoiceVATaxIdCheckTest
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
 	}
 
+	/**
+	 * A reversal is completed right after its lines were copied; it must not be blocked or re-resolved, even if its lines resolve to different VAT IDs.
+	 */
+	@Test
+	void reversal_isNotResolved()
+	{
+		final I_C_Invoice original = createInvoice(NL_VAT);
+		final I_C_Invoice reversal = createInvoice(null);
+		reversal.setReversal_ID(original.getC_Invoice_ID());
+		save(reversal);
+		createLineForShipment(reversal, billToDE);
+		createLineForShipment(reversal, deliveryNL);
+
+		assertThatCode(() -> stamper.stampOrCheck(reversal)).doesNotThrowAnyException();
+		assertThat(reversal.getBuyerVATaxID()).isNull();
+	}
+
+	/**
+	 * A credit memo copied from an invoice with stored VAT IDs is not resolved again either.
+	 */
+	@Test
+	void creditMemoOfStampedInvoice_isNotResolved()
+	{
+		final I_C_Invoice original = createInvoice(NL_VAT);
+		final I_C_Invoice creditMemo = createInvoice(null);
+		creditMemo.setC_DocTypeTarget_ID(createDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo));
+		creditMemo.setRef_Invoice_ID(original.getC_Invoice_ID());
+		save(creditMemo);
+		createLineForShipment(creditMemo, billToDE);
+		createLineForShipment(creditMemo, deliveryNL);
+
+		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
+		assertThat(creditMemo.getBuyerVATaxID()).isNull();
+	}
+
+	/**
+	 * A manual invoice whose lines resolve no VAT ID of an address and no fiscal representation completes as before:
+	 * here the two shipments went to partners with different VAT IDs on the partner only.
+	 */
+	@Test
+	void manualInvoiceWithoutAddressVATaxIdOrFiscalRepresentation_isNotStamped()
+	{
+		final I_C_BPartner_Location deliveryPartner1 = createLocation(createBPartner(DE_VAT), deId, null);
+		final I_C_BPartner_Location deliveryPartner2 = createLocation(createBPartner(OTHER_DE_VAT), deId, null);
+		final I_C_Invoice invoice = createInvoice(null);
+		createLineForShipment(invoice, deliveryPartner1);
+		createLineForShipment(invoice, deliveryPartner2);
+
+		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
+		assertThat(invoice.getBuyerVATaxID()).isNull();
+	}
+
 	private I_C_Invoice createInvoice(@Nullable final String buyerVATaxId)
 	{
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
@@ -209,6 +265,30 @@ class C_InvoiceVATaxIdCheckTest
 		return shipmentLine;
 	}
 
+	private void createLineForShipment(final I_C_Invoice invoice, final I_C_BPartner_Location delivery)
+	{
+		final I_C_InvoiceLine line = createLine(invoice, taxDENL0Exempt);
+		line.setM_InOutLine_ID(createShipmentLine(delivery).getM_InOutLine_ID());
+		save(line);
+	}
+
+	private I_C_BPartner createBPartner(@Nullable final String vatTaxId)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setC_BP_Group_ID(group.getC_BP_Group_ID());
+		bpartner.setVATaxID(vatTaxId);
+		save(bpartner);
+		return bpartner;
+	}
+
+	private static int createDocType(final String docBaseType)
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(docBaseType);
+		save(docType);
+		return docType.getC_DocType_ID();
+	}
+
 	private static int createCountry(final String countryCode)
 	{
 		final I_C_Country country = newInstance(I_C_Country.class);
@@ -217,7 +297,7 @@ class C_InvoiceVATaxIdCheckTest
 		return country.getC_Country_ID();
 	}
 
-	private static I_C_BPartner_Location createLocation(final I_C_BPartner bpartner, final int countryId, final String vatTaxId)
+	private static I_C_BPartner_Location createLocation(final I_C_BPartner bpartner, final int countryId, @Nullable final String vatTaxId)
 	{
 		final I_C_Location location = newInstance(I_C_Location.class);
 		location.setAD_Org_ID(ORG_ID);
