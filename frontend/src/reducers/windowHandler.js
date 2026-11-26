@@ -503,21 +503,11 @@ export const getMasterDocumentDisabledStandardActions = ({
 };
 
 /**
- * @summary the reason why an included tab refuses creating a new record, but only where that reason
- *          is meant for the user. The backend sets `allowCreateNewReasonKey` (the stable AD_Message
- *          key, which tests assert on instead of the rendered wording) exactly then; without it
- *          `allowCreateNewReason` carries an internal technical name (`ParentDocumentProcessed`,
- *          `Unsaved row found`, ...) which must never be shown.
- * @param {object} [tabInfo] - one entry of the `includedTabsInfo` payload
- * @return {{reason: string, reasonKey: string}|null} `null` when nothing shall be rendered
- */
-/**
- * @summary merges an `includedTabsInfo` delta (e.g. from a PATCH response) into the known tabs' info. The backend
- *          leaves out what it did not set (saving the order's contact sends only `stale: true` for the lines tab),
- *          so a left-out property keeps its value. A permission it does send comes with its own reasons, which
+ * @summary merges an `includedTabsInfo` delta into the known tabs' info. A property the delta leaves out keeps its
+ *          value; a permission (`allowCreateNew`, `allowDelete`) the delta sends comes with its own reasons, which
  *          replace the previous ones.
  * @param {object} [known] - the `includedTabsInfo` in the state, by tab id
- * @param {object} [delta] - the `includedTabsInfo` of the response, by tab id
+ * @param {object} [delta] - the `includedTabsInfo` delta, by tab id
  * @return {object} the merged `includedTabsInfo`
  */
 export const mergeIncludedTabsInfo = (known = {}, delta = {}) => {
@@ -537,6 +527,15 @@ export const mergeIncludedTabsInfo = (known = {}, delta = {}) => {
   return merged;
 };
 
+/**
+ * @summary the reason why an included tab refuses creating a new record, but only where that reason
+ *          is meant for the user. The backend sets `allowCreateNewReasonKey` (the stable AD_Message
+ *          key, which tests assert on instead of the rendered wording) exactly then; without it
+ *          `allowCreateNewReason` carries an internal technical name (`ParentDocumentProcessed`,
+ *          `Unsaved row found`, ...) which must never be shown.
+ * @param {object} [tabInfo] - one entry of the `includedTabsInfo` payload
+ * @return {{reason: string, reasonKey: string}|null} `null` when nothing shall be rendered
+ */
 export const getIncludedTabCreateNewDisabledReason = (tabInfo) => {
   if (!tabInfo || tabInfo.allowCreateNew || !tabInfo.allowCreateNewReasonKey) {
     return null;

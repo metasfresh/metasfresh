@@ -28,6 +28,22 @@ describe('windowHandler — UPDATE_DATA_INCLUDED_TABS_INFO', () => {
     });
   });
 
+  it('keeps the reasons when the delta does not send the permission they belong to', () => {
+    const refused = {
+      tabId: linesTab,
+      allowCreateNew: false,
+      allowCreateNewReason: 'Processed document',
+      allowCreateNewReasonKey: 'SomeKey',
+      allowDelete: false,
+      allowDeleteReason: 'Processed document',
+    };
+    const state = stateWith(refused);
+
+    const next = apply(state, { [linesTab]: { tabId: linesTab, stale: true } });
+
+    expect(next.master.includedTabsInfo[linesTab]).toEqual({ ...refused, stale: true });
+  });
+
   it('takes allowCreateNew from the delta together with its reason, dropping the previous reason', () => {
     const state = stateWith({
       tabId: linesTab,

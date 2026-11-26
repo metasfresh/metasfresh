@@ -18,17 +18,24 @@ let sysconfigsToRestore = [];
 
 const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
 
+// The backend resets these to their defaults on every master data request and reports their previous values too.
+const SCANNER_SYSCONFIG_PREFIX = 'mobileui.frontend.barcodeScanner.';
+
 /**
- * Remembers the previous value of each row the test's own request changed. The backend also reports the barcode-scanner
- * rows it resets to their defaults on every master data request: those are left out, the next request resets them
- * again, and restoring them would cost every test a restore and a full webapi cache reset.
+ * Remembers the previous value of each row the request changed, so the page fixture can restore it after the test.
+ * Left out: a row the request wrote with the value it already had, and a barcode-scanner row the request did not
+ * write itself (the next master data request resets it again).
  * @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend
- * @param {Object<string, string>} [written] the sysconfigs the request wrote, by name
+ * @param {Object<string, string>} [written] the sysconfigs the request wrote explicitly, by name
  */
 export const rememberSysconfigsToRestore = ({ previousSysconfigs }, written) => {
   const writtenByName = written ?? {};
+  const isChange = (previous) =>
+    previous.name in writtenByName
+      ? previous.value !== writtenByName[previous.name]
+      : !previous.name.startsWith(SCANNER_SYSCONFIG_PREFIX);
   (previousSysconfigs ?? [])
-    .filter((previous) => previous.name in writtenByName && previous.value !== writtenByName[previous.name])
+    .filter(isChange)
     .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))
     .forEach((previous) => sysconfigsToRestore.push(previous));
 };
