@@ -41,6 +41,8 @@ import org.compiere.model.I_API_Request_Audit;
 
 import java.util.Iterator;
 
+import static de.metas.util.web.audit.dto.ApiRequestMapper.UNRECORDABLE_REQUEST_BODY;
+
 public class API_Audit_Repeat extends JavaProcess implements IProcessPrecondition
 {
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
@@ -73,7 +75,8 @@ public class API_Audit_Repeat extends JavaProcess implements IProcessPreconditio
 	@NonNull
 	private ApiRequestIterator getSelectedRequests()
 	{
-		final IQueryBuilder<I_API_Request_Audit> selectedApiRequestsQueryBuilder = retrieveSelectedRecordsQueryBuilder(I_API_Request_Audit.class);
+		final IQueryBuilder<I_API_Request_Audit> selectedApiRequestsQueryBuilder = retrieveSelectedRecordsQueryBuilder(I_API_Request_Audit.class)
+				.addNotEqualsFilter(I_API_Request_Audit.COLUMNNAME_Body, UNRECORDABLE_REQUEST_BODY);
 
 		if (isOnlyWithError)
 		{
