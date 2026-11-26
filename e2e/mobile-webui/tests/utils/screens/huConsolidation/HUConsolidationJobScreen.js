@@ -11,6 +11,8 @@ import { GRAIScanScreen } from './GRAIScanScreen';
 const NAME = 'HUConsolidationJobScreen';
 /** data-testid of the "Scan (GRAI)" button on the job screen */
 const SCAN_GRAI_BUTTON_TESTID = 'scanGRAI-button';
+/** data-testid of the invisible placeholder that keeps the button's place once the button vanished */
+const SCAN_GRAI_BUTTON_SLOT_TESTID = 'scanGRAI-slot';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
 
@@ -118,6 +120,21 @@ export const HUConsolidationJobScreen = {
         if (caption != null) {
             await expect(button).toHaveText(caption, { timeout: SLOW_ACTION_TIMEOUT });
         }
+    }),
+
+    /**
+     * Expect the invisible placeholder that keeps the place of a vanished "Scan (GRAI)" button (present), or no placeholder at all (absent).
+     * @param {{present: boolean}} params
+     */
+    expectScanGRAIButtonSlot: async ({ present }) => await test.step(`${NAME} - Expect Scan (GRAI) button placeholder present=${present}`, async () => {
+        await expect(page.getByTestId(SCAN_GRAI_BUTTON_SLOT_TESTID)).toHaveCount(present ? 1 : 0, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** @returns {Promise<number>} top edge (px) of the Fertigstellen / Complete button; it must not move when the Scan (GRAI) button vanishes */
+    getCompleteButtonTop: async () => await step(`${NAME} - Get the Complete button's top edge`, async () => {
+        const button = page.locator('#last-confirm-button');
+        await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        return (await button.boundingBox()).y;
     }),
 
     /** Expect the "Scan (GRAI)" button to sit below the pallet button and above the picking slot rows. */

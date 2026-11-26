@@ -478,6 +478,8 @@ test('Presence rule: a job whose slot holds only a pallet shows no button, the o
         await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P2.luName });
         await HUConsolidationJobScreen.expectPickingSlotHUCount({ pickingSlotId: slot1.id, countHUs: 1 });
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
+        // never had the button: no placeholder either, so no gap
+        await HUConsolidationJobScreen.expectScanGRAIButtonSlot({ present: false });
         await HUConsolidationJobScreen.goBack();
     });
     await test.step('The other job\'s crate is untouched in its slot', async () => {
