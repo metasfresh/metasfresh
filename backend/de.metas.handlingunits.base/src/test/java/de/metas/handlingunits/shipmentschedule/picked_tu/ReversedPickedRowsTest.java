@@ -23,6 +23,9 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -164,5 +167,37 @@ class ReversedPickedRowsTest extends TUPicksTestBase
 		assertThat(openRows).hasSize(2);
 		assertThat(openRows).extracting(I_M_ShipmentSchedule_QtyPicked::getVHU_ID).doesNotHaveDuplicates();
 		assertThat(openRows.stream().map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked).reduce(BigDecimal.ZERO, BigDecimal::add)).isEqualByComparingTo("4");
+	}
+
+	@Test
+	void ofCatchWeightProduct_cuWithoutWeight_restoredCUTakesTheWeightOfTheReversedRow()
+	{
+		enableCatchWeightOfSalad();
+		// the CU was picked by count: its net weight is 0, the reversed row carries the weighed value
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = createTUOnlyRowWithWeight(schedule, tu, "2", "2.100");
+		row.setM_InOutLine_ID(1);
+		saveRecord(row);
+
+		restoreAfterReversal(ImmutableList.of(row));
+
+		assertThat(retrieveOpenRows(schedule)).singleElement().satisfies(openRow -> {
+			assertThat(openRow.getCatch_UOM_ID()).isEqualTo(uomKg.getC_UOM_ID());
+			assertThat(openRow.getQtyDeliveredCatch()).isEqualByComparingTo("2.100");
+		});
+	}
+
+	@Test
+	void rowOfATUWhoseCUIsCoveredByAPickingJob_isRestored_alsoWhenTheTUItselfIsNot()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = createTUOnlyRow(schedule, tu, "2");
+		final HuId cuId = HuId.ofRepoId(handlingUnitsDAO.retrieveIncludedHUs(tu).get(0).getM_HU_ID());
+		final ReversedPickedRows reversedRows = new ReversedPickedRows(ImmutableList.of(row), ImmutableSetMultimap.of());
+
+		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of(cuId))).singleElement().satisfies(rowOfCU -> assertThat(rowOfCU.getVHU_ID()).isEqualTo(cuId.getRepoId()));
+		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of())).as("no picking job covers the row").isEmpty();
 	}
 }
