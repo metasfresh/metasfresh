@@ -30,7 +30,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -186,7 +185,7 @@ public final class TUPickedRowsAllocator
 				}
 				final Quantity cuWeightTaken = taken.compareTo(cu.getQty()) == 0
 						? cuWeight
-						: cuWeight.multiply(taken.toBigDecimal()).divide(cu.getQty().toBigDecimal(), cuWeight.getUOMPrecision().toInt(), RoundingMode.HALF_UP);
+						: weightShareOfFirst(cuWeight, taken, cu.getQty());
 				weight = weight == null ? cuWeightTaken : weight.add(cuWeightTaken);
 			}
 			cuStart = cuEnd;
@@ -239,7 +238,9 @@ public final class TUPickedRowsAllocator
 
 	/**
 	 * Splits a weight across the given quantities proportionally to them.
-	 * The last one gets the remainder, so the shares always sum up to the weight.
+	 * Each share is the rounded weight of all quantities up to and including its own minus that of the ones before it, so no share
+	 * is negative and the shares always sum up to the weight, also when a share is below the precision of the weight's UOM.
+	 * Example: 0.003 kg over 5 pieces gives 0.001, 0.001, 0, 0.001, 0 kg.
 	 *
 	 * @return one share per quantity
 	 */
@@ -247,19 +248,34 @@ public final class TUPickedRowsAllocator
 	{
 		Check.assumeNotEmpty(qtys, "qtys is not empty");
 		final Quantity totalQty = qtys.stream().reduce(Quantity::add).get(); // fails if the quantities are not in one UOM
-		final UOMPrecision precision = totalWeight.getUOMPrecision();
 
 		final List<Quantity> shares = new ArrayList<>(qtys.size());
-		Quantity allocated = totalWeight.toZero();
-		for (int i = 0; i < qtys.size(); i++)
+		Quantity qtyUpToNow = totalQty.toZero();
+		Quantity weightUpToBefore = totalWeight.toZero();
+		for (final Quantity qty : qtys)
 		{
-			final Quantity share = i < qtys.size() - 1
-					? totalWeight.multiply(qtys.get(i).toBigDecimal()).divide(totalQty.toBigDecimal(), precision.toInt(), RoundingMode.HALF_UP)
-					: totalWeight.subtract(allocated);
-			allocated = allocated.add(share);
-			shares.add(share);
+			qtyUpToNow = qtyUpToNow.add(qty);
+			final Quantity weightUpToNow = weightShareOfFirst(totalWeight, qtyUpToNow, totalQty);
+			shares.add(weightUpToNow.subtract(weightUpToBefore));
+			weightUpToBefore = weightUpToNow;
 		}
 		return shares;
 	}
-}
 
+	/**
+	 * @return the part of {@code weight} that the first {@code qty} of {@code totalQty} stand for, rounded in the rounding mode of the
+	 * weight's UOM (one unit below its precision cannot be split, so it is taken whole); all of {@code weight} when {@code qty} is all of it.
+	 * Callers that hand out a weight in parts take the difference of two such values, so the parts never go negative and sum up to the weight.
+	 */
+	static Quantity weightShareOfFirst(@NonNull final Quantity weight, @NonNull final Quantity qty, @NonNull final Quantity totalQty)
+	{
+		if (qty.compareTo(totalQty) >= 0)
+		{
+			return weight; // exact, also if the weight has more decimals than its UOM's precision
+		}
+		final UOMPrecision precision = weight.getUOMPrecision();
+		final Quantity share = weight.multiply(qty.toBigDecimal()).divide(totalQty.toBigDecimal(), precision.toInt(), precision.getRoundingMode());
+		// a weight with more decimals than its UOM's precision (e.g. 0.0035 kg) could be rounded past itself (0.004 kg)
+		return share.abs().compareTo(weight.abs()) > 0 ? weight : share;
+	}
+}

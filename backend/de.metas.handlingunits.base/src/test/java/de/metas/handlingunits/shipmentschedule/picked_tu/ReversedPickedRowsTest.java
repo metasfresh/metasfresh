@@ -191,6 +191,26 @@ class ReversedPickedRowsTest extends TUPicksTestBase
 	}
 
 	@Test
+	void ofCatchWeightProduct_cusWithoutWeight_sharesOfAWeightBelowTheirPrecision_sumToTheReversedWeight()
+	{
+		enableCatchWeightOfSalad();
+		// 3 CUs of 2 pieces picked by count (net weight 0); the reversed row weighed 0.002 kg: 0.000667 kg per CU is below the gram
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = createTUOnlyRowWithWeight(schedule, tu, "6", "0.002");
+		row.setM_InOutLine_ID(1);
+		saveRecord(row);
+
+		restoreAfterReversal(ImmutableList.of(row));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveOpenRows(schedule);
+		assertThat(openRows).hasSize(3).allSatisfy(openRow -> assertThat(openRow.getQtyDeliveredCatch()).isNotNegative());
+		assertThat(openRows.stream().map(I_M_ShipmentSchedule_QtyPicked::getQtyDeliveredCatch).reduce(BigDecimal.ZERO, BigDecimal::add))
+				.as("no more weight restored than the reversed row had")
+				.isEqualByComparingTo("0.002");
+	}
+
+	@Test
 	void rowOfATUWhoseCUIsCoveredByAPickingJob_isRestored_alsoWhenTheTUItselfIsNot()
 	{
 		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE);

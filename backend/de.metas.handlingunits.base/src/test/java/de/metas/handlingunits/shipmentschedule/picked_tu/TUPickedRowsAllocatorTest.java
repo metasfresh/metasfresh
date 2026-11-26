@@ -47,6 +47,7 @@ class TUPickedRowsAllocatorTest
 {
 	private final I_C_UOM each = uom(1, 0);
 	private final I_C_UOM kg = uom(2, 1);
+	private final I_C_UOM kgOf3Decimals = uom(4, 3);
 
 	private static I_C_UOM uom(final int id, final int precision)
 	{
@@ -64,6 +65,11 @@ class TUPickedRowsAllocatorTest
 	private Quantity kg(final String weight)
 	{
 		return Quantity.of(new BigDecimal(weight), kg);
+	}
+
+	private Quantity grams(final String weightKg)
+	{
+		return Quantity.of(new BigDecimal(weightKg), kgOf3Decimals);
 	}
 
 	private TUContentCU cu(final int qty)
@@ -198,6 +204,55 @@ class TUPickedRowsAllocatorTest
 			final List<TUPickedRowsAllocator.Part> parts = allocator(ImmutableMap.of(cu, "3.0"), group(cu)).allocate(row(2, null));
 
 			assertThat(parts).singleElement().satisfies(part -> assertThat(part.getCatchWeight()).isNull());
+		}
+
+		@Test
+		void cuCoveredInPart_weightRoundsUpInTheUOMsRoundingMode()
+		{
+			// one CU of 3 pieces / 0.001 kg, handed out piece by piece: the first piece takes the indivisible gram, the others none
+			final TUContentCU cu = cu(3);
+			final TUContentCUWeighter weightOfCU = ignored -> grams("0.001");
+			final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(TUContentGroupList.of(ImmutableList.of(group(cu))), weightOfCU);
+			final TUPickedRowsAllocator.Row rowOfOnePiece = new TUPickedRowsAllocator.Row(qty(1), grams("0"));
+
+			assertThat(ImmutableList.of(allocator.allocate(rowOfOnePiece), allocator.allocate(rowOfOnePiece), allocator.allocate(rowOfOnePiece)))
+					.extracting(parts -> parts.get(0).getCatchWeight().toBigDecimal())
+					.usingElementComparator(BigDecimal::compareTo)
+					.containsExactly(new BigDecimal("0.001"), BigDecimal.ZERO, BigDecimal.ZERO);
+		}
+
+		@Test
+		void splitByQty_weightBelowThePrecisionOfTheShares_noNegativeShareAndSumIsTheWeight()
+		{
+			// 0.003 kg over 5 pieces: 0.0006 kg each is below the gram; rounding each share alone gives 0.001 x 4 and -0.001
+			final List<Quantity> shares = TUPickedRowsAllocator.splitByQty(grams("0.003"), ImmutableList.of(qty(1), qty(1), qty(1), qty(1), qty(1)));
+
+			assertThat(shares).extracting(share -> share.toBigDecimal())
+					.usingElementComparator(BigDecimal::compareTo)
+					.as("rounded up cumulatively: never negative, never more than the weight")
+					.containsExactly(new BigDecimal("0.001"), new BigDecimal("0.001"), BigDecimal.ZERO, new BigDecimal("0.001"), BigDecimal.ZERO);
+		}
+
+		@Test
+		void splitByQty_weightWithMoreDecimalsThanItsUOM_isNotRoundedPastItself()
+		{
+			// 0.0035 kg (more decimals than the gram precision) over 99 + 1 pieces: 0.003465 kg rounds up to 0.004 kg, more than the weight
+			final List<Quantity> shares = TUPickedRowsAllocator.splitByQty(grams("0.0035"), ImmutableList.of(qty(99), qty(1)));
+
+			assertThat(shares).extracting(share -> share.toBigDecimal())
+					.usingElementComparator(BigDecimal::compareTo)
+					.containsExactly(new BigDecimal("0.0035"), BigDecimal.ZERO);
+		}
+
+		@Test
+		void cuWithoutWeight_weightBelowThePrecisionOfTheParts_noPartGetsANegativeWeight()
+		{
+			// 5 lots of one piece each, no CU weights: the row's 0.003 kg is split by quantity
+			final List<TUPickedRowsAllocator.Part> parts = allocator(ImmutableMap.of(), group(cu(1)), group(cu(1)), group(cu(1)), group(cu(1)), group(cu(1)))
+					.allocate(new TUPickedRowsAllocator.Row(qty(5), grams("0.003")));
+
+			assertThat(parts).extracting(part -> part.getCatchWeight().toBigDecimal()).allSatisfy(weight -> assertThat(weight).isNotNegative());
+			assertThat(parts.stream().map(part -> part.getCatchWeight().toBigDecimal()).reduce(BigDecimal.ZERO, BigDecimal::add)).isEqualByComparingTo("0.003");
 		}
 
 		@Test

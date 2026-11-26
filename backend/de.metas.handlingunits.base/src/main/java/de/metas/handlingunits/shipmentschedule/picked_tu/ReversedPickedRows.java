@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -48,7 +47,6 @@ import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -218,7 +216,8 @@ class ReversedPickedRows
 
 		// the CU's weight comes from the CU itself, as the reopen of a completed job takes it; a CU without weight
 		// (net weight 0, e.g. picked by count) takes its share of the weight of the reversed rows
-		final Quantity catchWeight = CoalesceUtil.coalesce(TUContentLoader.extractCatchWeightOrNull(huContext, tuKey.getProductId(), cu), budget.weightShareOrNull(cu.getQty()));
+		final Quantity cuWeight = TUContentLoader.extractCatchWeightOrNull(huContext, tuKey.getProductId(), cu);
+		final Quantity catchWeight = cuWeight != null ? cuWeight : budget.takeWeightShareOrNull(cu.getQty());
 		if (catchWeight != null)
 		{
 			rowOfCU.setCatch_UOM_ID(catchWeight.getUomId().getRepoId());
@@ -280,12 +279,15 @@ class ReversedPickedRows
 		private Quantity qtyLeft;
 		private Quantity qtyTotal;
 		@Nullable private Quantity weightTotal;
+		private Quantity qtyShared;
+		@Nullable private Quantity weightShared;
 		private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		TUBudget(@NonNull final I_C_UOM stockUOM)
 		{
 			this.qtyLeft = Quantity.zero(stockUOM);
 			this.qtyTotal = qtyLeft;
+			this.qtyShared = qtyLeft;
 		}
 
 		void add(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
@@ -314,16 +316,22 @@ class ReversedPickedRows
 		}
 
 		/**
-		 * @return the part of the rows' catch weight that {@code qty} of their quantity stands for; null if they have none
+		 * Hands out the share of the rows' catch weight that {@code qty} of their quantity stands for. The shares are rounded
+		 * cumulatively (see {@link TUPickedRowsAllocator#weightShareOfFirst}), so none is negative and together they never exceed the rows' weight.
+		 *
+		 * @return that share; null if the rows have no weight
 		 */
 		@Nullable
-		Quantity weightShareOrNull(@NonNull final Quantity qty)
+		Quantity takeWeightShareOrNull(@NonNull final Quantity qty)
 		{
 			if (weightTotal == null || qtyTotal.signum() <= 0)
 			{
 				return null;
 			}
-			return weightTotal.multiply(qty.toBigDecimal()).divide(qtyTotal.toBigDecimal(), weightTotal.getUOMPrecision().toInt(), RoundingMode.HALF_UP);
+			final Quantity weightSharedBefore = weightShared != null ? weightShared : weightTotal.toZero();
+			qtyShared = qtyShared.add(qty);
+			weightShared = TUPickedRowsAllocator.weightShareOfFirst(weightTotal, qtyShared, qtyTotal);
+			return weightShared.subtract(weightSharedBefore);
 		}
 	}
 }
