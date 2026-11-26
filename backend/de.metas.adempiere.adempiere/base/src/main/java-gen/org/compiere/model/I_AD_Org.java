@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Org
  *  @author metasfresh (generated) 
@@ -52,7 +51,7 @@ public interface I_AD_Org
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Replizierung - Strategie.
+	 * Set Replication Strategy.
 	 * Data Replication Strategy
 	 *
 	 * <br>Type: TableDir
@@ -62,7 +61,7 @@ public interface I_AD_Org
 	void setAD_ReplicationStrategy_ID (int AD_ReplicationStrategy_ID);
 
 	/**
-	 * Get Replizierung - Strategie.
+	 * Get Replication Strategy.
 	 * Data Replication Strategy
 	 *
 	 * <br>Type: TableDir
@@ -105,6 +104,7 @@ public interface I_AD_Org
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -114,6 +114,7 @@ public interface I_AD_Org
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -148,6 +149,29 @@ public interface I_AD_Org
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Drop-ship: tax as in destination country.
+	 * If checked, a sales line from a drop-ship warehouse to a country where the organisation has a fiscal representation is taxed like a delivery within that country.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShipTaxFromDestCountry (boolean IsDropShipTaxFromDestCountry);
+
+	/**
+	 * Get Drop-ship: tax as in destination country.
+	 * If checked, a sales line from a drop-ship warehouse to a country where the organisation has a fiscal representation is taxed like a delivery within that country.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShipTaxFromDestCountry();
+
+	ModelColumn<I_AD_Org, Object> COLUMN_IsDropShipTaxFromDestCountry = new ModelColumn<>(I_AD_Org.class, "IsDropShipTaxFromDestCountry", null);
+	String COLUMNNAME_IsDropShipTaxFromDestCountry = "IsDropShipTaxFromDestCountry";
+
+	/**
 	 * Set One-Stop Shop (OSS).
 	 * Needs to be ticked if the deliveries to foreign EU countries since the begin of 2020 exceed a volumn of 10000 euro
 	 *
@@ -171,7 +195,7 @@ public interface I_AD_Org
 	String COLUMNNAME_IsEUOneStopShop = "IsEUOneStopShop";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -181,7 +205,7 @@ public interface I_AD_Org
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -195,6 +219,7 @@ public interface I_AD_Org
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -204,6 +229,7 @@ public interface I_AD_Org
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
