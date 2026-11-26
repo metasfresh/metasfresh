@@ -43,6 +43,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Write side of the candidate creation: lets a {@code M_ShipmentSchedule_QtyPicked} row stand for one part of its quantity
@@ -57,6 +59,9 @@ class ShipmentScheduleQtyPickedSplitter
 
 	@NonNull private final IHUContext huContext;
 	@NonNull private final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
+
+	/** an instance serves one call, so what it read stays valid */
+	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedulesById = new HashMap<>();
 
 	/**
 	 * The part of a row's quantity that becomes one candidate.
@@ -124,7 +129,7 @@ class ShipmentScheduleQtyPickedSplitter
 			@NonNull final Quantity partQty,
 			@Nullable final Quantity catchWeightShare)
 	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(source.getM_ShipmentSchedule_ID()));
+		final I_M_ShipmentSchedule schedule = getSchedule(ShipmentScheduleId.ofRepoId(source.getM_ShipmentSchedule_ID()));
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 		final StockQtyAndUOMQty partStockAndCatchQty = catchWeightShare != null
 				? StockQtyAndUOMQtys.create(partQty.toBigDecimal(), productId, catchWeightShare.toBigDecimal(), UomId.ofRepoIdOrNull(source.getCatch_UOM_ID()))
@@ -138,6 +143,11 @@ class ShipmentScheduleQtyPickedSplitter
 		part.setM_Picking_Job_Schedule_ID(source.getM_Picking_Job_Schedule_ID());
 		part.setIsAnonymousHuPickedOnTheFly(source.isAnonymousHuPickedOnTheFly());
 		return part;
+	}
+
+	private I_M_ShipmentSchedule getSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		return schedulesById.computeIfAbsent(scheduleId, shipmentScheduleBL::getById);
 	}
 }
 
