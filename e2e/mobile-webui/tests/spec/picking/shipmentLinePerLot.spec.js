@@ -66,17 +66,12 @@ const permutations = (items) => items.length <= 1
 
 /**
  * The shipment lines are compared in any order: the order of M_InOutLine.Line is not stable when picks of different lots go into one shipment.
- * Each line keeps its own qty + lot pairing and the line count stays exact.
+ * Each line keeps its own qty + lot pairing, the line count stays exact and the job ships in exactly one shipment.
  *
  * @param lines expected shipment lines
- * @param canBeOneShipmentPerLine true when the lines belong to different order lines: they normally share one shipment, but completing
- *     the job can also end in one shipment per order line (seen in 1 of 90 local runs: two shipments of one line each)
  */
-const expectShipmentLinesInAnyOrder = async (lines, { canBeOneShipmentPerLine = false } = {}) => {
+const expectShipmentLinesInAnyOrder = async (lines) => {
     const expectations = permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: [{ lines: orderedLines }] } } }));
-    if (canBeOneShipmentPerLine) {
-        expectations.push(...permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: orderedLines.map((line) => ({ lines: [line] })) } } })));
-    }
     await Backend.expectAnyOf(expectations, 'shipment lines (any order)');
 };
 
@@ -154,7 +149,7 @@ test('box shared by two order lines: each order line gets its own lot', async ({
     await expectShipmentLinesInAnyOrder([
         { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
         { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-    ], { canBeOneShipmentPerLine: true });
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -175,7 +170,7 @@ test('box shared by two order lines, equal quantities: each order line gets its 
     await expectShipmentLinesInAnyOrder([
         { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
         { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-    ], { canBeOneShipmentPerLine: true });
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
