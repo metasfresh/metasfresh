@@ -360,6 +360,17 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	public boolean isDropShipTaxFromDestCountry(@NonNull final OrgId orgId)
+	{
+		final I_AD_Org org = getById(orgId);
+		if (org == null)
+		{
+			throw new AdempiereException("No Organization found for ID: " + orgId);
+		}
+		return org.isDropShipTaxFromDestCountry();
+	}
+
+	@Override
 	public UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(final OrgId orgId)
 	{
 		return getOrgInfoById(orgId).getSupplierApprovalExpirationNotifyUserGroupID();

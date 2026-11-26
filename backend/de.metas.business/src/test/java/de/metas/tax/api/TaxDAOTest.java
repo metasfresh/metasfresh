@@ -25,12 +25,14 @@ package de.metas.tax.api;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -40,6 +42,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_CountryArea_Assign;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
@@ -187,6 +190,154 @@ class TaxDAOTest
 				.build());
 		assertThat(tax).isNotNull();
 		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByWarehouseIdMap.get(type));
+	}
+
+	@Nested
+	class WarehouseDropShipShipFrom
+	{
+		private static final int DE_ID = 2001;
+		private static final int GR_ID = 2002;
+		private static final int NL_ID = 2003;
+		private static final int DS_TAX_CATEGORY_ID = 43;
+		private static final int DS_WAREHOUSE_ID = 201;
+		private static final int DE_WAREHOUSE_ID = 202;
+
+		private BPartnerLocationAndCaptureId grBuyer;
+		private BPartnerLocationAndCaptureId nlBuyer;
+		private TaxId taxGrToGr;
+		private TaxId taxDeToGr;
+		private TaxId taxDeToNl;
+		private TaxId purchaseDeToGr;
+		private TaxId purchaseGrToGr;
+
+		@BeforeEach
+		void setUp()
+		{
+			setOrgFlag(true);
+			createWarehouse(DS_WAREHOUSE_ID, true);
+			createWarehouse(DE_WAREHOUSE_ID, false);
+			createBPartnerData(DE_ID, "DE", true);
+			grBuyer = createBPartnerData(GR_ID, "GR", true);
+			nlBuyer = createBPartnerData(NL_ID, "NL", true);
+
+			final I_C_Fiscal_Representation fiscalRepresentation = newInstance(I_C_Fiscal_Representation.class);
+			fiscalRepresentation.setAD_Org_ID(ORG_ID.getRepoId());
+			fiscalRepresentation.setTo_Country_ID(GR_ID);
+			fiscalRepresentation.setValidFrom(TimeUtil.parseTimestamp("2026-04-11"));
+			fiscalRepresentation.setValidTo(TimeUtil.parseTimestamp("2026-04-13"));
+			save(fiscalRepresentation);
+
+			taxGrToGr = createDsTax(GR_ID, GR_ID, DOMESTIC, SOPOType.SALES_TAX, "24", "Y");
+			taxDeToGr = createDsTax(DE_ID, GR_ID, WITHIN_COUNTRY_AREA, SOPOType.SALES_TAX, "0", null);
+			taxDeToNl = createDsTax(DE_ID, NL_ID, WITHIN_COUNTRY_AREA, SOPOType.SALES_TAX, "0", null);
+			purchaseDeToGr = createDsTax(DE_ID, GR_ID, WITHIN_COUNTRY_AREA, SOPOType.PURCHASE_TAX, "0", null);
+			purchaseGrToGr = createDsTax(GR_ID, GR_ID, DOMESTIC, SOPOType.PURCHASE_TAX, "24", "Y");
+		}
+
+		@Test
+		void salesDropShip_registered_usesDestinationAsShipFrom()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES)).isEqualTo(taxGrToGr);
+		}
+
+		@Test
+		void salesDropShip_noRegistrationForDestination_unchanged()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, nlBuyer, "2026-04-12", SOTrx.SALES)).isEqualTo(taxDeToNl);
+		}
+
+		@Test
+		void salesNonDropShipWarehouse_registered_unchanged()
+		{
+			assertThat(find(DE_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES)).isEqualTo(taxDeToGr);
+		}
+
+		@Test
+		void dropShip_dayBeforeValidFrom_unchanged()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-10", SOTrx.SALES)).isEqualTo(taxDeToGr);
+		}
+
+		@Test
+		void dropShip_onValidFrom_applies()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-11", SOTrx.SALES)).isEqualTo(taxGrToGr);
+		}
+
+		@Test
+		void dropShip_onValidTo_applies()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-13", SOTrx.SALES)).isEqualTo(taxGrToGr);
+		}
+
+		@Test
+		void dropShip_dayAfterValidTo_unchanged()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-14", SOTrx.SALES)).isEqualTo(taxDeToGr);
+		}
+
+		@Test
+		void purchaseDropShip_registered_unchanged()
+		{
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.PURCHASE)).isEqualTo(purchaseDeToGr);
+		}
+
+		@Test
+		void salesDropShip_registered_switchOff_unchanged()
+		{
+			setOrgFlag(false);
+			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES)).isEqualTo(taxDeToGr);
+		}
+
+		private TaxId find(final int warehouseId, final BPartnerLocationAndCaptureId buyer, final String date, final SOTrx soTrx)
+		{
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+					.orgId(ORG_ID)
+					.warehouseId(WarehouseId.ofRepoId(warehouseId))
+					.fromCountryId(CountryId.ofRepoId(DE_ID))
+					.bPartnerLocationId(buyer)
+					.taxCategoryId(TaxCategoryId.ofRepoId(DS_TAX_CATEGORY_ID))
+					.dateOfInterest(TimeUtil.parseTimestamp(date))
+					.soTrx(soTrx)
+					.build());
+			assertThat(tax).isNotNull();
+			return tax.getTaxId();
+		}
+
+		private void setOrgFlag(final boolean value)
+		{
+			final I_AD_Org org = InterfaceWrapperHelper.load(ORG_ID, I_AD_Org.class);
+			org.setIsDropShipTaxFromDestCountry(value);
+			save(org);
+		}
+
+		private void createWarehouse(final int id, final boolean dropShip)
+		{
+			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+			warehouse.setAD_Org_ID(ORG_ID.getRepoId());
+			warehouse.setM_Warehouse_ID(id);
+			warehouse.setIsDropShipWarehouse(dropShip);
+			save(warehouse);
+		}
+
+		private TaxId createDsTax(final int fromCountry, final int toCountry, final TypeOfDestCountry type, final SOPOType sopoType, final String rate, final String isFiscalRepresentation)
+		{
+			final I_C_Tax tax = newInstance(I_C_Tax.class);
+			tax.setName(sopoType + "-" + fromCountry + "-" + toCountry);
+			tax.setAD_Org_ID(ORG_ID.getRepoId());
+			tax.setC_Country_ID(fromCountry);
+			tax.setTo_Country_ID(toCountry);
+			tax.setTypeOfDestCountry(type.getCode());
+			tax.setRequiresTaxCertificate(null);
+			tax.setIsSmallbusiness(null);
+			tax.setIsFiscalRepresentation(isFiscalRepresentation);
+			tax.setValidFrom(TimeUtil.parseTimestamp("2020-01-01"));
+			tax.setSOPOType(sopoType.getCode());
+			tax.setC_TaxCategory_ID(DS_TAX_CATEGORY_ID);
+			tax.setRate(new BigDecimal(rate));
+			save(tax);
+			return TaxId.ofRepoId(tax.getC_Tax_ID());
+		}
 	}
 
 	@Nested
