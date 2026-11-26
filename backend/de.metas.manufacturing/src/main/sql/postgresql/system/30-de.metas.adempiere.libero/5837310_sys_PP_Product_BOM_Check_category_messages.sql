@@ -4,7 +4,7 @@
 
 -- Value: org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed
 -- 2026-11-26T00:30:21.000Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546027 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-26 00:30:21','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','{0} von {1} Produkten konnten nicht verifiziert werden: {2}. Die Gründe stehen im Prozessprotokoll (Prozess-Revision, Register Log).','I',TO_TIMESTAMP('2026-11-26 00:30:21','YYYY-MM-DD HH24:MI:SS'),100,'org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,546027 /*From ID Server*/,0,TO_TIMESTAMP('2026-11-26 00:30:21','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','{0} von {1} Produkten konnten nicht verifiziert werden: {2}. Die Gründe stehen im Prozessprotokoll (Prozess-Revision, Register Protokoll).','I',TO_TIMESTAMP('2026-11-26 00:30:21','YYYY-MM-DD HH24:MI:SS'),100,'org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed')
 ;
 
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Message_ID=546027 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
