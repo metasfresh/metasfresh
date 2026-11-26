@@ -22,6 +22,7 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.quantity.Quantity;
@@ -37,6 +38,11 @@ public class TUContentCU
 	@NonNull I_M_HU cu;
 	/** in the product's stock UOM, like {@code M_ShipmentSchedule_QtyPicked.QtyPicked} */
 	@NonNull Quantity qty;
+
+	public HuId getCuId()
+	{
+		return HuId.ofRepoId(cu.getM_HU_ID());
+	}
 
 	/**
 	 * The rows' {@code QtyPicked} is in the stock UOM, so the CU counts in the stock UOM, whatever UOM its storage is kept in.

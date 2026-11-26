@@ -35,14 +35,12 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -69,10 +67,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  */
 class ReversedPickedRows
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	private final TUContentLoader tuContentLoader = new TUContentLoader();
 	private final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
@@ -205,7 +203,7 @@ class ReversedPickedRows
 		final List<I_M_ShipmentSchedule_QtyPicked> result = new ArrayList<>();
 		for (final TUContentCU cu : cusByTU.get(tuKey))
 		{
-			final HuId cuId = HuId.ofRepoId(cu.getCu().getM_HU_ID());
+			final HuId cuId = cu.getCuId();
 			if (cuIdsOfRowsWithCU.contains(cuId) || !budget.take(cu.getQty()))
 			{
 				continue;
@@ -233,20 +231,13 @@ class ReversedPickedRows
 
 		// the CU's weight comes from the CU itself, as the reopen of a completed job takes it; a CU without weight
 		// (net weight 0, e.g. picked by count) takes its share of the weight of the reversed rows
-		final Quantity catchWeight = CoalesceUtil.coalesce(extractWeightOrNull(productId, cu), budget.weightShareOrNull(cu.getQty()));
+		final Quantity catchWeight = CoalesceUtil.coalesce(TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu), budget.weightShareOrNull(cu.getQty()));
 		if (catchWeight != null)
 		{
 			rowOfCU.setCatch_UOM_ID(catchWeight.getUomId().getRepoId());
 			rowOfCU.setQtyDeliveredCatch(catchWeight.toBigDecimal());
 		}
 		return rowOfCU;
-	}
-
-	@Nullable
-	private Quantity extractWeightOrNull(@NonNull final ProductId productId, @NonNull final TUContentCU cu)
-	{
-		final StockQtyAndUOMQty qtys = CatchWeightHelper.extractQtys(huContext, productId, cu.getQty(), cu.getCu());
-		return qtys == null ? null : qtys.getUOMQtyOpt().filter(weight -> weight.signum() > 0).orElse(null);
 	}
 
 	private Set<HuId> getCuIds(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
@@ -262,7 +253,7 @@ class ReversedPickedRows
 			return ImmutableSet.of();
 		}
 		return cusByTU.get(tuKey).stream()
-				.map(cu -> HuId.ofRepoId(cu.getCu().getM_HU_ID()))
+				.map(cu -> cu.getCuId())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

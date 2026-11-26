@@ -39,7 +39,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,10 +64,10 @@ import java.util.function.Predicate;
  */
 public class TUContentLoader
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	/**
 	 * @return the CUs of the TU that hold the product
@@ -180,5 +183,14 @@ public class TUContentLoader
 				? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
 				: null;
 	}
-}
 
+	/**
+	 * @return the weight of the CU; {@code null} if the product has no catch weight or the CU has none (net weight 0, e.g. picked by count)
+	 */
+	@Nullable
+	public static Quantity extractCatchWeightOrNull(@NonNull final IHUContext huContext, @NonNull final ProductId productId, @NonNull final TUContentCU cu)
+	{
+		final StockQtyAndUOMQty qtys = CatchWeightHelper.extractQtys(huContext, productId, cu.getQty(), cu.getCu());
+		return qtys == null ? null : qtys.getUOMQtyOpt().filter(weight -> weight.signum() > 0).orElse(null);
+	}
+}

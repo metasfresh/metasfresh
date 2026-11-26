@@ -37,14 +37,12 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentScheduleQtyPickedSplitter.CandidatePart;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -74,10 +72,10 @@ import java.util.function.Predicate;
  */
 public class QtyPickedCandidatesCreator
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final TUContentLoader tuContentLoader = new TUContentLoader();
 
 	@NonNull private final IHUContext huContext;
@@ -281,7 +279,7 @@ public class QtyPickedCandidatesCreator
 			@NonNull final List<TUContentGroup> contentGroups,
 			@NonNull final ProductId productId)
 	{
-		final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(contentGroups, cu -> extractCatchWeightOrNull(productId, cu));
+		final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(contentGroups, cu -> TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu));
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		for (final I_M_ShipmentSchedule_QtyPicked row : tuOnlyRows)
 		{
@@ -303,16 +301,6 @@ public class QtyPickedCandidatesCreator
 			}
 		}
 		return result.build();
-	}
-
-	/**
-	 * @return the weight of the CU, {@code null} if the product has no catch weight or the CU has none (net weight 0, e.g. picked by count)
-	 */
-	@Nullable
-	private Quantity extractCatchWeightOrNull(@NonNull final ProductId productId, @NonNull final TUContentCU cu)
-	{
-		final StockQtyAndUOMQty qtys = CatchWeightHelper.extractQtys(huContext, productId, cu.getQty(), cu.getCu());
-		return qtys == null ? null : qtys.getUOMQtyOpt().filter(weight -> weight.signum() > 0).orElse(null);
 	}
 
 	@Nullable
