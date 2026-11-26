@@ -48,7 +48,7 @@ import java.util.Map;
  */
 public final class TUPickedRowsAllocator
 {
-	private final ImmutableList<TUContentGroup> groups;
+	private final TUContentGroupList groups;
 	private final TUContentCUWeighter weightOfCU;
 	private final Quantity[] consumedByGroup;
 	private final Map<TUContentCU, Quantity> weightCache = new IdentityHashMap<>();
@@ -59,10 +59,10 @@ public final class TUPickedRowsAllocator
 	 *                   (e.g. picked by count). Asked only for the CUs that a row with a quantity covers.
 	 */
 	public TUPickedRowsAllocator(
-			@NonNull final List<TUContentGroup> groups,
+			@NonNull final TUContentGroupList groups,
 			@NonNull final TUContentCUWeighter weightOfCU)
 	{
-		this.groups = ImmutableList.copyOf(groups);
+		this.groups = groups;
 		this.weightOfCU = weightOfCU;
 		this.consumedByGroup = new Quantity[this.groups.size()];
 		for (int i = 0; i < consumedByGroup.length; i++)

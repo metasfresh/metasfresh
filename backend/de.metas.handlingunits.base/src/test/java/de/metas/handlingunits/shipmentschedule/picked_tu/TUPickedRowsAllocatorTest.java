@@ -79,7 +79,7 @@ class TUPickedRowsAllocatorTest
 	private TUPickedRowsAllocator allocator(final Map<TUContentCU, String> weightsByCU, final TUContentGroup... groups)
 	{
 		final TUContentCUWeighter weightOfCU = cu -> weightsByCU.containsKey(cu) ? kg(weightsByCU.get(cu)) : null;
-		return new TUPickedRowsAllocator(ImmutableList.copyOf(groups), weightOfCU);
+		return new TUPickedRowsAllocator(TUContentGroupList.of(ImmutableList.copyOf(groups)), weightOfCU);
 	}
 
 	private TUPickedRowsAllocator.Row row(final int qty, @Nullable final String weight)

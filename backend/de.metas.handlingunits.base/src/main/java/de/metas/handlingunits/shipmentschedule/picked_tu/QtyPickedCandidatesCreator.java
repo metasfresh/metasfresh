@@ -194,12 +194,12 @@ public class QtyPickedCandidatesCreator
 	{
 		final I_M_HU tu = handlingUnitsBL.getById(tuKey.getTuId());
 		final Predicate<AttributeId> attributeSplitsShipmentLine = tuContentLoader.attributeSplitsShipmentLine(getSchedule(tuKey.getShipmentScheduleId()));
-		final List<TUContentGroup> contentGroups = retrieveContentGroups(tu, tuKey, cuIdsToSkip, attributeSplitsShipmentLine);
+		final TUContentGroupList contentGroups = retrieveContentGroups(tu, tuKey, cuIdsToSkip, attributeSplitsShipmentLine);
 
 		// One combination only in the whole TU (CUs of other products do not count): there is nothing to split, so the rows
 		// keep the handling they had before, the line takes the TU's attributes. CUs that other schedules or rows of their own
 		// stand for count: they decide which attributes the TU shows.
-		final boolean hasSeveralCombinations = contentGroups.size() > 1 || countCombinationsOfProduct(tu, tuKey, attributeSplitsShipmentLine) > 1;
+		final boolean hasSeveralCombinations = contentGroups.hasSeveralGroups() || countCombinationsOfProduct(tu, tuKey, attributeSplitsShipmentLine) > 1;
 		if (hasSeveralCombinations && rowsPickedWholeContent(tuOnlyRows, contentGroups))
 		{
 			return createCandidatesPerContentGroup(tuOnlyRows, contentGroups, tuKey.getProductId());
@@ -230,7 +230,7 @@ public class QtyPickedCandidatesCreator
 	 * @return the content of the TU per attribute combination (first-seen order of its CUs, which follows pick order),
 	 * without the CUs that rows already reference
 	 */
-	private List<TUContentGroup> retrieveContentGroups(
+	private TUContentGroupList retrieveContentGroups(
 			@NonNull final I_M_HU tu,
 			@NonNull final ScheduleTUKey tuKey,
 			@NonNull final Set<HuId> cuIdsToSkip,
@@ -247,26 +247,23 @@ public class QtyPickedCandidatesCreator
 
 		final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByAttributes =
 				tuContentLoader.groupStoragesByAttributeCombination(cus, tuKey.getProductId(), huContext, attributeSplitsShipmentLine);
-		return storagesByAttributes.asMap().values().stream()
+		return TUContentGroupList.of(storagesByAttributes.asMap().values().stream()
 				.map(storages -> storages.stream()
 						.map(TUContentCU::ofStorage)
 						.collect(ImmutableList.toImmutableList()))
 				.map(TUContentGroup::new)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableList.toImmutableList()));
 	}
 
 	private static boolean rowsPickedWholeContent(
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows,
-			@NonNull final List<TUContentGroup> contentGroups)
+			@NonNull final TUContentGroupList contentGroups)
 	{
 		if (contentGroups.isEmpty() || tuOnlyRows.stream().anyMatch(row -> row.getQtyPicked().signum() < 0))
 		{
 			return false;
 		}
-		final Quantity contentQty = contentGroups.stream()
-				.map(TUContentGroup::totalQty)
-				.reduce(Quantity::add)
-				.get();
+		final Quantity contentQty = contentGroups.totalQty();
 		final Quantity pickedQty = tuOnlyRows.stream()
 				.map(row -> Quantity.of(row.getQtyPicked(), contentQty.getUOM())) // both in the stock UOM
 				.reduce(Quantity::add)
@@ -276,7 +273,7 @@ public class QtyPickedCandidatesCreator
 
 	private List<ShipmentScheduleWithHU> createCandidatesPerContentGroup(
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows,
-			@NonNull final List<TUContentGroup> contentGroups,
+			@NonNull final TUContentGroupList contentGroups,
 			@NonNull final ProductId productId)
 	{
 		final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(contentGroups, cu -> TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu));
@@ -284,7 +281,7 @@ public class QtyPickedCandidatesCreator
 		for (final I_M_ShipmentSchedule_QtyPicked row : tuOnlyRows)
 		{
 			final List<TUPickedRowsAllocator.Part> parts = allocator.allocate(
-					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.get(0).uom()), extractCatchWeightOrNull(row)));
+					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.uom()), extractCatchWeightOrNull(row)));
 			if (parts.isEmpty())
 			{
 				// a row without quantity gets its candidate as on every other path
