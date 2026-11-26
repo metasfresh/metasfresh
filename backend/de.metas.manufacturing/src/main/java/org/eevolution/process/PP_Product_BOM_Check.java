@@ -86,7 +86,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 					.endOrderBy();
 
 			final Iterator<I_M_Product> products = queryBuilder.create()
-					.setOption(IQuery.OPTION_IteratorBufferSize, 50)
+					.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 					.iterate(I_M_Product.class);
 			int totalCount = 0;
