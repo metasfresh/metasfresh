@@ -753,6 +753,7 @@ public class C_Order_StepDef
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+		// not via processExInTrx: the simulated-deadlock scenarios need the engine's own deadlock retry
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
 	}
@@ -985,18 +986,7 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
-	 * (it runs each document action within a transaction).
-	 * <p>
-	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
-	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
-	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
-	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the order as completed,
-	 * and the candidate keeps its pre-reactivation values.
-	 * <p>
-	 * Inside the enclosing transaction the engine does not own the transaction, so its deadlock retry does not apply.
-	 * That is why {@code completeOrder} stays on {@code documentBL.processEx} directly: the simulated-deadlock scenarios
-	 * ({@code C_Order_SimulatedDeadlockOnCompletion}) need that retry.
+	 * Runs the doc-action and the header save in one transaction, like the WebUI, so async consumers never see the doc-action's side effects with the old DocStatus.
 	 */
 	private void processExInTrx(@NonNull final I_C_Order order, @NonNull final String docAction, @Nullable final String expectedDocStatus)
 	{
