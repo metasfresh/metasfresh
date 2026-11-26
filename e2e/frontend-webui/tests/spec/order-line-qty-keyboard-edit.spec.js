@@ -63,11 +63,14 @@ const MAX_TABS_TO_FIRST_ROW_QTY_CELL = 20;
 // Setup helpers
 // ---------------------------------------------------------------------------
 
-async function createMasterdata(language) {
+// The batch entry flow relies on the Packvorschrift field being shown (webui.quickinput.EnablePackingInstructionsField=Y,
+// the core default): pin it here instead of depending on the global value. valuePrefix: optional product code prefix.
+async function createMasterdata(language, { valuePrefix } = {}) {
   const products = {};
   PRODUCT_KEYS.forEach((key) => {
     products[key] = {
       name: `QtyEdit${key}`,
+      ...(valuePrefix ? { valuePrefix } : {}),
       type: 'Item',
       prices: [{ price: 10.0, currencyCode: 'EUR' }],
     };
@@ -84,6 +87,9 @@ async function createMasterdata(language) {
         },
       },
       products,
+      sysconfigs: {
+        'webui.quickinput.EnablePackingInstructionsField': 'Y',
+      },
     },
   });
 }
@@ -365,6 +371,7 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
+    await Backend.resetWebApiCaches(); // the quick-input layout (Packvorschrift field) is cached in the webapi
 
     const recordId = await createOrderAndOpenLinesTab(page, masterdata);
     console.log(`[keyboard-only] order ${recordId}`);
@@ -417,35 +424,14 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
 // TC11: the same edit, with the customer typed and the batch entry driven by keyboard only
 // ---------------------------------------------------------------------------
 
-async function createMasterdataPackingInstructionsOn(language) {
-  const products = {};
-  PRODUCT_KEYS.forEach((key) => {
-    products[key] = {
-      name: `QtyEdit${key}`,
-      valuePrefix: 'QTYEDITK',
-      type: 'Item',
-      prices: [{ price: 10.0, currencyCode: 'EUR' }],
-    };
-  });
-  return await Backend.createMasterdata({
-    request: {
-      login: { user: { language, firstname: 'QtyEdit', lastname: 'Test' } },
-      bpartners: {
-        CUSTOMER1: {
-          isVendor: false,
-          isCustomer: true,
-          isSoPriceList: true,
-          name: 'Customer',
-        },
-      },
-      products,
-      sysconfigs: {
-        'webui.quickinput.EnablePackingInstructionsField': 'Y',
-      },
-    },
-  });
-}
-
+/**
+ * TC11: the same Menge edit as above, but the whole order entry is keyboard only: the customer is typed
+ * and picked with Enter (no mouse), Alt+Q opens the batch entry, and the empty Packvorschrift is left
+ * with Enter (not Tab: Tab in the list field clears the stale flag and would hide the focus defect).
+ * The cursor must stay in the batch entry after every step. Before the fix it fails at a focus check
+ * that names a header field (e.g. lookup_AD_User_ID); then the same close / grid edit / Alt+U /
+ * reload / WebAPI assertions as the click variant apply.
+ */
 test.describe('Sales order — keyboard-only order entry and Menge edit', () => {
   [
     { language: 'de_DE', label: 'German' },
@@ -463,7 +449,7 @@ test.describe('Sales order — keyboard-only order entry and Menge edit', () => 
       test.setTimeout(300000);
 
       const recorder = installDocumentEventRecorder(page);
-      const masterdata = await createMasterdataPackingInstructionsOn(language);
+      const masterdata = await createMasterdata(language, { valuePrefix: 'QTYEDITK' });
       await LoginPage.goto();
       await LoginPage.login(masterdata.login.user);
       await DashboardPage.expectVisible();
