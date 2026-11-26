@@ -1,9 +1,9 @@
 -- Sales invoice window (AD_Window 167, header tab 263): show the stored buyer VAT ID, seller VAT ID and fiscal representation, read-only.
--- The three elements sit in one new element group right after the group holding the business partner / location, flagged as advanced fields (Alt+E only) and not shown in the grid.
+-- The three elements sit in one new element group in the advanced-edit section (after the existing advanced group), flagged as advanced fields (Alt+E only) and not shown in the grid.
 -- IDs from the central ID server (2026-11-26): AD_Field 788201..788203; AD_UI_ElementGroup 556018; AD_UI_Element 656526..656528.
 
--- UI element group (in the main UI column of tab 263, between 'default' (seq 10) and 'rest' (seq 20))
-INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540028,556018 /*From ID Server*/,TO_TIMESTAMP('2026-11-26 11:00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','vataxids',15,TO_TIMESTAMP('2026-11-26 11:00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+-- UI element group (in the advanced-edit UI column 540698 of tab 263, after the existing group (seq 10))
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540698,556018 /*From ID Server*/,TO_TIMESTAMP('2026-11-26 11:00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','vataxids',20,TO_TIMESTAMP('2026-11-26 11:00:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Field + UI element: C_Invoice.BuyerVATaxID
