@@ -1,8 +1,9 @@
 package de.metas.cucumber.stepdefs.shipment;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler;
+import de.metas.frontend_testing.masterdata.shipment_schedule.EnsureShipmentScheduleAttributeConfigCommand;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -39,10 +40,8 @@ import java.util.List;
  */
 public class M_ShipmentSchedule_AttributeConfig_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-	private static final String HANDLER_CLASSNAME = "de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler";
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	/** Rows the "inactive" step deactivated; re-activated after the scenario. */
 	private final List<I_M_ShipmentSchedule_AttributeConfig> deactivatedConfigs = new ArrayList<>();
@@ -62,11 +61,7 @@ public class M_ShipmentSchedule_AttributeConfig_StepDef
 
 		final AttributeId attributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeCode));
 
-		final List<I_M_ShipmentSchedule_AttributeConfig> configs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_Attribute_ID, attributeId)
-				.create()
-				.list();
+		final List<I_M_ShipmentSchedule_AttributeConfig> configs = retrieveActiveConfigs(attributeId);
 
 		if (configs.isEmpty())
 		{
@@ -92,32 +87,25 @@ public class M_ShipmentSchedule_AttributeConfig_StepDef
 	public void config_is_active(@NonNull final String attributeCode)
 	{
 		final AttributeId attributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeCode));
-		final int handlerId = queryBL.createQueryBuilder(I_M_IolCandHandler.class)
-				.addEqualsFilter(I_M_IolCandHandler.COLUMNNAME_Classname, HANDLER_CLASSNAME)
-				.create()
-				.firstId();
-		if (handlerId <= 0)
-		{
-			throw new AdempiereException("No M_IolCandHandler found for Classname=" + HANDLER_CLASSNAME);
-		}
+		final List<I_M_ShipmentSchedule_AttributeConfig> configsBefore = retrieveActiveConfigs(attributeId);
 
-		final boolean hasActiveConfig = queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
+		EnsureShipmentScheduleAttributeConfigCommand.builder()
+				.attributeCodes(ImmutableList.of(attributeCode))
+				.build()
+				.execute();
+
+		retrieveActiveConfigs(attributeId).stream()
+				.filter(config -> configsBefore.stream().noneMatch(before -> before.getM_ShipmentSchedule_AttributeConfig_ID() == config.getM_ShipmentSchedule_AttributeConfig_ID()))
+				.forEach(insertedConfigs::add);
+	}
+
+	private List<I_M_ShipmentSchedule_AttributeConfig> retrieveActiveConfigs(@NonNull final AttributeId attributeId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_Attribute_ID, attributeId)
-				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_IolCandHandler_ID, handlerId)
 				.create()
-				.anyMatch();
-		if (hasActiveConfig)
-		{
-			return;
-		}
-
-		final I_M_ShipmentSchedule_AttributeConfig config = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
-		config.setM_Attribute_ID(attributeId.getRepoId());
-		config.setM_IolCandHandler_ID(handlerId);
-		config.setOnlyIfInReferencedASI(false);
-		InterfaceWrapperHelper.saveRecord(config);
-		insertedConfigs.add(config);
+				.list();
 	}
 
 	/**
@@ -132,12 +120,7 @@ public class M_ShipmentSchedule_AttributeConfig_StepDef
 	public void config_is_inactive(@NonNull final String attributeCode)
 	{
 		final AttributeId attributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeCode));
-		final List<I_M_ShipmentSchedule_AttributeConfig> configs = queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_Attribute_ID, attributeId)
-				.create()
-				.list();
-		for (final I_M_ShipmentSchedule_AttributeConfig config : configs)
+		for (final I_M_ShipmentSchedule_AttributeConfig config : retrieveActiveConfigs(attributeId))
 		{
 			config.setIsActive(false);
 			InterfaceWrapperHelper.saveRecord(config);

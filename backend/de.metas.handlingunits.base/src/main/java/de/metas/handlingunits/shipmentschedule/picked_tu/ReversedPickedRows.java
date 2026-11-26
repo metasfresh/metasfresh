@@ -33,9 +33,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
@@ -49,9 +47,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.RoundingMode;
@@ -295,7 +291,7 @@ class ReversedPickedRows
 	private TUContentCU toTUContentCU(@NonNull final I_M_HU cu, @NonNull final ProductId productId)
 	{
 		final IHUProductStorage storage = huContext.getHUStorageFactory().getStorage(cu).getProductStorage(productId);
-		return new TUContentCU(cu, storage.getQtyInStockingUOM());
+		return TUContentCU.ofStorage(storage);
 	}
 
 	/**

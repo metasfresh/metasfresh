@@ -48,6 +48,7 @@ import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -84,10 +85,10 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_ShipmentSchedule_QtyPicked_StepDefData shipmentScheduleQtyPickedTable;
@@ -431,30 +432,33 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		final I_M_HU tu = handlingUnitsBL.getById(tuIds.iterator().next());
 
 		final AttributeId lotAttributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString("Lot-Nummer"));
-		DataTableRows.of(dataTable).forEach(row -> {
-			final String lot = row.getAsOptionalString("Lot-Nummer").orElse(null);
-			final I_M_HU hu;
-			if (lot == null || lot.trim().isEmpty())
-			{
-				hu = tu;
-			}
-			else
-			{
-				final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
-						.filter(handlingUnitsBL::isVirtual)
-						.filter(cu -> {
-							final I_M_HU_Attribute lotAttribute = huAttributesDAO.retrieveAttribute(cu, lotAttributeId);
-							return lotAttribute != null && lot.equals(lotAttribute.getValue());
-						})
-						.collect(ImmutableList.toImmutableList());
-				if (matchingCUs.size() != 1)
-				{
-					throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the TU " + tu.getM_HU_ID() + " but found " + matchingCUs.size());
-				}
-				hu = matchingCUs.get(0);
-			}
-			huTable.putOrReplace(row.getAsIdentifier("M_HU_ID"), hu);
-		});
+		DataTableRows.of(dataTable).forEach(row -> registerTUOrItsCU(row, tu, lotAttributeId));
+	}
+
+	private void registerTUOrItsCU(@NonNull final DataTableRow row, @NonNull final I_M_HU tu, @NonNull final AttributeId lotAttributeId)
+	{
+		final String lot = row.getAsOptionalString("Lot-Nummer").orElse(null);
+		final I_M_HU hu = Check.isBlank(lot) ? tu : retrieveCUWithLot(tu, lot, lotAttributeId);
+		huTable.putOrReplace(row.getAsIdentifier("M_HU_ID"), hu);
+	}
+
+	private I_M_HU retrieveCUWithLot(@NonNull final I_M_HU tu, @NonNull final String lot, @NonNull final AttributeId lotAttributeId)
+	{
+		final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
+				.filter(handlingUnitsBL::isVirtual)
+				.filter(cu -> hasLot(cu, lot, lotAttributeId))
+				.collect(ImmutableList.toImmutableList());
+		if (matchingCUs.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the TU " + tu.getM_HU_ID() + " but found " + matchingCUs.size());
+		}
+		return matchingCUs.get(0);
+	}
+
+	private boolean hasLot(@NonNull final I_M_HU cu, @NonNull final String lot, @NonNull final AttributeId lotAttributeId)
+	{
+		final I_M_HU_Attribute lotAttribute = huAttributesDAO.retrieveAttribute(cu, lotAttributeId);
+		return lotAttribute != null && lot.equals(lotAttribute.getValue());
 	}
 
 	@And("^M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule (.*) can be located in specified order$")

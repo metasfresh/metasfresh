@@ -100,8 +100,8 @@ public class M_InOut_Line_StepDef
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final MatchInvoiceService matchInvoiceService = SpringContextHolder.instance.getBean(MatchInvoiceService.class);
 
 	private final M_InOut_StepDefData inoutTable;

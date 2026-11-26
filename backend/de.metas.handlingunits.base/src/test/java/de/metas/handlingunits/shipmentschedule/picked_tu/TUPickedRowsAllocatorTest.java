@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.quantity.Quantity;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.Nested;
@@ -114,6 +115,7 @@ class TUPickedRowsAllocatorTest
 			final TUPickedRowsAllocator allocator = allocator(ImmutableMap.of(), group(cu(2), cu(3)));
 
 			assertThat(allocator.allocate(row(2, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
+			assertThat(allocator(ImmutableMap.of(), group(cu(2), cu(3))).allocate(row(5, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
 		}
 
 		@Test
@@ -123,6 +125,7 @@ class TUPickedRowsAllocatorTest
 			allocator.allocate(row(2, null));
 
 			assertThat(allocator.allocate(row(2, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
+			assertThat(allocator(ImmutableMap.of(), group(cu(2), cu(3))).allocate(row(5, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
 		}
 	}
 
@@ -151,6 +154,14 @@ class TUPickedRowsAllocatorTest
 			assertThat(parts).extracting(part -> part.getCatchWeight().toBigDecimal())
 					.as("shares by quantity, the last part gets the remainder")
 					.containsExactly(new BigDecimal("2.1"), new BigDecimal("2.0"));
+		}
+
+		@Test
+		void cuWithoutWeight_rowOfOnePart_keepsItsOwnWeight()
+		{
+			final List<TUPickedRowsAllocator.Part> parts = allocator(ImmutableMap.of(), group(cu(2))).allocate(row(2, "2.0"));
+
+			assertThat(parts).singleElement().satisfies(part -> assertThat(part.getCatchWeight()).as("empty: the row's weight stays").isNull());
 		}
 
 		@Test

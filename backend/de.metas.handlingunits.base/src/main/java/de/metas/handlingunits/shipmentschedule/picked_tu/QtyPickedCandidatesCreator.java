@@ -251,7 +251,7 @@ public class QtyPickedCandidatesCreator
 				tuContentLoader.groupStoragesByAttributeCombination(cus, tuKey.getProductId(), huContext, attributeSplitsShipmentLine);
 		return storagesByAttributes.asMap().values().stream()
 				.map(storages -> storages.stream()
-						.map(storage -> new TUContentCU(storage.getM_HU(), storage.getQtyInStockingUOM()))
+						.map(TUContentCU::ofStorage)
 						.collect(ImmutableList.toImmutableList()))
 				.map(TUContentGroup::new)
 				.collect(ImmutableList.toImmutableList());

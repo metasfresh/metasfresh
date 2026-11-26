@@ -22,9 +22,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -50,7 +47,6 @@ import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
 import de.metas.util.Services;
 import lombok.NonNull;

@@ -23,50 +23,19 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
-import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
-import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
