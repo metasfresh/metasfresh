@@ -833,12 +833,18 @@ public class HUTransformService
 	}
 
 	/**
-	 * The LU/TU producer looks up the LU item by itself, without partner and product (see {@link LUTUProducerDestination#getLUItemPI()}), so it finds no item if the LU PI
-	 * links the TU PI only via partner- or product-specific items. Only in that case, return a product-specific item (different products on the same LU are allowed);
-	 * otherwise {@code null}, so the producer's lookup is unchanged. A partner-specific item without product is not returned here; the caller then looks it up (only if this returns {@code null}),
+	 * The LU/TU producer created here gets neither a partner nor a fallback product, so its own lookup ({@link LUTUProducerDestination#getLUItemPI()}) finds only
+	 * an item without partner and without product, and none if the LU PI links the TU PI only via partner- or product-specific items. Only in that case, return
+	 * a product-specific item (different products on the same LU are allowed); otherwise {@code null}, so the producer's lookup is unchanged.
+	 * A partner-specific item without product is not returned here; the caller then looks it up (only if this returns {@code null}),
 	 * so a product-specific item wins over a partner-specific one.
 	 * <p>
 	 * The check mirrors the producer's lookup, so it uses the LU PI's current version like the producer does; the product-specific item is taken from the LU's own PI version.
+	 * <p>
+	 * Mobile picking onto an existing LU first keeps the item the LU already uses, with the same lookup as the HU editor
+	 * ({@link IHandlingUnitsDAO#retrieveParentPIItemForChildHUOrNull}). Its fallback after that is deliberately different from the producer's own fallback ({@link LUTUProducerDestination#setLUItemFallbackProductId(ProductId)}, used by mobile picking):
+	 * here, if the TU's product has no item, <b>another product's</b> item is returned (moving existing TUs onto an LU may mix products),
+	 * and the "is there an item without product" check ignores the partner; the producer's fallback uses only the given product's item and honours its partner.
 	 */
 	@Nullable
 	private I_M_HU_PI_Item getProductSpecificLUPIItemIfProducerFindsNoneOrNull(
