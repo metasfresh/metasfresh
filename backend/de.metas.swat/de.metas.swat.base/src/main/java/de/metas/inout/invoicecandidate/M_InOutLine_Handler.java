@@ -28,6 +28,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
@@ -76,6 +77,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_DocType;
@@ -88,6 +90,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static java.math.BigDecimal.ONE;
@@ -925,6 +928,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.setFrom(billLocation);
+	}
+
+	/**
+	 * The tax location of an in/out line candidate is the delivery location, the in/out line's org and the movement date of its in/out
+	 * and its ship-from country is the one of the in/out's warehouse, exactly as {@code #calculatePriceAndTax} determines the tax.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final org.compiere.model.I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
+
+		return Optional.of(new TaxLocation(
+				InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+				OrgId.ofRepoId(inOutLine.getAD_Org_ID()),
+				inOut.getMovementDate(),
+				Services.get(IWarehouseBL.class).getCountryId(WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()))));
 	}
 
 	@Override

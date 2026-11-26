@@ -36,6 +36,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -57,6 +58,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
@@ -91,6 +93,9 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -102,6 +107,7 @@ import org.jetbrains.annotations.NotNull;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -537,6 +543,23 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
+	}
+
+	/**
+	 * The tax location of an order line candidate is the order <b>line's</b> location, org and promised date (not the order header's),
+	 * and its ship-from country is the one of the line's warehouse, exactly as {@code OrderLineBL#setTax} determines the line's tax.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
+
+		return Optional.of(new TaxLocation(
+				OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				orderLine.getDatePromised(),
+				Services.get(IWarehouseBL.class).getCountryId(warehouseId)));
 	}
 
 	@Override

@@ -27,7 +27,13 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.vatid.TaxLocation;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
+import de.metas.organization.OrgId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -59,11 +65,16 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -564,5 +575,29 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
 		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
+	}
+
+	@Override
+	public TaxLocation getTaxLocation(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOutLine shipmentLine)
+	{
+		if (shipmentLine != null)
+		{
+			// the tax of a shipped line is determined from the shipment, as InvoiceLineBL.setTaxBasedOnShipment does
+			final I_M_InOut inOut = Services.get(IInOutBL.class).getById(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()));
+			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inOut.getM_Warehouse_ID());
+			return new TaxLocation(
+					InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+					OrgId.ofRepoId(inOut.getAD_Org_ID()),
+					inOut.getMovementDate(),
+					warehouseId != null ? Services.get(IWarehouseBL.class).getCountryId(warehouseId) : null);
+		}
+
+		return createInvoiceCandidateHandler(ic)
+				.getTaxLocation(ic)
+				.orElseGet(() -> new TaxLocation(
+						InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+						OrgId.ofRepoId(ic.getAD_Org_ID()),
+						ic.getDateOrdered(),
+						null));
 	}
 }
