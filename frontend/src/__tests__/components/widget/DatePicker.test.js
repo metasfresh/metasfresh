@@ -602,5 +602,31 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     expect(patch).not.toHaveBeenCalled();
     expect(notifications()).toHaveLength(1);
   });
+
+  it('the calendar icon resets the input: the earlier typing is neither saved nor reported later', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    picker().handleFocus(); // opens the calendar
+    typeInto(wrapper, 'abc');
+    picker().toggleCalendarOpenClosed(); // closes it and resets the input to the stored date
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('non-grid: an ISO date with time zone accepted while typing raises no error when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '2026-12-05T00:00:00.000+01:00');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
 });
 

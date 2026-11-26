@@ -186,7 +186,12 @@ class DatePicker extends PureComponent {
    * value is kept in that case (handleBlur resets the input to it).
    */
   commitTypedText = (typedText) => {
-    const moment = this.parseTypedText(typedText.trim());
+    const text = typedText.trim();
+    // (also what typing itself accepts, see handleDateChange, so a text taken while typing is never reported)
+    let moment = this.parseTypedText(text);
+    if (!moment || !moment.isValid()) {
+      moment = this.setTimezone(this.convertToMoment(text, true));
+    }
     if (moment && moment.isValid()) {
       this.callPatchIfNeeded(moment);
     } else {
@@ -256,6 +261,9 @@ class DatePicker extends PureComponent {
   };
 
   resetPickerSelectedDateAndInputValueToLastPatchedDate = () => {
+    // the input shows the stored value again: what was typed before is gone (handleBlur commits it first)
+    this.typedText = undefined;
+
     if (this.picker) {
       const { datePatched } = this.state;
 
