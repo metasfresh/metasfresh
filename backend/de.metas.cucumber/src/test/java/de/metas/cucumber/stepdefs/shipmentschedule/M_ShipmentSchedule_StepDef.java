@@ -272,7 +272,10 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) order line that created this schedule<br>
 	 *   <b>Warehouse_ID</b> — (optional, identifier-ref) filter by warehouse<br>
 	 *   <b>QtyToDeliver</b> — (optional) filter by qty to deliver<br>
+	 *   <b>QtyPickList</b> — (optional) filter by qty on the pick list<br>
+	 *   <b>Processed</b> — (optional) filter by processed flag<br>
 	 *   <b>IsToRecompute</b> — (optional) expected recompute flag<br>
+	 *   <i>A wait column must differ between the stale and the settled state; prefer the exact precondition of the next step (e.g. Processed=N for 'generate shipments').</i><br>
 	 *   <b>Carrier_Product_ID</b> — (optional, identifier-ref) filter by the advised carrier product<br>
 	 *   <b>Carrier_Goods_Type_ID</b> — (optional, identifier-ref) filter by carrier goods type<br>
 	 *   <b>Carrier_Advising_Status</b> — (optional) filter by advising status code (e.g. CO=Completed, MAN=Manual)<br>
@@ -1386,6 +1389,10 @@ public class M_ShipmentSchedule_StepDef
 				});
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyToDeliver)
 				.ifPresent(qtyToDeliver -> queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver));
+		row.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList)
+				.ifPresent(qtyPickList -> queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, qtyPickList));
+		row.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_Processed)
+				.ifPresent(processed -> queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, processed));
 
 		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID)
 				.ifPresent(identifier ->
