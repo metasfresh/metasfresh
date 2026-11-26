@@ -5,7 +5,14 @@ import MomentTZ from 'moment-timezone';
 
 import tableCellProps from '../../../../test_setup/fixtures/table/table_cell.json';
 import TableCell from '../../../components/table/TableCell';
+import TableRow from '../../../components/table/TableRow';
 import WidgetWrapper from '../../../containers/WidgetWrapper';
+import {
+  DATE_TEXT,
+  PROPERTY,
+  createRowProps,
+  mountFocusedCellWithEditor,
+} from '../../../../test_setup/gridDateCellHelpers';
 
 /**
  * Grid date cell, cell side: only a Date cell hands isGridCell / isPointerEdit /
@@ -126,5 +133,93 @@ describe('TableCell — grid date wiring', () => {
     );
     wrapper.find('td').simulate('doubleClick', {});
     expect(handleDoubleClick.mock.calls[0][0]).toMatchObject({ pointer: true });
+  });
+
+  // a click into a static date cell must leave the date selected, like the keyboard
+  // entry does, so that typing replaces it (`20.11.2026` + `03…` must not become `20.11.202603`)
+  describe('pointer entry selects the date text, so typing replaces it', () => {
+    // the real row, with only the DOM lookup of the cell (_focusCell) skipped
+    const createRow = (widgetType) => {
+      const row = shallow(<TableRow {...createRowProps(widgetType)} />).instance();
+      jest.spyOn(row, '_focusCell').mockImplementation((p, cb) => cb());
+      return row;
+    };
+
+    let td;
+    afterEach(() => td && td.remove());
+
+    const enterByPointer = ({ isDateCell, widgetType, simulate }) => {
+      const row = createRow(widgetType);
+      const mounted = mountFocusedCellWithEditor();
+      td = mounted.td;
+      const { input } = mounted;
+      const cell = shallow(
+        <TableCell
+          {...cellProps({
+            property: PROPERTY,
+            isDateCell,
+            isEdited: false,
+            handleDoubleClick: row.handleEditProperty,
+          })}
+        />
+      );
+      [].concat(simulate).forEach((eventName) =>
+        cell.find('td').simulate(eventName, { persist: jest.fn() })
+      );
+      return { row, input };
+    };
+
+    const expectDateFullySelected = ({ row, input }) => {
+      expect(row.state.edited).toBe(PROPERTY);
+      expect(row.state.isPointerEdit).toBe(true);
+      expect(document.activeElement).toBe(input);
+      expect(input.selectionStart).toBe(0);
+      expect(input.selectionEnd).toBe(DATE_TEXT.length);
+    };
+
+    it('a click on a static Date cell focuses its input with the whole date selected', () => {
+      expectDateFullySelected(
+        enterByPointer({
+          isDateCell: true,
+          widgetType: 'Date',
+          simulate: 'click',
+        })
+      );
+    });
+
+    // a double click arrives as click + dblclick: the click enters edit and selects the date; this
+    // checks that our dblclick handling does not disturb that selection (jsdom does not reproduce
+    // the browser's own caret placement on the second mousedown)
+    it('a click followed by a double click on a Date cell leaves the date fully selected', () => {
+      expectDateFullySelected(
+        enterByPointer({
+          isDateCell: true,
+          widgetType: 'Date',
+          simulate: ['click', 'doubleClick'],
+        })
+      );
+    });
+
+    it('a double click reaching a not-yet-edited Date cell also selects the date', () => {
+      expectDateFullySelected(
+        enterByPointer({
+          isDateCell: true,
+          widgetType: 'Date',
+          simulate: 'doubleClick',
+        })
+      );
+    });
+
+    it('a double click on a non-Date cell does not select its text (unchanged)', () => {
+      const { row, input } = enterByPointer({
+        isDateCell: false,
+        widgetType: 'CostPrice',
+        simulate: 'doubleClick',
+      });
+
+      expect(row.state.edited).toBe(PROPERTY);
+      expect(document.activeElement).toBe(input);
+      expect(input.selectionStart).toBe(input.value.length);
+    });
   });
 });
