@@ -1366,7 +1366,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		// Rows that point to a box (non-virtual TU) are collected per (shipment schedule, box); every other row is handled alone.
 		// The candidates keep the order of the given rows: a box's candidates come where the box's first row is.
-		// The order matters because consecutive candidates are merged into one shipment line where they can be.
+		// This order does not decide which candidates share a shipment line: the callers sort the candidates before the lines are built.
 		final Map<HuId, Boolean> isVirtualByTuId = new HashMap<>();
 		final LinkedHashMap<BoxKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByBox = new LinkedHashMap<>();
 		// one step per box (at the place of its first row) or per other row, in the order of the rows

@@ -196,7 +196,7 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	@Test
 	void rowOutsideABox_afterABoxRow_candidatesKeepTheRowOrder()
 	{
-		// consecutive candidates are merged into one shipment line where they can be, so their order must follow the rows
+		// the method contract: candidates come in the order of the given rows (line merging does not depend on it, the callers sort)
 		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE);
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("3"), BigDecimal.ZERO);
 		final I_M_ShipmentSchedule_QtyPicked boxRow = createBoxRow(schedule, box, "2");
