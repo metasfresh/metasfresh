@@ -83,13 +83,14 @@ export const PickLineScanScreen = {
     }),
 
     /** Scans a raw CU label on the scan step that must be refused */
-    scanCULabelRefused: async (label, expectedText, { whileToastShown } = {}) => await step(`${NAME} - Scan CU label, expect refusal '${expectedText}'`, async () => {
+    scanCULabelRefused: async (label, expectedText, { whileToastShown, unexpectedText } = {}) => await step(`${NAME} - Scan CU label, expect refusal '${expectedText}'`, async () => {
         await PickLineScanScreen.waitForScreen();
         await expectErrorToast(
             `${NAME} label refusal`,
             async () => await PickLineScanScreen.typeQRCode(label),
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
+                if (unexpectedText) expect(textContent).not.toContain(unexpectedText);
                 await expectToastCloseButtonOnScreen();
                 await whileToastShown?.();
             }
@@ -99,7 +100,7 @@ export const PickLineScanScreen = {
     }),
 
     /** Rescans a raw CU label inside the open quantity block where it must be refused */
-    rescanCULabelRefused: async (label, expectedText, { whileToastShown } = {}) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
+    rescanCULabelRefused: async (label, expectedText, { whileToastShown, unexpectedText } = {}) => await step(`${NAME} - Rescan CU label, expect refusal '${expectedText}'`, async () => {
         await expectErrorToast(
             `${NAME} label rescan refusal`,
             async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' }),

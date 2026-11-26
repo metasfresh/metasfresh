@@ -187,7 +187,7 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
-	void formatMismatch_tellsWhyTheLabelDoesNotFit()
+	void formatMismatch_showsOnlyTheLocalizedMessage_notTheParserReason()
 	{
 		final String label = "]d2" + label(GTIN, PRODUCT_NO, "7");
 		final String parserReason = format.parse(ScannedCode.ofString(label)).getExplanation().getDefaultValue();
@@ -198,7 +198,7 @@ class PickingCULabelServiceTest
 				.satisfies(ex -> {
 					final AdempiereException adempiereException = (AdempiereException)ex;
 					assertThat(adempiereException.getErrorCode()).isEqualTo(CU_LABEL_FORMAT_MISMATCH.toAD_Message());
-					assertThat(adempiereException.getMessage()).contains(parserReason);
+					assertThat(adempiereException.getMessage()).doesNotContain(parserReason);
 				});
 	}
 

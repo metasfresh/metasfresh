@@ -1,4 +1,5 @@
 import { toast } from 'react-toastify';
+import { trl } from '../../utils/translations';
 import { toastError, toastErrorFromObj } from '../../utils/toast';
 import { UserMessageError } from '../../utils/UserMessageError';
 import * as uiTrace from '../../utils/ui_trace';
@@ -29,7 +30,7 @@ describe('toastError', () => {
 
     const message = toastErrorSpy.mock.calls[0][0].props.message;
     expect(message).not.toContain('Expected constant');
-    expect(message.length).toBeGreaterThan(0);
+    expect(message).toBe(trl('picking.cuLabel.formatMismatch'));
   });
 
   it('traces the details of the refusal for support, not in the toast', () => {

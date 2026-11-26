@@ -10,6 +10,8 @@ import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
+// the English parser reason of a refused label (server ScannableCodeFormat.parse); the toast must never show it
+const PARSER_REASON_EN = "Invalid constant marker";
 
 /** CU quantity entry, Scan each CU ("scan every CU label") */
 
@@ -273,13 +275,13 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
     const validLabel = buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 });
     await test.step('a label with a "]d2" prefix (a form the format does not read) is refused, nothing is booked', async () => {
         // the refusal toast shows only the localized message; the parser reason (constant "01" finds "]d") goes to the UI trace
-        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, `${MSG_FORMAT_MISMATCH}. Nothing was booked.`);
+        await PickLineScanScreen.scanCULabelRefused(']d2' + validLabel, `${MSG_FORMAT_MISMATCH}. Nothing was booked.`, { unexpectedText: PARSER_REASON_EN });
     });
     await test.step('a bare GTIN is refused, nothing is booked', async () => {
         await PickLineScanScreen.scanCULabelRefused(gtin, MSG_FORMAT_MISMATCH);
     });
     await test.step('a string of another shape is refused, nothing is booked', async () => {
-        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', `${MSG_FORMAT_MISMATCH}. Nothing was booked.`);
+        await PickLineScanScreen.scanCULabelRefused('not-a-label-of-this-format', `${MSG_FORMAT_MISMATCH}. Nothing was booked.`, { unexpectedText: PARSER_REASON_EN });
     });
     await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 
