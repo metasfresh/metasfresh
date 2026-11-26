@@ -69,6 +69,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -279,11 +280,14 @@ public class M_InOut
 		// A row stands for its VHU, or for the CUs of its box when it only references the box (several CUs of one attribute combination).
 		// One entry per HU: the reopen maps its requests by HU id and rejects a duplicate. An HU might be in multiple
 		// qtyPicked records if inouts are completed and reversed multiple times.
+		// The VHUs are read once per row, before the reopen below changes the picking job.
 		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = new LinkedHashSet<>();
 		final Map<HuId, HUWithPickOnTheFlyStatus> husInvolvedById = new LinkedHashMap<>();
+		final Map<Integer, Set<HuId>> pickedVhuIdsByRowId = new HashMap<>();
 		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : assignedQuantities)
 		{
 			final Set<HuId> pickedVhuIds = huShipmentScheduleBL.retrievePickedVhuIds(qtyPicked);
+			pickedVhuIdsByRowId.put(qtyPicked.getM_ShipmentSchedule_QtyPicked_ID(), pickedVhuIds);
 			if (!pickedVhuIds.isEmpty())
 			{
 				allShipmentSchedulesInvolved.add(ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID()));
@@ -317,7 +321,7 @@ public class M_InOut
 		if (!huIdsCoveredByPickingJobs.isEmpty())
 		{
 			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
-					.filter(qtyPicked -> huShipmentScheduleBL.retrievePickedVhuIds(qtyPicked).stream().anyMatch(huIdsCoveredByPickingJobs::contains))
+					.filter(qtyPicked -> pickedVhuIdsByRowId.get(qtyPicked.getM_ShipmentSchedule_QtyPicked_ID()).stream().anyMatch(huIdsCoveredByPickingJobs::contains))
 					.collect(ImmutableList.toImmutableList());
 			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
 		}

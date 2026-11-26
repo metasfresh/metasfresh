@@ -30,7 +30,7 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 	{
 		final IHUProductStorage storage = mock(IHUProductStorage.class);
 		when(storage.getM_HU()).thenReturn(vhu);
-		when(storage.getQty()).thenReturn(Quantity.of(BigDecimal.valueOf(qty), uom));
+		when(storage.getQtyInStockingUOM()).thenReturn(Quantity.of(BigDecimal.valueOf(qty), uom));
 		return storage;
 	}
 
@@ -70,5 +70,21 @@ class HUShipmentScheduleBL_BoxContentGroup_Test
 
 		assertThat(group.remainingQty().toBigDecimal()).isEqualByComparingTo("2");
 		assertThat(group.wholeVhuOrNull(qty(2))).isNull();
+	}
+
+	@Test
+	void storageInOtherUom_groupCountsInStockUom()
+	{
+		// the rows' QtyPicked is in the stock UOM; a storage kept in another UOM must not be compared in that UOM
+		final I_C_UOM storageUom = mock(I_C_UOM.class);
+		final IHUProductStorage storage = mock(IHUProductStorage.class);
+		when(storage.getM_HU()).thenReturn(mock(I_M_HU.class));
+		when(storage.getQty()).thenReturn(Quantity.of(BigDecimal.ONE, storageUom));
+		when(storage.getQtyInStockingUOM()).thenReturn(qty(10));
+		final HUShipmentScheduleBL.BoxContentGroup group = new HUShipmentScheduleBL.BoxContentGroup(ImmutableList.of(storage));
+
+		assertThat(group.uom()).isSameAs(uom);
+		assertThat(group.totalQty().toBigDecimal()).isEqualByComparingTo("10");
+		assertThat(group.wholeVhuOrNull(qty(10))).isSameAs(storage.getM_HU());
 	}
 }

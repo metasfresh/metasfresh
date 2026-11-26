@@ -194,6 +194,26 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	}
 
 	@Test
+	void rowOutsideABox_afterABoxRow_candidatesKeepTheRowOrder()
+	{
+		// consecutive candidates are merged into one shipment line where they can be, so their order must follow the rows
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("3"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked boxRow = createBoxRow(schedule, box, "2");
+		final I_M_ShipmentSchedule_QtyPicked rowOutsideBoxes = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
+				schedule,
+				StockQtyAndUOMQtys.ofQtyInStockUOM(Quantity.of(BigDecimal.ONE, uomEach), helper.pSaladProductId),
+				I_M_ShipmentSchedule_QtyPicked.class);
+		saveRecord(rowOutsideBoxes);
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		assertThat(candidates)
+				.extracting(candidate -> candidate.getShipmentScheduleQtyPicked().getM_ShipmentSchedule_QtyPicked_ID())
+				.containsExactly(boxRow.getM_ShipmentSchedule_QtyPicked_ID(), rowOutsideBoxes.getM_ShipmentSchedule_QtyPicked_ID());
+	}
+
+	@Test
 	void boxWithAUnitOfAnotherProduct_ofOneCombination_keepsTheRowsAsTheyWere()
 	{
 		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE);

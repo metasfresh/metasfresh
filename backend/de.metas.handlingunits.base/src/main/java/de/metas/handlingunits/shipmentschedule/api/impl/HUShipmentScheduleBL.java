@@ -1363,27 +1363,23 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
 		// Rows that point to a box (non-virtual TU) are collected per (shipment schedule, box); every other row is handled alone.
+		// The candidates keep the order of the given rows: a box's candidates come where the box's first row is.
+		// The order matters because consecutive candidates are merged into one shipment line where they can be.
 		final Map<HuId, Boolean> isVirtualByTuId = new HashMap<>();
-		final LinkedHashMap<BoxKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByBox = new LinkedHashMap<>();
-		final List<I_M_ShipmentSchedule_QtyPicked> rowsOutsideBoxes = new ArrayList<>();
+		final LinkedHashMap<Object, List<I_M_ShipmentSchedule_QtyPicked>> rowsByBoxOrRow = new LinkedHashMap<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : qtyPickedRecords)
 		{
 			final HuId tuId = HuId.ofRepoIdOrNull(row.getM_TU_HU_ID());
 			final boolean isBoxRow = tuId != null
 					&& !isVirtualByTuId.computeIfAbsent(tuId, id -> handlingUnitsBL.isVirtual(handlingUnitsBL.getById(id)));
-			if (isBoxRow)
-			{
-				rowsByBox.computeIfAbsent(new BoxKey(ShipmentScheduleId.ofRepoId(row.getM_ShipmentSchedule_ID()), tuId), key -> new ArrayList<>()).add(row);
-			}
-			else
-			{
-				rowsOutsideBoxes.add(row);
-			}
+			final Object key = isBoxRow ? new BoxKey(ShipmentScheduleId.ofRepoId(row.getM_ShipmentSchedule_ID()), tuId) : new Object();
+			rowsByBoxOrRow.computeIfAbsent(key, k -> new ArrayList<>()).add(row);
 		}
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
-		rowsOutsideBoxes.forEach(row -> result.addAll(createCandidatesForQtyPicked(row, huContext, qtyTypeToUse)));
-		rowsByBox.forEach((box, rows) -> result.addAll(createCandidatesForBox(box, rows, huContext, qtyTypeToUse)));
+		rowsByBoxOrRow.forEach((key, rows) -> result.addAll(key instanceof BoxKey
+				? createCandidatesForBox((BoxKey)key, rows, huContext, qtyTypeToUse)
+				: createCandidatesForQtyPicked(rows.get(0), huContext, qtyTypeToUse)));
 		return result.build();
 	}
 
@@ -1567,7 +1563,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.reduce(Quantity::add)
 				.get();
 		final Quantity pickedQty = boxRows.stream()
-				.map(row -> Quantity.of(row.getQtyPicked(), contentQty.getUOM()))
+				.map(row -> Quantity.of(row.getQtyPicked(), contentQty.getUOM())) // both in the stock UOM
 				.reduce(Quantity::add)
 				.get();
 		return contentQty.qtyAndUomCompareToEquals(pickedQty);
@@ -1839,6 +1835,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * The VHU storages of a box that share one attribute combination, with the quantity not yet handed out to rows.
+	 * All quantities are in the product's stock UOM, like {@code M_ShipmentSchedule_QtyPicked.QtyPicked}.
 	 */
 	@VisibleForTesting
 	static final class BoxContentGroup
@@ -1849,12 +1846,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		BoxContentGroup(@NonNull final List<IHUProductStorage> storages)
 		{
 			this.storages = storages;
-			this.consumed = storages.get(0).getQty().toZero();
+			this.consumed = storages.get(0).getQtyInStockingUOM().toZero();
 		}
 
 		Quantity totalQty()
 		{
-			return storages.stream().map(IHUProductStorage::getQty).reduce(Quantity::add).get();
+			return storages.stream().map(IHUProductStorage::getQtyInStockingUOM).reduce(Quantity::add).get();
 		}
 
 		Quantity remainingQty()
@@ -1864,12 +1861,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		I_C_UOM uom()
 		{
-			return storages.get(0).getQty().getUOM();
-		}
-
-		int unitCount()
-		{
-			return storages.size();
+			return storages.get(0).getQtyInStockingUOM().getUOM();
 		}
 
 		I_M_HU firstVhu()
@@ -1887,7 +1879,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				return null;
 			}
-			return storages.get(0).getQty().compareTo(partQty) == 0 ? storages.get(0).getM_HU() : null;
+			return storages.get(0).getQtyInStockingUOM().compareTo(partQty) == 0 ? storages.get(0).getM_HU() : null;
 		}
 
 		void consume(@NonNull final Quantity qty)
