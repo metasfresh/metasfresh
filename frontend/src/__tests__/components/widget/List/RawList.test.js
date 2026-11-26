@@ -328,6 +328,58 @@ describe('RawList component', () => {
         wrapper.detach();
       });
 
+      it('does not take the focus back from another field on a later re-render while editable', () => {
+        const wrapper = mountAttached({ isFocused: true, readonly: false });
+        otherInput.focus();
+
+        wrapper.setProps({ listHash: uuidv4() });
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      describe('focus-out', () => {
+        beforeEach(() => jest.useFakeTimers());
+        afterEach(() => jest.useRealTimers());
+
+        const mountFocused = () => {
+          const onBlur = jest.fn();
+          const wrapper = mountAttached({ isFocused: true, onBlur });
+          wrapper.find('.input-dropdown-container').getDOMNode().focus();
+          return { wrapper, onBlur };
+        };
+
+        it('calls onBlur once when the focus moves to an element outside', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          otherInput.focus();
+          jest.runAllTimers();
+
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        it('does not call onBlur when the focus moves to the body', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          document.activeElement.blur();
+          jest.runAllTimers();
+
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
+
+        it('does not call onBlur after unmount', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          otherInput.focus();
+          wrapper.unmount();
+          jest.runAllTimers();
+
+          expect(onBlur).not.toHaveBeenCalled();
+        });
+      });
+
       it('does not take the focus when mounted focused while disabled', () => {
         otherInput.focus();
 

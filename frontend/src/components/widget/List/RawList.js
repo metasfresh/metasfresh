@@ -71,7 +71,7 @@ export class RawList0 extends PureComponent {
   }
 
   componentDidMount() {
-    this.mounted = true;
+    this.wasUnmounted = false;
     window.addEventListener('keydown', this.handleTab);
 
     //
@@ -82,7 +82,7 @@ export class RawList0 extends PureComponent {
   }
 
   componentWillUnmount() {
-    this.mounted = false;
+    this.wasUnmounted = true;
     clearTimeout(this.focusOutTimer);
     window.removeEventListener('keydown', this.handleTab);
   }
@@ -154,7 +154,8 @@ export class RawList0 extends PureComponent {
     // `isFocused` from its first render and must not pull the cursor back on every re-render once it has
     // moved elsewhere. Take the focus only when: the flag just turned on, the field just became editable
     // while flagged (GL Journal batch entry, first field D/C), or the cursor was lost to nowhere
-    // (document.body / null, e.g. mouse pick then keyboard continue). Never take it from another element.
+    // (document.body / null, e.g. mouse pick then keyboard continue). The first two cases may take the focus
+    // from another element; on any other re-render it is never taken from another element.
     if (this.props.isFocused && !this.props.readonly) {
       const active = document.activeElement;
       if (
@@ -168,15 +169,20 @@ export class RawList0 extends PureComponent {
     }
   }
 
+  // Clears a stale `isFocused` flag when the focus moves away programmatically (e.g. Alt+Q), same path as Tab.
+  // Deferred: `document.activeElement` is not settled yet while `focusout` is dispatched.
+  // `body` counts as "not left": a mousedown on a non-focusable option sends the focus to body and
+  // `handleSelect` takes it back. The dropdown is checked too because the tethered dropdown is portalled
+  // outside the container. `wasUnmounted` guards the blur Chrome dispatches when it removes a focused node.
   handleContainerFocusOut = () => {
     clearTimeout(this.focusOutTimer);
     this.focusOutTimer = setTimeout(() => {
-      if (!this.mounted || !this.props.isFocused) return;
-      const a = document.activeElement;
-      if (!a || a === document.body) return;
+      if (this.wasUnmounted || !this.props.isFocused) return;
+      const activeElement = document.activeElement;
+      if (!activeElement || activeElement === document.body) return;
       if (
-        this.inputContainerElement?.contains(a) ||
-        this.dropdownInstance?.wrapper?.contains(a)
+        this.inputContainerElement?.contains(activeElement) ||
+        this.dropdownInstance?.containsElement(activeElement)
       ) {
         return;
       }
@@ -465,9 +471,9 @@ export class RawList0 extends PureComponent {
           isFocused &&
           isToggled && (
             <SelectionDropdown
-              ref={(r) => {
-                ref.current = r;
-                this.dropdownInstance = r;
+              ref={(dropdown) => {
+                ref.current = dropdown;
+                this.dropdownInstance = dropdown;
               }}
               listHash={listHash}
               loading={loading}
