@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs.product;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -51,6 +53,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -71,6 +74,7 @@ import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -107,7 +111,11 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 @RequiredArgsConstructor
 public class M_Product_StepDef
 {
+	/** Value of the {@code UpdatedBy} column of {@code set M_Product.UpdatedBy by SQL:} that stands for an id without any AD_User row. */
+	private static final String UPDATED_BY_NO_SUCH_USER = "NO_SUCH_USER";
+
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
@@ -304,7 +312,7 @@ public class M_Product_StepDef
 	 * Required column:<br>
 	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
 	 * Optional columns (only the ones present are written):<br>
-	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
+	 *   <b>Value</b>, <b>Name</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>, <b>IsVerified</b>,
 	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
 	 *   <b>CoProductCostDistributionPercent</b> — the co-product's cost distribution percent read live at
 	 *   production post-calculation (blank = the co-product carries zero cost, the main/finished product absorbs
@@ -514,11 +522,13 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Name).ifPresent(productRecord::setName);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsVerified).ifPresent(productRecord::setIsVerified);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
 				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 		// Co-product cost distribution percent (blank = zero cost carve; the main product absorbs the rest).
@@ -530,8 +540,51 @@ public class M_Product_StepDef
 	}
 
 	/**
+	 * Writes {@code M_Product.UpdatedBy} with plain SQL, i.e. a value the model would never write, resets the cached
+	 * M_Product record (so that code reading the product through the cache sees the stored value too) and reloads the product
+	 * in the scenario so that its next save starts from that stored value.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product<br>
+	 *   <b>UpdatedBy</b> — (required) the AD_User_ID to store, or the identifier of an AD_User of the scenario, or {@code NO_SUCH_USER} for an id (highest AD_User_ID + 1000) that has no AD_User row<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, AD_User_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And set M_Product.UpdatedBy by SQL:
+	 *   | M_Product_ID | UpdatedBy |
+	 *   | product_1    | -1        |
+	 * </pre>
+	 */
+	@And("set M_Product.UpdatedBy by SQL:")
+	public void set_M_Product_UpdatedBy_by_SQL(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::setUpdatedByBySQL);
+	}
+
+	private void setUpdatedByBySQL(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final String updatedByStr = row.getAsString(I_M_Product.COLUMNNAME_UpdatedBy).trim();
+		final int updatedBy = UPDATED_BY_NO_SUCH_USER.equals(updatedByStr)
+				? DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User")
+				: userTable.resolveUserId(updatedByStr);
+
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"UPDATE M_Product SET UpdatedBy=? WHERE M_Product_ID=?",
+				new Object[] { updatedBy, product.getM_Product_ID() },
+				ITrx.TRXNAME_None);
+
+		// reset the cached M_Product, so that code reading it through the cache (e.g. IProductBL.getById) sees the stored value, as on a real instance where the value was written long before
+		CacheMgt.get().reset(I_M_Product.Table_Name, product.getM_Product_ID());
+		InterfaceWrapperHelper.refresh(product);
+		assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy").isEqualTo(updatedBy);
+	}
+
+	/**
 	 * Verifies M_Product fields. Only checks the columns provided in the data table.
-	 * Supported columns: M_Product_ID.Identifier (required), GTIN, UPC, EAN13_ProductCode.
+	 * Supported columns: M_Product_ID (required), Name, GTIN, UPC, EAN13_ProductCode, IsVerified (Y/N),
+	 * UpdatedBy (an AD_User_ID such as -1, the identifier of an AD_User of the scenario, or {@code acting} for the logged-in user of the scenario).
 	 * The record is refreshed from DB before assertion.
 	 */
 	@Then("M_Product is verified:")
@@ -548,12 +601,25 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 		InterfaceWrapperHelper.refresh(productRecord);
 
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Name)
+				.ifPresent(expected -> assertThat(productRecord.getName()).as("Name").isEqualTo(expected));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN)
 				.ifPresent(expected -> assertThat(productRecord.getGTIN()).as("GTIN").isEqualTo(nullToken2Null(expected)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC)
 				.ifPresent(expected -> assertThat(productRecord.getUPC()).as("UPC").isEqualTo(nullToken2Null(expected)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(expected -> assertThat(productRecord.getEAN13_ProductCode()).as("EAN13_ProductCode").isEqualTo(nullToken2Null(expected)));
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsVerified)
+				.ifPresent(expected -> assertThat(productRecord.isVerified()).as("IsVerified").isEqualTo(expected));
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_UpdatedBy)
+				.ifPresent(expected -> assertThat(productRecord.getUpdatedBy()).as("UpdatedBy").isEqualTo(resolveUpdatedBy(expected)));
+	}
+
+	private int resolveUpdatedBy(@NonNull final String expected)
+	{
+		return "acting".equals(expected.trim())
+				? Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM).getRepoId()
+				: userTable.resolveUserId(expected);
 	}
 
 	@Nullable

@@ -27,6 +27,7 @@ import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCS
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -74,6 +75,7 @@ class OrderPayScheduleLCServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		service = OrderPayScheduleLCStepService.newInstanceForUnitTesting();
 	}

@@ -3,10 +3,16 @@ package de.metas.acct.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.DocumentPostRequest;
+import de.metas.acct.api.DocumentUnpostRequest;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.acct.posting.DocumentPostingUserNotificationService;
 import de.metas.acct.posting.log.DocumentPostingLogService;
+import de.metas.calendar.IPeriodBL;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.IDocument;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.table.ReferencedRecordRepository;
@@ -18,11 +24,14 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -30,9 +39,12 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +58,9 @@ public class PostingServiceTest
 	private DocumentPostingUserNotificationService userNotificationService;
 
 	private PostingService postingService;
+	private IFactAcctDAO factAcctDAO;
+	private IPeriodBL periodBL;
+	private DocumentPostingBusService postingBusService;
 
 	@BeforeEach
 	void init()
@@ -70,6 +85,13 @@ public class PostingServiceTest
 		SpringContextHolder.registerJUnitBean(DocumentPostingLogService.class, documentPostingLogService);
 		SpringContextHolder.registerJUnitBean(DocumentPostingUserNotificationService.class, userNotificationService);
 		SpringContextHolder.registerJUnitBean(ReferencedRecordRepository.class, referencedRecordRepositorySupplier.get());
+
+		factAcctDAO = spy(new FactAcctDAO()); // real: the tests assert the Posted flag of the saved document
+		Services.registerService(IFactAcctDAO.class, factAcctDAO);
+		periodBL = mock(IPeriodBL.class);
+		Services.registerService(IPeriodBL.class, periodBL);
+		postingBusService = mock(DocumentPostingBusService.class);
+		SpringContextHolder.registerJUnitBean(DocumentPostingBusService.class, postingBusService);
 
 		postingService = new PostingService();
 	}
@@ -185,6 +207,154 @@ public class PostingServiceTest
 			verify(documentPostingLogService, never()).logPostingOK(any());
 			verify(documentPostingLogService, never()).logPostingError(any(), any());
 			verify(userNotificationService, never()).notifyPostingError(any(UserId.class), any(), any(Exception.class));
+		}
+	}
+
+	@Nested
+	@DisplayName("unpost")
+	class Unpost
+	{
+		private final Timestamp dateAcct = Timestamp.valueOf("2024-01-15 00:00:00");
+
+		private I_C_Invoice createInvoice(final String docStatus, final boolean posted)
+		{
+			return createInvoice(docStatus, posted, NOTIFY_USER_ID);
+		}
+
+		private I_C_Invoice createInvoice(final String docStatus, final boolean posted, final UserId updatedBy)
+		{
+			Env.setLoggedUserId(Env.getCtx(), updatedBy); // the POJO layer sets UpdatedBy from the logged user, as a persisted record always has it
+			final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+			invoice.setDocStatus(docStatus);
+			invoice.setPosted(posted);
+			invoice.setDateAcct(dateAcct);
+			InterfaceWrapperHelper.save(invoice);
+			return invoice;
+		}
+
+		private DocumentPostRequest captureScheduledPosting()
+		{
+			final ArgumentCaptor<DocumentPostMultiRequest> captor = ArgumentCaptor.forClass(DocumentPostMultiRequest.class);
+			verify(postingBusService).sendAfterCommit(captor.capture());
+			assertThat(captor.getValue().toSet()).hasSize(1);
+			return captor.getValue().toSet().iterator().next();
+		}
+
+		private DocumentUnpostRequest requestFor(final I_C_Invoice invoice)
+		{
+			return DocumentUnpostRequest.builder()
+					.document(invoice)
+					.dateAcct(TimeUtil.asInstant(dateAcct))
+					.docBaseType(DocBaseType.PurchaseInvoice)
+					.build();
+		}
+
+		@Test
+		void completedDocument_factsDeleted_postedReset_andPostingScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(periodBL).testPeriodOpen(any(), eq(dateAcct), eq(DocBaseType.PurchaseInvoice), eq(invoice.getAD_Org_ID()));
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			InterfaceWrapperHelper.refresh(invoice);
+			assertThat(invoice.isPosted()).isFalse();
+			final DocumentPostRequest posting = captureScheduledPosting();
+			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
+			assertThat(posting.getClientId()).isEqualTo(ClientId.ofRepoId(invoice.getAD_Client_ID()));
+			assertThat(posting.getOnErrorNotifyUserId()).isEqualTo(NOTIFY_USER_ID);
+		}
+
+		@Test
+		void documentUpdatedBySystemUser_isScheduledWithoutErrorNotification()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true, UserId.SYSTEM);
+
+			postingService.unpost(requestFor(invoice));
+
+			final DocumentPostRequest posting = captureScheduledPosting();
+			assertThat(posting.getRecord()).isEqualTo(TableRecordReference.of(invoice));
+			assertThat(posting.getOnErrorNotifyUserId()).isNull();
+		}
+
+		@Test
+		void completedDocumentWithoutClient_failsInsteadOfScheduling()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+			InterfaceWrapperHelper.setValue(invoice, I_C_Invoice.COLUMNNAME_AD_Client_ID, -1);
+
+			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("No AD_Client_ID");
+
+			verify(postingBusService, never()).sendAfterCommit(any());
+		}
+
+		@Test
+		void readOnlyColumnCheck_isBypassedOnlyWhileResettingPosted()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			assertThat(InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.getValue(invoice)).isNotEqualTo(true);
+		}
+
+		@Test
+		void readOnlyColumnCheck_whichWasDisabledByTheCaller_staysDisabled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+			InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.setValue(invoice, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			assertThat(InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled.getValue(invoice)).isEqualTo(true);
+		}
+
+		@Test
+		void reversedDocument_isPostedAgain()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Reversed, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			captureScheduledPosting();
+		}
+
+		@Test
+		void voidedDocument_isUnposted_butNotScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Voided, true);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			verify(postingBusService, never()).sendAfterCommit(any());
+		}
+
+		@Test
+		void draftedDocument_isUnposted_butNotScheduled()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Drafted, false);
+
+			postingService.unpost(requestFor(invoice));
+
+			verify(factAcctDAO).deleteForDocumentModel(invoice);
+			verify(postingBusService, never()).sendAfterCommit(any());
+		}
+
+		@Test
+		void closedPeriod_nothingIsChanged()
+		{
+			final I_C_Invoice invoice = createInvoice(IDocument.STATUS_Completed, true);
+			doThrow(new AdempiereException("period closed")).when(periodBL).testPeriodOpen(any(), any(), any(), anyInt());
+
+			assertThatThrownBy(() -> postingService.unpost(requestFor(invoice))).hasMessageContaining("period closed");
+
+			verify(factAcctDAO, never()).deleteForDocumentModel(any());
+			InterfaceWrapperHelper.refresh(invoice);
+			assertThat(invoice.isPosted()).isTrue();
+			verify(postingBusService, never()).sendAfterCommit(any());
 		}
 	}
 }

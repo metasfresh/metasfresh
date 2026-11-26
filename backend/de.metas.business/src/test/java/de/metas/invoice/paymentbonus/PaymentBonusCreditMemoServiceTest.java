@@ -14,6 +14,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -44,6 +45,7 @@ class PaymentBonusCreditMemoServiceTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		BusinessTestHelper.registerPostingServiceStandIn();
 		service = new PaymentBonusCreditMemoService();
 
 		salesInvoice = newInstance(I_C_Invoice.class);

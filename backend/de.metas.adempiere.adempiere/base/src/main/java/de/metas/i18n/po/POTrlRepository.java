@@ -291,18 +291,19 @@ public class POTrlRepository
 
 		final String keyColumnName = trlInfo.getKeyColumnName();
 		final String adLanguage = trlRecord.get_ValueAsString(COLUMNNAME_AD_Language);
+		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
 
 		final String sql = "UPDATE " + baseTableName + " base SET " + sqlSet
 				+ " FROM " + trlTableName + " trl "
 				+ " WHERE trl." + keyColumnName + "=base." + keyColumnName
+				+ " AND base." + keyColumnName + "=?" // only the saved record, not every base row of the table
 				+ " AND trl.AD_Language=" + DB.TO_STRING(adLanguage)
 				+ " AND trl.AD_Language=getBaseLanguage()"; // IMPORTANT: since this script will be logged, make sure the base language is checked on the database where this command will be executed
-		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { keyColumnValue }, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} base records for {}", updatedCount, trlRecord);
 
 		//
 		final CacheMgt cacheMgt = CacheMgt.get();
-		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
 		if (keyColumnValue instanceof Integer)
 		{
 			cacheMgt.reset(baseTableName, (int)keyColumnValue);
