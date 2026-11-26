@@ -195,22 +195,21 @@ class ReversedPickedRows
 			{
 				continue;
 			}
-			result.add(toRowOfCU(tuOnlyRow, cuId, cu, tuKey.getProductId(), budget));
+			result.add(toRowOfCU(tuOnlyRow, tuKey, cu, budget));
 		}
 		return result;
 	}
 
 	private I_M_ShipmentSchedule_QtyPicked toRowOfCU(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked tuOnlyRow,
-			@NonNull final HuId cuId,
+			@NonNull final ScheduleTUKey tuKey,
 			@NonNull final TUContentCU cu,
-			@NonNull final ProductId productId,
 			@NonNull final TUBudget budget)
 	{
 		final I_M_ShipmentSchedule_QtyPicked rowOfCU = newInstance(I_M_ShipmentSchedule_QtyPicked.class, tuOnlyRow);
 		rowOfCU.setAD_Org_ID(tuOnlyRow.getAD_Org_ID());
 		rowOfCU.setM_ShipmentSchedule_ID(tuOnlyRow.getM_ShipmentSchedule_ID());
-		rowOfCU.setVHU_ID(cuId.getRepoId());
+		rowOfCU.setVHU_ID(cu.getCuId().getRepoId());
 		rowOfCU.setM_TU_HU_ID(tuOnlyRow.getM_TU_HU_ID());
 		rowOfCU.setM_LU_HU_ID(tuOnlyRow.getM_LU_HU_ID());
 		rowOfCU.setIsAnonymousHuPickedOnTheFly(tuOnlyRow.isAnonymousHuPickedOnTheFly());
@@ -218,7 +217,7 @@ class ReversedPickedRows
 
 		// the CU's weight comes from the CU itself, as the reopen of a completed job takes it; a CU without weight
 		// (net weight 0, e.g. picked by count) takes its share of the weight of the reversed rows
-		final Quantity catchWeight = CoalesceUtil.coalesce(TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu), budget.weightShareOrNull(cu.getQty()));
+		final Quantity catchWeight = CoalesceUtil.coalesce(TUContentLoader.extractCatchWeightOrNull(huContext, tuKey.getProductId(), cu), budget.weightShareOrNull(cu.getQty()));
 		if (catchWeight != null)
 		{
 			rowOfCU.setCatch_UOM_ID(catchWeight.getUomId().getRepoId());
