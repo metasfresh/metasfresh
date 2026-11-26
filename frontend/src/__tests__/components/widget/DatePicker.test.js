@@ -576,5 +576,31 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     expect(notifications()).toHaveLength(0);
     expect(patchedDay(patch)).toBe('2027-12-04');
   });
+
+  it('typing only spaces keeps the stored value without an error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '   ');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('a text with "-" is read as full ISO YYYY-MM-DD only: "12-05-27" is no date', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '12-05-27');
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(1);
+  });
 });
 

@@ -166,7 +166,7 @@ class DatePicker extends PureComponent {
     } else if (isTypedClearPending) {
       this.callPatchIfNeeded(null);
       return true;
-    } else if (typedText && this.props.dateFormat) {
+    } else if (typedText && typedText.trim() && this.props.dateFormat) {
       // (a time-only field keeps react-datetime's own handling of the typed time)
       this.commitTypedText(typedText);
       return true;
@@ -208,9 +208,13 @@ class DatePicker extends PureComponent {
 
     MomentTZ.locale(getCurrentActiveLocale());
     const datePart = this.getMomentDisplayFormat_DatePart(text);
-    const dateFormats = getShortFormsOfDateFormat(
-      MomentTZ.localeData().longDateFormat(datePart) || datePart
-    );
+    // ISO (a text with "-") is accepted in full only
+    const dateFormats =
+      datePart === 'YYYY-MM-DD'
+        ? [datePart]
+        : getShortFormsOfDateFormat(
+            MomentTZ.localeData().longDateFormat(datePart) || datePart
+          );
 
     if (timeFormat) {
       const timePart = timeFormat === true ? 'LT' : timeFormat;
