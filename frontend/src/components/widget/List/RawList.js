@@ -71,6 +71,7 @@ export class RawList0 extends PureComponent {
   }
 
   componentDidMount() {
+    this.mounted = true;
     window.addEventListener('keydown', this.handleTab);
 
     //
@@ -81,6 +82,8 @@ export class RawList0 extends PureComponent {
   }
 
   componentWillUnmount() {
+    this.mounted = false;
+    clearTimeout(this.focusOutTimer);
     window.removeEventListener('keydown', this.handleTab);
   }
 
@@ -147,20 +150,39 @@ export class RawList0 extends PureComponent {
 
     //
     // On focus gained (via props)
+    // Edge-only re-take: a composed lookup's sub-list (e.g. the contact of a business partner) is flagged
+    // `isFocused` from its first render and must not pull the cursor back on every re-render once it has
+    // moved elsewhere. Take the focus only when: the flag just turned on, the field just became editable
+    // while flagged (GL Journal batch entry, first field D/C), or the cursor was lost to nowhere
+    // (document.body / null, e.g. mouse pick then keyboard continue). Never take it from another element.
     if (this.props.isFocused && !this.props.readonly) {
-      // NOTE: commented out condition: && this.props.isFocused !== prevProps.isFocused
-      // because we want to cover the case when the isFocused was set before but for some reason,
-      // the field was not focused because maybe was not created yet or the focus was somehow lost...
-      //
-      // Test case: GL Journal (SAP), batch entry, first field D/C was not focused after comple of complete entries.
-      //
-      // Not while disabled: a composed lookup's sub-list (e.g. the contact of an empty business partner) keeps
-      // `isFocused` until a click-outside, Tab or select, and would otherwise pull the caret onto itself on every
-      // re-render.
-
-      this.focus();
+      const active = document.activeElement;
+      if (
+        !prevProps.isFocused ||
+        prevProps.readonly ||
+        !active ||
+        active === document.body
+      ) {
+        this.focus();
+      }
     }
   }
+
+  handleContainerFocusOut = () => {
+    clearTimeout(this.focusOutTimer);
+    this.focusOutTimer = setTimeout(() => {
+      if (!this.mounted || !this.props.isFocused) return;
+      const a = document.activeElement;
+      if (!a || a === document.body) return;
+      if (
+        this.inputContainerElement?.contains(a) ||
+        this.dropdownInstance?.wrapper?.contains(a)
+      ) {
+        return;
+      }
+      this.props.onBlur();
+    }, 0);
+  };
 
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
@@ -365,6 +387,7 @@ export class RawList0 extends PureComponent {
             <div ref={ref} className={this.props.className}>
               <div
                 ref={(ref) => (this.inputContainerElement = ref)}
+                onBlur={this.handleContainerFocusOut}
                 className={classnames('input-dropdown-container', {
                   'input-disabled': readonly,
                   'input-dropdown-container-static': rowId,
@@ -442,7 +465,10 @@ export class RawList0 extends PureComponent {
           isFocused &&
           isToggled && (
             <SelectionDropdown
-              ref={ref}
+              ref={(r) => {
+                ref.current = r;
+                this.dropdownInstance = r;
+              }}
               listHash={listHash}
               loading={loading}
               options={this.state.dropdownList}
