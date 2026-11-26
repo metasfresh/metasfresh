@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
 import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
-import { closeAndOpenNextTU, useOpenNextTU } from '../../../../apps/picking/cuQtyEntry/useOpenNextTU';
+import { closeAndOpenNextTU, NOT_BOOKED, useOpenNextTU } from '../../../../apps/picking/cuQtyEntry/useOpenNextTU';
 import * as pickingApi from '../../../../api/picking';
 import { toastErrorFromObj, toastNotification } from '../../../../utils/toast';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
@@ -260,8 +260,12 @@ describe('useOpenNextTU', () => {
   };
   const deferred = () => {
     let resolve;
-    const promise = new Promise((r) => (resolve = r));
-    return { promise, resolve };
+    let reject;
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
   };
 
   beforeEach(() => {
@@ -329,6 +333,131 @@ describe('useOpenNextTU', () => {
     const exposed = setup(jest.fn());
     await act(async () => {
       await expect(exposed.nextTU.onGraiScanned('1234567.12345.S1')).rejects.toThrow('bad grai');
+    });
+  });
+
+  describe('runExclusive: the in-flight flags are released whatever the opening does', () => {
+    it('a synchronous throw of the opening: the error is shown and the next tap opens a TU again', async () => {
+      const error = new Error('sync boom');
+      const setPickingTarget = jest.fn().mockResolvedValue({});
+      const exposed = setup(setPickingTarget);
+      await act(async () => {
+        await exposed.nextTU.runExclusive(() => {
+          throw error;
+        });
+      });
+      expect(toastErrorFromObj).toHaveBeenCalledWith(error);
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      expect(setPickingTarget).toHaveBeenCalledTimes(1);
+      expect(toastNotification).toHaveBeenCalledTimes(1);
+    });
+
+    it('a synchronous throw of the opening, rethrow mode (scanner): the error reaches the caller and the next scan is not refused as busy', async () => {
+      const exposed = setup(jest.fn());
+      await act(async () => {
+        await expect(
+          exposed.nextTU.runExclusive(
+            () => {
+              throw new Error('sync boom');
+            },
+            { isRethrow: true }
+          )
+        ).rejects.toThrow('sync boom');
+      });
+      await act(async () => {
+        await exposed.nextTU.onGraiScanned('1234567.12345.S1');
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('bookAfterTUOpened', () => {
+    it('no opening in flight: books at once and returns what the booking returns', async () => {
+      const exposed = setup(jest.fn());
+      const book = jest.fn(() => 'booked');
+      expect(exposed.nextTU.bookAfterTUOpened(book)).toBe('booked');
+      expect(book).toHaveBeenCalledTimes(1);
+    });
+
+    it('an opening in flight: the booking is sent only after the opening is done', async () => {
+      const gate = deferred();
+      const exposed = setup(jest.fn(() => gate.promise));
+      const book = jest.fn().mockResolvedValue('booked');
+      let opening;
+      let booking;
+      await act(async () => {
+        opening = exposed.nextTU.onNextTU();
+        booking = exposed.nextTU.bookAfterTUOpened(book);
+      });
+      expect(book).not.toHaveBeenCalled();
+      await act(async () => {
+        gate.resolve({});
+        await opening;
+      });
+      await expect(booking).resolves.toBe('booked');
+      expect(book).toHaveBeenCalledTimes(1);
+    });
+
+    it('the opening fails (e.g. the request timeout of a hung connection): nothing is booked, NOT_BOOKED, one error toast', async () => {
+      const gate = deferred();
+      const exposed = setup(jest.fn(() => gate.promise));
+      const book = jest.fn();
+      let booking;
+      await act(async () => {
+        exposed.nextTU.onNextTU();
+        booking = exposed.nextTU.bookAfterTUOpened(book);
+      });
+      const timeout = Object.assign(new Error('timeout of 20000ms exceeded'), { code: 'ECONNABORTED' });
+      await act(async () => {
+        gate.reject(timeout);
+        await booking;
+      });
+      await expect(booking).resolves.toBe(NOT_BOOKED);
+      expect(book).not.toHaveBeenCalled();
+      expect(toastErrorFromObj).toHaveBeenCalledTimes(1);
+      expect(toastErrorFromObj).toHaveBeenCalledWith(timeout);
+    });
+
+    it('a TU opening requested while a booking is in flight starts only after the booking answered (the count stays in the TU that was open)', async () => {
+      const bookingGate = deferred();
+      const exposed = setup(jest.fn().mockResolvedValue({}));
+      let booking;
+      await act(async () => {
+        booking = exposed.nextTU.bookAfterTUOpened(() => bookingGate.promise);
+      });
+      let opening;
+      await act(async () => {
+        opening = exposed.nextTU.onGraiScanned('1234567.12345.S1');
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
+      await act(async () => {
+        bookingGate.resolve('answer');
+        await booking;
+        await opening;
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledTimes(1);
+    });
+
+    it('a failed booking does not block the next TU opening', async () => {
+      const exposed = setup(jest.fn().mockResolvedValue({}));
+      await act(async () => {
+        await expect(exposed.nextTU.bookAfterTUOpened(() => Promise.reject(new Error('refused')))).rejects.toThrow(
+          'refused'
+        );
+        await exposed.nextTU.onGraiScanned('1234567.12345.S1');
+      });
+      expect(pickingApi.setTUPickingTargetFromGrai).toHaveBeenCalledTimes(1);
+    });
+
+    it('after a failed opening the next booking is sent at once (no stale opening is awaited)', async () => {
+      const exposed = setup(jest.fn().mockRejectedValue(new Error('refused')));
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      const book = jest.fn(() => 'booked');
+      expect(exposed.nextTU.bookAfterTUOpened(book)).toBe('booked');
     });
   });
 

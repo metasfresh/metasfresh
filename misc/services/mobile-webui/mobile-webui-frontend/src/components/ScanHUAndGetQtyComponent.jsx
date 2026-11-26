@@ -635,6 +635,9 @@ ScanHUAndGetQtyComponent.propTypes = {
   //
   // Functions
   getConfirmationPromptForQty: PropTypes.func,
+  // Books the entered quantity: (result) => Promise|any. Its resolved value is read only for repeated booking (scan once):
+  // the NOT_BOOKED marker (`{ isNotBooked: true }`, see useOpenNextTU) means the booking was not sent, so the typed count stays;
+  // any other value (including undefined) means it was sent.
   onResult: PropTypes.func,
   onClose: PropTypes.func,
 };
