@@ -173,6 +173,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StepDef
 {
+	private static final String COLUMN_HeaderAggregation_Override_FromCandidate = "HeaderAggregation_Override.FromCandidate";
+
 	private final static Logger logger = LogManager.getLogger(C_Invoice_Candidate_StepDef.class);
 
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
@@ -338,6 +340,7 @@ public class C_Invoice_Candidate_StepDef
 	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the candidate to update<br>
 	 *   <b>QtyToInvoice_Override</b> — (optional) sets the manual qty-to-invoice override<br>
 	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override; propagated to the generated invoice line on processing<br>
+	 *   <b>HeaderAggregation_Override.FromCandidate</b> — (optional, identifier-ref) another invoice candidate; this candidate's header aggregation override is set to that candidate's header aggregation, so both land on the same invoice<br>
 	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData, C_ElementValue_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -362,6 +365,13 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_ElementValue_Override_ID)
 							.map(elementValueTable::getId)
 							.ifPresent(elementValueId -> invoiceCandidate.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
+
+					row.getAsOptionalIdentifier(COLUMN_HeaderAggregation_Override_FromCandidate)
+							.ifPresent(otherIdentifier -> {
+								final I_C_Invoice_Candidate otherCandidate = otherIdentifier.lookupNotNullIn(invoiceCandTable);
+								InterfaceWrapperHelper.refresh(otherCandidate);
+								invoiceCandidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(otherCandidate.getC_Invoice_Candidate_HeaderAggregation_ID());
+							});
 
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);

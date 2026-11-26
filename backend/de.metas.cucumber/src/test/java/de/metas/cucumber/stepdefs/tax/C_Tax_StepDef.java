@@ -100,6 +100,9 @@ public class C_Tax_StepDef
 	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies to a BPartner
 	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
 	 *         {@code TaxDAO}</li>
+	 *     <li>{@code IsFiscalRepresentation} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
+	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies when the
+	 *         organisation has (or lacks) a fiscal representation in the destination country</li>
 	 * </ul>
 	 *
 	 * <p>Upserts by {@code Name}, so repeated runs neither collide on the unique-name constraint nor skip
@@ -174,6 +177,8 @@ public class C_Tax_StepDef
 				.ifPresent(taxRecord::setEN16931VATCategory);
 		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_RequiresTaxCertificate)
 				.ifPresent(value -> taxRecord.setRequiresTaxCertificate(StringUtils.ofBoolean(value)));
+		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsFiscalRepresentation)
+				.ifPresent(value -> taxRecord.setIsFiscalRepresentation(StringUtils.ofBoolean(value)));
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 

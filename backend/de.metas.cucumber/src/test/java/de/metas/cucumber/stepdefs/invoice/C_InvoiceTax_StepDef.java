@@ -53,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   <li>{@code IsReverseCharge} (optional) — expected reverse charge flag (boolean)</li>
  *   <li>{@code ReverseChargeTaxAmt} (optional) — expected reverse charge tax amount ({@link java.math.BigDecimal})</li>
  *   <li>{@code IsTaxIncluded} (optional) — expected tax-included flag (boolean)</li>
+ *   <li>{@code Processed} (optional) — expected processed flag (boolean)</li>
  * </ul>
  *
  * <p>Gherkin usage example:</p>
@@ -131,6 +132,33 @@ public class C_InvoiceTax_StepDef
 		row.getAsOptionalBoolean(I_C_InvoiceTax.COLUMNNAME_IsTaxIncluded)
 				.ifPresent(expected -> softly.assertThat(invoiceTax.isTaxIncluded()).as("IsTaxIncluded").isEqualTo(expected));
 
+		row.getAsOptionalBoolean(I_C_InvoiceTax.COLUMNNAME_Processed)
+				.ifPresent(expected -> softly.assertThat(invoiceTax.isProcessed()).as("Processed").isEqualTo(expected));
+
 		softly.assertAll();
+	}
+
+	/**
+	 * Asserts the number of {@code C_InvoiceTax} rows of the invoice, active and inactive ones alike
+	 * (the matching step above looks at active rows only and cannot assert that a row is absent).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice "invoice" has 2 C_InvoiceTax records
+	 * </pre>
+	 */
+	@And("the invoice {string} has {int} C_InvoiceTax records")
+	public void invoice_has_C_InvoiceTax_records(@NonNull final String invoiceIdentifier, final int expectedCount)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final int actualCount = queryBL.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.create()
+				.count();
+
+		assertThat(actualCount).as("number of C_InvoiceTax records (active and inactive) of invoice %s", invoiceIdentifier).isEqualTo(expectedCount);
 	}
 }

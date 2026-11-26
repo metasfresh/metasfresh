@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -37,10 +38,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Org;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AD_Org_StepDef
@@ -49,6 +53,11 @@ public class AD_Org_StepDef
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * {@code AD_Org_ID} -> the {@code IsDropShipTaxFromDestCountry} the organisation had before the scenario changed it.
+	 */
+	private final Map<Integer, Boolean> isDropShipTaxFromDestCountryBeforeScenario = new LinkedHashMap<>();
 
 	public AD_Org_StepDef(@NonNull final AD_Org_StepDefData orgTable)
 	{
@@ -103,5 +112,38 @@ public class AD_Org_StepDef
 			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			orgTable.putOrReplace(orgIdentifier, orgRecord);
 		}
+	}
+
+	/**
+	 * Sets the organisation-wide drop-ship tax switch; the former value is restored after the scenario, also when a step failed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends the organisation is loaded by its repo id
+	 * @cucumber.example
+	 * <pre>
+	 * And the organisation 1000000 has IsDropShipTaxFromDestCountry "Y" for this scenario
+	 * </pre>
+	 */
+	@And("the organisation {int} has IsDropShipTaxFromDestCountry {string} for this scenario")
+	public void organisation_has_IsDropShipTaxFromDestCountry(final int orgRepoId, @NonNull final String isDropShipTaxFromDestCountry)
+	{
+		final I_AD_Org org = load(orgRepoId, I_AD_Org.class);
+		isDropShipTaxFromDestCountryBeforeScenario.putIfAbsent(orgRepoId, org.isDropShipTaxFromDestCountry());
+		org.setIsDropShipTaxFromDestCountry("Y".equals(isDropShipTaxFromDestCountry));
+		saveRecord(org);
+	}
+
+	/**
+	 * The flag is org-wide and cucumber does not roll back, so a changed value would leak into the next scenario.
+	 */
+	@After
+	public void restoreIsDropShipTaxFromDestCountry()
+	{
+		isDropShipTaxFromDestCountryBeforeScenario.forEach((orgRepoId, value) -> {
+			final I_AD_Org org = load(orgRepoId, I_AD_Org.class);
+			org.setIsDropShipTaxFromDestCountry(value);
+			saveRecord(org);
+		});
+		isDropShipTaxFromDestCountryBeforeScenario.clear();
 	}
 }

@@ -47,6 +47,7 @@ import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefDa
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.org.C_Fiscal_Representation_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.promotioncode.C_PromotionCode_StepDefData;
@@ -65,6 +66,7 @@ import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
+import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
@@ -113,6 +115,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
@@ -140,14 +143,17 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_BuyerVATaxID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Currency_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Fiscal_Representation_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
@@ -162,6 +168,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPartiallyPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_SellerVATaxID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 
@@ -172,6 +179,11 @@ public class C_Invoice_StepDef
 	 * An {@code @name@} placeholder: two '@' with at least one other character between them.
 	 */
 	private static final Pattern DOCUMENT_NO_PLACEHOLDER = Pattern.compile("@[^@]+@");
+
+	/**
+	 * A {@code {n}} parameter placeholder of an AD_Message text.
+	 */
+	private static final Pattern MESSAGE_PLACEHOLDER = Pattern.compile("\\{\\d+}");
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -184,6 +196,7 @@ public class C_Invoice_StepDef
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
@@ -207,6 +220,7 @@ public class C_Invoice_StepDef
 	private final C_PaymentTerm_StepDef paymentTermStepDef;
 	private final TestContext restTestContext;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
+	private final C_Fiscal_Representation_StepDefData fiscalRepresentationTable;
 
 	/**
 	 * Validates {@code C_Invoice} records against expected values.
@@ -220,6 +234,13 @@ public class C_Invoice_StepDef
 	 * me03#29366: Added validation for {@code DueDate} — the persisted due date populated
 	 * on completion. Pin tests directly on this column so a regression surfaces at the
 	 * invoice step, not three steps later in dunning.
+	 * <p>
+	 * Stored VAT IDs (all optional; an empty cell asserts {@code NULL}):
+	 * <ul>
+	 *   <li>{@code BuyerVATaxID} — expected {@code C_Invoice.BuyerVATaxID}</li>
+	 *   <li>{@code SellerVATaxID} — expected {@code C_Invoice.SellerVATaxID}</li>
+	 *   <li>{@code C_Fiscal_Representation_ID} — (identifier-ref) expected fiscal representation</li>
+	 * </ul>
 	 */
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
@@ -432,6 +453,19 @@ public class C_Invoice_StepDef
 		SharedTestContext.put("invoice", invoice);
 
 		final SoftAssertions softly = new SoftAssertions();
+
+		if (hasColumn(row, COLUMNNAME_BuyerVATaxID))
+		{
+			softly.assertThat(invoice.getBuyerVATaxID()).as("BuyerVATaxID for Identifier=%s", identifierStr).isEqualTo(getNullableString(row, COLUMNNAME_BuyerVATaxID));
+		}
+		if (hasColumn(row, COLUMNNAME_SellerVATaxID))
+		{
+			softly.assertThat(invoice.getSellerVATaxID()).as("SellerVATaxID for Identifier=%s", identifierStr).isEqualTo(getNullableString(row, COLUMNNAME_SellerVATaxID));
+		}
+		if (hasColumn(row, COLUMNNAME_C_Fiscal_Representation_ID))
+		{
+			softly.assertThat(invoice.getC_Fiscal_Representation_ID()).as("C_Fiscal_Representation_ID for Identifier=%s", identifierStr).isEqualTo(getFiscalRepresentationId(row));
+		}
 
 		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
 				.ifPresent(bpartnerIdentifier -> {
@@ -989,9 +1023,130 @@ public class C_Invoice_StepDef
 		paymentTermStepDef.extractPaymentTermId(DataTableRow.builder().lineNo(0).values(row).build())
 				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
+		// a present column with an empty cell sets NULL; an absent column leaves the value alone
+		final DataTableRow tableRow = DataTableRow.builder().lineNo(0).values(row).build();
+		if (hasColumn(tableRow, COLUMNNAME_BuyerVATaxID))
+		{
+			invoice.setBuyerVATaxID(getNullableString(tableRow, COLUMNNAME_BuyerVATaxID));
+		}
+		if (hasColumn(tableRow, COLUMNNAME_SellerVATaxID))
+		{
+			invoice.setSellerVATaxID(getNullableString(tableRow, COLUMNNAME_SellerVATaxID));
+		}
+		if (hasColumn(tableRow, COLUMNNAME_C_Fiscal_Representation_ID))
+		{
+			invoice.setC_Fiscal_Representation_ID(getFiscalRepresentationId(tableRow));
+		}
+
 		InterfaceWrapperHelper.save(invoice);
 
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
+
+	private static boolean hasColumn(@NonNull final DataTableRow row, @NonNull final String columnName)
+	{
+		final Map<String, String> map = row.asMap();
+		return map.containsKey(columnName)
+				|| map.containsKey("OPT." + columnName)
+				|| map.containsKey(columnName + "." + TABLECOLUMN_IDENTIFIER)
+				|| map.containsKey("OPT." + columnName + "." + TABLECOLUMN_IDENTIFIER);
+	}
+
+	/**
+	 * @return the cell's value; {@code null} when the cell is empty
+	 */
+	@Nullable
+	private static String getNullableString(@NonNull final DataTableRow row, @NonNull final String columnName)
+	{
+		final Map<String, String> map = row.asMap();
+		final String value = map.containsKey(columnName) ? map.get(columnName) : map.get("OPT." + columnName);
+		return value == null || value.trim().isEmpty() ? null : value;
+	}
+
+	/**
+	 * @return the repo id of the identified fiscal representation; 0 (i.e. NULL) when the cell is empty or {@code null}
+	 */
+	private int getFiscalRepresentationId(@NonNull final DataTableRow row)
+	{
+		return row.getAsOptionalIdentifier(COLUMNNAME_C_Fiscal_Representation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(identifier -> identifier.lookupNotNullIn(fiscalRepresentationTable))
+				.map(I_C_Fiscal_Representation::getC_Fiscal_Representation_ID)
+				.orElse(0);
+	}
+
+	/**
+	 * Tries to complete the invoice and asserts that this fails with the translated text of the given {@code AD_Message};
+	 * every literal part of the text around its {@code {n}} placeholders must be part of the error message.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice identified by "invoice" cannot be completed with AD_Message "MissingVATaxID"
+	 * </pre>
+	 */
+	@And("the invoice identified by {string} cannot be completed with AD_Message {string}")
+	public void invoice_cannot_be_completed_with_AD_Message(@NonNull final String invoiceIdentifier, @NonNull final String adMessage)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		invoice.setDocAction(IDocument.ACTION_Complete);
+
+		final Throwable thrown = catchThrowable(() -> documentBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
+		assertThat(thrown).as("completing invoice %s shall fail with AD_Message %s", invoiceIdentifier, adMessage).isNotNull();
+
+		final String errorMessages = collectMessages(thrown);
+		final String messageText = msgBL.getMsg(Env.getCtx(), adMessage);
+		for (final String literalPart : MESSAGE_PLACEHOLDER.split(messageText))
+		{
+			final String literalPartTrimmed = literalPart.trim();
+			if (!literalPartTrimmed.isEmpty())
+			{
+				assertThat(errorMessages).as("error of AD_Message %s (%s)", adMessage, messageText).contains(literalPartTrimmed);
+			}
+		}
+
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.getDocStatus()).as("DocStatus of invoice %s", invoiceIdentifier).isNotEqualTo(IDocument.STATUS_Completed);
+	}
+
+	@NonNull
+	private static String collectMessages(@NonNull final Throwable throwable)
+	{
+		final StringBuilder messages = new StringBuilder();
+		for (Throwable current = throwable; current != null; current = current.getCause() == current ? null : current.getCause())
+		{
+			messages.append(current.getMessage()).append('\n');
+		}
+		return messages.toString();
+	}
+
+	/**
+	 * Copies the invoice like the "copy from" function does: same date, same target doc type, sales transaction, lines included.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the invoice identified by "invoice" is copied as "invoiceCopy"
+	 * </pre>
+	 */
+	@And("the invoice identified by {string} is copied as {string}")
+	public void invoice_is_copied_as(@NonNull final String invoiceIdentifier, @NonNull final String copyIdentifier)
+	{
+		final I_C_Invoice from = invoiceTable.get(invoiceIdentifier);
+
+		final I_C_Invoice copy = invoiceBL.copyFrom(
+				from,
+				from.getDateInvoiced(),
+				from.getC_DocTypeTarget_ID(),
+				true,  // isSOTrx
+				false, // isCounterpart
+				false, // setOrderRef
+				false, // isSetLineInvoiceRef
+				true); // isCopyLines
+
+		invoiceTable.putOrReplace(copyIdentifier, copy);
 	}
 
 	/**

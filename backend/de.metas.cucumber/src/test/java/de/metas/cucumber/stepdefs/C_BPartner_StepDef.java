@@ -49,6 +49,7 @@ import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
@@ -59,6 +60,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -84,6 +86,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,6 +98,7 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_InvoiceLine_Aggregation_ID;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
@@ -150,7 +154,14 @@ public class C_BPartner_StepDef
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+
 	@Nullable private AdempiereException lastUpdateException = null;
+
+	/**
+	 * {@code C_BPartner_ID} of an organisation's partner -> the {@code VATaxID} it had before the scenario changed it.
+	 */
+	private final Map<Integer, String> orgPartnerVATaxIdBeforeScenario = new LinkedHashMap<>();
 
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
@@ -170,6 +181,7 @@ public class C_BPartner_StepDef
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
 	 *   <li>{@code IsFactoring} — {@code Y}/{@code N}; marks the partner's invoices as silently factored (payment owed to the org's factorer)</li>
 	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
+	 *   <li>{@code SO_InvoiceLine_Aggregation_ID} — (identifier-ref) the sales invoice-line aggregation</li>
 	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
 	 * {@code M_DiscountSchema_ID} (optional, identifier-ref) — the sales-side discount schema (resolved via
@@ -474,6 +486,10 @@ public class C_BPartner_StepDef
 				.map(aggregationTable::getId)
 				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
 
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_InvoiceLine_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_InvoiceLine_Aggregation_ID(aggregationId.getRepoId()));
+
 		// Delivery / order stop fields (gh#28631)
 		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
 				.ifPresent(bPartnerRecord::setDeliveryStopReason);
@@ -753,5 +769,40 @@ public class C_BPartner_StepDef
 					.getResult();
 		}
 
+	}
+
+	/**
+	 * Sets the {@code VATaxID} of the partner that is linked to the organisation ({@code C_BPartner.AD_OrgBP_ID}),
+	 * which is the partner the invoice footer shows; the former value is restored after the scenario, also when a step failed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the org partner of organisation 1000000 has VATaxID "DE123456789" for this scenario
+	 * </pre>
+	 */
+	@And("the org partner of organisation {int} has VATaxID {string} for this scenario")
+	public void org_partner_has_VATaxID(final int orgRepoId, @NonNull final String vatTaxId)
+	{
+		final I_C_BPartner orgPartner = bpartnerOrgBL.retrieveLinkedBPartner(OrgId.ofRepoId(orgRepoId));
+		assertThat(orgPartner).as("partner linked to organisation %s", orgRepoId).isNotNull();
+
+		orgPartnerVATaxIdBeforeScenario.putIfAbsent(orgPartner.getC_BPartner_ID(), orgPartner.getVATaxID());
+		orgPartner.setVATaxID(DataTableUtil.nullToken2Null(vatTaxId));
+		InterfaceWrapperHelper.save(orgPartner);
+	}
+
+	/**
+	 * Organisation partners are shared by every scenario on the executor and cucumber does not roll back.
+	 */
+	@After
+	public void restoreOrgPartnerVATaxID()
+	{
+		orgPartnerVATaxIdBeforeScenario.forEach((bpartnerId, vatTaxId) -> {
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpartnerId, I_C_BPartner.class);
+			bpartner.setVATaxID(vatTaxId);
+			InterfaceWrapperHelper.save(bpartner);
+		});
+		orgPartnerVATaxIdBeforeScenario.clear();
 	}
 }
