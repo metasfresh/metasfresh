@@ -86,4 +86,17 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     expect(events.every((e) => !e.defaultPrevented)).toBe(true);
     expect(onReadDone).not.toHaveBeenCalled();
   });
+
+  it('a key typed by a person after a scanner burst is not glued to the burst, also with a slow scan speed of the instance', () => {
+    const onReadDone = jest.fn();
+    const { container } = render(<Harness onReadDone={onReadDone} rateMs={300} />);
+    const count = container.querySelector('#count');
+
+    key(count, 'A', 500);
+    key(count, 'B', 1);
+    key(count, 'C', 120); // 120 ms later: typed, although the instance allows 300 ms between the keys of a scan
+    key(count, 'Enter', 1);
+
+    expect(onReadDone.mock.calls).toEqual([['AB'], ['C']]);
+  });
 });
