@@ -34,6 +34,9 @@ const withTimeout = (promise, millis) => {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 };
 
+/** Not at the bottom, where the toast would cover OK of the quantity pop-up that stays open right after "Weiteres TU" / a GRAI scan */
+const NEXT_TU_TOAST_POSITION = 'top-center';
+
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
 /** Closes the open TU target (if any), then opens a new TU of the line's TU packing, or goes to the target selection when the line has no TU packing. */
@@ -195,7 +198,7 @@ export const useOpenNextTU = ({
           ),
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
-        toastNotification({ plainMessage: trl('picking.nextTUOpened') });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened'), position: NEXT_TU_TOAST_POSITION });
       }
     });
 
@@ -203,7 +206,7 @@ export const useOpenNextTU = ({
     runExclusive(
       async () => {
         await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
-        toastNotification({ plainMessage: trl('picking.nextTUOpened') });
+        toastNotification({ plainMessage: trl('picking.nextTUOpened'), position: NEXT_TU_TOAST_POSITION });
       },
       { isRethrow: true }
     );

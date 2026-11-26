@@ -111,7 +111,7 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   return trl('error.PleaseTryAgain');
 };
 
-export const toastNotification = ({ messageKey, plainMessage }) => {
+export const toastNotification = ({ messageKey, plainMessage, position = 'bottom-center' }) => {
   let message;
   if (messageKey) {
     message = trl(messageKey);
@@ -122,9 +122,8 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
     return;
   }
 
-  // At the top: the message stays readable, but never covers the buttons at the bottom of a pop-up (e.g. OK after "Weiteres TU")
   toast.success(message, {
-    position: 'top-center',
+    position,
     transition: Bounce,
   });
 };

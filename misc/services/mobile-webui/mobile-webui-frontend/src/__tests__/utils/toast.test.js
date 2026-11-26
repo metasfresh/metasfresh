@@ -66,10 +66,18 @@ describe('toastError', () => {
     expect(uiTrace.trace).toHaveBeenCalledWith(expect.objectContaining({ context: { scannedLabel: 'L123' } }));
   });
 
-  it('shows the green notification at the top, so it never covers the bottom buttons of a pop-up (OK after "Weiteres TU")', () => {
+  it('shows the green notification at the bottom by default (every other caller keeps its place)', () => {
     const toastSuccessSpy = jest.spyOn(toast, 'success').mockImplementation(() => undefined);
 
-    toastNotification({ plainMessage: 'New TU opened' });
+    toastNotification({ plainMessage: 'Done' });
+
+    expect(toastSuccessSpy).toHaveBeenCalledWith('Done', expect.objectContaining({ position: 'bottom-center' }));
+  });
+
+  it('shows the green notification where the caller asks (the "New TU opened" message goes to the top, off the OK button of the pop-up)', () => {
+    const toastSuccessSpy = jest.spyOn(toast, 'success').mockImplementation(() => undefined);
+
+    toastNotification({ plainMessage: 'New TU opened', position: 'top-center' });
 
     expect(toastSuccessSpy).toHaveBeenCalledWith('New TU opened', expect.objectContaining({ position: 'top-center' }));
   });

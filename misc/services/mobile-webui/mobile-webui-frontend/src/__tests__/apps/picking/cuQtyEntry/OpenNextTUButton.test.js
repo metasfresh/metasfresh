@@ -316,7 +316,7 @@ describe('useOpenNextTU', () => {
     await act(async () => {
       await exposed.nextTU.onNextTU();
     });
-    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet' });
+    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet', position: 'top-center' });
   });
 
   it('GRAI scan opening a TU: the green message is the short German text', async () => {
@@ -324,7 +324,7 @@ describe('useOpenNextTU', () => {
     await act(async () => {
       await exposed.nextTU.onGraiScanned('graiX');
     });
-    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet' });
+    expect(toastNotification).toHaveBeenCalledWith({ plainMessage: 'Neues TU geöffnet', position: 'top-center' });
   });
 
   it('failure: shows the error', async () => {
