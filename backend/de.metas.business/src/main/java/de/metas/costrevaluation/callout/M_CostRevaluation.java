@@ -46,7 +46,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.util.Objects;
 

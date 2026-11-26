@@ -3,7 +3,7 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

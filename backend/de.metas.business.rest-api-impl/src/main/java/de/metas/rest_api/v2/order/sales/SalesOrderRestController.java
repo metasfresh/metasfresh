@@ -62,10 +62,10 @@ import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -125,12 +125,12 @@ public class SalesOrderRestController
 		this.bPartnerMasterdataProvider = bPartnerMasterdataProvider;
 	}
 
-	@ApiOperation("Create new order payment")
+	@Operation(summary = "Create new order payment")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new order payment"),
-			@ApiResponse(code = 401, message = "You are not authorized to create a new order payment"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
+			@ApiResponse(responseCode = "200", description = "Successfully created new order payment"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create a new order payment"),
+			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
+			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
 	})
 	@PostMapping("/payment")
 	public ResponseEntity<?> createOrderPayment(@NonNull @RequestBody final JsonOrderPaymentCreateRequest request)
@@ -188,13 +188,13 @@ public class SalesOrderRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "PDF retrieved for order"),
-			@ApiResponse(code = 401, message = "You are not authorized to see the order PDF"),
-			@ApiResponse(code = 404, message = "No archive found for the order")
+			@ApiResponse(responseCode = "200", description = "PDF retrieved for order"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to see the order PDF"),
+			@ApiResponse(responseCode = "404", description = "No archive found for the order")
 	})
 	@GetMapping(path = "/{orderId}/pdf")
 	public ResponseEntity<byte[]> getOrderPDF(
-			@ApiParam(required = true, value = "metasfreshId of the order to get the PDF of") //
+			@Parameter(required = true, description = "metasfreshId of the order to get the PDF of") //
 			@PathVariable("orderId") final int orderRecordId)
 	{
 		return Optional.ofNullable(OrderId.ofRepoIdOrNull(orderRecordId))
@@ -205,7 +205,7 @@ public class SalesOrderRestController
 
 	@PutMapping(path = "/{orderId}/revert")
 	public ResponseEntity<?> revertOrder(
-			@PathVariable("orderId") @ApiParam(required = true, value = "metasfreshId of the order to revert") final int orderRecordId)
+			@PathVariable("orderId") @Parameter(required = true, description = "metasfreshId of the order to revert") final int orderRecordId)
 	{
 		try
 		{

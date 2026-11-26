@@ -39,9 +39,9 @@ import de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
@@ -154,13 +154,13 @@ public class ShipmentRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "PDF retrieved for shipment"),
-			@ApiResponse(code = 401, message = "You are not authorized to see the shipment PDF"),
-			@ApiResponse(code = 404, message = "No archive found for the shipment")
+			@ApiResponse(responseCode = "200", description = "PDF retrieved for shipment"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to see the shipment PDF"),
+			@ApiResponse(responseCode = "404", description = "No archive found for the shipment")
 	})
 	@GetMapping(path = "/{shipmentId}/pdf")
 	public ResponseEntity<byte[]> getShipmentPDF(
-			@ApiParam(required = true, value = "metasfreshId of the shipment to get the PDF of") //
+			@Parameter(required = true, description = "metasfreshId of the shipment to get the PDF of") //
 			@PathVariable("shipmentId") final int shipmentRecordId)
 	{
 		return Optional.ofNullable(InOutId.ofRepoIdOrNull(shipmentRecordId))

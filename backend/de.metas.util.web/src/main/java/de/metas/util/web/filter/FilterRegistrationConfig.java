@@ -35,12 +35,42 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 @Profile(Profiles.PROFILE_App)
 @Configuration
 public class FilterRegistrationConfig
 {
+	/** {@link org.springframework.web.util.pattern.PathPattern} that matches every path under {@code /api} (any depth). */
+	private static final String URL_PATHPATTERN_API = "/api/**";
+
 	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+
+	/**
+	 * Restores trailing-slash tolerance for the REST API, e.g. {@code GET /api/v2/bpartner/byOrg/001/?since=…} must match
+	 * {@code @GetMapping("/byOrg/{orgCode}")}. See {@link PathNormalizingFilterRegistrations#trailingSlashRegistration(String, String)}.
+	 */
+	@Bean
+	public FilterRegistrationBean<UrlHandlerFilter> trailingSlashApiUrlHandlerFilter()
+	{
+		return PathNormalizingFilterRegistrations.trailingSlashRegistration(MetasfreshRestAPIConstants.URL_PATTERN_API, URL_PATHPATTERN_API);
+	}
+
+	/**
+	 * Restores the Spring Boot 2 tolerance for duplicate slashes in the request path, e.g. {@code /api//v2/version} or {@code //info},
+	 * as sent by a reverse proxy that maps {@code /app/...} to {@code //...}. See {@link DuplicateSlashCollapsingFilter}.
+	 * <p>
+	 * Mapped to every path, not only {@code /api}: the actuator endpoints ({@code /info}, {@code /health}, ...), the home page and the
+	 * websocket endpoint are served under the same proxy prefix. The filter does nothing for a path without {@code //}.
+	 * <p>
+	 * The bean name differs from the webui-api's registration ({@code de.metas.ui.web.config.WebConfig}), so that neither silently overrides the other
+	 * if both configurations end up in one context.
+	 */
+	@Bean
+	public FilterRegistrationBean<DuplicateSlashCollapsingFilter> appServerDuplicateSlashFilter()
+	{
+		return PathNormalizingFilterRegistrations.duplicateSlashRegistration(PathNormalizingFilterRegistrations.URL_PATTERN_ALL);
+	}
 
 	// NOTE: we are using standard spring CORS filter
 	// @Bean

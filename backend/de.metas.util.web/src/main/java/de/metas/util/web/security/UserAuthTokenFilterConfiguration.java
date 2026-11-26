@@ -7,7 +7,7 @@ import lombok.Value;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 

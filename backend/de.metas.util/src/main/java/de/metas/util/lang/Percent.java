@@ -40,7 +40,6 @@ import java.math.RoundingMode;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Percent implements Comparable<Percent>
 {
-	@JsonCreator
 	public static Percent of(@NonNull final String value)
 	{
 		return of(new BigDecimal(value));
@@ -49,7 +48,12 @@ public class Percent implements Comparable<Percent>
 	/**
 	 * @param value 100 based percent
 	 */
-	@JsonCreator
+	// The JSON representation of a Percent is its {@code @JsonValue} BigDecimal (a numeric scalar),
+	// so exactly ONE delegating creator deserializes it. Under Jackson 2.18 (JDK25/Spring-Boot-3),
+	// leaving {@code @JsonCreator} on the String/int factories as well made all three single-arg
+	// factories compete ("Conflicting property-based creators"); pinning this one DELEGATING and
+	// removing the annotation from the others resolves that unambiguously.
+	@JsonCreator(mode = JsonCreator.Mode.DELEGATING)
 	public static Percent of(@NonNull final BigDecimal value)
 	{
 		if (value.signum() == 0)
@@ -75,7 +79,6 @@ public class Percent implements Comparable<Percent>
 	/**
 	 * @param value 100 based percent
 	 */
-	@JsonCreator
 	public static Percent of(final int value)
 	{
 		return of(BigDecimal.valueOf(value));

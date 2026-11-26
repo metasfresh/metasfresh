@@ -43,7 +43,7 @@ import de.metas.Profiles;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 
 @RequestMapping(value = {MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/receipts" })
@@ -62,7 +62,7 @@ public class ReceiptCandidatesRestController
 
 	@GetMapping("receiptCandidates")
 	public ResponseEntity<JsonResponseReceiptCandidates> getReceiptCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
+			@Parameter(description = "Max number of items to be returned in one request.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{

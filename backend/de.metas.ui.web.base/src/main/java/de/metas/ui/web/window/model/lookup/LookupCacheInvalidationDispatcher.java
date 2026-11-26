@@ -14,7 +14,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;

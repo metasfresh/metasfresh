@@ -36,8 +36,9 @@ import org.compiere.model.I_EXP_Processor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_S_PostgREST_Config;
 import org.compiere.util.Env;
-import org.springframework.util.SocketUtils;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -77,7 +78,17 @@ public class CucumberLifeCycleSupport
 			final String dbHost = infrastructureSupport.getDbHost();
 			final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
 
-			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
+			final int appServerPort;
+			try (final ServerSocket socket = new ServerSocket(0))
+			{
+				// bind an ephemeral port and release it immediately; the app server then binds it.
+				// Replaces org.springframework.util.SocketUtils (removed in Spring 6).
+				appServerPort = socket.getLocalPort();
+			}
+			catch (final IOException e)
+			{
+				throw new RuntimeException("Failed to allocate a free TCP port for the metasfresh app server", e);
+			}
 			System.setProperty("server.port", Integer.toString(appServerPort));
 
 			System.setProperty("java.awt.headless", "true"); // "simulate headless mode

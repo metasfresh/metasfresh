@@ -25,48 +25,47 @@ package de.metas.common.rest_api.v2.currencyconversion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.pentabyte.springfox.ApiEnum;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@ApiModel("Outcome of a single conversion-rate upsert request item. "
+@Schema(name = "Outcome of a single conversion-rate upsert request item. "
 		+ "Extends the usual CREATED/UPDATED/NOTHING_DONE outcomes with ERROR, "
 		+ "because per-record failures are a first-class outcome of the batch upsert.")
 @Value
 public class JsonResponseConversionRateUpsertItem
 {
+	@Schema(description =
+			"UPDATED: " + "The rate was updated; note that it's possible that nothing really changed due to the update." + "\n"
+			+ "NOTHING_DONE: " + "The rate already existed and the sync-advise indicated to do nothing." + "\n"
+			+ "ERROR: " + "This record failed; see the error field for a user-friendly message.")
 	public enum SyncOutcome
 	{
 		CREATED,
 
-		@ApiEnum("The rate was updated; note that it's possible that nothing really changed due to the update.")
 		UPDATED,
 
-		@ApiEnum("The rate already existed and the sync-advise indicated to do nothing.")
 		NOTHING_DONE,
 
-		@ApiEnum("This record failed; see the error field for a user-friendly message.")
 		ERROR
 	}
 
-	@ApiModelProperty(position = 10, value = "The ISO source currency code of the respective request item.")
+	@Schema(description = "The ISO source currency code of the respective request item.")
 	@NonNull
 	String fromCurrencyCode;
 
-	@ApiModelProperty(position = 20, value = "The ISO target currency code of the respective request item.")
+	@Schema(description = "The ISO target currency code of the respective request item.")
 	@NonNull
 	String toCurrencyCode;
 
-	@ApiModelProperty(position = 30, value = "The outcome of the upsert for this item.")
+	@Schema(description = "The outcome of the upsert for this item.")
 	@NonNull
 	SyncOutcome syncOutcome;
 
-	@ApiModelProperty(position = 40, value = "User-friendly error information; present when syncOutcome is ERROR.")
+	@Schema(description = "User-friendly error information; present when syncOutcome is ERROR.")
 	@Nullable
 	JsonErrorItem error;
 

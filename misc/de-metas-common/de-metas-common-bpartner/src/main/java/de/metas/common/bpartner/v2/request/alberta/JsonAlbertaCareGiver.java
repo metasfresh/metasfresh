@@ -22,7 +22,7 @@
 
 package de.metas.common.bpartner.v2.request.alberta;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,21 +35,21 @@ import javax.annotation.Nullable;
 @EqualsAndHashCode
 public class JsonAlbertaCareGiver
 {
-	@ApiModelProperty(position = 10)
+	@Schema
 	private String caregiverIdentifier;
 
-	@ApiModelProperty(position = 20)
+	@Schema
 	@Nullable
 	private String type;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 30)
+	@Schema
 	@Nullable
 	private Boolean isLegalCarer;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(hidden = true)
 	private boolean legalCarerSet;
 
 	public void setCaregiverIdentifier(@NonNull final String caregiverIdentifier)

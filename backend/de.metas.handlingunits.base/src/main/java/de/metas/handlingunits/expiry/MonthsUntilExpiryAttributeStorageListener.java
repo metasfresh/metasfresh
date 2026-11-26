@@ -3,7 +3,7 @@ package de.metas.handlingunits.expiry;
 import java.time.LocalDate;
 import java.util.OptionalInt;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeCode;

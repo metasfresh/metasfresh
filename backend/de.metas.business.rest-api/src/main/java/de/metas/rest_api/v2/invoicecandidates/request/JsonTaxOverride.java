@@ -2,7 +2,7 @@ package de.metas.rest_api.v2.invoicecandidates.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,12 +33,10 @@ import java.math.BigDecimal;
 @Value
 public class JsonTaxOverride
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = "The tax rate in percent, e.g. `19`. Matched scale-insensitively: `19`, `19.0` and `19.00` are equivalent.")
+	@Schema(required = true, description = "The tax rate in percent, e.g. `19`. Matched scale-insensitively: `19`, `19.0` and `19.00` are equivalent.")
 	BigDecimal rate;
 
-	@ApiModelProperty(position = 20, required = true, //
-			value = "Identifies the tax category the rate belongs to. Either\n"
+	@Schema(required = true, description = "Identifies the tax category the rate belongs to. Either\n"
 					+ "* `int-<C_TaxCategory.InternalName>`, e.g. `int-Transport`\n"
 					+ "* or the plain `C_TaxCategory_ID`, e.g. `1000012`\n\n"
 					+ "Required: the same rate can exist in several categories, and metasfresh never resolves a tax without one.")

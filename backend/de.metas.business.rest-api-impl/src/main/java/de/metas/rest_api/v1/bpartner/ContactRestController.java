@@ -56,10 +56,10 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 
 /**
@@ -88,14 +88,14 @@ public class ContactRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{contactIdentifier}")
 	public ResponseEntity<JsonResponseContact> retrieveContact(
-			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifierStr)
 	{
@@ -106,19 +106,19 @@ public class ContactRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully retrieved contact(s)"),
-			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved contact(s)"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to view the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(responseCode = "404", description = "There is no page for the given 'next' value")
 	})
 	@GetMapping
 	public ResponseEntity<JsonResponseContactList> retrieveContactsSince(
 
-			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
+			@Parameter(description = SINCE_DOC, allowEmptyValue = true) //
 			@RequestParam(name = "since", required = false) //
 			@Nullable final Long epochTimestampMillis,
 
-			@ApiParam(value = NEXT_DOC, allowEmptyValue = true) //
+			@Parameter(description = NEXT_DOC, allowEmptyValue = true) //
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
@@ -127,11 +127,11 @@ public class ContactRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(responseCode = "201", description = "Successfully created or updated contact"),
+			@ApiResponse(responseCode = "401", description = "You are not authorized to create or update the resource"),
+			@ApiResponse(responseCode = "403", description = "Accessing the resource you were trying to reach is forbidden")
 	})
-	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
+	@Operation(summary = "Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PutMapping
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 			@RequestBody @NonNull final JsonRequestContactUpsert contacts)

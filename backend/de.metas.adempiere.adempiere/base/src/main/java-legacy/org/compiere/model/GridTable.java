@@ -2888,7 +2888,7 @@ public class GridTable extends AbstractTableModel
 						// give the other processes a chance
 						try
 						{
-							yield();
+							Thread.yield(); // 'yield' is a restricted identifier since Java 14 - qualify the call
 							sleep(10); // .01 second
 						}
 						catch (InterruptedException ie)

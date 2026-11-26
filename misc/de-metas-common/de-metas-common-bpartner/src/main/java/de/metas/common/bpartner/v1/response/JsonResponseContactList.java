@@ -30,13 +30,13 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.common.rest_api.v1.JsonPagingDescriptor;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-@ApiModel("Resonse to a request for contact master data.")
+@Schema(name = "Resonse to a request for contact master data.")
 @Value
 public class JsonResponseContactList
 {

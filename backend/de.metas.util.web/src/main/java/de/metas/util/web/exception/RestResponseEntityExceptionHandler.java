@@ -32,6 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.util.Loggables;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.Env;
@@ -42,6 +43,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import javax.annotation.Nullable;
 
@@ -52,6 +56,7 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class RestResponseEntityExceptionHandler
 {
 	private static final Logger logger = LogManager.getLogger(RestResponseEntityExceptionHandler.class);
+	private static final Logger pageNotFoundLogger = LogManager.getLogger(DispatcherServlet.PAGE_NOT_FOUND_LOG_CATEGORY);
 
 	@ExceptionHandler(BPartnerIdNotFoundException.class)
 	public ResponseEntity<JsonError> handleBPartnerIdNotFoundException(@NonNull final BPartnerIdNotFoundException e)
@@ -107,6 +112,20 @@ public class RestResponseEntityExceptionHandler
 				HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
+	/**
+	 * Unknown route. Since Spring 6.1, Spring MVC throws these instead of sending a 404 itself, so without this handler the catch-all
+	 * {@link #handleException(Exception)} would answer 422.
+	 * <p>
+	 * Logged like Spring 5's {@code DispatcherServlet.noHandlerFound} did before the Spring Boot 3 migration: one WARN line on the
+	 * {@link DispatcherServlet#PAGE_NOT_FOUND_LOG_CATEGORY} category, without stack trace; an unknown route is a client error, not a server error.
+	 */
+	@ExceptionHandler({ NoResourceFoundException.class, NoHandlerFoundException.class })
+	public ResponseEntity<JsonError> handleNoResourceOrHandlerFound(@NonNull final Exception e, @NonNull final HttpServletRequest request)
+	{
+		pageNotFoundLogger.warn("No mapping for {} {}", request.getMethod(), request.getRequestURI());
+		return createError(e, null, HttpStatus.NOT_FOUND);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<JsonError> handleException(@NonNull final Exception e)
 	{
@@ -136,6 +155,14 @@ public class RestResponseEntityExceptionHandler
 				() -> e.getClass().getSimpleName());
 		Loggables.withFallbackToLogger(logger, Level.ERROR).addLog(logMessage, e);
 
+		return createError(e, detail, status);
+	}
+
+	private static ResponseEntity<JsonError> createError(
+			@NonNull final Exception e,
+			@Nullable final String detail,
+			@NonNull final HttpStatus status)
+	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		final JsonError error = JsonError.builder()

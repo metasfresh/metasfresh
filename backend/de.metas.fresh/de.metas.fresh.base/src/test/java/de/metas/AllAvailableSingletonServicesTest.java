@@ -185,8 +185,13 @@ public class AllAvailableSingletonServicesTest
 		public Stream<Class<? extends ISingletonService>> provideClasses()
 		{
 			final Stopwatch stopwatch = Stopwatch.createStarted();
+			// JDK25: ClasspathHelper.forClassLoader() enumerates URLs from the classloader hierarchy, but
+			// since JDK9 the application classloader is no longer a URLClassLoader, so it yields NO urls and
+			// the scan finds zero ISingletonService interfaces — leaving this @ParameterizedTest with no
+			// arguments (JUnit5 PreconditionViolationException). forJavaClassPath() reads the java.class.path
+			// system property instead, which is populated regardless of the classloader type.
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
-					.addUrls(ClasspathHelper.forClassLoader())
+					.addUrls(ClasspathHelper.forJavaClassPath())
 					.setScanners(new SubTypesScanner()));
 			System.out.println("Created reflections instance in " + stopwatch);
 

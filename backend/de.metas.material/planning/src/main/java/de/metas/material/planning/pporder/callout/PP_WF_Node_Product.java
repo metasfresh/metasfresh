@@ -10,7 +10,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.eevolution.model.I_PP_WF_Node_Product;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Callout(I_PP_WF_Node_Product.class)
 @Component

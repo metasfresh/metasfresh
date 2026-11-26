@@ -29,7 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
+import jakarta.validation.constraints.Null;
 
 @Value
 @Builder

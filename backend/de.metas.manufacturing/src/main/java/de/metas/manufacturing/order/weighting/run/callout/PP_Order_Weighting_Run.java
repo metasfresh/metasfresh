@@ -24,7 +24,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Weighting_Run;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Optional;
 
 @Callout(value = I_PP_Order_Weighting_Run.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)

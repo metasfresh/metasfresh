@@ -43,7 +43,7 @@ import de.metas.Profiles;
 import de.metas.common.shipping.v2.JsonRequestCandidateResults;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
@@ -62,7 +62,7 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
+			@Parameter(description = "Max number orders per request for which shipmentSchedules shall be returned.\n"
 					+ "ShipmentSchedules without an order count as one.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)

@@ -178,7 +178,7 @@ class ContactRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContactList> page1 = contactRestController.retrieveContactsSince(0L, null);
 
-		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page1.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContactList page1Body = page1.getBody();
 		assertThat(page1Body.getContacts()).hasSize(2);
 
@@ -189,7 +189,7 @@ class ContactRestControllerTest
 
 		final ResponseEntity<JsonResponseContactList> page2 = contactRestController.retrieveContactsSince(null, page2Id);
 
-		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page2.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContactList page2Body = page2.getBody();
 		assertThat(page2Body.getContacts()).hasSize(2);
 
@@ -200,7 +200,7 @@ class ContactRestControllerTest
 
 		final ResponseEntity<JsonResponseContactList> page3 = contactRestController.retrieveContactsSince(null, page3Id);
 
-		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(page3.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContactList page3Body = page3.getBody();
 		assertThat(page3Body.getContacts()).hasSize(1);
 
@@ -218,7 +218,7 @@ class ContactRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("ext-" + AD_USER_EXTERNAL_ID);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -230,7 +230,7 @@ class ContactRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact(Integer.toString(AD_USER_ID));
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -258,7 +258,7 @@ class ContactRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact(Integer.toString(AD_USER_ID));
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
 		assertThat(resultBody.getChangeInfo().getChangeLogs()).isNotEmpty();
@@ -272,7 +272,7 @@ class ContactRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("val-" + "contactRecord.value");
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
 		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
@@ -301,7 +301,7 @@ class ContactRestControllerTest
 
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
@@ -359,7 +359,7 @@ class ContactRestControllerTest
 
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);

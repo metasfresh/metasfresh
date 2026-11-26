@@ -578,7 +578,6 @@ public class ManufacturingOrderAPIServiceTest
 			saveRecord(docType);
 		}
 
-		@Builder(builderMethodName = "vhu", builderClassName = "VHUBuilder")
 		private HuId createVHU(
 				@NonNull final ProductId productId,
 				@NonNull final String qty,
@@ -726,11 +725,7 @@ public class ManufacturingOrderAPIServiceTest
 					//
 					.build();
 
-			final HuId vhuId = vhu().productId(componentId)
-					.qty("40")
-					.lotNumber("lot1")
-					.bestBeforeDate("2022-02-02")
-					.build();
+			final HuId vhuId = createVHU(componentId, "40", "lot1", "2022-02-02");
 
 			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
@@ -920,7 +915,7 @@ public class ManufacturingOrderAPIServiceTest
 					//
 					.build();
 
-			vhu().productId(componentId).qty("40").lotNumber("lot1").bestBeforeDate("2022-02-02").build();
+			createVHU(componentId, "40", "lot1", "2022-02-02");
 
 			final JsonRequestManufacturingOrdersReport request = JsonRequestManufacturingOrdersReport.builder()
 					.issue(JsonRequestIssueToManufacturingOrder.builder()

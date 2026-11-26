@@ -26,7 +26,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
-import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -62,7 +61,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
@@ -133,7 +132,6 @@ public class ViewsRepository implements IViewsRepository
 		{
 			truncateTable(I_T_WEBUI_ViewSelection.Table_Name);
 			truncateTable(I_T_WEBUI_ViewSelectionLine.Table_Name);
-			truncateTable(I_T_ES_FTS_Search_Result.Table_Name);
 		}
 		else
 		{

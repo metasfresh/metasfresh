@@ -209,7 +209,6 @@ public class ShipmentScheduleUpdater_generate_Test
 	@Nested
 	public class PickingBOM_ChristmasBox_5chocolates_3socks_DeliverByAvailability
 	{
-		@Builder(builderMethodName = "prepareTest", buildMethodName = "setupAndInvoke")
 		private ShipmentSchedulesDuringUpdate setupTest(
 				final int christmasPack_qtyOrdered,
 				final int christmasPack_qtyOnHand,
@@ -256,48 +255,28 @@ public class ShipmentScheduleUpdater_generate_Test
 		@Test
 		public void qtyOnHand_0christmasPacks_11chocolates_4socks()
 		{
-			final ShipmentSchedulesDuringUpdate result = prepareTest()
-					.christmasPack_qtyOrdered(99999)
-					.christmasPack_qtyOnHand(0)
-					.chocolate_qtyOnHand(11)
-					.socks_qtyOnHand(4)
-					.setupAndInvoke();
+			final ShipmentSchedulesDuringUpdate result = setupTest(99999, 0, 11, 4);
 			assertOneResultWithQtyToDeliver(result).isEqualByComparingTo("1");
 		}
 
 		@Test
 		public void qtyOnHand_0christmasPacks_11chocolates_6socks()
 		{
-			final ShipmentSchedulesDuringUpdate result = prepareTest()
-					.christmasPack_qtyOrdered(99999)
-					.christmasPack_qtyOnHand(0)
-					.chocolate_qtyOnHand(11)
-					.socks_qtyOnHand(6)
-					.setupAndInvoke();
+			final ShipmentSchedulesDuringUpdate result = setupTest(99999, 0, 11, 6);
 			assertOneResultWithQtyToDeliver(result).isEqualByComparingTo("2");
 		}
 
 		@Test
 		public void qtyOnHand_10christmasPacks_11chocolates_6socks()
 		{
-			final ShipmentSchedulesDuringUpdate result = prepareTest()
-					.christmasPack_qtyOrdered(99999)
-					.christmasPack_qtyOnHand(10)
-					.chocolate_qtyOnHand(11)
-					.socks_qtyOnHand(6)
-					.setupAndInvoke();
+			final ShipmentSchedulesDuringUpdate result = setupTest(99999, 10, 11, 6);
 			assertOneResultWithQtyToDeliver(result).isEqualByComparingTo("12");
 		}
 
 		@Test
 		public void qtyOnHand_10christmasPacks_11chocolates_6socks_order_11()
 		{
-			final ShipmentSchedulesDuringUpdate result = prepareTest()
-					.christmasPack_qtyOrdered(11)
-					.christmasPack_qtyOnHand(10)
-					.chocolate_qtyOnHand(11)
-					.socks_qtyOnHand(6)
-					.setupAndInvoke();
+			final ShipmentSchedulesDuringUpdate result = setupTest(11, 10, 11, 6);
 			assertOneResultWithQtyToDeliver(result).isEqualByComparingTo("11");
 		}
 

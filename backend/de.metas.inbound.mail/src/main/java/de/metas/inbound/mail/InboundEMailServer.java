@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.integration.dsl.context.IntegrationFlowContext;
 import org.springframework.integration.mail.dsl.Mail;
 import org.springframework.stereotype.Component;
@@ -158,7 +157,7 @@ public class InboundEMailServer implements InitializingBean, InboundEMailConfigC
 
 	private IntegrationFlow createIntegrationFlow(final InboundEMailConfig config)
 	{
-		return IntegrationFlows
+		return IntegrationFlow
 				.from(Mail.imapIdleAdapter(config.getUrl())
 						.javaMailProperties(p -> p.put("mail.debug", Boolean.toString(config.isDebugProtocol())))
 						.userFlag(IMAP_USER_FLAG)

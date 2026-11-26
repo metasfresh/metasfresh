@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,36 +41,28 @@ import java.math.BigDecimal;
 @JsonDeserialize(builder = JsonMHUPIItemProduct.JsonMHUPIItemProductBuilder.class)
 public class JsonMHUPIItemProduct
 {
-	@ApiModelProperty( //
-			dataType = "java.lang.Integer", //
-			value = "Corresponding to `M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID`.")
+	@Schema(description = "Corresponding to `M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID`.", implementation = Integer.class)
 	@NonNull
 	@JsonProperty("mHUPIItemProductId")
 	JsonMetasfreshId mHUPIItemProductId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			dataType = "java.lang.Integer", //
-			value = "Corresponding to `M_HU_PI_Item_Product.C_BPartnerId`.")
+	@Schema(description = "Corresponding to `M_HU_PI_Item_Product.C_BPartnerId`.", implementation = Integer.class)
 	@Nullable
 	@JsonProperty("bpartnerId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	JsonMetasfreshId bpartnerId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			dataType = "java.lang.String", //
-			value = "Corresponding to `M_HU_PI_Item_Product.Name`.")
+	@Schema(description = "Corresponding to `M_HU_PI_Item_Product.Name`.", implementation = String.class)
 	@Nullable
 	@JsonProperty("name")
 	String name;
 
-	@ApiModelProperty("Corresponding to M_HU_PI_Item_Product.Qty")
+	@Schema(description = "Corresponding to M_HU_PI_Item_Product.Qty")
 	@NonNull
 	@JsonProperty("qty")
 	BigDecimal qty;
 
-	@ApiModelProperty("This is the `C_UOM.X12DE355` of the M_HU_PI_Item_Product.C_UOM_ID.")
+	@Schema(description = "This is the `C_UOM.X12DE355` of the M_HU_PI_Item_Product.C_UOM_ID.")
 	@Nullable
 	@JsonProperty("uom")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

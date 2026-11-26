@@ -22,8 +22,7 @@ import com.google.gson.stream.JsonWriter;
 import de.metas.camel.externalsystems.ebay.api.model.Amount;
 import de.metas.camel.externalsystems.ebay.api.model.OrderRefund;
 import de.metas.camel.externalsystems.ebay.api.model.Payment;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.List;
 /**
  * This type contains information about the various monetary exchanges that apply to the net balance due for the order.
  */
-@ApiModel(description = "This type contains information about the various monetary exchanges that apply to the net balance due for the order.")
+@Schema(description = "This type contains information about the various monetary exchanges that apply to the net balance due for the order.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class PaymentSummary
 {
@@ -70,7 +69,7 @@ public class PaymentSummary
 	 * @return payments
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array consists of payment information for the order, including payment status, payment method, payment amount, and payment date. This array is always returned, although some of the fields under this container will not be returned until payment has been made.")
+	@Schema(description = "This array consists of payment information for the order, including payment status, payment method, payment amount, and payment date. This array is always returned, although some of the fields under this container will not be returned until payment has been made.")
 
 	public List<Payment> getPayments()
 	{
@@ -105,7 +104,7 @@ public class PaymentSummary
 	 * @return refunds
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "This array is always returned, but is returned as an empty array unless the seller has submitted a partial or full refund to the buyer for the order. If a refund has occurred, the refund amount and refund date will be shown for each refund.")
+	@Schema(description = "This array is always returned, but is returned as an empty array unless the seller has submitted a partial or full refund to the buyer for the order. If a refund has occurred, the refund amount and refund date will be shown for each refund.")
 
 	public List<OrderRefund> getRefunds()
 	{
@@ -130,7 +129,7 @@ public class PaymentSummary
 	 * @return totalDueSeller
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "")
+	@Schema(description = "")
 
 	public Amount getTotalDueSeller()
 	{

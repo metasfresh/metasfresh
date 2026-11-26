@@ -19,14 +19,13 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 
 /**
  * This type is used by the files array, which shows the name, ID, file type, and upload date for each provided evidential file.
  */
-@ApiModel(description = "This type is used by the files array, which shows the name, ID, file type, and upload date for each provided evidential file.")
+@Schema(description = "This type is used by the files array, which shows the name, ID, file type, and upload date for each provided evidential file.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-07-20T14:45:55.981728+02:00[Europe/Berlin]")
 public class FileInfo
 {
@@ -59,7 +58,7 @@ public class FileInfo
 	 * @return fileId
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The unique identifier of the evidence file.")
+	@Schema(description = "The unique identifier of the evidence file.")
 
 	public String getFileId()
 	{
@@ -84,7 +83,7 @@ public class FileInfo
 	 * @return fileType
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.")
+	@Schema(description = "The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.")
 
 	public String getFileType()
 	{
@@ -109,7 +108,7 @@ public class FileInfo
 	 * @return name
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The seller-provided name of the evidence file.")
+	@Schema(description = "The seller-provided name of the evidence file.")
 
 	public String getName()
 	{
@@ -135,7 +134,7 @@ public class FileInfo
 	 * @return uploadedDate
 	 **/
 	@javax.annotation.Nullable
-	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Schema(description = "The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
 	public String getUploadedDate()
 	{

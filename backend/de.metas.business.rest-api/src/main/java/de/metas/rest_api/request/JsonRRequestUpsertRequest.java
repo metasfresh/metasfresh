@@ -28,7 +28,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.request.JsonConfidentialType;
 import de.metas.common.rest_api.request.JsonRequestPriority;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -46,22 +46,22 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonRRequestUpsertRequest
 {
-	@ApiModelProperty(value = SwaggerDocConstants.ORG_CODE_PARAMETER_DOC)
+	@Schema(description = SwaggerDocConstants.ORG_CODE_PARAMETER_DOC)
 	@NonNull String orgCode;
 
 	@NonNull String requestType;
 
-	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
+	@Schema(description = SwaggerDocConstants.BPARTNER_VALUE_DOC)
 	@Nullable String bpartnerIdentifier;
 
-	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	@Nullable String userIdentifier;
 
 	@Nullable JsonRequestPriority priority;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
 
-	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
+	@Schema(description = SwaggerDocConstants.BPARTNER_VALUE_DOC)
 	@Nullable String vendorIdentifier;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -73,7 +73,7 @@ public class JsonRRequestUpsertRequest
 
 	@Nullable String projectValue;
 
-	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
 	@Nullable String productIdentifier;
 
 	@Nullable JsonMetasfreshId orderId;
@@ -83,7 +83,7 @@ public class JsonRRequestUpsertRequest
 
 	@Nullable String qualityNote;
 
-	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
+	@Schema(description = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	@Nullable String salesRepIdentifier;
 
 	@Nullable String statusName;

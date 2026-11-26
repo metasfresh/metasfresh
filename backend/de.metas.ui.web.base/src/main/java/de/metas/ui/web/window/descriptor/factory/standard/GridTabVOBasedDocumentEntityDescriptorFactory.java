@@ -8,7 +8,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -134,7 +133,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final LabelFieldNameFactory labelFieldNameFactory = new LabelFieldNameFactory();
 
 	private WidgetTypeStandardNumberPrecision _standardNumberPrecision;
@@ -449,16 +447,15 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 						() -> defaultFilterDescriptor != null ? defaultFilterDescriptor.getAdValRuleId() : null,
 						gridFieldVO::getAD_Val_Rule_ID);
 
-				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
-						lookupDataSourceFactory.getLookupDescriptorProviders().sql()
-								.setCtxTableName(ctxTableName)
-								.setCtxColumnName(sqlColumnName)
-								.setWidgetType(widgetType)
-								.setDisplayType(displayType)
-								.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentField, gridFieldVO.getAD_Val_Rule_ID())
-								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentFilter, filterValRuleId)
-								.build());
+				lookupDescriptorProvider = lookupDataSourceFactory.getLookupDescriptorProviders().sql()
+						.setCtxTableName(ctxTableName)
+						.setCtxColumnName(sqlColumnName)
+						.setWidgetType(widgetType)
+						.setDisplayType(displayType)
+						.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
+						.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentField, gridFieldVO.getAD_Val_Rule_ID())
+						.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentFilter, filterValRuleId)
+						.build();
 			}
 
 			lookupDescriptor = lookupDescriptorProvider.provide();
@@ -617,41 +614,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 
 		// if there is a parent link column, only the respective gridFieldVO is a key
 		return Objects.equals(gridFieldVO.getColumnName(), parentLinkColumnName);
-	}
-
-	private LookupDescriptorProvider wrapFullTextSeachFilterDescriptorProvider(@NonNull final LookupDescriptorProvider databaseLookupDescriptorProvider)
-	{
-		final String modelTableName = databaseLookupDescriptorProvider.getTableName().orElse(null);
-		if (modelTableName == null)
-		{
-			return databaseLookupDescriptorProvider;
-		}
-
-		if (esSystem.getEnabled().isFalse())
-		{
-			return databaseLookupDescriptorProvider;
-		}
-
-		// TODO: implement
-		return databaseLookupDescriptorProvider;
-		// final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
-		// final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
-		// 		.orElse(null);
-		// if (modelIndexer == null)
-		// {
-		// 	return databaseLookupDescriptorProvider;
-		// }
-		//
-		// final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
-		//
-		// return FullTextSearchLookupDescriptorProvider.builder()
-		//		.lookupDataSourceFactory(lookupDataSourceFactory)
-		// 		.elasticsearchClient(elasticsearchClient)
-		// 		.modelTableName(modelIndexer.getModelTableName())
-		// 		.esIndexName(modelIndexer.getIndexName())
-		// 		.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
-		// 		.databaseLookupDescriptorProvider(databaseLookupDescriptorProvider)
-		// 		.build();
 	}
 
 	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn, final OptionalBoolean tabAllowsCreateNew)

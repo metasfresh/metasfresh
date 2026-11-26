@@ -23,9 +23,9 @@
 package de.metas.hostkey.spi.impl;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
