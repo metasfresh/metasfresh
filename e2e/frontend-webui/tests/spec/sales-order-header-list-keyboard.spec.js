@@ -108,14 +108,8 @@ async function expectListThroughReload(page, recorder, mark, doc, list, descript
   // hasReloadSince is read once, after the hold: a reload that comes later is not awaited here (the step's own
   // later checks and the next Enter cover it).
   if (requireReload || hasReloadSince(recorder, mark, doc)) {
-    try {
-      await awaitHeaderReload(page, recorder, mark, { ...doc, step: description });
-    } catch (error) {
-      // No reload: report where the cursor is, so the failure reads like the focus failures (and keeps the cause).
-      throw new Error(
-        `${description}: ${String(error.message).split('\n')[0]}; the cursor is in ${await describeActiveElement(page)}`
-      );
-    }
+    // A missing reload is not a cursor steal: awaitHeaderReload's own (non-focus) message is left as it is.
+    await awaitHeaderReload(page, recorder, mark, { ...doc, step: description });
     await expectFocusOn(locator, `${description}, after the header reload`);
     await expectFocusHeld(locator, 1000, `${description}, after the header reload`);
   }
