@@ -25,6 +25,8 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * - TC5b (keyboard spec) is a regression guard that passes on the unfixed code by design.
  * - TC4a: entering the cell by keyboard (Tab) does NOT open the calendar, and typing works
  * - TC4b: a single pointer click on the static date cell DOES open the calendar
+ * - TC4c: after that single click, typing a date REPLACES the stored one (me03#33085: the caret
+ *   landed at the end of the text, so `20.11.2026` + typing `03.12.2026` gave `20.11.202603.12.2026`)
  *
  * Features tested:
  * - F5010: Order Lines Grid
@@ -288,5 +290,32 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
 
     await dateCell.click();
     await expect(calendar(page), 'one pointer click opens the calendar').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  });
+
+  test('TC4c: a single click on a cell holding 20.11.2026, type a new date -> replaces (not appends), PATCHed', async ({
+    page,
+  }) => {
+    test.setTimeout(300000);
+    await page.clock.setFixedTime(FIXED_NOW);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+    await expect(dateCellText(dateCell), 'the stored value is shown').toHaveText(STORED_DISPLAY_VALUE);
+
+    await dateCell.click();
+    const input = dateCell.locator('.datepicker input.js-input-field').first();
+    await expect(input, 'one pointer click opens the grid Date editor').toBeFocused({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(calendar(page), 'one pointer click opens the calendar').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await page.keyboard.type('03.12.2026', { delay: 50 });
+    await expect(input, 'the typed date REPLACES the stored one (not appended to 20.11.2026)').toHaveValue('03.12.2026');
+    await page.keyboard.press('Tab'); // leave the cell: the typed date is saved on blur
+
+    await expect.poll(() => state.patches.length, { message: 'a PATCH carries the new date', timeout: 10000 }).toBe(1);
+    expect(patchedDay(state.patches[0].value), 'the PATCH denotes the typed day').toBe('03.12.2026');
+    await expect(dateCellText(dateCell), 'the cell shows exactly the new date after leaving it').toHaveText('03.12.2026');
   });
 });
