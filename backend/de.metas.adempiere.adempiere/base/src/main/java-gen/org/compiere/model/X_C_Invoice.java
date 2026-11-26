@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -391288279L;
+	private static final long serialVersionUID = 1023971313L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -135,6 +135,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getBPartnerAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
+	}
+
+	@Override
+	public void setBuyerVATaxID (final @Nullable java.lang.String BuyerVATaxID)
+	{
+		set_Value (COLUMNNAME_BuyerVATaxID, BuyerVATaxID);
+	}
+
+	@Override
+	public java.lang.String getBuyerVATaxID() 
+	{
+		return get_ValueAsString(COLUMNNAME_BuyerVATaxID);
 	}
 
 	@Override
@@ -381,6 +393,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_Fiscal_Representation getC_Fiscal_Representation()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Fiscal_Representation_ID, org.compiere.model.I_C_Fiscal_Representation.class);
+	}
+
+	@Override
+	public void setC_Fiscal_Representation(final org.compiere.model.I_C_Fiscal_Representation C_Fiscal_Representation)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Fiscal_Representation_ID, org.compiere.model.I_C_Fiscal_Representation.class, C_Fiscal_Representation);
+	}
+
+	@Override
+	public void setC_Fiscal_Representation_ID (final int C_Fiscal_Representation_ID)
+	{
+		if (C_Fiscal_Representation_ID < 1) 
+			set_Value (COLUMNNAME_C_Fiscal_Representation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Fiscal_Representation_ID, C_Fiscal_Representation_ID);
+	}
+
+	@Override
+	public int getC_Fiscal_Representation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Fiscal_Representation_ID);
+	}
+
+	@Override
 	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
@@ -595,6 +634,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getCreateCreditMemo() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreateCreditMemo);
+	}
+
+	@Override
+	public void setCreateDta (final @Nullable java.lang.String CreateDta)
+	{
+		set_Value (COLUMNNAME_CreateDta, CreateDta);
+	}
+
+	@Override
+	public java.lang.String getCreateDta() 
+	{
+		return get_ValueAsString(COLUMNNAME_CreateDta);
 	}
 
 	@Override
@@ -1458,6 +1509,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getScriptedExport_Status() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScriptedExport_Status);
+	}
+
+	@Override
+	public void setSellerVATaxID (final @Nullable java.lang.String SellerVATaxID)
+	{
+		set_Value (COLUMNNAME_SellerVATaxID, SellerVATaxID);
+	}
+
+	@Override
+	public java.lang.String getSellerVATaxID() 
+	{
+		return get_ValueAsString(COLUMNNAME_SellerVATaxID);
 	}
 
 	@Override
