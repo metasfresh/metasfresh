@@ -305,9 +305,8 @@ test('Last GRAI crate scanned → Scan (GRAI) button vanishes, Fertigstellen / A
     });
 
     let completeTopBefore;
-    await test.step('Scan (GRAI) button is shown, no placeholder; remember where Fertigstellen is', async () => {
+    await test.step('Scan (GRAI) button is shown; remember where Fertigstellen is', async () => {
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
-        await HUConsolidationJobScreen.expectScanGRAIButtonSlot({ present: false });
         completeTopBefore = await HUConsolidationJobScreen.getCompleteButtonTop();
     });
 
@@ -318,11 +317,10 @@ test('Last GRAI crate scanned → Scan (GRAI) button vanishes, Fertigstellen / A
         await PickingSlotScreen.goBack();
     });
 
-    await test.step('Scan (GRAI) button is gone, an invisible placeholder keeps its place, Fertigstellen did not move', async () => {
+    await test.step('Scan (GRAI) button is gone, Fertigstellen did not move', async () => {
         await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
         const completeTopAfter = await HUConsolidationJobScreen.getCompleteButtonTop();
         expect(completeTopAfter, 'Fertigstellen top edge (px) after the Scan (GRAI) button vanished').toBe(completeTopBefore);
-        await HUConsolidationJobScreen.expectScanGRAIButtonSlot({ present: true });
     });
 });
 

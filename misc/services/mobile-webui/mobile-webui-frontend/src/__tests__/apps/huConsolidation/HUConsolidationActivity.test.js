@@ -40,7 +40,6 @@ describe('HUConsolidationActivity: Scan (GRAI) button slot', () => {
     expect(screen.queryByTestId('scanGRAI-button')).not.toBeInTheDocument();
     const slot = screen.getByTestId('scanGRAI-slot');
     expect(slot).toHaveStyle({ visibility: 'hidden' });
-    expect(slot).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('button never shown (job without GRAI crates): no button and no slot, so no gap', () => {

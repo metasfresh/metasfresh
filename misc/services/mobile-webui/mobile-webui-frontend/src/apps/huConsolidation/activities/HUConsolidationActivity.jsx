@@ -54,8 +54,8 @@ const HUConsolidationActivity = ({ applicationId, wfProcessId, activityId }) => 
       )}
       {!isGRAIScanEnabled && wasGRAIScanButtonShown && (
         // The button vanished (no GRAI crate left): keep its place, so the buttons below do not move under the worker's finger.
-        // Same button, so same height; invisible, not tappable, not read by screen readers.
-        <div data-testid="scanGRAI-slot" style={{ visibility: 'hidden' }} aria-hidden="true">
+        // Same button, so same height; invisible (visibility: hidden also makes it untappable and hides it from screen readers).
+        <div data-testid="scanGRAI-slot" style={{ visibility: 'hidden' }}>
           <ButtonWithIndicator
             testId="scanGRAI-slot-button"
             caption={trl('huConsolidation.HUConsolidationActivity.scanGRAI')}
