@@ -105,7 +105,6 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -132,7 +131,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -204,7 +202,6 @@ public class C_Order_StepDef
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);

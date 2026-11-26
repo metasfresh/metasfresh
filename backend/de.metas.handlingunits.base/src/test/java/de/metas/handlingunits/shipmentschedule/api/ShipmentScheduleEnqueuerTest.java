@@ -36,6 +36,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
@@ -44,7 +45,6 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.impl.PlainLockDatabase;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -58,8 +58,8 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.IQuery;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,11 +87,9 @@ import static org.assertj.core.api.Assertions.catchThrowable;
  * <ul>
  * <li>a selection that matched nothing at lock time, and the snapshot over the locked schedules;</li>
  * <li>a closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
- * but it is put into a new run that ships picks only (quantity type P).</li>
+ * but it is put into a new run that ships picks only (quantity type P);</li>
+ * <li>a run with its own async batch is one group, whatever a schedule recompute saved between the batch stamp and the enqueue.</li>
  * </ul>
- * A closed shipment schedule is not put into a new shipment run that ships the entered quantity (quantity type D / PD),
- * but it is put into a new run that ships picks only (quantity type P).
- * A run with its own async batch is one group, whatever a schedule recompute saved between the batch stamp and the enqueue.
  */
 class ShipmentScheduleEnqueuerTest
 {
