@@ -38,6 +38,8 @@ import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSc
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.lock.api.ILock;
@@ -73,6 +75,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -96,6 +99,7 @@ public class ShipmentScheduleEnqueuer
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -157,7 +161,7 @@ public class ShipmentScheduleEnqueuer
 			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
 			@NonNull final ILock mainLock)
 	{
-		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
+		final Iterator<I_M_ShipmentSchedule> shipmentSchedulesByStoredKey = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
 				.filter(workPackageParameters.getShipmentSchedulesQueryFiltersEffective())
 				//
 				.orderBy()
@@ -169,6 +173,16 @@ public class ShipmentScheduleEnqueuer
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_M_ShipmentSchedule.class);
+
+		// A run with its own async batch: every schedule belongs to that run, so the batch adds nothing to the grouping.
+		// The stored key is not used for such a run, because a schedule recompute may have cleared the schedule's batch
+		// (and so changed its stored key) after the run assigned it; the workpackage carries the run's batch instead.
+		final ShipmentScheduleHeaderAggregationKeyBuilder runKeyBuilder = workPackageParameters.getAsyncBatchId() != null
+				? shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilderWithoutAsyncBatch()
+				: null;
+		final Iterator<I_M_ShipmentSchedule> shipmentSchedules = runKeyBuilder != null
+				? sortedByKey(shipmentSchedulesByStoredKey, runKeyBuilder)
+				: shipmentSchedulesByStoredKey;
 
 		if (!shipmentSchedules.hasNext())
 		{
@@ -201,7 +215,9 @@ public class ShipmentScheduleEnqueuer
 
 				//
 				// Check if we shall close our current workpackage (if any)
-				final String headerAggregationKey = shipmentSchedule.getHeaderAggregationKey();
+				final String headerAggregationKey = runKeyBuilder != null
+						? runKeyBuilder.buildKey(shipmentSchedule)
+						: shipmentSchedule.getHeaderAggregationKey();
 				if (!Objects.equals(headerAggregationKey, lastHeaderAggregationKey))
 				{
 					handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
@@ -263,6 +279,17 @@ public class ShipmentScheduleEnqueuer
 		// Close last workpackage (if any, and if there was no error)
 		handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
 		return result;
+	}
+
+	private static Iterator<I_M_ShipmentSchedule> sortedByKey(
+			@NonNull final Iterator<I_M_ShipmentSchedule> shipmentSchedules,
+			@NonNull final ShipmentScheduleHeaderAggregationKeyBuilder keyBuilder)
+	{
+		final ArrayList<I_M_ShipmentSchedule> list = new ArrayList<>();
+		shipmentSchedules.forEachRemaining(list::add);
+		list.sort(Comparator.comparing((I_M_ShipmentSchedule sched) -> keyBuilder.buildKey(sched), Comparator.nullsLast(Comparator.naturalOrder()))
+				.thenComparing(I_M_ShipmentSchedule::getM_ShipmentSchedule_ID));
+		return list.iterator();
 	}
 
 	private static void addAdvisedShipmentDocumentNo(
