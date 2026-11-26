@@ -355,6 +355,34 @@ async function completeOrderKeyboardOnly(page, recordId) {
   );
 }
 
+/**
+ * Final check of both Menge edit tests: grid shows 5 after completion, and after a reload grid +
+ * persisted QtyEntered are 5 and DocStatus is CO.
+ */
+async function assertQtysPersistedAfterReload(page, recordId) {
+  // keep the Menge column in view for the recording before reading it
+  await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+  expect(await gridQtys(page)).toEqual([5, 5, 5]);
+  await page.reload();
+  await page
+    .getByTestId('status-button')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  // page.reload() resets the page and the grid to top-left; bring the Menge column back
+  // into view (vertically and horizontally) so the recording shows the persisted values
+  await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+  expect(await gridQtys(page)).toEqual([5, 5, 5]);
+  expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
+  const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
+  expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+
+  // recording aid: hold the final frame so the video shows the completed order
+  // with the persisted grid, not the header alone
+  await page.waitForTimeout(1500);
+}
+
 // ---------------------------------------------------------------------------
 // Test
 // ---------------------------------------------------------------------------
@@ -395,27 +423,7 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     });
 
     await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
-      // keep the Menge column in view for the recording before reading it
-      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-      expect(await gridQtys(page)).toEqual([5, 5, 5]);
-      await page.reload();
-      await page
-        .getByTestId('status-button')
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-      // page.reload() resets the page and the grid to top-left; bring the Menge column back
-      // into view (vertically and horizontally) so the recording shows the persisted values
-      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-      expect(await gridQtys(page)).toEqual([5, 5, 5]);
-      expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
-      const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
-      expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
-
-      // recording aid: hold the final frame so the video shows the completed order
-      // with the persisted grid, not the header alone
-      await page.waitForTimeout(1500);
+      await assertQtysPersistedAfterReload(page, recordId);
     });
   });
 });
@@ -492,21 +500,7 @@ test.describe('Sales order — keyboard-only order entry and Menge edit', () => 
       });
 
       await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
-        await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-        expect(await gridQtys(page)).toEqual([5, 5, 5]);
-        await page.reload();
-        await page
-          .getByTestId('status-button')
-          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-        await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-        expect(await gridQtys(page)).toEqual([5, 5, 5]);
-        expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
-        const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
-        expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
-        await page.waitForTimeout(1500);
+        await assertQtysPersistedAfterReload(page, recordId);
       });
     });
   });
