@@ -22,8 +22,8 @@ import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
