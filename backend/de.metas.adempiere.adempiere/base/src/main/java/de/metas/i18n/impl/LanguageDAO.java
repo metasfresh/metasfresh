@@ -21,6 +21,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -293,7 +294,7 @@ public class LanguageDAO implements ILanguageDAO
 		//
 		// Insert Statement
 		final String trlAlias = "trl";
-		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
+		final int AD_User_ID = Env.getLoggedUserIdIfExists(Env.getCtx()).orElse(UserId.SYSTEM).getRepoId();
 		final String keyColumn = poInfo.getKeyColumnName();
 		Check.assumeNotEmpty(keyColumn, "keyColumn not empty for {}", baseTableName); // shall not happen
 		//

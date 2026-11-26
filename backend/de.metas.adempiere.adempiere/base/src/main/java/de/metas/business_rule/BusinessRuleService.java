@@ -10,6 +10,8 @@ import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.business_rule.trigger.BusinessRuleFireTriggersCommand;
 import de.metas.business_rule.util.BusinessRuleRecordMatcher;
 import de.metas.record.warning.RecordWarningRepository;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
@@ -24,6 +26,7 @@ public class BusinessRuleService
 	@NonNull private final RecordWarningRepository recordWarningRepository;
 	@NonNull private final BusinessRuleLogger logger;
 	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
+	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	public BusinessRulesCollection getRules()
 	{
@@ -41,6 +44,7 @@ public class BusinessRuleService
 				.eventRepository(eventRepository)
 				.logger(logger)
 				.recordMatcher(recordMatcher)
+				.userDAO(userDAO)
 				//
 				.rules(ruleRepository.getAll())
 				.sourceModel(sourceModel)

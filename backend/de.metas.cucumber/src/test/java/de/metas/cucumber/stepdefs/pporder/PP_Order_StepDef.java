@@ -307,6 +307,23 @@ public class PP_Order_StepDef
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
 	}
 
+	/**
+	 * Same as {@code create PP_Order expecting error code ...:}, for a refusal that has no AD_Message error code
+	 * (e.g. the {@code MrpException} "Product BOM Configuration not verified"): asserts that the creation is refused
+	 * with a message containing the given text. The order is never created, so its identifier is not registered.
+	 *
+	 * <pre>{@code
+	 * Then create PP_Order expecting message containing not verified:
+	 *   | PP_Order_ID  | DocBaseType | M_Product_ID    | QtyEntered | S_Resource_ID | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
+	 *   | refusedOrder | MOP         | finishedProduct | 5          | plant         | 2021-04-16T07:00:00.00Z | 2021-04-18T07:00:00.00Z | 2021-04-16T07:00:00.00Z | N                |
+	 * }</pre>
+	 */
+	@And("^create PP_Order expecting message containing (.*):$")
+	public void create_PP_Order_expecting_message_containing(@NonNull final String expectedMessagePart, @NonNull final DataTable dataTable)
+	{
+		StepDefUtil.assertRefusedWithMessageContaining(expectedMessagePart, () -> compute_PPOrderCreateRequest_to_create_pp_order(dataTable));
+	}
+
 	@And("complete planning for PP_Order:")
 	public void process_pp_order(@NonNull final DataTable dataTable) throws Exception
 	{
