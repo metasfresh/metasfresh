@@ -333,7 +333,8 @@ class DatePicker extends PureComponent {
     if (MomentTZ.isMoment(dateObj)) {
       if (
         this.pendingTypedDate &&
-        !this.isSameMoment(dateObj, this.pendingTypedDate)
+        // (compared like pendingTypedDate was made: react-datetime's moment is browser-local)
+        !this.isSameMoment(this.setTimezone(dateObj), this.pendingTypedDate)
       ) {
         // a calendar pick, not the typed date: the pick is saved by handleDateChange
         this.discardTypedDate();

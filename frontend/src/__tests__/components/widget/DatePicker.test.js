@@ -730,5 +730,20 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     expect(patch).toHaveBeenCalledTimes(1);
     expect(patchedDay(patch)).toBe('2026-11-21');
   });
+
+  it('empty date+time grid cell, session time zone other than the browser\'s: Tab after typing saves the typed date', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      timeFormat: 'HH:mm',
+      timeZone: MomentTZ.tz.guess() === 'Pacific/Kiritimati' ? 'America/New_York' : 'Pacific/Kiritimati',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '04.01.2027 10:00');
+    // react-datetime blurs an empty field with its own (browser-local) moment of the typed date
+    picker().handleBlur(MomentTZ('04.01.2027 10:00', 'DD.MM.YYYY HH:mm'));
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
 });
 
