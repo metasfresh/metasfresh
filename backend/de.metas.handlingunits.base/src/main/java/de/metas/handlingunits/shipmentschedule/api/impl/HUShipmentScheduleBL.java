@@ -87,7 +87,10 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -384,13 +387,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				continue;
 			}
 			final Quantity unitQty = huContext.getHUStorageFactory().getStorage(unit).getProductStorage(productId).getQty();
+			// the unit's weight comes from the unit itself, as the reopen of a completed job takes it
+			final StockQtyAndUOMQty unitQtys = CatchWeightHelper.extractQtys(huContext, productId, unitQty, unit);
 			// a box shared by several schedules or picks: restore no more than the reversed rows of this schedule picked from it
-			if (!state.takeFromBoxBudget(boxKey, unitQty.toBigDecimal()))
+			// (whole units, in the order the box lists them: when the unit sizes do not add up to the quantity picked, less is restored)
+			if (!state.takeFromBoxBudget(boxKey, unitQtys.getStockQty().toBigDecimal()))
 			{
 				continue;
 			}
-			// the unit's weight comes from the unit itself, as the reopen of a completed job takes it
-			final StockQtyAndUOMQty unitQtys = CatchWeightHelper.extractQtys(huContext, productId, unitQty, unit);
 			restoreUnshippedQtyPickedForUnit(boxAlloc, unitId, RestoredQty.ofUnitOfBoxRow(unitQtys), state);
 		}
 	}
@@ -1686,16 +1690,17 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	/**
 	 * What one call of {@link #restoreUnshippedQtyPickedIfMissing(Collection)} keeps between its rows.
 	 */
-	@Value
+	@Getter
+	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	private static class RestoreState
 	{
-		@NonNull IHUContext huContext;
+		@NonNull private final IHUContext huContext;
 		/** units that a row of its own already stands for: not part of a box row */
-		@NonNull Set<HuId> unitIdsOfRowsWithUnit;
+		@NonNull private final Set<HuId> unitIdsOfRowsWithUnit;
 		/** (schedule, unit) pairs already handled */
-		@NonNull Set<String> processedKeys = new HashSet<>();
+		@NonNull private final Set<String> processedKeys = new HashSet<>();
 		/** per (schedule, box): the quantity of the reversed box rows that is not restored yet */
-		@NonNull Map<BoxKey, BigDecimal> boxQtyLeft;
+		@NonNull @Getter(AccessLevel.NONE) private final Map<BoxKey, BigDecimal> boxQtyLeft;
 
 		static RestoreState of(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations, @NonNull final IHUContext huContext)
 		{
@@ -1759,7 +1764,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 					null,
 					null,
 					catchQty.map(qty -> qty.getUomId().getRepoId()).orElse(0),
-					catchQty.map(qty -> qty.toBigDecimal()).orElse(null));
+					catchQty.map(Quantity::toBigDecimal).orElse(null));
 		}
 
 		void applyTo(@NonNull final I_M_ShipmentSchedule_QtyPicked restored)
