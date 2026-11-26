@@ -907,6 +907,7 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
 	 *   <b>Processed</b> — (optional) true/false<br>
 	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>Carrier_Advising_Status</b> — (optional) expected carrier advising status; polled for, like QtyToDeliver<br>
 	 *   <b>IsScheduledForPicking</b> — (optional) true/false; also gates the readiness poll, so the step waits
 	 *     for the async picking-job-schedule reconcile to write this value before asserting<br>
 	 *   <b>QtyScheduledForPicking</b> — (optional) expected qty scheduled for picking; also gates the readiness
