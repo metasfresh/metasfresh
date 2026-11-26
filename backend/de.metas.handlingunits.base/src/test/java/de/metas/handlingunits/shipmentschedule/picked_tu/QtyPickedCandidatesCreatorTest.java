@@ -30,11 +30,13 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -108,6 +110,30 @@ class QtyPickedCandidatesCreatorTest extends TUPicksTestBase
 		assertThat(rows).as("the whole-TU row is split per country").hasSize(2);
 		assertThat(rows.get(1).getM_Picking_Job_Schedule_ID()).isEqualTo(4711);
 		assertThat(rows.get(1).isAnonymousHuPickedOnTheFly()).isTrue();
+	}
+
+	@Test
+	void wholeTUPick_cusKeptInAnotherUOMThanTheStockUOM_rowKeepsItsQty()
+	{
+		// stock UOM Each, the CUs' storages are kept in Kg: 1 Each = 2 Kg
+		final I_C_UOM_Conversion conversion = newInstance(I_C_UOM_Conversion.class);
+		conversion.setM_Product_ID(helper.pSaladProductId.getRepoId());
+		conversion.setC_UOM_ID(uomEach.getC_UOM_ID());
+		conversion.setC_UOM_To_ID(uomKg.getC_UOM_ID());
+		conversion.setMultiplyRate(new BigDecimal("2"));
+		conversion.setDivideRate(new BigDecimal("0.5"));
+		conversion.setIsActive(true);
+		saveRecord(conversion);
+		// two CUs of one country, so neither matches the row alone: the whole-TU check compares the row with their storage quantities (4 Kg + 4 Kg)
+		final I_M_HU tu = createTU(Quantity.of(new BigDecimal("4"), uomKg), HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("8"), BigDecimal.ZERO);
+		createTUOnlyRow(schedule, tu, "8");
+
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(retrieveRows(schedule));
+
+		assertThat(candidates).singleElement().satisfies(candidate -> assertThat(candidate.getQtyPicked().toBigDecimal()).isEqualByComparingTo("8"));
+		assertThat(retrieveRows(schedule)).singleElement()
+				.satisfies(row -> assertThat(row.getQtyPicked()).as("the row counts in the same quantity as the check that let it be split").isEqualByComparingTo("8"));
 	}
 
 	@Test

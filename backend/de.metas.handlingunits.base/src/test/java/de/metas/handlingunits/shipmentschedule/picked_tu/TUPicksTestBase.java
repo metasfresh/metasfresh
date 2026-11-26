@@ -136,18 +136,25 @@ abstract class TUPicksTestBase extends AbstractHUTest
 	/**
 	 * A TU with one CU of 2 per given country, created in the given order.
 	 */
-	@SuppressWarnings("DataFlowIssue")
 	protected I_M_HU createTU(final String... countries)
+	{
+		return createTU(Quantity.of(new BigDecimal("2"), uomEach), countries);
+	}
+
+	/**
+	 * A TU with one CU of the given qty per given country, created in the given order; each CU's storage is kept in the UOM of that qty.
+	 */
+	@SuppressWarnings("DataFlowIssue")
+	protected I_M_HU createTU(final Quantity cuQty, final String... countries)
 	{
 		final IHUContext huContext = helper.getHUContext();
 		final HUTransformService transformService = HUTransformService.newInstance(huContext);
-		final Quantity cuQty = Quantity.of(new BigDecimal("2"), uomEach);
 
 		I_M_HU tu = null;
 		for (final String country : countries)
 		{
 			final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI().setLocatorId(defaultLocatorId);
-			helper.load(producer, helper.pSaladProductId, cuQty.toBigDecimal(), uomEach);
+			helper.load(producer, helper.pSaladProductId, cuQty.toBigDecimal(), cuQty.getUOM());
 			final I_M_HU cu = producer.getCreatedHUs().get(0);
 
 			final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(cu);

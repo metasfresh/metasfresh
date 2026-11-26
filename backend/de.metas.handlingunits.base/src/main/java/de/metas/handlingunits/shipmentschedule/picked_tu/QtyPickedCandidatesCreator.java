@@ -48,6 +48,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -369,13 +370,16 @@ public class QtyPickedCandidatesCreator
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
 			@NonNull final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByAttributes)
 	{
-		final List<TUContentGroup> groups = storagesByAttributes.asMap().values().stream()
+		final List<Collection<IHUProductStorage>> storageGroups = ImmutableList.copyOf(storagesByAttributes.asMap().values());
+		final List<TUContentGroup> groups = storageGroups.stream()
 				.map(storages -> new TUContentGroup(storages.stream()
 						.map(TUContentCU::ofStorage)
 						.collect(ImmutableList.toImmutableList())))
 				.collect(ImmutableList.toImmutableList());
-		final List<Quantity> groupQtys = groups.stream()
-				.map(TUContentGroup::totalQty)
+		// Count each group in the storage UOM, like the whole-TU check that lets the row be split: the split rows then add up to it.
+		//noinspection OptionalGetWithoutIsPresent
+		final List<Quantity> groupQtys = storageGroups.stream()
+				.map(storages -> storages.stream().map(IHUProductStorage::getQty).reduce(Quantity::add).get())
 				.collect(ImmutableList.toImmutableList());
 		final Quantity rowCatchWeight = pickedRowCatchWeight.extractOrNull(qtyPicked);
 		final List<Quantity> catchWeightShares = rowCatchWeight != null ? TUPickedRowsAllocator.splitByQty(rowCatchWeight, groupQtys) : null;
