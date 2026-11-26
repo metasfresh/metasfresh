@@ -1,13 +1,11 @@
 package de.metas.contracts.commission.invoicecandidate;
 
-import java.util.Optional;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.invoice.vatid.TaxLocation;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
@@ -19,6 +17,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -64,6 +63,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Iterator;
+import java.util.Optional;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;

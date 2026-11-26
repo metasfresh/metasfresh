@@ -83,6 +83,19 @@ public class FlatrateTermSubscription_HandlerTaxLocationTest
 		assertThat(result.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 	}
 
+	/**
+	 * The tax code is called with the candidate's {@code DateOrdered}; without one there is no tax date to name.
+	 */
+	@Test
+	void noDateOrdered_isEmpty()
+	{
+		final I_C_Invoice_Candidate ic = createIC(createTerm());
+		ic.setDateOrdered(null);
+		save(ic);
+
+		assertThat(new FlatrateTermSubscription_Handler().getTaxLocation(ic)).isEmpty();
+	}
+
 	private I_C_Flatrate_Term createTerm()
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);

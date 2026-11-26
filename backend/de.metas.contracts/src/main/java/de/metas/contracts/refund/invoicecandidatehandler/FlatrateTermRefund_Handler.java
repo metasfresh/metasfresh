@@ -1,12 +1,10 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
-import java.util.Optional;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.invoice.vatid.TaxLocation;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
@@ -20,6 +18,7 @@ import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
 import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
@@ -53,6 +52,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.math.BigDecimal.ONE;
@@ -222,13 +222,15 @@ public class FlatrateTermRefund_Handler
 
 	/**
 	 * Same inputs as the tax code in {@link #calculatePriceAndTax}: the candidate's bill location, the candidate's org and {@code COALESCE(DateOrdered, DateToInvoice)}.
-	 * Empty if that tax code does not run either (no bill location or no date).
+	 * Empty if that tax code does not run either (no refund product, no bill location or no date).
 	 */
 	@Override
 	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
+		final RefundContract refundContract = refundContractRepository.get().getById(FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID()));
+		final ProductId refundProductId = RefundConfigs.extractRefundProductId(refundContract.getRefundConfigs());
 		final Timestamp taxDate = CoalesceUtil.coalesce(invoiceCandidateRecord.getDateOrdered(), invoiceCandidateRecord.getDateToInvoice());
-		if (taxDate == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
+		if (refundProductId == null || taxDate == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
 		{
 			return Optional.empty();
 		}

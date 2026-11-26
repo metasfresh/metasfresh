@@ -1,9 +1,7 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import java.util.Optional;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.invoice.vatid.TaxLocation;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
@@ -16,6 +14,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
@@ -41,6 +40,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -81,6 +81,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 
 	/**
 	 * Same inputs as the tax code in {@link #calculatePriceAndTax}: the term's drop-ship location (else its bill-to), the term's org and the candidate's {@code DateOrdered}.
+	 * Empty if the candidate has no {@code DateOrdered}: the tax code is then called with no date, so there is no tax date to name.
 	 */
 	@Override
 	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)

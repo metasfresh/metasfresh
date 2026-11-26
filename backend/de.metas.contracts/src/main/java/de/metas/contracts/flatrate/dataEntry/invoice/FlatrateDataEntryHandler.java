@@ -22,11 +22,9 @@
 
 package de.metas.contracts.flatrate.dataEntry.invoice;
 
-import java.util.Optional;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.invoice.vatid.TaxLocation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.HandlerTools;
@@ -35,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -67,6 +66,7 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 

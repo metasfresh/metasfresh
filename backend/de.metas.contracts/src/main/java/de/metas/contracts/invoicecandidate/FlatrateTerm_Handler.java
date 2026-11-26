@@ -1,13 +1,12 @@
 package de.metas.contracts.invoicecandidate;
 
-import java.util.Optional;
-import de.metas.invoice.vatid.TaxLocation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
 import de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -27,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;

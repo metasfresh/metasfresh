@@ -63,7 +63,7 @@ public class FlatrateDataEntryHandlerTaxLocationTest
 	void dropShip_isTaxLocation_periodEndDate()
 	{
 		final BPartnerLocationId dropShipLocationId = fixture.createLocation();
-		final I_C_Flatrate_Term term = createTerm();
+		final I_C_Flatrate_Term term = createTerm(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity);
 		term.setDropShip_BPartner_ID(dropShipLocationId.getBpartnerId().getRepoId());
 		term.setDropShip_Location_ID(dropShipLocationId.getRepoId());
 		save(term);
@@ -79,7 +79,7 @@ public class FlatrateDataEntryHandlerTaxLocationTest
 	@Test
 	void noDropShip_billTo()
 	{
-		final TaxLocation result = new FlatrateDataEntryHandler().getTaxLocation(createIC(createTerm())).orElseThrow(AssertionError::new);
+		final TaxLocation result = new FlatrateDataEntryHandler().getTaxLocation(createIC(createTerm(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))).orElseThrow(AssertionError::new);
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(billToLocationId);
 		assertThat(result.getOrgId()).isEqualTo(fixture.getOrgId());
@@ -87,10 +87,21 @@ public class FlatrateDataEntryHandlerTaxLocationTest
 		assertThat(result.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 	}
 
-	private I_C_Flatrate_Term createTerm()
+	/**
+	 * Only a reported-quantity term is priced and taxed by this handler.
+	 */
+	@Test
+	void notReportedQuantityTerm_isEmpty()
+	{
+		final I_C_Flatrate_Term term = createTerm(X_C_Flatrate_Conditions.TYPE_FLATRATE_NONE);
+
+		assertThat(new FlatrateDataEntryHandler().getTaxLocation(createIC(term))).isEmpty();
+	}
+
+	private I_C_Flatrate_Term createTerm(final String flatrateType)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setType_Flatrate(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity);
+		conditions.setType_Flatrate(flatrateType);
 		save(conditions);
 
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
