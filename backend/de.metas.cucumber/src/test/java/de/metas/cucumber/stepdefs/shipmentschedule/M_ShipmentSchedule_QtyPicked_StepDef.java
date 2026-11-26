@@ -501,21 +501,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		final List<I_M_HU> unmatchedCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
 				.filter(handlingUnitsBL::isVirtual)
 				.collect(Collectors.toCollection(ArrayList::new));
-		final List<String> unmatchedExpectedRows = new ArrayList<>();
-		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).stream().collect(Collectors.toList());
-		for (final DataTableRow expectedRow : expectedRows)
-		{
-			final I_M_HU matchedCU = unmatchedCUs.stream().filter(cu -> matchesExpectedCU(cu, expectedRow)).findFirst().orElse(null);
-			if (matchedCU == null)
-			{
-				unmatchedExpectedRows.add(expectedRow.getColumnNames().stream()
-						.map(column -> column + "=" + expectedRow.getAsOptionalString(column).orElse(""))
-						.collect(Collectors.joining(", ", "{", "}")));
-				continue;
-			}
-			unmatchedCUs.remove(matchedCU);
-			expectedRow.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).ifPresent(identifier -> huTable.putOrReplace(identifier, matchedCU));
-		}
+		final DataTableRows expectedRows = DataTableRows.of(dataTable);
+		final List<String> unmatchedExpectedRows = expectedRows.consumeMatching(
+				unmatchedCUs,
+				this::matchesExpectedCU,
+				(matchedCU, expectedRow) -> expectedRow.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).ifPresent(identifier -> huTable.putOrReplace(identifier, matchedCU)));
 		assertThat(unmatchedExpectedRows).as("Expected CUs of the TU %s that no actual CU matched", tuIdentifier).isEmpty();
 		assertThat(unmatchedCUs.stream().map(cu -> describeCU(cu, expectedRows)).collect(Collectors.toList()))
 				.as("CUs of the TU %s that no expected row consumed", tuIdentifier)
@@ -532,9 +522,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		{
 			if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
 			{
-				final String expectedValue = expectedRow.getAsOptionalString(column).orElse(null);
-				final String actualValue = getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()));
-				if (!(Check.isBlank(expectedValue) ? Check.isBlank(actualValue) : expectedValue.equals(actualValue)))
+				if (!expectedRow.isCellMatching(column, getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()))))
 				{
 					return false;
 				}
@@ -555,12 +543,12 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		return huAttribute == null ? null : huAttribute.getValue();
 	}
 
-	private String describeCU(@NonNull final I_M_HU cu, @NonNull final List<DataTableRow> expectedRows)
+	private String describeCU(@NonNull final I_M_HU cu, @NonNull final DataTableRows expectedRows)
 	{
 		final StringBuilder sb = new StringBuilder("{M_HU_ID=" + cu.getM_HU_ID() + ", Qty=" + getQtyOfCU(cu));
-		expectedRows.stream().findFirst().ifPresent(firstRow -> firstRow.getColumnNames().stream()
+		expectedRows.getColumnNames().stream()
 				.filter(column -> column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
-				.forEach(column -> sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length())))));
+				.forEach(column -> sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(cu, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()))));
 		return sb.append('}').toString();
 	}
 

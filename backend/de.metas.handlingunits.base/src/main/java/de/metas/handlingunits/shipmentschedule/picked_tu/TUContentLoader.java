@@ -33,12 +33,12 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
-import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -169,7 +169,7 @@ public class TUContentLoader
 	@Nullable
 	private static AttributesKeyPart toAttributesKeyPart(@NonNull final IAttributeValue attributeValue)
 	{
-		final AttributeId attributeId = AttributeId.ofRepoId(attributeValue.getM_Attribute().getM_Attribute_ID());
+		final AttributeId attributeId = attributeValue.getAttributeId();
 		if (AttributeValueType.ofCode(attributeValue.getAttributeValueType()).isNumber())
 		{
 			// Use BigDecimal-specific part so scale-differences like 3.0 vs 3.00 are normalized

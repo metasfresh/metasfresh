@@ -42,8 +42,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
@@ -71,7 +69,8 @@ class ReversedPickedRows
 	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	private final TUContentLoader tuContentLoader = new TUContentLoader();
+	@NonNull private final TUContentLoader tuContentLoader = new TUContentLoader();
+	@NonNull private final PickedRowCatchWeight pickedRowCatchWeight = new PickedRowCatchWeight();
 	private final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
 	private final QtyPickedRecords rows;
@@ -146,7 +145,7 @@ class ReversedPickedRows
 			final ScheduleTUKey tuKey = tuKeyByTUOnlyRow.get(row);
 			if (tuKey != null)
 			{
-				budgetByTU.computeIfAbsent(tuKey, key -> new TUBudget(productBL.getStockUOM(key.getProductId()))).add(row);
+				budgetByTU.computeIfAbsent(tuKey, key -> new TUBudget(productBL.getStockUOM(key.getProductId()))).add(row, pickedRowCatchWeight.extractOrNull(row));
 			}
 		}
 
@@ -289,7 +288,6 @@ class ReversedPickedRows
 		@Nullable private Quantity weightTotal;
 		private Quantity qtyShared;
 		@Nullable private Quantity weightShared;
-		private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		TUBudget(@NonNull final I_C_UOM stockUOM)
 		{
@@ -298,14 +296,13 @@ class ReversedPickedRows
 			this.qtyShared = qtyLeft;
 		}
 
-		void add(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
+		void add(@NonNull final I_M_ShipmentSchedule_QtyPicked row, @Nullable final Quantity weight)
 		{
 			final Quantity qty = Quantity.of(row.getQtyPicked(), qtyLeft.getUOM()); // QtyPicked is in the stock UOM of the product
 			qtyLeft = qtyLeft.add(qty);
 			qtyTotal = qtyTotal.add(qty);
-			if (row.getCatch_UOM_ID() > 0)
+			if (weight != null)
 			{
-				final Quantity weight = Quantity.of(row.getQtyDeliveredCatch(), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
 				weightTotal = weightTotal == null ? weight : weightTotal.add(weight);
 			}
 		}

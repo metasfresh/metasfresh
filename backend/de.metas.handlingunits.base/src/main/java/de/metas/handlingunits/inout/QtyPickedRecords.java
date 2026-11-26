@@ -30,7 +30,9 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
 
@@ -47,16 +49,12 @@ import java.util.stream.Stream;
  */
 @EqualsAndHashCode
 @ToString
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class QtyPickedRecords implements Iterable<I_M_ShipmentSchedule_QtyPicked>
 {
 	public static final QtyPickedRecords EMPTY = new QtyPickedRecords(ImmutableList.of());
 
-	private final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows;
-
-	private QtyPickedRecords(@NonNull final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows)
-	{
-		this.rows = rows;
-	}
+	@NonNull private final ImmutableList<I_M_ShipmentSchedule_QtyPicked> rows;
 
 	public static QtyPickedRecords of(@NonNull final Collection<? extends I_M_ShipmentSchedule_QtyPicked> rows)
 	{

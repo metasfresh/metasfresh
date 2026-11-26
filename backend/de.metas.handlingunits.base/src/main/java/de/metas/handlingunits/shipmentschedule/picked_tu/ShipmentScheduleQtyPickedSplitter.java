@@ -23,7 +23,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  */
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -40,7 +39,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -64,31 +62,17 @@ class ShipmentScheduleQtyPickedSplitter
 	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedulesById = new HashMap<>();
 
 	/**
-	 * The part of a row's quantity that becomes one candidate.
-	 */
-	@Value
-	static class CandidatePart
-	{
-		@NonNull Quantity qty;
-		/** the CU the quantity is exactly; {@code null} if it cannot be attributed to one CU */
-		@Nullable I_M_HU wholeCU;
-		/** the CU whose attributes the candidate (and so the shipment line) takes */
-		@NonNull I_M_HU attributeSourceCU;
-	}
-
-	/**
-	 * @return the candidate of the part; the row of the part is saved
+	 * @return the candidate of the part; the row of the part is saved. The part's catch weight, if any, is the row's.
 	 */
 	ShipmentScheduleWithHU saveRowAndCreateCandidate(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked source,
 			final boolean isFirstPart,
-			@NonNull final CandidatePart part,
-			@Nullable final Quantity catchWeightShare)
+			@NonNull final TUPickedRowsAllocator.Part part)
 	{
-		final I_M_ShipmentSchedule_QtyPicked row = rowForPart(source, isFirstPart, part.getQty(), catchWeightShare);
+		final I_M_ShipmentSchedule_QtyPicked row = rowForPart(source, isFirstPart, part.getQty(), part.getCatchWeight());
 		if (part.getWholeCU() != null)
 		{
-			row.setVHU_ID(part.getWholeCU().getM_HU_ID());
+			row.setVHU_ID(part.getWholeCU().getCuId().getRepoId());
 		}
 		row.setQtyPicked(part.getQty().toBigDecimal());
 		huShipmentScheduleDAO.saveQtyPicked(row);

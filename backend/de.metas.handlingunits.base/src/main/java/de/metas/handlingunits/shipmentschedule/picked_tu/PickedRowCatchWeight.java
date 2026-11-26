@@ -22,20 +22,32 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
 /**
- * Tells the catch weight of a CU of a TU.
+ * Reads the catch weight that a {@code M_ShipmentSchedule_QtyPicked} row carries.
  */
-@FunctionalInterface
-public interface TUContentCUWeighter
+final class PickedRowCatchWeight
 {
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	/**
-	 * @return the weight of the CU; {@code null} if the product has no catch weight or the CU has none (e.g. picked by count)
+	 * @return the weight of the row in its catch UOM; {@code null} if the row has no catch UOM
 	 */
 	@Nullable
-	Quantity getWeight(@NonNull TUContentCU cu);
+	Quantity extractOrNull(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
+	{
+		if (row.getCatch_UOM_ID() <= 0)
+		{
+			return null;
+		}
+		return Quantity.of(row.getQtyDeliveredCatch(), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
+	}
 }

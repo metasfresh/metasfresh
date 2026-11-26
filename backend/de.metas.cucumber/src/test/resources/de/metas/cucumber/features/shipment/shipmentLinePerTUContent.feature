@@ -284,10 +284,10 @@ Feature: Shipment line per TU content
       | cu_fr91b | 2   | FR           |
     # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_90 are exactly, in any order:
-      | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID   |
-      | p_coo        | 5           | IT           | shipped_tu91 |          |
-      | p_coo        | 5           | DE           | shipped_tu91 |          |
-      | p_coo        | 4           | FR           | shipped_tu91 |          |
+      | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID |
+      | p_coo        | 5           | IT           | shipped_tu91 |        |
+      | p_coo        | 5           | DE           | shipped_tu91 |        |
+      | p_coo        | 4           | FR           | shipped_tu91 |        |
 
   @Id:S34165_90
   Scenario: One TU with four equal-quantity CUs of three lots, two CUs of the same lot from one stock HU, ships as one line per lot
@@ -359,10 +359,10 @@ Feature: Shipment line per TU content
       | cu_c90  | 2   | LOTC            |
     # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_3lot are exactly, in any order:
-      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
-      | p_coo        | 4           | LOTA            | shipped_tu90 |         |
-      | p_coo        | 2           | LOTB            | shipped_tu90 | cu_b90  |
-      | p_coo        | 2           | LOTC            | shipped_tu90 | cu_c90  |
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID |
+      | p_coo        | 4           | LOTA            | shipped_tu90 |        |
+      | p_coo        | 2           | LOTB            | shipped_tu90 | cu_b90 |
+      | p_coo        | 2           | LOTC            | shipped_tu90 | cu_c90 |
 
   @Id:S34165_95
   Scenario: One TU with three CUs of three lots ships as three product lines and one packing material line for the one TU
@@ -541,10 +541,10 @@ Feature: Shipment line per TU content
       | cu_c96  | 2   | LOTC            |
     # Base behaviour, pinned to detect changes, not asserted as the desired design: on the picking path a line that adds up several CUs is assigned to the TU and to one representative CU of its group (the cell is empty: not checked which)
     And the HU assignments of the shipment lines of inout_96_1 are exactly, in any order:
-      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
-      | p_coo        | 4           | LOTA            | shipped_tu96 |         |
-      | p_coo        | 2           | LOTB            | shipped_tu96 | cu_b96  |
-      | p_coo        | 2           | LOTC            | shipped_tu96 | cu_c96  |
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID |
+      | p_coo        | 4           | LOTA            | shipped_tu96 |        |
+      | p_coo        | 2           | LOTB            | shipped_tu96 | cu_b96 |
+      | p_coo        | 2           | LOTC            | shipped_tu96 | cu_c96 |
     And all M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
     # The reversal must give back every picked CU, also the two CUs of lot A that share one shipment line
     When the shipment identified by inout_96_1 is reversed as inout_96_1_reversal
@@ -999,7 +999,7 @@ Feature: Shipment line per TU content
       | cu_l1_60 | 2   | L1              |
       | cu_l2_60 | 2   | L2              |
     And the HU assignments of the shipment lines of inout_60_1 are exactly, in any order:
-      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID    | VHU_ID   |
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID   |
       | p_coo        | 2           | L1              | shipped_tu60 | cu_l1_60 |
       | p_coo        | 2           | L2              | shipped_tu60 | cu_l2_60 |
 

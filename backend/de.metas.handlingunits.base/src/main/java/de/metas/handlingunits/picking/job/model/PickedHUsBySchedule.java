@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.EqualsAndHashCode;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -38,16 +40,12 @@ import lombok.ToString;
  */
 @EqualsAndHashCode
 @ToString
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PickedHUsBySchedule
 {
 	public static final PickedHUsBySchedule EMPTY = new PickedHUsBySchedule(ImmutableSetMultimap.of());
 
-	private final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule;
-
-	private PickedHUsBySchedule(@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule)
-	{
-		this.huIdsBySchedule = huIdsBySchedule;
-	}
+	@NonNull private final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule;
 
 	public static PickedHUsBySchedule of(@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> huIdsBySchedule)
 	{

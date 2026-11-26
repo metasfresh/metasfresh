@@ -34,7 +34,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentScheduleQtyPickedSplitter.CandidatePart;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -42,8 +41,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
@@ -72,8 +69,8 @@ public class QtyPickedCandidatesCreator
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final TUContentLoader tuContentLoader = new TUContentLoader();
+	@NonNull private final TUContentLoader tuContentLoader = new TUContentLoader();
+	@NonNull private final PickedRowCatchWeight pickedRowCatchWeight = new PickedRowCatchWeight();
 
 	@NonNull private final IHUContext huContext;
 	@NonNull private final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
@@ -263,12 +260,12 @@ public class QtyPickedCandidatesCreator
 			@NonNull final TUContentGroupList contentGroups,
 			@NonNull final ProductId productId)
 	{
-		final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(contentGroups, cu -> TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu));
+		final TUPickedRowsAllocator allocator = new TUPickedRowsAllocator(contentGroups, huContext, productId);
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		for (final I_M_ShipmentSchedule_QtyPicked row : tuOnlyRows)
 		{
 			final List<TUPickedRowsAllocator.Part> parts = allocator.allocate(
-					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.stockingUOM()), extractCatchWeightOrNull(row)));
+					new TUPickedRowsAllocator.Row(Quantity.of(row.getQtyPicked(), contentGroups.stockingUOM()), pickedRowCatchWeight.extractOrNull(row)));
 			if (parts.isEmpty())
 			{
 				// a row without quantity gets its candidate as on every other path
@@ -277,24 +274,10 @@ public class QtyPickedCandidatesCreator
 			for (int i = 0; i < parts.size(); i++)
 			{
 				final TUPickedRowsAllocator.Part part = parts.get(i);
-				result.add(splitter.saveRowAndCreateCandidate(
-						row,
-						i == 0,
-						new CandidatePart(part.getQty(), part.getWholeCU() == null ? null : part.getWholeCU().getCu(), part.getGroup().firstCU()),
-						part.getCatchWeight()));
+				result.add(splitter.saveRowAndCreateCandidate(row, i == 0, part));
 			}
 		}
 		return result.build();
-	}
-
-	@Nullable
-	private Quantity extractCatchWeightOrNull(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
-	{
-		if (row.getCatch_UOM_ID() <= 0)
-		{
-			return null;
-		}
-		return Quantity.of(row.getQtyDeliveredCatch(), uomDAO.getById(UomId.ofRepoId(row.getCatch_UOM_ID())));
 	}
 
 	/**
@@ -386,36 +369,32 @@ public class QtyPickedCandidatesCreator
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
 			@NonNull final ImmutableListMultimap<AttributesKey, IHUProductStorage> storagesByAttributes)
 	{
-		final List<List<IHUProductStorage>> groups = ImmutableList.copyOf(storagesByAttributes.asMap().values()).stream()
-				.map(ImmutableList::copyOf)
+		final List<TUContentGroup> groups = storagesByAttributes.asMap().values().stream()
+				.map(storages -> new TUContentGroup(storages.stream()
+						.map(TUContentCU::ofStorage)
+						.collect(ImmutableList.toImmutableList())))
 				.collect(ImmutableList.toImmutableList());
-		//noinspection OptionalGetWithoutIsPresent
 		final List<Quantity> groupQtys = groups.stream()
-				.map(group -> group.stream().map(IHUProductStorage::getQty).reduce(Quantity::add).get())
+				.map(TUContentGroup::totalQty)
 				.collect(ImmutableList.toImmutableList());
-		final Quantity rowCatchWeight = extractCatchWeightOrNull(qtyPicked);
+		final Quantity rowCatchWeight = pickedRowCatchWeight.extractOrNull(qtyPicked);
 		final List<Quantity> catchWeightShares = rowCatchWeight != null ? TUPickedRowsAllocator.splitByQty(rowCatchWeight, groupQtys) : null;
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		for (int groupIndex = 0; groupIndex < groups.size(); groupIndex++)
 		{
-			final List<IHUProductStorage> group = groups.get(groupIndex);
-			// Any CU of the group supplies the group's (shared) attribute set: the candidate/line reads its
-			// attributes from it. All members carry the same attributes, so the choice is arbitrary.
-			final IHUProductStorage attributeSourceStorage = group.get(0);
-			final I_M_HU attributeSourceCU = attributeSourceStorage.getM_HU();
-			final Quantity groupQty = groupQtys.get(groupIndex);
+			final TUContentGroup group = groups.get(groupIndex);
 
 			// Reference the CU on the row only when the group is a single CU: then the row's qty equals that
 			// CU's qty exactly, so it is accurate and each CU is referenced by at most one row. For a multi-CU
 			// group keep VHU_ID null: the group's summed qty must not be attributed to one CU (that would
-			// over-state it and mis-restore it on reversal). Either way the representative CU is the candidate's
+			// over-state it and mis-restore it on reversal). Either way the group's first CU is the candidate's
 			// attribute source (in-memory override) so the line's attributes are read from it.
+			final TUContentCU wholeCU = group.getCus().size() == 1 ? group.getCus().get(0) : null;
 			result.add(splitter.saveRowAndCreateCandidate(
 					qtyPicked,
 					groupIndex == 0,
-					new CandidatePart(groupQty, group.size() == 1 ? attributeSourceCU : null, attributeSourceCU),
-					catchWeightShares == null ? null : catchWeightShares.get(groupIndex)));
+					new TUPickedRowsAllocator.Part(group, groupQtys.get(groupIndex), wholeCU, catchWeightShares == null ? null : catchWeightShares.get(groupIndex))));
 		}
 		return result.build();
 	}

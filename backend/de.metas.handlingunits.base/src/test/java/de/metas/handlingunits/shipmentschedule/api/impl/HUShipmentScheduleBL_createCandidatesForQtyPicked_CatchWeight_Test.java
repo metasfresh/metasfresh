@@ -382,7 +382,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 	}
 
 	/**
-	 * The row on its own: the path of the callers that know no other row of the TU.
+	 * Candidates of the row on its own, without the other rows of its TU.
 	 */
 	private List<ShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule_QtyPicked row, final IHUContext huContext)
 	{

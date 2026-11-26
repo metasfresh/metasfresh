@@ -23,6 +23,9 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMPrecision;
 import de.metas.util.Check;
@@ -38,7 +41,7 @@ import java.util.Map;
 
 /**
  * Hands out the content of a TU (its CUs grouped by attribute combination) to the picked rows of that TU, in the order the
- * rows are given: every overlap of a row and a group is one {@link Part}. Pure arithmetic, no services.
+ * rows are given: every overlap of a row and a group is one {@link Part}.
  * <p>
  * Rows are given to the groups in order, so when the picks of one lot are interleaved with picks of another
  * (lot A, lot B, lot A) a row can land on the other lot's group. The catch weight of a part therefore comes from the
@@ -48,22 +51,26 @@ import java.util.Map;
  */
 public final class TUPickedRowsAllocator
 {
-	private final TUContentGroupList groups;
-	private final TUContentCUWeighter weightOfCU;
+	@NonNull private final TUContentGroupList groups;
+	@NonNull private final IHUContext huContext;
+	@NonNull private final ProductId productId;
 	private final Quantity[] consumedByGroup;
 	private final Map<TUContentCU, Quantity> weightCache = new IdentityHashMap<>();
 	private int groupIndex = 0;
 
 	/**
-	 * @param weightOfCU the weight of a CU; {@code null} if the product has no catch weight or the CU has none
-	 *                   (e.g. picked by count). Asked only for the CUs that a row with a quantity covers.
+	 * @param huContext the context the weights of the CUs are read with; they are read only for the CUs that a row with a
+	 *                  catch weight covers
+	 * @param productId the product of the CUs
 	 */
 	public TUPickedRowsAllocator(
 			@NonNull final TUContentGroupList groups,
-			@NonNull final TUContentCUWeighter weightOfCU)
+			@NonNull final IHUContext huContext,
+			@NonNull final ProductId productId)
 	{
 		this.groups = groups;
-		this.weightOfCU = weightOfCU;
+		this.huContext = huContext;
+		this.productId = productId;
 		this.consumedByGroup = new Quantity[this.groups.size()];
 		for (int i = 0; i < consumedByGroup.length; i++)
 		{
@@ -88,12 +95,18 @@ public final class TUPickedRowsAllocator
 	@Value
 	public static class Part
 	{
+		/** the CUs the part is taken from: the first of them gives the candidate (and so the shipment line) its attributes */
 		@NonNull TUContentGroup group;
 		@NonNull Quantity qty;
 		/** the CU the quantity is exactly; {@code null} if it cannot be attributed to one CU */
 		@Nullable TUContentCU wholeCU;
 		/** the part's share of the row's catch weight; {@code null} if the row's weight stays as it is */
 		@Nullable Quantity catchWeight;
+
+		public I_M_HU getAttributeSourceCU()
+		{
+			return group.firstCU();
+		}
 	}
 
 	/**
@@ -112,7 +125,7 @@ public final class TUPickedRowsAllocator
 			final Quantity partQty = rowRemaining.min(groupRemaining);
 			final TUContentCU wholeCU = wholeCUOrNull(partQty);
 			final boolean isGroupUsedUp = groupRemaining.compareTo(partQty) == 0;
-			cuWeights.add(consume(partQty));
+			cuWeights.add(consume(partQty, row.getCatchWeight() != null));
 			partsWithoutWeight.add(new Part(group, partQty, wholeCU, null));
 			rowRemaining = rowRemaining.subtract(partQty);
 			if (isGroupUsedUp)
@@ -149,15 +162,20 @@ public final class TUPickedRowsAllocator
 	/**
 	 * Hands out the next {@code qty} of the current group.
 	 *
+	 * @param isWeightNeeded false if nobody uses the weight (the row has none): the CUs' weights are not read then
 	 * @return the weight of that part of the group: the weights of the CUs it covers, a CU that is covered in part counted
-	 * pro rata; null if one of the covered CUs has no weight
+	 * pro rata; null if one of the covered CUs has no weight, or if {@code isWeightNeeded} is false
 	 */
 	@Nullable
-	private Quantity consume(@NonNull final Quantity qty)
+	private Quantity consume(@NonNull final Quantity qty, final boolean isWeightNeeded)
 	{
 		final Quantity before = consumedByGroup[groupIndex];
 		final Quantity now = before.add(qty);
 		consumedByGroup[groupIndex] = now;
+		if (!isWeightNeeded)
+		{
+			return null;
+		}
 		final Quantity weightUpToBefore = weightOfFirst(before);
 		final Quantity weightUpToNow = weightOfFirst(now);
 		return weightUpToBefore != null && weightUpToNow != null ? weightUpToNow.subtract(weightUpToBefore) : null;
@@ -203,7 +221,7 @@ public final class TUPickedRowsAllocator
 	{
 		if (!weightCache.containsKey(cu))
 		{
-			weightCache.put(cu, weightOfCU.getWeight(cu));
+			weightCache.put(cu, TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu));
 		}
 		return weightCache.get(cu);
 	}
@@ -212,8 +230,7 @@ public final class TUPickedRowsAllocator
 	 * @return per part the weight of the CUs it stands for, if every part has it in the row's catch UOM; else the row's own weight
 	 * split by quantity (or null, if the row stays one part).
 	 * The choice is made per row: a lot's line can mix both sources if only some of its CUs have a net weight. The CU's net weight
-	 * is the weight of the pick that made the CU (mobile picking sets it per picked CU); it is assumed that no pick is merged into an
-	 * existing CU of the same lot.
+	 * is the weight of the pick that made the CU; it is assumed that no pick is merged into an existing CU of the same lot.
 	 */
 	private static List<Quantity> catchWeightsOfParts(
 			@NonNull final Row row,

@@ -81,6 +81,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,7 @@ public class M_InOut_Line_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huPIItemProductTable;
 	private final M_AttributeSetInstance_StepDefData asiTable;
 	private final C_Project_StepDefData projectTable;
-	private final M_HU_StepDefData huTable;
+	@NonNull private final M_HU_StepDefData huTable;
 
 	/**
 	 * Finds one line of the given shipment or material receipt per row and validates it.
@@ -268,26 +269,8 @@ public class M_InOut_Line_StepDef
 				.filter(I_M_InOutLine::isActive)
 				.filter(line -> line.getMovementQty().signum() > 0)
 				.collect(Collectors.toCollection(ArrayList::new));
-		final List<DataTableRow> expectedRows = DataTableRows.of(table).stream().collect(ImmutableList.toImmutableList());
-		final List<String> unmatchedExpectedRows = new ArrayList<>();
-
-		for (final DataTableRow expectedRow : expectedRows)
-		{
-			final I_M_InOutLine matchedLine = unconsumedLines.stream()
-					.filter(line -> matchesExpectedRow(line, expectedRow))
-					.findFirst()
-					.orElse(null);
-			if (matchedLine == null)
-			{
-				unmatchedExpectedRows.add(expectedRow.getColumnNames().stream()
-						.map(column -> column + "=" + expectedRow.getAsOptionalString(column).orElse(""))
-						.collect(Collectors.joining(", ", "{", "}")));
-			}
-			else
-			{
-				unconsumedLines.remove(matchedLine);
-			}
-		}
+		final DataTableRows expectedRows = DataTableRows.of(table);
+		final List<String> unmatchedExpectedRows = expectedRows.consumeMatching(unconsumedLines, this::matchesExpectedRow, (line, row) -> {});
 
 		final List<String> unconsumedActualLines = unconsumedLines.stream()
 				.map(line -> describeLine(line, expectedRows))
@@ -333,22 +316,8 @@ public class M_InOut_Line_StepDef
 			huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(line).create().list().forEach(assignment -> unconsumed.add(new ActualAssignment(line, assignment)));
 		}
 
-		final List<DataTableRow> expectedRows = DataTableRows.of(table).stream().collect(ImmutableList.toImmutableList());
-		final List<String> unmatchedExpectedRows = new ArrayList<>();
-		for (final DataTableRow expectedRow : expectedRows)
-		{
-			final ActualAssignment matched = unconsumed.stream().filter(actual -> matchesExpectedAssignment(actual, expectedRow)).findFirst().orElse(null);
-			if (matched == null)
-			{
-				unmatchedExpectedRows.add(expectedRow.getColumnNames().stream()
-						.map(column -> column + "=" + expectedRow.getAsOptionalString(column).orElse(""))
-						.collect(Collectors.joining(", ", "{", "}")));
-			}
-			else
-			{
-				unconsumed.remove(matched);
-			}
-		}
+		final DataTableRows expectedRows = DataTableRows.of(table);
+		final List<String> unmatchedExpectedRows = expectedRows.consumeMatching(unconsumed, this::matchesExpectedAssignment, (actual, row) -> {});
 
 		final List<String> unconsumedDescriptions = unconsumed.stream()
 				.map(actual -> describeLine(actual.getLine(), expectedRows) + " M_TU_HU_ID=" + actual.getAssignment().getM_TU_HU_ID() + " VHU_ID=" + actual.getAssignment().getVHU_ID() + " M_LU_HU_ID=" + actual.getAssignment().getM_LU_HU_ID())
@@ -428,9 +397,7 @@ public class M_InOut_Line_StepDef
 		{
 			if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
 			{
-				final String expectedValue = expectedRow.getAsOptionalString(column).orElse(null);
-				final String actualValue = getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()));
-				if (!(Check.isBlank(expectedValue) ? Check.isBlank(actualValue) : expectedValue.equals(actualValue)))
+				if (!expectedRow.isCellMatching(column, getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length()))))
 				{
 					return false;
 				}
@@ -439,6 +406,7 @@ public class M_InOut_Line_StepDef
 		return true;
 	}
 
+	@Nullable
 	private String getAttributeValueOrNull(final I_M_InOutLine line, final String attributeCodeStr)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
@@ -451,17 +419,14 @@ public class M_InOut_Line_StepDef
 		return asi.hasAttribute(attributeCode) ? asi.getValueAsString(attributeCode) : null;
 	}
 
-	private String describeLine(final I_M_InOutLine line, final List<DataTableRow> expectedRows)
+	private String describeLine(final I_M_InOutLine line, final DataTableRows expectedRows)
 	{
 		final StringBuilder sb = new StringBuilder("{M_Product_ID=" + line.getM_Product_ID() + ", MovementQty=" + line.getMovementQty() + ", C_OrderLine_ID=" + line.getC_OrderLine_ID());
-		if (!expectedRows.isEmpty())
+		for (final String column : expectedRows.getColumnNames())
 		{
-			for (final String column : expectedRows.get(0).getColumnNames())
+			if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
 			{
-				if (column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
-				{
-					sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length())));
-				}
+				sb.append(", ").append(column).append('=').append(getAttributeValueOrNull(line, column.substring(ATTRIBUTE_COLUMN_PREFIX.length())));
 			}
 		}
 		return sb.append('}').toString();
