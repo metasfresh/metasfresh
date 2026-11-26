@@ -137,7 +137,9 @@ export async function awaitHeaderReload(
 
 /** True when the element is the document's active element (no window-focus dependency). */
 async function isFocused(locator) {
-  return await locator.evaluate((el) => el === document.activeElement).catch(() => false);
+  // An element that is gone (e.g. the quick entry closed) is not focused; evaluate() would wait for it without limit.
+  if ((await locator.count()) === 0) return false;
+  return await locator.evaluate((el) => el === document.activeElement, undefined, { timeout: 1000 }).catch(() => false);
 }
 
 /** Describe the active element, for failure messages. */
@@ -299,18 +301,32 @@ export async function enterLinesKeyboardOnly({
     const n = i + 1;
     await expectFocusOn(productInput, `opened line ${n}: cursor in Produkt`);
     await page.keyboard.type(products[i], { delay: 30 });
-    try {
-      await page
-        .locator('.input-dropdown-list-option')
-        .filter({ hasText: products[i] })
-        .first()
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    } catch (error) {
-      // No option: if the cursor left Produkt while typing, name the field that holds it.
+    // Wait for the option, polling the focus every 100 ms: a stolen cursor is named at the first miss, not after the option wait.
+    let optionShown = false;
+    let optionDone = false;
+    page
+      .locator('.input-dropdown-list-option')
+      .filter({ hasText: products[i] })
+      .first()
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+      .then(
+        () => {
+          optionShown = true;
+          optionDone = true;
+        },
+        () => {
+          optionDone = true;
+        }
+      );
+    while (!optionDone) {
       if (!(await isFocused(productInput))) {
-        throw new Error(`typing article, line ${n}: cursor left Produkt, it is in ${await describeActiveElement(page)}`);
+        const closed = (await productInput.count()) === 0 ? ' (quick entry closed)' : '';
+        throw new Error(`typing article, line ${n}: cursor left Produkt, it is in ${await describeActiveElement(page)}${closed}`);
       }
-      throw error;
+      await page.waitForTimeout(100);
+    }
+    if (!optionShown) {
+      throw new Error(`typing article, line ${n}: no option for ${products[i]} within ${SLOW_ACTION_TIMEOUT} ms`);
     }
     // The article Enter is not always followed by a header reload (none on line 1 in several runs):
     // wait for the article PATCH, check the cursor, and only re-check after a reload that did come.

@@ -162,15 +162,7 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   });
   await closeQuickInputAndComplete({ recorder, windowId, recordId });
 
-  const rows = await getTabRows(windowId, recordId, ORDER_LINE_TAB_ID);
-  expect(rows).toHaveLength(3);
-  QTYS.forEach((q, i) => {
-    const v = rows[i].fieldsByName?.QtyEntered?.value;
-    expect(v, `QtyEntered of line ${i + 1}`).toBeDefined();
-    expect(Number(v)).toBe(q);
-  });
-  const record = await getRecordData(windowId, recordId);
-  expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+  await expectRowsAndCompleted(windowId, recordId);
 }
 
 // Customer with two addresses and two contacts: the header walks partner -> address -> contact and can
@@ -256,7 +248,7 @@ async function openQuickEntryByAltQ(page) {
   return { quickInput, productInput };
 }
 
-async function expectRowsAndCompleted(masterdata, windowId, recordId) {
+async function expectRowsAndCompleted(windowId, recordId) {
   const rows = await getTabRows(windowId, recordId, ORDER_LINE_TAB_ID);
   expect(rows).toHaveLength(3);
   QTYS.forEach((q, i) => expect(Number(rows[i].fieldsByName?.QtyEntered?.value), `QtyEntered of line ${i + 1}`).toBe(q));
@@ -351,7 +343,7 @@ testCases.forEach(({ language, label }) => {
         packingInstructionsField: 'N',
       });
       await closeQuickInputAndComplete({ recorder, windowId, recordId });
-      await expectRowsAndCompleted(masterdata, windowId, recordId);
+      await expectRowsAndCompleted(windowId, recordId);
     });
 
     test(`TC13 Alt+Q with the address dropdown open, the pick must not change (${label})`, async ({ page }) => {
@@ -362,7 +354,12 @@ testCases.forEach(({ language, label }) => {
       const windowId = SALES_ORDER_WINDOW_ID;
       await ensureAddressDropdownOpen(page, addressOpen);
       const before = await readHeaderAddressKey(windowId, recordId);
-      const highlighted = await page.locator('.input-dropdown-list .input-dropdown-list-option-key-on').first().innerText();
+      const beforeCaption = (await getRecordData(windowId, recordId)).fieldsByName?.C_BPartner_Location_ID?.value?.caption;
+      expect(beforeCaption, `TC13 setup: header address before Alt+Q is not LOC1: ${beforeCaption}`).toContain('Bonn');
+      const highlighted = await page
+        .locator('.input-dropdown-list .input-dropdown-list-option-key-on')
+        .first()
+        .innerText({ timeout: SLOW_ACTION_TIMEOUT });
       expect(highlighted, `TC13 setup: highlighted option is not LOC1: ${highlighted}`).toContain('Bonn');
 
       const { productInput } = await openQuickEntryByAltQ(page);
@@ -374,7 +371,7 @@ testCases.forEach(({ language, label }) => {
       await enterLinesKeyboardOnly({ ...common, products: prods.slice(1), qtys: QTYS.slice(1), rowsBefore: 1 });
       await closeQuickInputAndComplete({ recorder, windowId, recordId });
       await expectHeaderAddress(page, windowId, recordId, before);
-      await expectRowsAndCompleted(masterdata, windowId, recordId);
+      await expectRowsAndCompleted(windowId, recordId);
     });
 
     test(`TC13 Tab after Alt+Q leaves the header, not swallowed (${label})`, async ({ page }) => {
