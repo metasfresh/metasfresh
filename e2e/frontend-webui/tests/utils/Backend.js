@@ -37,7 +37,7 @@ export const Backend = {
       );
 
       const responseBody = await response.json();
-      rememberSysconfigsToRestore(responseBody);
+      rememberSysconfigsToRestore(responseBody, request?.sysconfigs);
       assertNoErrors({ responseBody });
 
       // Mailboxes are created on the app node (:8282). MailService.findMailbox runs on
@@ -112,7 +112,7 @@ export const Backend = {
           `Failed to set sysconfigs: HTTP ${response.status()} ${response.statusText()}`
         );
       }
-      rememberSysconfigsToRestore(await response.json());
+      rememberSysconfigsToRestore(await response.json(), sysconfigs);
     }),
 
   /**

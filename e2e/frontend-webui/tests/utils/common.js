@@ -18,9 +18,17 @@ let sysconfigsToRestore = [];
 
 const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
 
-/** @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend */
-export const rememberSysconfigsToRestore = ({ previousSysconfigs }) => {
+/**
+ * Remembers the previous value of each row the test's own request changed. The backend also reports the barcode-scanner
+ * rows it resets to their defaults on every master data request: those are left out, the next request resets them
+ * again, and restoring them would cost every test a restore and a full webapi cache reset.
+ * @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend
+ * @param {Object<string, string>} [written] the sysconfigs the request wrote, by name
+ */
+export const rememberSysconfigsToRestore = ({ previousSysconfigs }, written) => {
+  const writtenByName = written ?? {};
   (previousSysconfigs ?? [])
+    .filter((previous) => previous.name in writtenByName && previous.value !== writtenByName[previous.name])
     .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))
     .forEach((previous) => sysconfigsToRestore.push(previous));
 };
