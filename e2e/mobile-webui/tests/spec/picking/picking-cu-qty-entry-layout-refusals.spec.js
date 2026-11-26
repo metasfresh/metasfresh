@@ -130,7 +130,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weitere Kiste" before the first scan
+                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weiteres TU" before the first scan
                     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, 'noFormat'), {
                         whileToastShown: async () => await layout(`${M} refusal: no label format on the profile (scan screen + toast)`),
                     });
@@ -145,7 +145,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weitere Kiste" before the first scan
+                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weiteres TU" before the first scan
                     const otherProductLabel = packLabelOf({ masterdata: { products: { P1: masterdata.products.P2 } }, packId: 1 });
                     await PickLineScanScreen.scanCULabelRefused(otherProductLabel, txt(lang, 'differentProduct'), {
                         whileToastShown: async () => await layout(`${M} refusal: label of another product (scan screen + toast)`),

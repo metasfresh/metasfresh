@@ -46,16 +46,16 @@ const createDeps = () => {
   };
 };
 
-describe('closeAndOpenNextTU: the "Weitere Kiste" button', () => {
+describe('closeAndOpenNextTU: the "Weiteres TU" button', () => {
   it('line names a TU type, a TU is open: closes it, then opens a new TU of that type', async () => {
     const deps = createDeps();
     await closeAndOpenNextTU({
       ...deps,
       packingTuPIId: TU_TYPE_ID,
-      packingItemName: 'Kiste x 4',
+      packingItemName: 'TU x 4',
       isTargetOpen: true,
     });
-    expect(deps.calls).toEqual(['close', ['set', { tuPIId: TU_TYPE_ID, caption: 'Kiste x 4' }]]);
+    expect(deps.calls).toEqual(['close', ['set', { tuPIId: TU_TYPE_ID, caption: 'TU x 4' }]]);
   });
 
   it('line names a TU type, no TU open (first TU): only opens the new TU', async () => {
@@ -63,10 +63,10 @@ describe('closeAndOpenNextTU: the "Weitere Kiste" button', () => {
     await closeAndOpenNextTU({
       ...deps,
       packingTuPIId: TU_TYPE_ID,
-      packingItemName: 'Kiste x 4',
+      packingItemName: 'TU x 4',
       isTargetOpen: false,
     });
-    expect(deps.calls).toEqual([['set', { tuPIId: TU_TYPE_ID, caption: 'Kiste x 4' }]]);
+    expect(deps.calls).toEqual([['set', { tuPIId: TU_TYPE_ID, caption: 'TU x 4' }]]);
   });
 
   it('line names no TU type, a TU is open: closes it, then goes to the TU list', async () => {
@@ -246,7 +246,7 @@ describe('useOpenNextTU', () => {
       activityId: 'a',
       lineId: 'l',
       packingTuPIId: TU_TYPE_ID,
-      packingItemName: 'Kiste',
+      packingItemName: 'TU',
       tuPickingTarget: exposed.tuPickingTarget ?? null,
       setPickingTarget: exposed.setPickingTarget,
     });
@@ -462,7 +462,7 @@ describe('useOpenNextTU', () => {
   });
 
   describe('a scanned GRAI', () => {
-    const OPEN_TU = { tuPIId: TU_TYPE_ID, caption: 'Kiste' };
+    const OPEN_TU = { tuPIId: TU_TYPE_ID, caption: 'TU' };
 
     it('TU open: opens the new TU from the GRAI without closing the open one first (the backend replaces it)', async () => {
       const exposed = setup(jest.fn(), OPEN_TU);

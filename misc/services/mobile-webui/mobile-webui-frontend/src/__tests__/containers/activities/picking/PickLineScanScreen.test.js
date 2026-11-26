@@ -227,8 +227,8 @@ describe('PickingLineScanScreen: re-entry hop', () => {
 
 describe('PickingLineScanScreen: the open TU is shown in the header', () => {
   it('a label-required-mode line with an open TU shows its caption', () => {
-    expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'Kiste 7' } })).toEqual([
-      { caption: expect.any(String), value: 'Kiste 7', valueTestId: 'openTU-caption' },
+    expect(computeOpenTUHeaderEntries({ isLabelRequiredLine: true, tuPickingTarget: { caption: 'TU 7' } })).toEqual([
+      { caption: expect.any(String), value: 'TU 7', valueTestId: 'openTU-caption' },
     ]);
   });
 
@@ -238,10 +238,10 @@ describe('PickingLineScanScreen: the open TU is shown in the header', () => {
     try {
       const [entry] = computeOpenTUHeaderEntries({
         isLabelRequiredLine: true,
-        tuPickingTarget: { caption: 'Kiste 7' },
+        tuPickingTarget: { caption: 'TU 7' },
       });
       expect(entry.caption).not.toBe('Current');
-      expect(entry.caption).toBe('Offene Kiste');
+      expect(entry.caption).toBe('Offenes TU');
     } finally {
       counterpart.setLocale('en');
     }

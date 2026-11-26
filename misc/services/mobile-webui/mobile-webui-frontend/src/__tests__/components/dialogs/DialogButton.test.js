@@ -17,10 +17,10 @@ describe('DialogButton', () => {
 
   it('with an icon the button shows the icon next to the caption and still fires onClick', () => {
     const onClick = jest.fn();
-    render(<DialogButton testId="b" caption="Weitere Kiste" icon="fa-barcode" onClick={onClick} />);
+    render(<DialogButton testId="b" caption="Weiteres TU" icon="fa-barcode" onClick={onClick} />);
     const button = screen.getByTestId('b');
     expect(button.querySelector('i.fas.fa-barcode')).not.toBeNull();
-    expect(button).toHaveTextContent('Weitere Kiste');
+    expect(button).toHaveTextContent('Weiteres TU');
     fireEvent.click(button);
     expect(onClick).toHaveBeenCalledTimes(1);
   });

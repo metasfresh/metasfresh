@@ -76,7 +76,7 @@ const openLineScanScreen = async (masterdata) => {
     return { pickingJobId };
 };
 
-/** Scan once; `openTU`: tap "Weitere Kiste" in the pop-up after the first scan (the scan screen has no such button) */
+/** Scan once; `openTU`: tap "Weiteres TU" in the pop-up after the first scan (the scan screen has no such button) */
 const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false, openTU = false }) => {
     if (isRescan) {
         await PickLineScanScreen.rescanCULabel(label);
@@ -261,7 +261,7 @@ const measureButtons = async (page) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weitere Kiste", which is as big as OK and Abbrechen', async ({ page }) => {
+test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weiteres TU", which is as big as OK and Abbrechen', async ({ page }) => {
     allureMeta('CU label reading');
 
     const formatName = `cuqe-lbl-${uniqueProductValue()}`;
@@ -272,7 +272,7 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
     await page.setViewportSize({ width: 360, height: 720 });
     await openLineScanScreen(masterdata);
 
-    await test.step('first scan screen: its own visible scanner stays, no "Weitere Kiste" and so no second scanner', async () => {
+    await test.step('first scan screen: its own visible scanner stays, no "Weiteres TU" and so no second scanner', async () => {
         await PickLineScanScreen.expectNextTUButtonHiddenOnLabelLine();
         await expect(page.getByTestId('scanHUBarcode-input')).toBeAttached();
         await expect(page.locator('.scan-prompt')).toHaveCount(1);
@@ -292,10 +292,10 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
         await expect(page.getByTestId('scanHUBarcode-input')).toHaveCount(0);
         await expect(page.getByTestId('rescanCULabel-input')).toBeAttached();
         await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
-        // the only barcode icon of the dialog is the one inside "Weitere Kiste"
+        // the only barcode icon of the dialog is the one inside "Weiteres TU"
         await expect(page.locator('.get-qty-dialog [class*="fa-barcode"]')).toHaveCount(1);
         await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
-        await expect(page.getByTestId('next-tu-button')).toContainText('Weitere Kiste');
+        await expect(page.getByTestId('next-tu-button')).toContainText('Weiteres TU');
     });
 
     await test.step('pop-up: a pack label of a new lot, scanned on the hidden scanner, switches the lot', async () => {
@@ -306,16 +306,16 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
 
     const viewports = [{ width: 360, height: 720 }, { width: 393, height: 727 }];
     for (const viewport of viewports) {
-        await test.step(`pop-up at ${viewport.width}x${viewport.height}: "Weitere Kiste" with icon is as high as OK and Abbrechen`, async () => {
+        await test.step(`pop-up at ${viewport.width}x${viewport.height}: "Weiteres TU" with icon is as high as OK and Abbrechen`, async () => {
             await page.setViewportSize(viewport);
             await expect(page.getByTestId('next-tu-button')).toBeVisible();
             const { ok, cancel, nextTU } = await measureButtons(page);
-            expect.soft(nextTU.height, 'height of Weitere Kiste vs OK').toBe(ok.height);
-            expect.soft(nextTU.height, 'height of Weitere Kiste vs Abbrechen').toBe(cancel.height);
+            expect.soft(nextTU.height, 'height of Weiteres TU vs OK').toBe(ok.height);
+            expect.soft(nextTU.height, 'height of Weiteres TU vs Abbrechen').toBe(cancel.height);
             for (const key of ['fontSize', 'fontFamily', 'lineHeight', 'paddingTop', 'paddingBottom', 'borderTopWidth']) {
-                expect.soft(nextTU[key], `${key} of Weitere Kiste vs OK`).toBe(ok[key]);
+                expect.soft(nextTU[key], `${key} of Weiteres TU vs OK`).toBe(ok[key]);
             }
-            expect.soft(nextTU.x + nextTU.width, 'Weitere Kiste inside the screen').toBeLessThanOrEqual(viewport.width);
+            expect.soft(nextTU.x + nextTU.width, 'Weiteres TU inside the screen').toBeLessThanOrEqual(viewport.width);
             await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: 15000 }); // clean picture: no toast over the buttons
             await page.getByTestId('next-tu-button').scrollIntoViewIfNeeded();
         });

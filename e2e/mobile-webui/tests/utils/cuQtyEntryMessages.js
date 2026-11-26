@@ -4,7 +4,7 @@
  * Keep in step with `translations_en.js` / `translations_de.js` of the mobile frontend and the backend messages.
  */
 export const MESSAGES = {
-    noOpenTU: { en: "Please open a TU first (scan a GRAI or 'Next TU').", de: 'Bitte öffnen Sie zuerst eine Kiste' },
+    noOpenTU: { en: "Please open a TU first (scan a GRAI or 'Next TU').", de: 'Bitte öffnen Sie zuerst ein TU' },
     noFormat: { en: 'No label format set on the picking profile', de: 'Kein Etikettenformat im Kommissionierprofil' },
     differentProduct: { en: 'The scanned QR Product does not match', de: 'Das gescannte QR Produkt stimmt nicht mit dem' },
     formatMismatch: { en: 'does not match the label format', de: 'Etikettenformat' },

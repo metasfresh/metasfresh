@@ -59,14 +59,14 @@ export const PickLineScanScreen = {
         await expect(containerElement()).toHaveAttribute('data-cu-qty-entry-mode', expected);
     }),
 
-    /** Asserts that the "Weitere Kiste" / "Next TU" button is not shown (Manual lines never show it) */
+    /** Asserts that the "Weiteres TU" / "Next TU" button is not shown (Manual lines never show it) */
     expectNextTUButtonHidden: async () => await step(`${NAME} - Expect Next TU button hidden`, async () => {
         await PickLineScanScreen.waitForScreen();
         await expect(nextTUButton()).toHaveCount(0);
     }),
 
     /**
-     * Asserts that the scan screen of a label line (Scan once) shows no "Weitere Kiste" / "Next TU" before the first scan.
+     * Asserts that the scan screen of a label line (Scan once) shows no "Weiteres TU" / "Next TU" before the first scan.
      * Waits until the line is rendered as a label line (data-cu-label-required), so a button that is merely not drawn yet cannot pass as hidden.
      */
     expectNextTUButtonHiddenOnLabelLine: async () => await step(`${NAME} - Expect Next TU button hidden on the label line's scan screen`, async () => {
@@ -112,12 +112,12 @@ export const PickLineScanScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
-    /** Taps "Weitere Kiste" / "Next TU" and does not wait for the answer (to hold a slow backend answer in a test) */
+    /** Taps "Weiteres TU" / "Next TU" and does not wait for the answer (to hold a slow backend answer in a test) */
     tapNextTUWithoutWaiting: async () => await step(`${NAME} - Tap Next TU, do not wait`, async () => {
         await nextTUButton().tap();
     }),
 
-    /** Taps "Weitere Kiste" / "Next TU" */
+    /** Taps "Weiteres TU" / "Next TU" */
     nextTU: async () => await step(`${NAME} - Next TU`, tapNextTU),
 
     openTU: async () => await step(`${NAME} - Open TU`, async () => {
@@ -135,7 +135,7 @@ export const PickLineScanScreen = {
         await expect(page.getByTestId('openTU-caption')).toContainText(caption, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    /** Asserts that "Weitere Kiste" / "Next TU" sits in the quantity block's button row, next to OK */
+    /** Asserts that "Weiteres TU" / "Next TU" sits in the quantity block's button row, next to OK */
     expectNextTUButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next TU button in the quantity block`, async () => {
         await expect(page.locator('.get-qty-dialog').getByTestId('next-tu-button')).toBeVisible();
     }),

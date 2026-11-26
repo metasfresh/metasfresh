@@ -9,7 +9,7 @@ restoreSysconfigsAfterEach(test);
 
 /** CU quantity entry, Scan once ("one label, type a count") */
 // noinspection JSUnusedLocalSymbols
-test('Scan once: the scan screen before the first label scan has no "Weitere Kiste"; the pop-up has it', async ({ page }) => {
+test('Scan once: the scan screen before the first label scan has no "Weiteres TU"; the pop-up has it', async ({ page }) => {
     allureMeta('Scan once count');
 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });

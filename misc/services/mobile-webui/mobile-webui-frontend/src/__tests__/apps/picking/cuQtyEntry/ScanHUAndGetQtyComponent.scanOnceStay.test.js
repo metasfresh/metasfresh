@@ -72,7 +72,7 @@ const clickOk = async () => {
 };
 
 describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
-  it('shows no "Weitere Kiste" (next TU) button on the scan screen before the first scan; the pop-up has it', async () => {
+  it('shows no "Weiteres TU" (next TU) button on the scan screen before the first scan; the pop-up has it', async () => {
     renderComponent({ onResult: jest.fn() });
     expect(screen.queryByTestId('next-tu-button')).not.toBeInTheDocument();
 

@@ -46,8 +46,8 @@ const EMPTY_LU_GRAIS = [];
 const renderNextTUActions = (nextTUActions, scanner) =>
   typeof nextTUActions === 'function' ? nextTUActions({ scanner }) : nextTUActions;
 
-// Scan each CU (isBookedOnScan) has no pop-up: its scan screen is the only place for "Weitere Kiste", next to "Schließen".
-// Scan once opens its crate in the quantity pop-up (the refusal comes at OK), so this scan screen shows no "Weitere Kiste" before the first scan.
+// Scan each CU (isBookedOnScan) has no pop-up: its scan screen is the only place for "Weiteres TU", next to "Schließen".
+// Scan once opens its crate in the quantity pop-up (the refusal comes at OK), so this scan screen shows no "Weiteres TU" before the first scan.
 const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
   if (!isBookedOnScan) return null;
 
