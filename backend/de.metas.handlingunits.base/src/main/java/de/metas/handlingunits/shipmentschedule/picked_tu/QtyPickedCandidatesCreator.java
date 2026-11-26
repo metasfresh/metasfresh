@@ -310,9 +310,8 @@ public class QtyPickedCandidatesCreator
 		// One pass: for each CU compute its UseInASI attribute combination once, then emit one
 		// (combination, productStorage) entry per non-empty product storage of that CU.
 		// Filter by product so CUs carrying a different product in the same TU are excluded.
-		// UOM consistency is guaranteed: qtyPicked links to one M_ShipmentSchedule which has one
-		// M_Product_ID and therefore one stocking UOM; all filtered storages carry that same product
-		// and are in the same UOM, so no conversion is needed.
+		// All filtered storages carry the same product, so they share its storage UOM and add up without conversion.
+		// That UOM is not necessarily the stock UOM QtyPicked is in; see TUContentCU#ofStorage.
 		// Split only by attributes whitelisted in M_ShipmentSchedule_AttributeConfig: the same criterion
 		// the M_InOutLine aggregation uses (ShipmentScheduleWithHU#computeAttributeValues).
 		final List<I_M_HU> cus = handlingUnitsBL.retrieveIncludedHUs(huToInspect).stream()
@@ -330,7 +329,7 @@ public class QtyPickedCandidatesCreator
 		// Case 1: find the CU whose qty exactly matches QtyPicked: one candidate using that CU.
 		// Using the specific CU as override ensures its UseInASI attributes are read from the CU
 		// itself rather than from the destination TU, which may carry mixed/null attribute values.
-		// UOM is consistent (same product, same stocking UOM), so BigDecimal comparison is safe.
+		// The storage qty is compared as a plain number, i.e. in its storage UOM (see above), not converted to the stock UOM.
 		final BigDecimal pickedQtyBD = qtyPicked.getQtyPicked();
 		final IHUProductStorage exactMatchStorage = storagesByAttributes.values().stream()
 				.filter(storage -> storage.getQty().getAsBigDecimal().compareTo(pickedQtyBD) == 0)
