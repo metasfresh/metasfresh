@@ -472,6 +472,10 @@ Feature: Shipment line per box content
     # The reversal must give back every picked unit, also the two CUs of lot A that share one shipment line
     When the shipment identified by inout_96_1 is reversed as inout_96_1_reversal
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
+    # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_96      | so_96_l1       | N             |
     # The reopened picks ship again with the right lots
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -768,6 +772,10 @@ Feature: Shipment line per box content
     And all M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_50 sum to 6
     When the shipment identified by inout_50_1 is reversed as inout_50_1_reversal
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_50 sum to 6
+    # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_50      | so_50_l1       | N             |
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_50                 |

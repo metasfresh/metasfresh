@@ -34,6 +34,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -54,11 +55,14 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -210,6 +214,54 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 		assertThat(openRows).allSatisfy(row -> assertThat(row.getVHU_ID()).isPositive());
 	}
 
+	@Test
+	void restoreAfterReversal_ofOneBoxRowWithoutVHU_restoresNoMoreThanTheRowPicked()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		// the reversed shipment took only one CU of 2 out of the box of three CUs
+		final I_M_ShipmentSchedule_QtyPicked row = createBoxRow(schedule, box, "2");
+		row.setM_InOutLine_ID(1);
+		saveRecord(row);
+
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(ImmutableList.of(row));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveOpenRows(schedule);
+		assertThat(openRows).hasSize(1);
+		assertThat(openRows.get(0).getQtyPicked()).isEqualByComparingTo("2");
+		assertThat(openRows.get(0).getVHU_ID()).isPositive();
+	}
+
+	@Test
+	void restoreAfterReversal_ofBoxRowsWithoutVHU_ofCatchWeightProduct_restoredUnitsCarryTheirOwnWeight()
+	{
+		enableCatchWeightOfSalad();
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(box);
+		setWeightNet(cus.get(0), "3.500");
+		setWeightNet(cus.get(1), "5.250");
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row1 = createBoxRow(schedule, box, "2");
+		final I_M_ShipmentSchedule_QtyPicked row2 = createBoxRow(schedule, box, "2");
+		row1.setM_InOutLine_ID(1);
+		row2.setM_InOutLine_ID(1);
+		saveRecord(row1);
+		saveRecord(row2);
+
+		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(ImmutableList.of(row1, row2));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> openRows = retrieveOpenRows(schedule);
+		assertThat(openRows).hasSize(2);
+		assertThat(openRows).allSatisfy(row -> {
+			assertThat(row.getCatch_UOM_ID()).isEqualTo(uomKg.getC_UOM_ID());
+			assertThat(row.getQtyDeliveredCatch()).isEqualByComparingTo(getWeightNet(row.getVHU_ID()));
+			assertThat(row.getQtyTU()).isZero();
+			assertThat(row.getQtyLU()).isZero();
+		});
+		assertThat(openRows).extracting(row -> row.getQtyDeliveredCatch().stripTrailingZeros())
+				.containsExactlyInAnyOrder(new BigDecimal("3.5"), new BigDecimal("5.25"));
+	}
+
 	// ------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -264,6 +316,49 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
 				.list();
+	}
+
+	/**
+	 * Salad gets the catch UOM Kg (Each <-> Kg) and the virtual PI the Net Weight attribute, so that every CU has a weight of its own.
+	 */
+	private void enableCatchWeightOfSalad()
+	{
+		final I_C_UOM_Conversion catchUOMConversion = newInstance(I_C_UOM_Conversion.class);
+		catchUOMConversion.setM_Product_ID(helper.pSaladProductId.getRepoId());
+		catchUOMConversion.setC_UOM_ID(uomEach.getC_UOM_ID());
+		catchUOMConversion.setC_UOM_To_ID(uomKg.getC_UOM_ID());
+		catchUOMConversion.setMultiplyRate(BigDecimal.TEN);
+		catchUOMConversion.setDivideRate(BigDecimal.ONE.divide(BigDecimal.TEN));
+		catchUOMConversion.setIsCatchUOMForProduct(true);
+		catchUOMConversion.setIsActive(true);
+		saveRecord(catchUOMConversion);
+
+		final I_M_HU_PI_Attribute weightNetPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_WeightNet)
+				.setM_HU_PI(helper.huDefVirtual)
+				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
+		weightNetPIAttribute.setIsReadOnly(false);
+		weightNetPIAttribute.setUseInASI(false);
+		save(weightNetPIAttribute);
+	}
+
+	private void setWeightNet(final I_M_HU cu, final String weightNet)
+	{
+		final IAttributeStorage attributes = helper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(cu);
+		Weightables.wrap(attributes).setWeightNet(new BigDecimal(weightNet));
+		attributes.saveChangesIfNeeded();
+	}
+
+	private BigDecimal getWeightNet(final int huId)
+	{
+		final IAttributeStorage attributes = helper.getHUContext().getHUAttributeStorageFactory().getAttributeStorage(load(huId, I_M_HU.class));
+		return Weightables.wrap(attributes).getWeightNet();
+	}
+
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveOpenRows(final I_M_ShipmentSchedule schedule)
+	{
+		return retrieveRows(schedule).stream()
+				.filter(row -> row.getM_InOutLine_ID() <= 0)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private void assertCountryOfRow(final List<ShipmentScheduleWithHU> candidates, final I_M_ShipmentSchedule_QtyPicked row, final String expectedCountry)

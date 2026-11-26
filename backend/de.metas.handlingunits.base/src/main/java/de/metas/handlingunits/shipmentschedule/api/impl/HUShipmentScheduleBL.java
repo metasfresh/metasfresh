@@ -55,6 +55,7 @@ import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmen
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
@@ -348,63 +349,60 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public void restoreUnshippedQtyPickedIfMissing(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations)
 	{
-		final Set<String> processedKeys = new HashSet<>();
-		// units that a row of its own already stands for: not part of a box row
-		final Set<HuId> unitIdsOfRowsWithUnit = reversedAllocations.stream()
-				.map(alloc -> HuId.ofRepoIdOrNull(alloc.getVHU_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		final IHUStorageFactory storageFactory = huContextFactory.createMutableHUContext().getHUStorageFactory();
-
+		final RestoreState state = RestoreState.of(reversedAllocations, huContextFactory.createMutableHUContext());
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
 		{
 			final HuId vhuId = HuId.ofRepoIdOrNull(alloc.getVHU_ID());
 			if (vhuId != null)
 			{
-				restoreUnshippedQtyPickedForUnit(alloc, vhuId, alloc.getQtyPicked(), true, processedKeys);
+				restoreUnshippedQtyPickedForUnit(alloc, vhuId, RestoredQty.ofWholeRow(alloc), state);
 			}
 			else
 			{
-				restoreUnshippedQtyPickedForBoxUnits(alloc, unitIdsOfRowsWithUnit, storageFactory, processedKeys);
+				restoreUnshippedQtyPickedForBoxUnits(alloc, state);
 			}
 		}
 	}
 
 	private void restoreUnshippedQtyPickedForBoxUnits(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked boxAlloc,
-			@NonNull final Set<HuId> unitIdsOfRowsWithUnit,
-			@NonNull final IHUStorageFactory storageFactory,
-			@NonNull final Set<String> processedKeys)
+			@NonNull final RestoreState state)
 	{
 		final HuId tuId = HuId.ofRepoIdOrNull(boxAlloc.getM_TU_HU_ID());
 		if (tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
 		{
 			return; // neither a unit nor a box: nothing to restore this way
 		}
+		final IHUContext huContext = state.getHuContext();
 		final ProductId productId = ProductId.ofRepoId(boxAlloc.getM_ShipmentSchedule().getM_Product_ID());
-		for (final I_M_HU unit : retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(tuId), boxAlloc, storageFactory))
+		final BoxKey boxKey = new BoxKey(ShipmentScheduleId.ofRepoId(boxAlloc.getM_ShipmentSchedule_ID()), tuId);
+		for (final I_M_HU unit : retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(tuId), boxAlloc, huContext.getHUStorageFactory()))
 		{
 			final HuId unitId = HuId.ofRepoId(unit.getM_HU_ID());
-			if (!unitIdsOfRowsWithUnit.contains(unitId))
+			if (state.getUnitIdsOfRowsWithUnit().contains(unitId))
 			{
-				final BigDecimal unitQty = storageFactory.getStorage(unit).getProductStorage(productId).getQty().toBigDecimal();
-				restoreUnshippedQtyPickedForUnit(boxAlloc, unitId, unitQty, false, processedKeys);
+				continue;
 			}
+			final Quantity unitQty = huContext.getHUStorageFactory().getStorage(unit).getProductStorage(productId).getQty();
+			// a box shared by several schedules or picks: restore no more than the reversed rows of this schedule picked from it
+			if (!state.takeFromBoxBudget(boxKey, unitQty.toBigDecimal()))
+			{
+				continue;
+			}
+			// the unit's weight comes from the unit itself, as the reopen of a completed job takes it
+			final StockQtyAndUOMQty unitQtys = CatchWeightHelper.extractQtys(huContext, productId, unitQty, unit);
+			restoreUnshippedQtyPickedForUnit(boxAlloc, unitId, RestoredQty.ofUnitOfBoxRow(unitQtys), state);
 		}
 	}
 
-	/**
-	 * @param isWholeRow true if the quantity is the whole quantity of {@code alloc}, false if it is the part of one unit of a box row
-	 */
 	private void restoreUnshippedQtyPickedForUnit(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc,
 			@NonNull final HuId vhuId,
-			@NonNull final BigDecimal qtyPicked,
-			final boolean isWholeRow,
-			@NonNull final Set<String> processedKeys)
+			@NonNull final RestoredQty restoredQty,
+			@NonNull final RestoreState state)
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID());
-		if (!processedKeys.add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
+		if (!state.getProcessedKeys().add(scheduleId.getRepoId() + "|" + vhuId.getRepoId()))
 		{
 			return; // already handled this (schedule, VHU) — allocations are consolidated to one row per VHU
 		}
@@ -427,16 +425,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		restored.setVHU_ID(vhuId.getRepoId());
 		restored.setM_TU_HU_ID(alloc.getM_TU_HU_ID());
 		restored.setM_LU_HU_ID(alloc.getM_LU_HU_ID());
-		restored.setQtyPicked(qtyPicked);
 		restored.setIsAnonymousHuPickedOnTheFly(alloc.isAnonymousHuPickedOnTheFly());
-		if (isWholeRow)
-		{
-			// a unit of a box row is only a part of the row: its box and pallet counts and its weight are not the unit's
-			restored.setQtyTU(alloc.getQtyTU());
-			restored.setQtyLU(alloc.getQtyLU());
-			restored.setCatch_UOM_ID(alloc.getCatch_UOM_ID());
-			restored.setQtyDeliveredCatch(alloc.getQtyDeliveredCatch());
-		}
+		restoredQty.applyTo(restored);
 		// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
 		huShipmentScheduleDAO.saveQtyPicked(restored);
 
@@ -1355,7 +1345,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			// over-state it and mis-restore it on reversal). Either way the representative VHU is the candidate's
 			// attribute source (in-memory override) so the line's attributes are read from it.
 			result.add(saveRowAndCreateCandidate(
-					groupQtyPicked, groupStorageQty, group.size() == 1 ? attributeSourceVHU : null, attributeSourceVHU, huContext, qtyTypeToUse));
+					groupQtyPicked, new CandidatePart(groupStorageQty, group.size() == 1 ? attributeSourceVHU : null, attributeSourceVHU), huContext, qtyTypeToUse));
 		}
 		return result.build();
 	}
@@ -1425,12 +1415,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		final ProductId productId = ProductId.ofRepoId(anyRowOfSchedule.getM_ShipmentSchedule().getM_Product_ID());
 		final Set<HuId> unitIdsRecordedBySteps = retrieveUnitIdsRecordedByPickingJobSteps(ShipmentScheduleId.ofRepoId(anyRowOfSchedule.getM_ShipmentSchedule_ID()));
-		final boolean allUnitsCount = unitIdsRecordedBySteps.isEmpty() || unitIdsRecordedBySteps.contains(HuId.ofRepoId(box.getM_HU_ID()));
+		final boolean isEveryUnitCounted = unitIdsRecordedBySteps.isEmpty() || unitIdsRecordedBySteps.contains(HuId.ofRepoId(box.getM_HU_ID()));
 
 		return handlingUnitsDAO.retrieveIncludedHUs(box)
 				.stream()
 				.filter(handlingUnitsBL::isVirtual)
-				.filter(vhu -> allUnitsCount || unitIdsRecordedBySteps.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
+				.filter(vhu -> isEveryUnitCounted || unitIdsRecordedBySteps.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
 				.filter(vhu -> {
 					final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
 					return productStorage != null && !productStorage.isEmpty();
@@ -1492,7 +1482,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 			else
 			{
-				// The box content is not exactly what these rows picked (e.g. a box shared with another schedule): per row as before.
+				// The box content is not exactly what these rows picked (e.g. a box shared with another schedule): each row alone.
 				result.addAll(createCandidatesPerRow(boxRows, huContext, qtyTypeToUse));
 			}
 		}
@@ -1558,6 +1548,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	/**
 	 * Walks rows and content groups together, consuming quantity: every overlap of a row part and a group is one candidate.
+	 * <p>
+	 * Limit: rows are given to the groups in row-id order. When the picks of one lot are interleaved with picks of another
+	 * (lot A, lot B, lot A), the catch weight and the unit a lot's line carries can come from the other lot's pick.
+	 * Quantities and totals stay right.
 	 */
 	private List<ShipmentScheduleWithHU> createCandidatesPerContentGroup(
 			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> boxRows,
@@ -1613,7 +1607,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			final RowPart part = parts.get(i);
 			final I_M_ShipmentSchedule_QtyPicked partRecord = rowForPart(row, i == 0, part.getQty(), catchWeightShares.get(i));
-			result.add(saveRowAndCreateCandidate(partRecord, part.getQty(), part.getWholeVhu(), part.getGroup().firstVhu(), huContext, qtyTypeToUse));
+			result.add(saveRowAndCreateCandidate(partRecord, new CandidatePart(part.getQty(), part.getWholeVhu(), part.getGroup().firstVhu()), huContext, qtyTypeToUse));
 		}
 		return result.build();
 	}
@@ -1661,25 +1655,130 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return part;
 	}
 
-	/**
-	 * @param wholeVhu the unit the row's quantity is exactly; {@code null} if the quantity cannot be attributed to one unit
-	 * @param attributeSourceVhu the unit whose attributes the candidate (and so the shipment line) takes
-	 */
 	private ShipmentScheduleWithHU saveRowAndCreateCandidate(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked row,
-			@NonNull final Quantity qty,
-			@Nullable final I_M_HU wholeVhu,
-			@NonNull final I_M_HU attributeSourceVhu,
+			@NonNull final CandidatePart part,
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)
 	{
-		if (wholeVhu != null)
+		if (part.getWholeVhu() != null)
 		{
-			row.setVHU_ID(wholeVhu.getM_HU_ID());
+			row.setVHU_ID(part.getWholeVhu().getM_HU_ID());
 		}
-		row.setQtyPicked(qty.toBigDecimal());
+		row.setQtyPicked(part.getQty().toBigDecimal());
 		huShipmentScheduleDAO.saveQtyPicked(row);
-		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(row, huContext, attributeSourceVhu, qty, qtyTypeToUse);
+		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(row, huContext, part.getAttributeSourceVhu(), part.getQty(), qtyTypeToUse);
+	}
+
+	/**
+	 * The part of a row's quantity that becomes one candidate.
+	 */
+	@Value
+	private static class CandidatePart
+	{
+		@NonNull Quantity qty;
+		/** the unit the quantity is exactly; {@code null} if it cannot be attributed to one unit */
+		@Nullable I_M_HU wholeVhu;
+		/** the unit whose attributes the candidate (and so the shipment line) takes */
+		@NonNull I_M_HU attributeSourceVhu;
+	}
+
+	/**
+	 * What one call of {@link #restoreUnshippedQtyPickedIfMissing(Collection)} keeps between its rows.
+	 */
+	@Value
+	private static class RestoreState
+	{
+		@NonNull IHUContext huContext;
+		/** units that a row of its own already stands for: not part of a box row */
+		@NonNull Set<HuId> unitIdsOfRowsWithUnit;
+		/** (schedule, unit) pairs already handled */
+		@NonNull Set<String> processedKeys = new HashSet<>();
+		/** per (schedule, box): the quantity of the reversed box rows that is not restored yet */
+		@NonNull Map<BoxKey, BigDecimal> boxQtyLeft;
+
+		static RestoreState of(@NonNull final Collection<I_M_ShipmentSchedule_QtyPicked> reversedAllocations, @NonNull final IHUContext huContext)
+		{
+			final Set<HuId> unitIds = new HashSet<>();
+			final Map<BoxKey, BigDecimal> boxQtyLeft = new HashMap<>();
+			for (final I_M_ShipmentSchedule_QtyPicked alloc : reversedAllocations)
+			{
+				final HuId vhuId = HuId.ofRepoIdOrNull(alloc.getVHU_ID());
+				final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
+				if (vhuId != null)
+				{
+					unitIds.add(vhuId);
+				}
+				else if (tuId != null)
+				{
+					boxQtyLeft.merge(new BoxKey(ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID()), tuId), alloc.getQtyPicked(), BigDecimal::add);
+				}
+			}
+			return new RestoreState(huContext, unitIds, boxQtyLeft);
+		}
+
+		/**
+		 * @return true (and reduces what is left) if the box still has {@code qty} left to restore
+		 */
+		boolean takeFromBoxBudget(@NonNull final BoxKey boxKey, @NonNull final BigDecimal qty)
+		{
+			final BigDecimal left = boxQtyLeft.getOrDefault(boxKey, BigDecimal.ZERO);
+			if (left.compareTo(qty) < 0)
+			{
+				return false;
+			}
+			boxQtyLeft.put(boxKey, left.subtract(qty));
+			return true;
+		}
+	}
+
+	/**
+	 * The quantities a restored row gets.
+	 */
+	@Value
+	private static class RestoredQty
+	{
+		@NonNull BigDecimal qtyPicked;
+		@Nullable BigDecimal qtyTU;
+		@Nullable BigDecimal qtyLU;
+		int catchUomId;
+		@Nullable BigDecimal qtyDeliveredCatch;
+
+		/** the whole row: quantity, box and pallet counts and weight as the row has them */
+		static RestoredQty ofWholeRow(@NonNull final I_M_ShipmentSchedule_QtyPicked row)
+		{
+			return new RestoredQty(row.getQtyPicked(), row.getQtyTU(), row.getQtyLU(), row.getCatch_UOM_ID(), row.getQtyDeliveredCatch());
+		}
+
+		/** one unit of a box row: its box and pallet counts are not the unit's; its weight is the one of the unit */
+		static RestoredQty ofUnitOfBoxRow(@NonNull final StockQtyAndUOMQty unitQtys)
+		{
+			final Optional<Quantity> catchQty = unitQtys.getUOMQtyOpt();
+			return new RestoredQty(
+					unitQtys.getStockQty().toBigDecimal(),
+					null,
+					null,
+					catchQty.map(qty -> qty.getUomId().getRepoId()).orElse(0),
+					catchQty.map(qty -> qty.toBigDecimal()).orElse(null));
+		}
+
+		void applyTo(@NonNull final I_M_ShipmentSchedule_QtyPicked restored)
+		{
+			restored.setQtyPicked(qtyPicked);
+			if (qtyTU != null)
+			{
+				restored.setQtyTU(qtyTU);
+			}
+			if (qtyLU != null)
+			{
+				restored.setQtyLU(qtyLU);
+			}
+			if (catchUomId > 0)
+			{
+				restored.setCatch_UOM_ID(catchUomId);
+				restored.setQtyDeliveredCatch(qtyDeliveredCatch);
+			}
+		}
 	}
 
 	@Value
