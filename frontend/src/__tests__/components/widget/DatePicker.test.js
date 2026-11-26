@@ -3,6 +3,7 @@ import { mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import MomentTZ from 'moment-timezone';
+import counterpart from 'counterpart';
 
 import DatePicker from '../../../components/widget/DateTime/DatePicker';
 import TetheredDateTime from '../../../components/widget/DateTime/TetheredDateTime';
@@ -16,8 +17,7 @@ const DISPLAY_FORMAT = 'DD.MM.YYYY';
 
 const mounted = [];
 
-const mountPicker = (props) => {
-  const store = createStore(() => ({}));
+const mountPicker = (props, store = createStore(() => ({}))) => {
   const wrapper = mount(
     <Provider store={store}>
       <DatePicker
@@ -300,5 +300,183 @@ describe('DatePicker — grid date cell, review follow-ups', () => {
     const first = picker().getGridViewDate();
     expect(first.format(DISPLAY_FORMAT)).toBe('20.11.2026');
     expect(picker().getGridViewDate()).toBe(first); // react-datetime compares viewDate by reference
+  });
+});
+
+/**
+ * Typed dates: besides the exact display format, a missing leading zero and a two-digit year are
+ * accepted when the input is left; a typed text that is no date is reported, not silently dropped.
+ */
+describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
+  const stored = () => MomentTZ('2026-11-20', 'YYYY-MM-DD');
+  const typeInto = (wrapper, text) =>
+    wrapper.find('input').simulate('change', { target: { value: text } });
+  const patchedDay = (patch) => patch.mock.calls[0][0].format('YYYY-MM-DD');
+  const mountWithStore = (props) => {
+    const store = createStore(() => ({}));
+    const dispatch = jest.spyOn(store, 'dispatch');
+    const notifications = () =>
+      dispatch.mock.calls
+        .map(([action]) => action)
+        .filter((action) => action && action.type === 'ADD_NOTIFICATION');
+    return { ...mountPicker(props, store), notifications };
+  };
+
+  beforeAll(() =>
+    counterpart.registerTranslations('en', {
+      widget: {
+        datePicker: {
+          invalidDate: {
+            title: 'Invalid date',
+            text: '"%(value)s" is not a valid date. Example: %(example)s',
+          },
+        },
+      },
+    })
+  );
+
+  [
+    ['4.12.2027', '2027-12-04'],
+    ['04.1.2027', '2027-01-04'],
+    ['05.12.27', '2027-12-05'],
+    ['6.1.27', '2027-01-06'],
+  ].forEach(([typed, expected]) => {
+    it(`grid: "${typed}" is saved as ${expected} when the cell is left`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        isGridCell: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patchedDay(patch)).toBe(expected);
+      expect(notifications()).toHaveLength(0);
+    });
+  });
+
+  it('grid: a short form is saved by Enter too', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.27');
+    picker().handleKeydown(keyEvent('Enter'));
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+  });
+
+  it('grid: Escape discards a typed short form', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.2027');
+    picker().handleKeydown(keyEvent('Escape'));
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  ['31.02.2027', '12/09/2027', '07122027', '10.12.', 'abc'].forEach((typed) => {
+    it(`grid: "${typed}" is not saved, the stored date stays and an error is shown`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        isGridCell: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).not.toHaveBeenCalled();
+      wrapper.update();
+      expect(wrapper.find('input').prop('value')).toBe('20.11.2026');
+      const shown = notifications();
+      expect(shown).toHaveLength(1);
+      expect(shown[0].notifType).toBe('error');
+      expect(shown[0].title).toBe('Invalid date');
+      expect(shown[0].msg).toBe(
+        `"${typed}" is not a valid date. Example: ${MomentTZ().format(DISPLAY_FORMAT)}`
+      );
+    });
+  });
+
+  it('grid: leaving the cell without typing shows no error, also for an unparseable stored value', () => {
+    const { picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: 'not a date',
+    });
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('grid, session format "L" in English: "12/5/27" is saved as 2027-12-05', () => {
+    MomentTZ.locale('en');
+    window.localStorage.setItem('metasfreshLanguage', 'en');
+    try {
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        isGridCell: true,
+        dateFormat: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, '12/5/27');
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patchedDay(patch)).toBe('2027-12-05');
+    } finally {
+      window.localStorage.removeItem('metasfreshLanguage');
+    }
+  });
+
+  it('non-grid: a short form is not patched while typing but when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.27');
+    expect(patch).not.toHaveBeenCalled();
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a typed text that is no date is reported when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '31.02.2027');
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(1);
+  });
+
+  it('non-grid: leaving the field without typing shows no error', () => {
+    const { picker, notifications } = mountWithStore({ value: stored() });
+    picker().handleFocus();
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a full date typed and saved while typing raises no error when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(notifications()).toHaveLength(0);
   });
 });

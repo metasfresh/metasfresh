@@ -3,8 +3,10 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
 import onClickOutsideHOC from 'react-onclickoutside';
+import counterpart from 'counterpart';
 
 import TetheredDateTime from './TetheredDateTime';
+import { addNotification } from '../../../actions/AppActions';
 import { getCurrentActiveLocale } from '../../../utils/locale';
 import {
   DATE_FORMAT,
@@ -16,6 +18,28 @@ import {
   setMomentToEndOfDay,
   setTimezoneToMoment,
 } from '../../../utils/dateHelpers';
+
+/**
+ * The format itself first, then its short forms: day and month without the leading zero, a two-digit
+ * year (`DD.MM.YYYY` gives `DD.MM.YYYY`, `D.MM.YYYY`, ..., `D.M.YY`).
+ */
+const getShortFormsOfDateFormat = (format) => {
+  const formats = [];
+  ['DD', 'D'].forEach((day) =>
+    ['MM', 'M'].forEach((month) =>
+      ['YYYY', 'YY'].forEach((year) => {
+        const shortForm = format
+          .replace('DD', day)
+          .replace('MM', month)
+          .replace('YYYY', year);
+        if (!formats.includes(shortForm)) {
+          formats.push(shortForm);
+        }
+      })
+    )
+  );
+  return formats;
+};
 
 class DatePicker extends PureComponent {
   constructor(props) {
@@ -71,6 +95,11 @@ class DatePicker extends PureComponent {
     const isTyped = this.isInputChangeInProgress;
     this.isInputChangeInProgress = false;
 
+    if (!isTyped) {
+      // a calendar pick replaces whatever was typed
+      this.typedText = undefined;
+    }
+
     if (!dateObj) {
       // Grid date cell: clearing the typed text is pending like any typing (Escape discards it)
       if (this.props.isGridCell && isTyped) {
@@ -123,18 +152,87 @@ class DatePicker extends PureComponent {
    * (`pendingTypedDate`), or the clearing of the date (`isTypedClearPending`).
    */
   commitTypedDate = () => {
-    const { pendingTypedDate, isTypedClearPending } = this;
+    const { pendingTypedDate, isTypedClearPending, typedText } = this;
     this.discardTypedDate();
     if (pendingTypedDate) {
       this.callPatchIfNeeded(pendingTypedDate);
     } else if (isTypedClearPending) {
       this.callPatchIfNeeded(null);
+    } else if (typedText) {
+      this.commitTypedText(typedText);
     }
   };
 
   discardTypedDate = () => {
     this.pendingTypedDate = null;
     this.isTypedClearPending = false;
+    this.typedText = undefined;
+  };
+
+  /**
+   * Saves a typed text that the exact display format did not accept, if it is a date in a short form
+   * of that format (see parseTypedText); otherwise tells the user the text is no date. The stored
+   * value is kept in that case (handleBlur resets the input to it).
+   */
+  commitTypedText = (typedText) => {
+    const moment = this.parseTypedText(typedText);
+    if (moment && moment.isValid()) {
+      this.callPatchIfNeeded(moment);
+    } else {
+      this.notifyInvalidDate(typedText);
+    }
+  };
+
+  /**
+   * Parses a typed text with the session's date format, also accepting a day or month without its
+   * leading zero and a two-digit year (`4.1.27` for `04.01.2027` in German, `1/4/27` for
+   * `01/04/2027` in English). Text with a `-` is read as ISO `YYYY-MM-DD`, as everywhere in this
+   * widget. A date typed without a time into a date+time field means the end of that day.
+   */
+  parseTypedText = (text) => {
+    const { dateFormat, timeFormat } = this.props;
+    if (!dateFormat) {
+      return null;
+    }
+
+    MomentTZ.locale(getCurrentActiveLocale());
+    const datePart = this.getMomentDisplayFormat_DatePart(text);
+    const dateFormats = getShortFormsOfDateFormat(
+      MomentTZ.localeData().longDateFormat(datePart) || datePart
+    );
+
+    if (timeFormat) {
+      const timePart = timeFormat === true ? 'LT' : timeFormat;
+      const dateTime = MomentTZ(
+        text,
+        dateFormats.map((format) => `${format} ${timePart}`),
+        true
+      );
+      if (dateTime.isValid()) {
+        return this.setTimezone(dateTime);
+      }
+      const dateOnly = MomentTZ(text, dateFormats, true);
+      return dateOnly.isValid() ? setMomentToEndOfDay(dateOnly) : null;
+    }
+
+    const date = MomentTZ(text, dateFormats, true);
+    return date.isValid() ? date : null;
+  };
+
+  notifyInvalidDate = (typedText) => {
+    const { dispatch } = this.props;
+    const example = MomentTZ().format(this.getMomentDisplayFormat());
+    dispatch(
+      addNotification(
+        counterpart.translate('widget.datePicker.invalidDate.title'),
+        counterpart.translate('widget.datePicker.invalidDate.text', {
+          value: typedText,
+          example,
+        }),
+        5000,
+        'error'
+      )
+    );
   };
 
   resetPickerSelectedDateAndInputValueToLastPatchedDate = () => {
@@ -191,8 +289,9 @@ class DatePicker extends PureComponent {
     // NOTE: for some reason `dateObj` is not always the up-to-date value of the date
     // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
 
-    // Grid date cell: a date typed into the input is only saved when the cell is left
-    // (Escape discards it, see handleKeydown).
+    // A date typed into the input is saved (grid date cell: only) when the input is left; a short form
+    // is saved now, and a text that is no date is reported (grid date cell: Escape discards the typing,
+    // see handleKeydown).
     this.commitTypedDate();
 
     //
@@ -469,6 +568,7 @@ class DatePicker extends PureComponent {
     const onChange = (event) => {
       // react-datetime reports the typed date asynchronously; remember it came from typing
       this.isInputChangeInProgress = true;
+      this.typedText = event.target.value;
       props.onChange && props.onChange(event);
     };
 
