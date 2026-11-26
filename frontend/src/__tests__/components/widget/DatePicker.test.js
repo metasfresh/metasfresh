@@ -548,5 +548,33 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     expect(notifications()).toHaveLength(0);
     expect(patch).toHaveBeenCalledTimes(1);
   });
+
+  it('empty field: a calendar pick after typing an invalid text raises no error (react-datetime blurs before onChange)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, 'abc');
+    const picked = MomentTZ('2026-12-05', 'YYYY-MM-DD');
+    // react-datetime's order for a field without value: onBlur(date), then onChange(date)
+    picker().handleBlur(picked);
+    picker().handleDateChange(picked);
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('spaces around a typed date are ignored', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, ' 4.12.2027 ');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+  });
 });
 

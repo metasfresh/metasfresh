@@ -186,7 +186,7 @@ class DatePicker extends PureComponent {
    * value is kept in that case (handleBlur resets the input to it).
    */
   commitTypedText = (typedText) => {
-    const moment = this.parseTypedText(typedText);
+    const moment = this.parseTypedText(typedText.trim());
     if (moment && moment.isValid()) {
       this.callPatchIfNeeded(moment);
     } else {
@@ -301,9 +301,15 @@ class DatePicker extends PureComponent {
     this.setState({ datePatched: date });
   };
 
-  handleBlur = (/*dateObj*/) => {
+  handleBlur = (dateObj) => {
     // NOTE: for some reason `dateObj` is not always the up-to-date value of the date
     // for that reason we cannot use it and we relly entirely on the date we get on "handleDateChange".
+
+    // react-datetime passes a moment when a date was picked or typed in full (for a field without value it
+    // blurs on a calendar pick BEFORE reporting the change), so earlier typing must not be reported then
+    if (MomentTZ.isMoment(dateObj)) {
+      this.typedText = undefined;
+    }
 
     // A date typed into the input is saved (grid date cell: only) when the input is left; a short form
     // is saved now, and a text that is no date is reported (grid date cell: Escape discards the typing,
