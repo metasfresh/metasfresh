@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { closePickingTarget, setTUPickingTargetFromGrai } from '../../../api/picking';
+import { closePickingTarget, PICKING_TARGET_TIMEOUT_MILLIS, setTUPickingTargetFromGrai } from '../../../api/picking';
+import { getWFProcess } from '../../../api/launchers';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { PickingTargetType } from '../../../constants/PickingTargetType';
 import { selectPickingTargetScreenLocation } from '../../../routes/picking';
@@ -17,6 +18,21 @@ import { trl } from '../../../utils/translations';
  * The quantity block recognizes it by `isNotBooked`; any other resolved value means the booking was sent.
  */
 export const NOT_BOOKED = Object.freeze({ isNotBooked: true });
+
+/** An axios request that ran into its timeout (see PICKING_TARGET_TIMEOUT_MILLIS in api/picking.js) or the timeout of a wait for a booking */
+const isTimeout = (error) => error?.code === 'ECONNABORTED' || error?.code === 'ETIMEDOUT';
+
+/** The promise, or a rejection with a timeout error after `millis` (the same bound as the request timeout of the opening itself) */
+const withTimeout = (promise, millis) => {
+  let timer;
+  const timeout = new Promise((resolve, reject) => {
+    timer = setTimeout(
+      () => reject(Object.assign(new UserMessageError('error.network.noResponse'), { code: 'ETIMEDOUT' })),
+      millis
+    );
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+};
 
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
@@ -76,33 +92,53 @@ export const useOpenNextTU = ({
    * While the opening is in flight, its promise is kept in `openingRef` for {@link bookAfterTUOpened}, which needs the raw promise of `action` (it settles when the opening settles).
    * An opening requested while a booking is in flight (see {@link bookAfterTUOpened}) starts only after the booking's answer is in:
    * the count confirmed first stays in the TU that was open, and the booking's older job state cannot arrive after the opening's newer one and show the previous TU as open.
+   * The wait for the booking has the same bound as the opening's own request (`PICKING_TARGET_TIMEOUT_MILLIS`): a booking without an answer
+   * (the booking request itself has no timeout) ends the wait with a "Connection error", the opening is not started and the busy flags are released.
+   * An opening that timed out may have been applied by the server (close + open are not idempotent), so the job is reloaded and shown: the screen then shows the TU that is really open.
    * The in-flight flags are released whatever happens: `action` may return a rejected promise or throw synchronously.
    * A failure of the opening is shown as an error toast and swallowed; with `isRethrow` it is rethrown to the caller instead (a scanner shows it) and no toast is shown here.
    * @param {() => Promise<void>|void} action the opening
    * @param {{isRethrow?: boolean}} options
    * @returns {Promise<void>} settles when the opening settled
    */
-  const runExclusive = useCallback(async (action, { isRethrow = false } = {}) => {
-    if (isInFlightRef.current) {
-      // a scan must not report success for a TU that was not opened.
-      if (isRethrow) throw new UserMessageError('picking.nextTUBusy');
-      return;
-    }
-    isInFlightRef.current = true;
-    setProcessing(true);
-    try {
-      const opening = bookingRef.current ? bookingRef.current.then(() => action()) : action();
-      openingRef.current = opening;
-      await opening;
-    } catch (error) {
-      if (isRethrow) throw error;
-      toastErrorFromObj(error);
-    } finally {
-      openingRef.current = null;
-      isInFlightRef.current = false;
-      setProcessing(false);
-    }
-  }, []);
+  // best effort: the timeout error is shown anyway; a failed reload only leaves the stale state, which the next load refreshes
+  const refreshJob = useCallback(
+    () =>
+      getWFProcess({ wfProcessId })
+        .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+        .catch(() => undefined),
+    [dispatch, wfProcessId]
+  );
+
+  const runExclusive = useCallback(
+    async (action, { isRethrow = false } = {}) => {
+      if (isInFlightRef.current) {
+        // a scan must not report success for a TU that was not opened.
+        if (isRethrow) throw new UserMessageError('picking.nextTUBusy');
+        return;
+      }
+      isInFlightRef.current = true;
+      setProcessing(true);
+      try {
+        const opening = bookingRef.current
+          ? withTimeout(bookingRef.current, PICKING_TARGET_TIMEOUT_MILLIS).then(() => action())
+          : action();
+        openingRef.current = opening;
+        await opening;
+      } catch (error) {
+        if (isTimeout(error)) {
+          refreshJob();
+        }
+        if (isRethrow) throw error;
+        toastErrorFromObj(error);
+      } finally {
+        openingRef.current = null;
+        isInFlightRef.current = false;
+        setProcessing(false);
+      }
+    },
+    [refreshJob]
+  );
 
   /**
    * Books once the TU opening in flight (if any) is done, so the count goes into the TU the picker just opened.

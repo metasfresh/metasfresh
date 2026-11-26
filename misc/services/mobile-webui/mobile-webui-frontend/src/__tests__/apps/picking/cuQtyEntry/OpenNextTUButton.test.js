@@ -7,6 +7,7 @@ import { combineReducers, createStore } from 'redux';
 import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 import { closeAndOpenNextTU, NOT_BOOKED, useOpenNextTU } from '../../../../apps/picking/cuQtyEntry/useOpenNextTU';
 import * as pickingApi from '../../../../api/picking';
+import { getWFProcess } from '../../../../api/launchers';
 import { toastErrorFromObj, toastNotification } from '../../../../utils/toast';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
@@ -30,9 +31,12 @@ jest.mock('../../../../utils/toast', () => ({
 jest.mock('../../../../api/picking', () => ({
   closePickingTarget: jest.fn(),
   setTUPickingTargetFromGrai: jest.fn(),
+  PICKING_TARGET_TIMEOUT_MILLIS: 20000,
 }));
+jest.mock('../../../../api/launchers', () => ({ getWFProcess: jest.fn() }));
 jest.mock('../../../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({ push: jest.fn() }) }));
-jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => jest.fn() }));
+const mockDispatch = jest.fn();
+jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => mockDispatch }));
 
 const TU_TYPE_ID = 1000042;
 
@@ -271,6 +275,7 @@ describe('useOpenNextTU', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     pickingApi.setTUPickingTargetFromGrai.mockResolvedValue({});
+    getWFProcess.mockResolvedValue({ id: 'wf' });
   });
 
   it('a second tap while the first is in flight opens no second TU', async () => {
@@ -458,6 +463,70 @@ describe('useOpenNextTU', () => {
       });
       const book = jest.fn(() => 'booked');
       expect(exposed.nextTU.bookAfterTUOpened(book)).toBe('booked');
+    });
+  });
+
+  describe('a booking or an opening that hangs', () => {
+    afterEach(() => jest.useRealTimers());
+
+    it('an opening queued behind a booking that never answers ends with the request timeout: error, nothing opened, the next scan works', async () => {
+      jest.useFakeTimers();
+      const exposed = setup(jest.fn());
+      await act(async () => {
+        exposed.nextTU.bookAfterTUOpened(() => new Promise(() => {})); // the booking: no answer at all
+      });
+      let scan;
+      await act(async () => {
+        scan = expect(exposed.nextTU.onGraiScanned('1234567.12345.S1')).rejects.toMatchObject({
+          name: 'UserMessageError',
+          messageKey: 'error.network.noResponse',
+        });
+        jest.advanceTimersByTime(20000);
+      });
+      await scan;
+      expect(pickingApi.setTUPickingTargetFromGrai).not.toHaveBeenCalled();
+      // the busy flags are released: the next scan is not refused as busy (the stuck booking is still pending, so it waits again)
+      let next;
+      await act(async () => {
+        next = expect(exposed.nextTU.onGraiScanned('1234567.12345.S1')).rejects.toMatchObject({
+          messageKey: 'error.network.noResponse',
+        });
+        jest.advanceTimersByTime(20000);
+      });
+      await next;
+    });
+
+    it('a timed-out opening: the job is reloaded (the server may have applied it) and shown', async () => {
+      const wfProcess = { id: 'wf' };
+      getWFProcess.mockResolvedValue(wfProcess);
+      const timeout = Object.assign(new Error('timeout of 20000ms exceeded'), { code: 'ECONNABORTED' });
+      const exposed = setup(jest.fn().mockRejectedValue(timeout));
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      expect(toastErrorFromObj).toHaveBeenCalledWith(timeout);
+      expect(getWFProcess).toHaveBeenCalledWith({ wfProcessId: 'wf' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'wfProcess/update', payload: expect.objectContaining({ wfProcess }) })
+      );
+    });
+
+    it('a failed reload after a timeout changes nothing: the timeout error stays the one shown', async () => {
+      getWFProcess.mockRejectedValue(new Error('still offline'));
+      const timeout = Object.assign(new Error('timeout of 20000ms exceeded'), { code: 'ECONNABORTED' });
+      const exposed = setup(jest.fn().mockRejectedValue(timeout));
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      expect(toastErrorFromObj).toHaveBeenCalledTimes(1);
+    });
+
+    it('a refusal (no timeout) does not reload the job', async () => {
+      const exposed = setup(jest.fn().mockRejectedValue(new Error('refused')));
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      expect(getWFProcess).not.toHaveBeenCalled();
     });
   });
 

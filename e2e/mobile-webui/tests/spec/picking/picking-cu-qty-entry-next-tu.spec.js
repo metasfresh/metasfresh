@@ -299,6 +299,53 @@ test('GRAI scan whose request hangs (no answer at all): the request times out, o
 });
 
 // noinspection JSUnusedLocalSymbols
+test('"Next TU" button whose request hangs (no answer at all): the request times out, one error, nothing is booked, the typed count stays for the open TU', async ({ page }) => {
+    test.setTimeout(120000);   // the request timeout of the picking target calls is 20 s
+    allureMeta('Next TU button');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
+    await book({ qty: 5, expectedQtyTarget: 15 });
+
+    // the button first closes the open TU: that request hangs
+    const restoreTargetSpeed = await hangRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST' });
+    await expectErrorToast(
+        'hung Next TU button, OK pressed meanwhile',
+        async () => {
+            await PickLineScanScreen.tapNextTUWithoutWaiting();
+            await GetQuantityDialog.typeQtyEntered(3);
+            await page.getByTestId('done-button').tap();
+            await ErrorToast.waitToPopup(undefined, 40000);   // the request timeout (20 s) ends the hung opening
+        },
+        ({ textContent }) => expect(textContent).toContain('Connection error')
+    );
+    await restoreTargetSpeed();
+    await GetQuantityDialog.waitForDialog();
+
+    // nothing was booked; the open TU is still the one the job shows; the typed count books into it
+    await GetQuantityDialog.expectQtyTarget(15);
+    await GetQuantityDialog.expectQtyEntered(3);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 12 });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                }
+            }
+        },
+        hus: { tu1: { qtyTUs: 1, storages: { P1: '8 PCE' }, attributes: { GRAI: null } } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('count confirmed first (OK pressed, its answer late), crate GRAI scanned meanwhile: the count stays in the previous TU, the new crate stays open and takes the next booking', async ({ page }) => {
     allureMeta('Next TU by GRAI');
 
