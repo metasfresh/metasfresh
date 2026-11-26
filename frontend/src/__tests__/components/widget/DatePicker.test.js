@@ -794,5 +794,35 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     picker().handleClickOutside();
     expect(blur).not.toHaveBeenCalled();
   });
+
+  it('grid: a typed full ISO date (shown reformatted in the input) is saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '2027-01-04');
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-01-04');
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('date+time field: a calendar pick after typing a date without time saves the pick only', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      timeFormat: 'HH:mm',
+      value: MomentTZ('2026-11-20 10:00', 'YYYY-MM-DD HH:mm'),
+      patch,
+    });
+    typeInto(wrapper, '04.01.2027');
+    const picked = MomentTZ('2026-12-05 10:00', 'YYYY-MM-DD HH:mm');
+    picker().handleDateChange(picked); // the pick, while the parent has not passed the new value yet
+    // react-datetime then closes the calendar and blurs a field with value with its input text
+    picker().handleBlur('04.01.2027');
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patch.mock.calls[0][0].format('YYYY-MM-DD')).toBe('2026-12-05');
+  });
 });
 

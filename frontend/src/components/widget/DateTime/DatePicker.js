@@ -166,7 +166,9 @@ class DatePicker extends PureComponent {
     if (
       typedText !== undefined &&
       this.inputElement &&
-      this.inputElement.value !== typedText
+      this.inputElement.value !== typedText &&
+      // (the input shows a text it can read reformatted, e.g. ISO 2027-01-04 as 04.01.2027)
+      this.inputElement.value !== this.renderInputDateString(typedText)
     ) {
       // a new value replaced the typing in the input
       return false;

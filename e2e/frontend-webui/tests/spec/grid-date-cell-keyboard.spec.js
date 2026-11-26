@@ -21,7 +21,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * - Tab into an EMPTY Date cell, type DD.MM.YYYY -> accepted, PATCHed, shown after blur
  * - Tab into a cell holding 20.11.2026, type a new date -> REPLACES (not appended), PATCHed
  * - Escape (after typing) and, separately, Enter (without typing) keep the stored value
- * - short forms (no leading zero, two-digit year) are saved as the full date
+ * - short forms (no leading zero, two-digit year) and ISO YYYY-MM-DD are saved as the full date
  * - a typed text that is no date is not saved: the stored value stays and an error notification names the text
  *
  * Features tested:
@@ -305,6 +305,25 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
     await expect.poll(() => state.patches.length, { message: 'a PATCH carries the date', timeout: 10000 }).toBe(1);
     expect(patchedDay(state.patches[0].value), 'the PATCH denotes the full date').toBe('04.01.2027');
     await expect(dateCellText(dateCell), 'the cell shows the full date after blur').toHaveText('04.01.2027');
+  });
+
+  test('ISO: "2027-01-04" is saved as 04.01.2027', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { row, dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await tabIntoDateCell(page, row, dateCell);
+    await page.keyboard.type('2027-01-04', { delay: 50 });
+    await page.keyboard.press('Tab');
+
+    await expect.poll(() => state.patches.length, { message: 'a PATCH carries the date', timeout: 10000 }).toBe(1);
+    expect(patchedDay(state.patches[0].value), 'the PATCH denotes the ISO date').toBe('04.01.2027');
+    await expect(dateCellText(dateCell), 'the cell shows the date after blur').toHaveText('04.01.2027');
   });
 
   test('a typed text that is no date keeps the stored value and shows an error naming the text', async ({ page }) => {
