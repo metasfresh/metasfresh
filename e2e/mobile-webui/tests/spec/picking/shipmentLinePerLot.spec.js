@@ -12,7 +12,6 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/scre
 
 // Shipment lines of a picked box that holds units of several lots: one shipment line per lot
 // (shipment policy CL, the lot is a shipment-line aggregation key).
-// The shipment lines follow the pick order, and the test backend compares them in that order.
 
 const LOT_ATTRIBUTE = 'Lot-Nummer';
 
@@ -59,6 +58,19 @@ const createMasterdata = async ({ lots, orderLines }) => {
             },
         }
     });
+};
+
+/**
+ * The shipment lines are compared in any order: the order of M_InOutLine.Line is not stable when picks of different lots go into one shipment.
+ * Each line keeps its own qty + lot pairing and the line count stays exact.
+ */
+const expectShipmentLinesInAnyOrder = async (lines) => {
+    const permutations = (items) => items.length <= 1
+        ? [items]
+        : items.flatMap((item, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]));
+    await Backend.expectAnyOf(
+        permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: [{ lines: orderedLines }] } } })),
+        'shipment lines (any order)');
 };
 
 const allureMeta = (story) => {
@@ -110,19 +122,11 @@ test('mixed-lot box: one shipment line per lot', async ({ page }) => {
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU3.qrCode, qtyEntered: 1, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                        { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-                        { product: 'P1', movementQty: 1, attributes: { [LOT_ATTRIBUTE]: 'L3' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+            { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+            { product: 'P1', movementQty: 1, attributes: { [LOT_ATTRIBUTE]: 'L3' } },
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -140,18 +144,10 @@ test('box shared by two order lines: each order line gets its own lot', async ({
     await pickFromLine({ lineIndex: 2, qrCode: masterdata.handlingUnits.HU2.qrCode, qtyEntered: 3 });
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                        { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+            { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -169,18 +165,10 @@ test('box shared by two order lines, equal quantities: each order line gets its 
     await pickFromLine({ lineIndex: 2, qrCode: masterdata.handlingUnits.HU2.qrCode, qtyEntered: 2 });
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -198,18 +186,10 @@ test('equal quantities of two lots: two shipment lines', async ({ page }) => {
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, qtyEntered: 2 }); // the last pick fulfills the order qty, so no "qty not found" reason is asked
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -227,17 +207,9 @@ test('same lot twice: one shipment line', async ({ page }) => {
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 3 }); // the last pick fulfills the order qty, so no "qty not found" reason is asked
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 5, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 5, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+    ]);
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -262,15 +234,7 @@ test('unpick before completion: only the picked lot is shipped', async ({ page }
     await PickingJobLineScreen.goBack();
 
     await PickingJobScreen.complete();
-    await Backend.expect({
-        salesOrders: {
-            SO1: {
-                shipments: [{
-                    lines: [
-                        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-                    ]
-                }]
-            }
-        }
-    });
+    await expectShipmentLinesInAnyOrder([
+            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+    ]);
 });

@@ -194,6 +194,42 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 	}
 
 	@Test
+	void boxWithAUnitOfAnotherProduct_ofOneCombination_keepsTheRowsAsTheyWere()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE);
+		addUnitOfTomato(box);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		createBoxRow(schedule, box, "2");
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		assertThat(candidates).hasSize(1);
+		// the unit of the other product is no content of this schedule: nothing to split, the row keeps no unit of its own
+		assertThat(retrieveRows(schedule)).singleElement().satisfies(row -> assertThat(row.getVHU_ID()).isZero());
+	}
+
+	@Test
+	void boxOfOneCombination_withUnitsThatRowsOfTheirOwnStandFor_keepsTheBoxRowAsItWas()
+	{
+		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE);
+		final List<I_M_HU> cus = handlingUnitsDAO.retrieveIncludedHUs(box);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("6"), BigDecimal.ZERO);
+		// two units have rows of their own (as the mobile picking creates them for catch weight), the first unit only the box row
+		createBoxRow(schedule, box, "2");
+		for (final I_M_HU cu : cus.subList(1, 3))
+		{
+			final I_M_ShipmentSchedule_QtyPicked rowOfUnit = createBoxRow(schedule, box, "2");
+			rowOfUnit.setVHU_ID(cu.getM_HU_ID());
+			saveRecord(rowOfUnit);
+		}
+
+		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForBoxPicks(retrieveRows(schedule), helper.getHUContext(), QTY_TYPE);
+
+		assertThat(candidates).hasSize(3);
+		assertThat(retrieveRows(schedule)).filteredOn(row -> row.getVHU_ID() <= 0).as("the box row keeps no unit of its own").hasSize(1);
+	}
+
+	@Test
 	void restoreAfterReversal_ofBoxRowsWithoutVHU_restoresEveryUnitOfTheBox()
 	{
 		final I_M_HU box = createBox(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
@@ -347,6 +383,16 @@ class HUShipmentScheduleBL_createCandidatesForBoxPicks_Test extends AbstractHUTe
 		refresh(box);
 		assertThat(handlingUnitsDAO.retrieveIncludedHUs(box)).as("PRECONDITION: one CU per country").hasSize(countries.length);
 		return box;
+	}
+
+	private void addUnitOfTomato(final I_M_HU box)
+	{
+		final HUTransformService transformService = HUTransformService.newInstance(helper.getHUContext());
+		final Quantity cuQty = Quantity.of(new BigDecimal("2"), uomEach);
+		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI().setLocatorId(defaultLocatorId);
+		helper.load(producer, helper.pTomatoProductId, cuQty.toBigDecimal(), uomEach);
+		transformService.cuToExistingTU(producer.getCreatedHUs().get(0), cuQty, box);
+		refresh(box);
 	}
 
 	private I_M_ShipmentSchedule_QtyPicked createBoxRow(final I_M_ShipmentSchedule schedule, final I_M_HU box, final String qty)

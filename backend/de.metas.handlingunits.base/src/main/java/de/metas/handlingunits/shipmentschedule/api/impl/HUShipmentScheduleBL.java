@@ -1423,10 +1423,22 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final Set<HuId> unitIdsRecordedBySteps = retrieveUnitIdsRecordedByPickingJobSteps(ShipmentScheduleId.ofRepoId(anyRowOfSchedule.getM_ShipmentSchedule_ID()));
 		final boolean isEveryUnitCounted = unitIdsRecordedBySteps.isEmpty() || unitIdsRecordedBySteps.contains(HuId.ofRepoId(box.getM_HU_ID()));
 
+		return retrieveUnitsHoldingProduct(box, productId, storageFactory).stream()
+				.filter(vhu -> isEveryUnitCounted || unitIdsRecordedBySteps.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return the virtual HUs (CUs) of the box that hold the product
+	 */
+	private List<I_M_HU> retrieveUnitsHoldingProduct(
+			@NonNull final I_M_HU box,
+			@NonNull final ProductId productId,
+			@NonNull final IHUStorageFactory storageFactory)
+	{
 		return handlingUnitsDAO.retrieveIncludedHUs(box)
 				.stream()
 				.filter(handlingUnitsBL::isVirtual)
-				.filter(vhu -> isEveryUnitCounted || unitIdsRecordedBySteps.contains(HuId.ofRepoId(vhu.getM_HU_ID())))
 				.filter(vhu -> {
 					final IHUProductStorage productStorage = storageFactory.getStorage(vhu).getProductStorageOrNull(productId);
 					return productStorage != null && !productStorage.isEmpty();
@@ -1477,11 +1489,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (!boxRows.isEmpty())
 		{
 			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
-			// One combination only and the whole box is this schedule's content: there is nothing to split, so the rows keep the
-			// handling they had before, the line takes the box's attributes.
-			final long unitsOfBox = handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(box.getBoxId())).stream().filter(handlingUnitsBL::isVirtual).count();
-			final long unitsOfContent = contentGroups.stream().mapToLong(BoxContentGroup::unitCount).sum();
-			final boolean hasSeveralCombinations = contentGroups.size() > 1 || unitsOfContent < unitsOfBox;
+			// One combination only in the whole box (units of other products do not count): there is nothing to split, so the rows
+			// keep the handling they had before, the line takes the box's attributes. Units that other schedules or rows of their own
+			// stand for count: they decide which attributes the box shows.
+			final boolean hasSeveralCombinations = contentGroups.size() > 1 || countCombinationsOfProductInBox(box, boxRows.get(0), huContext) > 1;
 			if (hasSeveralCombinations && rowsPickedWholeContent(boxRows, contentGroups))
 			{
 				result.addAll(createCandidatesPerContentGroup(boxRows, contentGroups, huContext, qtyTypeToUse));
@@ -1493,6 +1504,26 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 		}
 		return result.build();
+	}
+
+	/**
+	 * @return how many different attribute combinations (as far as they split the shipment line) the units of the box that hold the
+	 * schedule's product have, whoever picked them
+	 */
+	private long countCombinationsOfProductInBox(
+			@NonNull final BoxKey box,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked anyBoxRow,
+			@NonNull final IHUContext huContext)
+	{
+		final ProductId productId = ProductId.ofRepoId(anyBoxRow.getM_ShipmentSchedule().getM_Product_ID());
+		final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+		final IAttributeStorageFactory attrFactory = huContext.getHUAttributeStorageFactory();
+		final Predicate<AttributeId> attributeSplitsShipmentLine = attributeSplitsShipmentLinePredicate(anyBoxRow);
+		return retrieveUnitsHoldingProduct(handlingUnitsBL.getById(box.getBoxId()), productId, storageFactory).stream()
+				.flatMap(vhu -> groupProductStoragesByFingerprint(vhu, productId, storageFactory, attrFactory, attributeSplitsShipmentLine))
+				.map(Map.Entry::getKey)
+				.distinct()
+				.count();
 	}
 
 	/**
