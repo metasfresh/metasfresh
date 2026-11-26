@@ -55,6 +55,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoice.paymentbonus.PaymentBonusCreditMemoService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -94,6 +95,7 @@ import java.util.Set;
 public class EDIDocumentBL
 {
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
+	private static final String ERR_NotExistsNonPackagingInvoiceLineError = "NotExistsNonPackagingInvoiceLineError";
 	private static final String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
 	private static final String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
@@ -164,7 +166,9 @@ public class EDIDocumentBL
 			// Invoices have no dropship concept — use the raw location directly.
 			final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 
-			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true, bpl))
+			// a payment-bonus credit memo is an internal settlement document of the payment allocation; it is not sent to the customer
+			final boolean isDocumentEligibleForEDI = !isPaymentBonusCreditMemo(invoice);
+			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, isDocumentEligibleForEDI, bpl))
 			{
 				return;
 			}
@@ -184,6 +188,16 @@ public class EDIDocumentBL
 				invoice.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 			}
 		}
+	}
+
+	private boolean isPaymentBonusCreditMemo(@NonNull final I_C_Invoice invoice)
+	{
+		final int docTypeRepoId = invoice.getC_DocType_ID() > 0 ? invoice.getC_DocType_ID() : invoice.getC_DocTypeTarget_ID();
+		if (docTypeRepoId <= 0)
+		{
+			return false;
+		}
+		return PaymentBonusCreditMemoService.isPaymentBonusCreditMemo(docTypeDAO.getById(docTypeRepoId));
 	}
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,
@@ -298,17 +312,23 @@ public class EDIDocumentBL
 
 		final Set<String> ilMissingFields = new HashSet<>();
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
+		boolean hasExportableLine = false;
 		for (final I_C_InvoiceLine il : invoiceLines)
 		{
+			if (!il.isPackagingMaterial())
+			{
+				hasExportableLine = true;
+			}
+
 			if (il.getLine() <= 0)
 			{
 				// use invoice here, it's easier to identify as a user
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line);
 			}
 
-			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo)
+			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo && !il.isPackagingMaterial())
 			{
-				// task 09182: on line level, we need an order line reference,
+				// task 09182: on line-level for not-packaging-material-lines, we need an order line reference,
 				// only for docSubType='CS' an orderLine does not have to be linked to an invoiceLine for successful EDI export.
 				// note: if this changes in a new project, use AD_SysConfig
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID);
@@ -318,6 +338,17 @@ public class EDIDocumentBL
 		if (!ilMissingFields.isEmpty())
 		{
 			feedback.add(new EDIFillMandatoryException(ilMissingFields));
+		}
+
+		// Packaging-material lines are exempt from the C_OrderLine_ID check above and are filtered out
+		// of the INVOIC export views. Guard the boundary case where an invoice's lines are ALL packaging
+		// material: it would otherwise pass validation and export an empty INVOIC (no line items, no
+		// DP/SN party address). Fail loudly instead. (RM credit memos and line-less invoices keep their
+		// prior behaviour.)
+		if (!invoiceIsRMCreditMemo && !invoiceLines.isEmpty() && !hasExportableLine)
+		{
+			feedback.add(new EDIMissingDependencyException(ERR_NotExistsNonPackagingInvoiceLineError,
+														   org.compiere.model.I_C_Invoice.Table_Name, invoice.getDocumentNo()));
 		}
 
 		if (logger.isDebugEnabled() && !feedback.isEmpty())

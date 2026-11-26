@@ -21,6 +21,7 @@ public class JsonSalesOrderCreateRequest
 	@NonNull Identifier warehouse;
 	@Nullable Identifier shipper;
 	@NonNull ZonedDateTime datePromised;
+	@Nullable String poReference;
 	@NonNull List<Line> lines;
 
 	//

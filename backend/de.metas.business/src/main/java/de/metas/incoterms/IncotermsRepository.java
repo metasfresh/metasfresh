@@ -35,6 +35,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Incoterms;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +56,7 @@ public class IncotermsRepository
 	public static IncotermsRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new IncotermsRepository();
+		return SpringContextHolder.getBeanOrSupply(IncotermsRepository.class, IncotermsRepository::new);
 	}
 
 	@Nullable

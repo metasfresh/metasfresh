@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -45,12 +46,14 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
+import de.metas.product.IProductBL;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductRepository;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.IPurchaseCandidateBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -66,7 +69,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import org.springframework.context.annotation.Profile;
@@ -82,6 +87,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PurchaseCandidateRequestedHandler.class);
+
 	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
@@ -93,6 +100,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
@@ -111,6 +119,19 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
 		final OrgId orgId = event.getOrgId();
+		final ClientId clientId = event.getClientId();
+
+		if (productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId) && !productBL.isPurchased(product.getId()))
+		{
+			logger.debug("Skipping purchase candidate creation - product {} is not flagged IsPurchased", product.getId());
+			return;
+		}
+
+		if (!productBL.isAllowed(product.getId(), ProductLifeCycleAction.PURCHASE))
+		{
+			logger.debug("Skipping purchase candidate creation - product {} is blocked for PURCHASE by its life-cycle status", product.getId());
+			return;
+		}
 
 		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
 				.getDefaultVendorProductInfo(product.getId(), orgId)

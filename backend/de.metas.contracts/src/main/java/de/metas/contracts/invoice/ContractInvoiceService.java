@@ -4,6 +4,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
@@ -119,11 +120,18 @@ public class ContractInvoiceService
 		return predecessorInvoice.orElse(null);
 	}
 
+	/**
+	 * @return {@code true} if the candidate was created from a subscription contract; other contract types do not count for customer retention.
+	 */
 	private boolean isSubscriptionInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final int tableId = invoiceCandidate.getAD_Table_ID();
+		if (getTableId(I_C_Flatrate_Term.class) != invoiceCandidate.getAD_Table_ID())
+		{
+			return false;
+		}
 
-		return getTableId(I_C_Flatrate_Term.class) == tableId;
+		final I_C_Flatrate_Term term = flatrateDAO.getById(invoiceCandidate.getRecord_ID());
+		return TypeConditions.SUBSCRIPTION.getCode().equals(term.getType_Conditions());
 	}
 
 	public LocalDate retrieveContractEndDateForInvoiceIdOrNull(@NonNull final InvoiceId invoiceId)

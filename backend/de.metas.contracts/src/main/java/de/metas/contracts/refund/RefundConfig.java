@@ -9,7 +9,9 @@ import javax.annotation.Nullable;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
@@ -82,14 +84,23 @@ public class RefundConfig
 
 	Money amount;
 
-	/** {@code null} means that every product is matched. */
+	/** {@code null} means that every product is matched (unless there is a {@link #productCategoryId}). */
 	ProductId productId;
+
+	/** If set, the refund's base is the sales of the products of this category and of its sub-categories. */
+	ProductCategoryId productCategoryId;
+
+	/** If set, the refund line is booked on this product (with its tax and accounts) instead of {@link #productId}. */
+	ProductId bonusProductId;
 
 	InvoiceSchedule invoiceSchedule;
 
 	ConditionsId conditionsId;
 
 	boolean useInProfitCalculation;
+
+	/** If {@code true}, the customer deducts the bonus when paying an invoice; the refund engine then creates no refund candidates for it. */
+	boolean deductedAtPayment;
 
 	RefundMode refundMode;
 
@@ -101,9 +112,12 @@ public class RefundConfig
 			@Nullable final Percent percent,
 			@Nullable final Money amount,
 			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			@Nullable final ProductId bonusProductId,
 			@Nullable final InvoiceSchedule invoiceSchedule,
 			@NonNull final ConditionsId conditionsId,
 			boolean useInProfitCalculation,
+			boolean deductedAtPayment,
 			@NonNull final BigDecimal minQty,
 			@NonNull final RefundMode refundMode)
 	{
@@ -111,9 +125,12 @@ public class RefundConfig
 		this.refundInvoiceType = refundInvoiceType;
 		this.refundBase = refundBase;
 		this.productId = productId;
+		this.productCategoryId = productCategoryId;
+		this.bonusProductId = bonusProductId;
 		this.invoiceSchedule = invoiceSchedule;
 		this.conditionsId = conditionsId;
 		this.useInProfitCalculation = useInProfitCalculation;
+		this.deductedAtPayment = deductedAtPayment;
 		this.refundMode = refundMode;
 
 		switch (refundBase)
@@ -138,6 +155,17 @@ public class RefundConfig
 
 		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
 				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");
+	}
+
+	public boolean isAmountPerUnit()
+	{
+		return RefundBase.AMOUNT_PER_UNIT.equals(refundBase);
+	}
+
+	/** The currency of the amount per unit, which is also the currency that this config's refund is issued in. */
+	public CurrencyId getAmountCurrencyId()
+	{
+		return Check.assumeNotNull(amount, "Only a config with an amount per unit has a currency; this={}", this).getCurrencyId();
 	}
 
 	public boolean isZeroConfig()

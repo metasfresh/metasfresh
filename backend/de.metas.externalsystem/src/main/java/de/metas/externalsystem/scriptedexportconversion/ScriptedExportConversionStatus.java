@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 /**
  * Loaded shape of one row of {@code ExternalSystem_ScriptedExportConversion_Status}.
  *
- * <p>Grain: one row per (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID).
+ * <p>Grain: one row per export ATTEMPT (config + source record + attempt); a re-send is a new row.
  * Use {@link ScriptedExportConversionStatusCreateRequest} for inserts.
  */
 @Value

@@ -28,6 +28,7 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
@@ -164,7 +165,7 @@ public class DDOrderCandidateAdvisedHandlerTests
 				stockCandidateService,
 				supplyCandidateHandler,
 				Mockito.mock(MaterialPlanningContextHelper.class),
-				new PPOrderCandidateDemandMatcher());
+				new PPOrderCandidateDemandMatcher(), new PPOrderCandidateRepository());
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandidateHandler,
 				supplyCandidateHandler));

@@ -45,6 +45,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -259,6 +260,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		final AssignableInvoiceCandidate assignableCandidate_14 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -289,6 +291,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		}
 
 		final AssignableInvoiceCandidate assignableCandidate_12 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -329,6 +332,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_15
 		final AssignableInvoiceCandidate assignableCandidate_20 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -372,6 +376,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		}
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(1000025))
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
@@ -433,6 +438,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		final AssignableInvoiceCandidate assignableCandidate_3 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -469,6 +475,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 2nd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_0
 		final AssignableInvoiceCandidate assignableCandidate_6 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -506,6 +513,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, jump right into savedRefundConfig_50
 		final AssignableInvoiceCandidate assignableCandidate_46 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
@@ -554,6 +562,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		}
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				.id(InvoiceCandidateId.ofRepoId(1000025))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)

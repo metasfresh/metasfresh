@@ -31,6 +31,18 @@ public class POSProduct
 
 	public String getCurrencySymbol(@NonNull final String adLanguage) {return currencySymbol.translate(adLanguage);}
 
+	/**
+	 * The UOM that {@link #price} — and any quantity stated against it (e.g. a returned quantity) — are
+	 * expressed in: the catch-weight UOM (e.g. kg) when the product is priced by catch weight, else the
+	 * product's own {@link #uom}. Mirrors {@code POSProductsLoader#toPOSProduct}'s own use of the price row's
+	 * {@code C_UOM_ID} for both cases — {@link #price} is always per that UOM, never per {@link #uom} when
+	 * {@link #catchWeightUom} is set.
+	 */
+	public UomIdAndSymbol getPriceUom()
+	{
+		return catchWeightUom != null ? catchWeightUom : uom;
+	}
+
 	@Value(staticConstructor = "of")
 	public static class UomIdAndSymbol
 	{

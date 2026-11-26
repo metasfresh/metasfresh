@@ -141,6 +141,52 @@ public interface I_C_CompensationGroup_Schema
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Additive.
+	 * Each discount line is computed on its own base, not on the running total incl. previous discount lines
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAdditive (boolean IsAdditive);
+
+	/**
+	 * Get Additive.
+	 * Each discount line is computed on its own base, not on the running total incl. previous discount lines
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAdditive();
+
+	ModelColumn<I_C_CompensationGroup_Schema, Object> COLUMN_IsAdditive = new ModelColumn<>(I_C_CompensationGroup_Schema.class, "IsAdditive", null);
+	String COLUMNNAME_IsAdditive = "IsAdditive";
+
+	/**
+	 * Set Inherit Packing Instruction.
+	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template. Prerequisite: Each sub-article must have a compatible packing instruction assignment (M_HU_PI_Item_Product) for the same TU type, otherwise inheritance is skipped for that article.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInheritPackingInstruction (boolean IsInheritPackingInstruction);
+
+	/**
+	 * Get Inherit Packing Instruction.
+	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template. Prerequisite: Each sub-article must have a compatible packing instruction assignment (M_HU_PI_Item_Product) for the same TU type, otherwise inheritance is skipped for that article.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInheritPackingInstruction();
+
+	ModelColumn<I_C_CompensationGroup_Schema, Object> COLUMN_IsInheritPackingInstruction = new ModelColumn<>(I_C_CompensationGroup_Schema.class, "IsInheritPackingInstruction", null);
+	String COLUMNNAME_IsInheritPackingInstruction = "IsInheritPackingInstruction";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -173,29 +219,6 @@ public interface I_C_CompensationGroup_Schema
 
 	ModelColumn<I_C_CompensationGroup_Schema, Object> COLUMN_Updated = new ModelColumn<>(I_C_CompensationGroup_Schema.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
-
-	/**
-	 * Set Inherit Packing Instruction.
-	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsInheritPackingInstruction (boolean IsInheritPackingInstruction);
-
-	/**
-	 * Get Inherit Packing Instruction.
-	 * If set, the packing instruction from the main article is applied to all sub-articles created from the compensation group schema template.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isInheritPackingInstruction();
-
-	ModelColumn<I_C_CompensationGroup_Schema, Object> COLUMN_IsInheritPackingInstruction = new ModelColumn<>(I_C_CompensationGroup_Schema.class, "IsInheritPackingInstruction", null);
-	String COLUMNNAME_IsInheritPackingInstruction = "IsInheritPackingInstruction";
 
 	/**
 	 * Get Updated By.

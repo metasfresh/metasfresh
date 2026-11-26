@@ -25,6 +25,7 @@ package de.metas.payment.api;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ChargeId;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -250,6 +251,17 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * A payment with a charge is posted against the charge's account instead of the partner's receivable/payable
+	 * (e.g. an outbound payment with a charge posts DR the charge's expense account / CR the bank in-transit account).
+	 */
+	public final DefaultPaymentBuilder chargeId(@Nullable final ChargeId chargeId)
+	{
+		assertNotBuilt();
+		payment.setC_Charge_ID(ChargeId.toRepoId(chargeId));
+		return this;
+	}
+
 	public final DefaultPaymentBuilder payAmt(@Nullable final BigDecimal payAmt)
 	{
 		assertNotBuilt();
@@ -261,6 +273,13 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setDiscountAmt(discountAmt);
+		return this;
+	}
+
+	public final DefaultPaymentBuilder paymentBonusAmt(@Nullable final BigDecimal paymentBonusAmt)
+	{
+		assertNotBuilt();
+		payment.setPaymentBonusAmt(CoalesceUtil.coalesceNotNull(paymentBonusAmt, BigDecimal.ZERO));
 		return this;
 	}
 

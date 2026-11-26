@@ -74,8 +74,8 @@ export class RawList0 extends PureComponent {
     window.addEventListener('keydown', this.handleTab);
 
     //
-    // On initial focus gained when component was created first time
-    if (this.props.isFocused) {
+    // On initial focus gained when component was created first time (not while disabled, see componentDidUpdate)
+    if (this.props.isFocused && !this.props.readonly) {
       this.focus();
     }
   }
@@ -147,12 +147,16 @@ export class RawList0 extends PureComponent {
 
     //
     // On focus gained (via props)
-    if (this.props.isFocused) {
+    if (this.props.isFocused && !this.props.readonly) {
       // NOTE: commented out condition: && this.props.isFocused !== prevProps.isFocused
       // because we want to cover the case when the isFocused was set before but for some reason,
       // the field was not focused because maybe was not created yet or the focus was somehow lost...
       //
       // Test case: GL Journal (SAP), batch entry, first field D/C was not focused after comple of complete entries.
+      //
+      // Not while disabled: a composed lookup's sub-list (e.g. the contact of an empty business partner) keeps
+      // `isFocused` until a click-outside, Tab or select, and would otherwise pull the caret onto itself on every
+      // re-render.
 
       this.focus();
     }

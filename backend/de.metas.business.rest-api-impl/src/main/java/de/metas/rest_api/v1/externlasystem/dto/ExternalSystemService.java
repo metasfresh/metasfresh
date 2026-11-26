@@ -34,7 +34,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
@@ -79,7 +79,7 @@ public class ExternalSystemService
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	private final ExternalSystemConfigRepository externalSystemConfigRepository;
 	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
 	private final ExternalSystemRepository externalSystemRepository;
 
@@ -88,7 +88,7 @@ public class ExternalSystemService
 	{
 
 		final ExternalSystemParentConfig externalSystemParentConfig =
-				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
+				externalSystemConfigRepository.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
 														   invokeExternalSystemProcessRequest.getChildSystemConfigValue())
 				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
 						.appendParametersToMessage()
@@ -159,7 +159,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
 	{
-		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
+		return externalSystemConfigRepository.getByTypeAndValue(type, childConfigValue);
 	}
 
 	@NonNull

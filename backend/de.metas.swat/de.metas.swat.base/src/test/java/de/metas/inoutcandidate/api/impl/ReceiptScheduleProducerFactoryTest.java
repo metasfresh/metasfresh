@@ -28,8 +28,10 @@ import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFi
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -134,6 +136,24 @@ public class ReceiptScheduleProducerFactoryTest extends ReceiptScheduleTestBase
 		Assertions.assertEquals(order.getC_Order_ID(), rc.getC_Order_ID(), "C_Order_IDs do not match");
 		Assertions.assertEquals(order.getDeliveryRule(), rc.getDeliveryRule(), "DeliveryRules do not match");
 		Assertions.assertEquals(order.getM_Warehouse_ID(), rc.getM_Warehouse_ID(), "M_Warehouse_IDs do not match");
+	}
+
+	@Test
+	public void createReceiptSchedules_nonItemProduct_noReceiptSchedule()
+	{
+		product1_wh1.setProductType(X_M_Product.PRODUCTTYPE_Service);
+		InterfaceWrapperHelper.save(product1_wh1);
+
+		final I_C_Order order = createOrder(warehouse1);
+		final I_C_OrderLine serviceLine = createOrderLine(order, product1_wh1);
+		createOrderLine(order, product2_wh1);
+
+		final IReceiptScheduleProducer producer = receiptScheduleProducer.createProducer(I_C_Order.Table_Name, false);
+		final List<I_M_ReceiptSchedule> rcs = producer.createOrUpdateReceiptSchedules(order, Collections.emptyList());
+
+		Assertions.assertEquals(1, rcs.size(), "only the item line gets a receipt schedule");
+		Assertions.assertEquals(product2_wh1.getM_Product_ID(), rcs.get(0).getM_Product_ID());
+		Assertions.assertNull(receiptScheduleDAO.retrieveForRecord(serviceLine), "no receipt schedule for the service line");
 	}
 
 }

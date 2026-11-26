@@ -13,6 +13,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -28,7 +29,8 @@ public class MaterialDispoTableRow
 	@Nullable CandidateBusinessCase businessCase;
 	@NonNull ProductId productId;
 	@NonNull BigDecimal qty;
-	@NonNull BigDecimal atp;
+	/** {@code null} if the row does not verify the ATP (ATP cell is {@code *}) */
+	@Nullable BigDecimal atp;
 	@NonNull Instant time;
 	@Nullable StepDefDataIdentifier attributeSetInstanceId;
 	boolean simulated;
@@ -148,4 +150,16 @@ public class MaterialDispoTableRow
 		}
 	}
 
+	/**
+	 * @throws AdempiereException if the ATP cell is {@code *}, for steps that need an ATP value
+	 */
+	@NonNull
+	public BigDecimal getAtpNotNull()
+	{
+		if (atp == null)
+		{
+			throw new AdempiereException("ATP '*' (not verified) is not supported by this step; row: " + this);
+		}
+		return atp;
+	}
 }

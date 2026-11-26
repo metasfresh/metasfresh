@@ -218,11 +218,18 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
+		// The amount is determined now, from the stock on hand and the cost price read under the lock which also saves the new price,
+		// so a movement posted between Complete and posting is not booked at the old price a second time.
+		// Same formula as the revaluation's Complete (no extra rounding), so both agree when nothing moved in between.
+		final Quantity qty = currentCosts.getCurrentQty();
+		final CostAmount oldCostPrice = currentCosts.getCostPrice().getOwnCostPrice();
+		final CostAmount bookedAmt = explicitCostPrice.multiply(qty).subtract(oldCostPrice.multiply(qty));
+
 		currentCosts.setOwnCostPrice(explicitCostPrice);
-		currentCosts.addCumulatedAmt(request.getAmt());
+		currentCosts.addCumulatedAmt(bookedAmt);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
-				request,
+				request.withAmount(bookedAmt),
 				previousCosts);
 
 		utils.saveCurrentCost(currentCosts);

@@ -78,6 +78,13 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
+	@Cached(cacheName = I_AD_Process.Table_Name + "#isPreventConcurrentExecution", expireMinutes = Cached.EXPIREMINUTES_Never)
+	public boolean isPreventConcurrentExecution(@NonNull final AdProcessId processId)
+	{
+		return getById(processId).isPreventConcurrentExecution();
+	}
+
+	@Override
 	public Optional<String> getFilenamePattern(@NonNull final AdProcessId processId)
 	{
 		final String pattern = getById(processId).getFilenamePattern();

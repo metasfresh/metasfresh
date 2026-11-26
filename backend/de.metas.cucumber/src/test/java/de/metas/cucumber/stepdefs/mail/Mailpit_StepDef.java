@@ -33,6 +33,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+import org.mustangproject.validator.EPart;
+import org.mustangproject.validator.ESeverity;
+import org.mustangproject.validator.ValidationContext;
+import org.mustangproject.validator.ValidationResultItem;
+import org.mustangproject.validator.ZUGFeRDValidator;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +45,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Step definitions that assert against the running Mailpit instance via its REST API.
@@ -75,6 +84,10 @@ public class Mailpit_StepDef
 	 * Deletes all messages currently held by Mailpit, so a scenario starts from an empty inbox.
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And mailpit inbox is cleared
+	 * </pre>
 	 */
 	@Given("mailpit inbox is cleared")
 	public void mailpit_inbox_is_cleared()
@@ -152,6 +165,111 @@ public class Mailpit_StepDef
 		mailpit_received_email(fromAddress, attachmentFileName, contentMarker);
 	}
 
+	/**
+	 * Polls Mailpit until at least one message arrives, then:
+	 * <ol>
+	 *   <li>Asserts the message was sent from {@code fromAddress}.</li>
+	 *   <li>Finds the PDF attachment whose filename ends with {@code .pdf} (the invoice archive PDF).</li>
+	 *   <li>Validates the PDF with the Mustang {@link ZUGFeRDValidator} and asserts zero
+	 *       {@code EPart.pdf} (PDF/A-3 conformance) and zero {@code EPart.fx} (Factur-X structural)
+	 *       errors/fatals/exceptions — proving the attachment is a valid ZUGFeRD/Factur-X PDF.</li>
+	 * </ol>
+	 *
+	 * <p>CII-content schematron parts ({@code ox}, {@code xr}) are explicitly excluded:
+	 * the cucumber fixture uses a minimal CII that may not pass full schematron checks; the
+	 * assembler's container correctness (PDF/A-3 conformance + Factur-X embedding) is what this
+	 * step asserts.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then mailpit received an email from "billing@metasfresh.local" with the zugferd pdf of invoice "invoice"
+	 * </pre>
+	 */
+	@Then("mailpit received an email from {string} with the zugferd pdf of invoice {string}")
+	public void mailpit_received_zugferd_pdf_of_invoice(
+			@NonNull final String fromAddress,
+			@NonNull final String invoiceIdentifier)
+	{
+		final String latestMessageId = pollForLatestMessageId();
+
+		final JsonNode message = parse(httpGet(apiBaseUrl() + "/api/v1/message/" + latestMessageId));
+
+		final String actualFrom = message.path("From").path("Address").asText("");
+		if (!fromAddress.equals(actualFrom))
+		{
+			throw new AdempiereException("Mailpit message From mismatch — expected '" + fromAddress + "' but got '" + actualFrom + "'");
+		}
+
+		// Find the PDF attachment (invoice archive; filename ends with .pdf)
+		final String pdfPartId = findPdfAttachmentPartId(message);
+		if (pdfPartId == null)
+		{
+			throw new AdempiereException("Mailpit message has no PDF attachment (.pdf). Attachments: " + message.path("Attachments"));
+		}
+
+		final byte[] pdfBytes = httpGetBytes(apiBaseUrl() + "/api/v1/message/" + latestMessageId + "/part/" + pdfPartId);
+
+		// Write to a temp file because ZUGFeRDValidator requires a filesystem path
+		Path tmpPdf = null;
+		try
+		{
+			tmpPdf = Files.createTempFile("zugferd-cucumber-", ".pdf");
+			Files.write(tmpPdf, pdfBytes);
+
+			final InspectableZUGFeRDValidator validator = new InspectableZUGFeRDValidator();
+			validator.validate(tmpPdf.toAbsolutePath().toString());
+
+			// Read the protected ValidationContext via a thin subclass (no reflection — matches the
+			// pattern in ZugferdAssemblerTest and is resilient to future Mustang refactors).
+			final ValidationContext ctx = validator.getValidationContext();
+
+			if (ctx == null)
+			{
+				throw new AdempiereException("ZUGFeRDValidator returned null ValidationContext — validate() may not have run");
+			}
+
+			// Collect container-level errors: EPart.pdf (PDF/A-3 conformance) + EPart.fx (Factur-X structural)
+			final List<ValidationResultItem> containerErrors = ctx.getResults().stream()
+					.filter(item -> item.getSeverity() == ESeverity.error
+							|| item.getSeverity() == ESeverity.fatal
+							|| item.getSeverity() == ESeverity.exception)
+					.filter(item -> item.getPart() == EPart.pdf || item.getPart() == EPart.fx)
+					.collect(Collectors.toList());
+
+			if (!containerErrors.isEmpty())
+			{
+				final String summary = containerErrors.stream()
+						.map(item -> "[" + item.getPart() + "/" + item.getSeverity() + "] " + item.getMessage())
+						.collect(Collectors.joining("; "));
+				throw new AdempiereException("Invoice PDF in Mailpit is not a valid ZUGFeRD document. "
+						+ containerErrors.size() + " container error(s): " + summary);
+			}
+		}
+		catch (final AdempiereException e)
+		{
+			throw e;
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("ZUGFeRD validation of Mailpit PDF attachment failed", e);
+		}
+		finally
+		{
+			if (tmpPdf != null)
+			{
+				try
+				{
+					Files.deleteIfExists(tmpPdf);
+				}
+				catch (final Exception ignored)
+				{
+				}
+			}
+		}
+	}
+
 	@Nullable
 	private static String findAttachmentPartId(@NonNull final JsonNode message, @NonNull final String attachmentFileName)
 	{
@@ -161,6 +279,25 @@ public class Mailpit_StepDef
 			for (final JsonNode attachment : attachments)
 			{
 				if (attachmentFileName.equals(attachment.path("FileName").asText(null)))
+				{
+					return attachment.path("PartID").asText(null);
+				}
+			}
+		}
+		return null;
+	}
+
+	/** Returns the PartID of the first attachment whose filename ends with {@code .pdf}, or {@code null} if none. */
+	@Nullable
+	private static String findPdfAttachmentPartId(@NonNull final JsonNode message)
+	{
+		final JsonNode attachments = message.path("Attachments");
+		if (attachments.isArray())
+		{
+			for (final JsonNode attachment : attachments)
+			{
+				final String filename = attachment.path("FileName").asText("");
+				if (filename.toLowerCase().endsWith(".pdf"))
 				{
 					return attachment.path("PartID").asText(null);
 				}
@@ -268,5 +405,18 @@ public class Mailpit_StepDef
 			buffer.write(chunk, 0, read);
 		}
 		return buffer.toByteArray();
+	}
+
+	/**
+	 * Thin subclass exposing {@link ZUGFeRDValidator}'s protected {@code context} field after
+	 * {@code validate(...)} — avoids reflection. Mirrors the pattern used in ZugferdAssemblerTest.
+	 */
+	private static final class InspectableZUGFeRDValidator extends ZUGFeRDValidator
+	{
+		@Nullable
+		ValidationContext getValidationContext()
+		{
+			return context;
+		}
 	}
 }

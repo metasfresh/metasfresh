@@ -6,6 +6,10 @@ import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicates;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewCustomizer;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
 /*
  * #%L
@@ -29,18 +33,33 @@ import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
  * #L%
  */
 
+/**
+ * What the "HUs to receive" editor is, for EVERY window that launches it.
+ * <p>
+ * Keyed by REFERENCING TABLE NAME, which is how the editor varies by provenance
+ * ({@code HUEditorViewFactoryTemplate#createView}), and instantiated once per launching window rather than
+ * subclassed per window: the three answers below are properties of the receive editor itself, not of the window,
+ * and a provenance with no customizer of its own silently gets read-only attributes
+ * ({@code rowAttributesAlwaysReadonlyByReferencingTableName} defaults to {@code TRUE}) - i.e. an editor the
+ * operator cannot edit in.
+ */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 final class HUsToReceiveHUEditorViewCustomizer implements HUEditorViewCustomizer
 {
-	public static final transient HUsToReceiveHUEditorViewCustomizer instance = new HUsToReceiveHUEditorViewCustomizer();
+	/** Launched from the receipt-schedule window. */
+	public static final transient HUsToReceiveHUEditorViewCustomizer forReceiptSchedule =
+			new HUsToReceiveHUEditorViewCustomizer(I_M_ReceiptSchedule.Table_Name);
 
-	private HUsToReceiveHUEditorViewCustomizer()
-	{
-	}
+	/** Launched from the receipt-disposition delivery-planning window. */
+	public static final transient HUsToReceiveHUEditorViewCustomizer forReceiptDispositionDeliveryPlanning =
+			new HUsToReceiveHUEditorViewCustomizer(I_RV_ReceiptDisposition_DeliveryPlanning.Table_Name);
+
+	@NonNull private final String referencingTableNameToMatch;
 
 	@Override
 	public String getReferencingTableNameToMatch()
 	{
-		return I_M_ReceiptSchedule.Table_Name;
+		return referencingTableNameToMatch;
 	}
 
 	@Override

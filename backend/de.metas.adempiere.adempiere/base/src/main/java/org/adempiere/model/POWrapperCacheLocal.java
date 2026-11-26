@@ -25,30 +25,30 @@ package org.adempiere.model;
 
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.WeakReference;
+import lombok.NonNull;
 import org.compiere.model.AbstractPOCacheLocal;
 
+/**
+ * Same as {@link org.compiere.model.POCacheLocal}, but for a {@link POWrapper} parent.
+ * <p>
+ * The parent is referenced strongly on purpose: an instance is reachable only from its parent's {@code POWrapper.poCacheLocals} (or from a running call on it),
+ * so parent and cache-local form a closed cycle which the GC collects together. A weak reference could be cleared while a method of this class is running.
+ */
 /*package*/class POWrapperCacheLocal extends AbstractPOCacheLocal
 {
-	private final WeakReference<POWrapper> parentPOWrapperRef;
+	private final POWrapper parentPOWrapper;
 	private final int parentColumnIndex;
 
-	public POWrapperCacheLocal(final POWrapper parentPOWrapper, final String parentColumnName, final String refTableName)
+	public POWrapperCacheLocal(@NonNull final POWrapper parentPOWrapper, final String parentColumnName, final String refTableName)
 	{
 		super(parentColumnName, refTableName);
-		this.parentPOWrapperRef = new WeakReference<>(parentPOWrapper);
+		this.parentPOWrapper = parentPOWrapper;
 		this.parentColumnIndex = parentPOWrapper.getColumnIndex(parentColumnName);
 	}
 
-	private final POWrapper getParentPOWrapper()
+	private POWrapper getParentPOWrapper()
 	{
-		final POWrapper poWrapper = parentPOWrapperRef.getValue();
-		if (poWrapper == null)
-		{
-			throw new AdempiereException("POWrapper reference expired");
-		}
-		return poWrapper;
+		return parentPOWrapper;
 	}
 
 	@Override

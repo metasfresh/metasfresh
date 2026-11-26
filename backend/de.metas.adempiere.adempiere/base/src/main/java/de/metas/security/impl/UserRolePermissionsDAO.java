@@ -46,6 +46,7 @@ import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
+import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
@@ -101,7 +102,6 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_C_OrgAssignment;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -774,92 +774,52 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.list();
 
 		final TablePermissions.Builder permissionsCollector = TablePermissions.builder();
-
-		// Default permission: allow all because actually this is an "exclude" list (if no include options were found).
-		final HashSet<Access> defaultPermissionAccesses = new HashSet<>(TablePermission.ALL_ACCESSES);
-
 		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
 		{
-			final TableResource resource = TableResource.ofAD_Table_ID(tableAccessRecord.getAD_Table_ID());
-			final HashSet<Access> permissionAccesses = new HashSet<>();
-
-			final String type = tableAccessRecord.getAccessTypeRule();
-			final boolean exclude = tableAccessRecord.isExclude();
-			if (X_AD_Table_Access.ACCESSTYPERULE_Accessing.equals(type))
-			{
-				final boolean readOnly = tableAccessRecord.isReadOnly();
-				if (exclude)
-				{
-					// If you Exclude Access to a table and select Read Only,
-					// you can only read data (otherwise no access).
-					if (readOnly)
-					{
-						permissionAccesses.add(Access.READ);
-						// permissionAccesses.remove(Access.WRITE); // not needed
-					}
-				}
-				// include access
-				else
-				{
-					permissionAccesses.add(Access.READ);
-					if (!readOnly)
-					{
-						permissionAccesses.add(Access.WRITE);
-					}
-
-					// A include access implies that the default access is not granted
-					defaultPermissionAccesses.remove(Access.READ);
-					defaultPermissionAccesses.remove(Access.WRITE);
-				}
-			}
-			else if (X_AD_Table_Access.ACCESSTYPERULE_Reporting.equals(type))
-			{
-				if (tableAccessRecord.isCanReport())
-				{
-					permissionAccesses.add(Access.REPORT);
-				}
-
-				// A include access implies that the default access is not granted
-				if (!exclude)
-				{
-					defaultPermissionAccesses.remove(Access.REPORT);
-				}
-			}
-			else if (X_AD_Table_Access.ACCESSTYPERULE_Exporting.equals(type))
-			{
-				if (tableAccessRecord.isCanExport())
-				{
-					permissionAccesses.add(Access.EXPORT);
-				}
-
-				// A include access implies that the default access is not granted
-				if (!exclude)
-				{
-					defaultPermissionAccesses.remove(Access.EXPORT);
-				}
-			}
-			else
-			{
-				throw new IllegalStateException("Unknown AccessRuleType: " + type);
-			}
-
-			final TablePermission permissions = TablePermission.builder()
-					.resource(resource)
-					.accesses(permissionAccesses)
-					.build();
-			permissionsCollector.addPermission(permissions, CollisionPolicy.Override);
+			permissionsCollector.addPermission(extractTablePermission(tableAccessRecord), CollisionPolicy.Override);
 		}
 
-		//
-		// Add default permission
+		// Add the role's default: every access, unrestricted. Each row above only ever *subtracts* from this
+		// default for its own table, so a table nobody configured is unaffected by any other table's row, and a
+		// row left at its own defaults is indistinguishable from having no row at all.
 		final TablePermission defaultPermissions = TablePermission.builder()
 				.resource(TableResource.ANY_TABLE)
-				.accesses(defaultPermissionAccesses)
+				.accesses(TablePermission.ALL_ACCESSES)
 				.build();
 		permissionsCollector.addPermission(defaultPermissions, CollisionPolicy.Override);
 
 		return permissionsCollector.build();
 	}    // loadTableAccess
+
+	/**
+	 * Builds this row's access set as {@link TablePermission#ALL_ACCESSES} minus whatever the row's four flags
+	 * revoke. Every flag's default is the non-restricting value, so a row left at its defaults removes nothing.
+	 */
+	private static TablePermission extractTablePermission(@NonNull final I_AD_Table_Access tableAccessRecord)
+	{
+		final HashSet<Access> accesses = new HashSet<>(TablePermission.ALL_ACCESSES);
+		if (tableAccessRecord.isReadOnly())
+		{
+			accesses.remove(Access.WRITE);
+		}
+		if (!tableAccessRecord.isCanReport())
+		{
+			accesses.remove(Access.REPORT);
+		}
+		if (!tableAccessRecord.isCanExport())
+		{
+			accesses.remove(Access.EXPORT);
+		}
+		if (!tableAccessRecord.isCanCreateNewRecords())
+		{
+			accesses.remove(Access.CREATE);
+		}
+
+		return TablePermission.builder()
+				.resource(TableResource.ofAD_Table_ID(tableAccessRecord.getAD_Table_ID()))
+				.accesses(accesses)
+				.build();
+	}
 
 	TableColumnPermissions getTableColumnPermissions(final RoleId adRoleId)
 	{
@@ -1020,6 +980,22 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		roleOrgAccess.setAD_Role_ID(adRoleId.getRepoId());
 		roleOrgAccess.setIsReadOnly(false);
 		InterfaceWrapperHelper.save(roleOrgAccess);
+	}
+
+	@Override
+	public void createTableAccess(@NonNull final CreateTableAccessRequest request)
+	{
+		final I_AD_Table_Access record = InterfaceWrapperHelper.newInstance(I_AD_Table_Access.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Role_ID(request.getRoleId().getRepoId());
+		record.setAD_Table_ID(request.getAdTableId().getRepoId());
+		// The four flags carry the AD_Column's non-restricting defaults as builder defaults
+		// (see CreateTableAccessRequest), so a caller that omits one still writes that column's default value.
+		record.setIsReadOnly(request.isReadOnly());
+		record.setIsCanReport(request.isCanReport());
+		record.setIsCanExport(request.isCanExport());
+		record.setIsCanCreateNewRecords(request.isCanCreateNewRecords());
+		InterfaceWrapperHelper.save(record);
 	}
 
 	@Override

@@ -112,6 +112,7 @@ public class MobileUIPickingUserProfileRepository
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
 				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.isMassPrinting(profileRecord.isMassPrinting())
+				.isShowQtyAvailableForLines(profileRecord.isShowQtyAvailableForLines())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -136,6 +137,7 @@ public class MobileUIPickingUserProfileRepository
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
 				.pickingSlotRequired(OptionalBoolean.ofBoolean(profileRecord.isPickingSlotRequired()))
+				.isWarnShelfLifeUndercut(profileRecord.isWarnShelfLifeUndercut())
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
@@ -315,6 +317,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setSeqNo(from.getSeqNo());
 		record.setIsDisplayInSummary(from.isShowInSummary());
 		record.setIsDisplayInDetailed(from.isShowInDetailed());
+		record.setIsBlockLayout(from.isBlockLayout());
 		record.setFormatPattern(from.getPattern());
 	}
 
@@ -335,6 +338,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsConsideredOnlyScheduledJobs(from.isConsiderOnlyJobScheduledToWorkplace());
 		record.setIsAllowQuickPackAll(from.isAllowQuickPackAll());
 		record.setIsMassPrinting(from.isMassPrinting());
+		record.setIsShowQtyAvailableForLines(from.isShowQtyAvailableForLines());
 		updateRecord(record, from.getDefaultPickingJobOptions());
 	}
 
@@ -354,6 +358,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
 		record.setIsPickingSlotRequired(from.isPickingSlotRequired());
+		record.setIsWarnShelfLifeUndercut(from.isWarnShelfLifeUndercut());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
@@ -393,6 +398,8 @@ public class MobileUIPickingUserProfileRepository
 		return queryBL.createQueryBuilder(I_PickingProfile_Filter.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PickingProfile_Filter.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId)
+				// deliberately unordered: both callers are order-insensitive (retrieveFilters re-sorts via
+				// PickingFiltersList, save_Filters collects into a map keyed by facet group)
 				.create()
 				.stream();
 	}
@@ -423,6 +430,7 @@ public class MobileUIPickingUserProfileRepository
 				.seqNo(record.getSeqNo())
 				.isShowInDetailed(record.isDisplayInDetailed())
 				.isShowInSummary(record.isDisplayInSummary())
+				.isBlockLayout(record.isBlockLayout())
 				.pattern(record.getFormatPattern())
 				.build();
 	}

@@ -57,7 +57,7 @@ test('Show all jobs when no current workplace', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5112.1: One QR for many HUs');
-        allure.tag('F5112.1');  // Standalone tag for Tags section;
+    allure.tag('F5112.1');  // Standalone tag for Tags section;
     allure.story('Filter distribution by workplace');
     allure.severity('normal');
 
@@ -93,7 +93,7 @@ test('Show only jobs suitable for workplace1', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5112.1: One QR for many HUs');
-        allure.tag('F5112.1');  // Standalone tag for Tags section;
+    allure.tag('F5112.1');  // Standalone tag for Tags section;
     allure.story('Filter distribution by workplace');
     allure.severity('normal');
 
@@ -128,6 +128,41 @@ test('Show only jobs suitable for workplace1', async ({ page }) => {
         });
         await DistributionJobsListScreen.expectJobButtons([
             { testId: masterdata.distributionOrders.DD1.launcherTestId },
+        ]);
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Show jobs shipping from, as well as delivered to, workplace1', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5112.1: One QR for many HUs');
+    allure.tag('F5112.1');  // Standalone tag for Tags section;
+    allure.story('Filter distribution by workplace');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({
+        workplace: 'workplace1', // wh1, pick-from locator wh1_l1
+        distributionOrders: {
+            // ships FROM workplace1's warehouse (wh1) -> visible at the source side, regardless of locator
+            "DD1": { warehouseFrom: "wh1", locatorFrom: "wh1_l2", warehouseTo: "wh2", locatorTo: "wh2_l1" },
+            // delivered TO workplace1's warehouse (wh1), into the workplace's pick-from locator wh1_l1 -> visible at the destination side
+            "DD2": { warehouseFrom: "wh3", locatorFrom: "wh3_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
+            // neither ships from nor delivers to wh1 -> not visible
+            "DD3": { warehouseFrom: "wh3", locatorFrom: "wh3_l1", warehouseTo: "wh4", locatorTo: "wh4_l1" },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+
+    await test.step('Expect both the from-wh1 and the to-wh1 (locator wh1_l1) jobs to be available', async () => {
+        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.workplace1.name });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId },
+            { testId: masterdata.distributionOrders.DD2.launcherTestId },
         ]);
     });
 });

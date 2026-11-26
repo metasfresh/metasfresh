@@ -54,6 +54,7 @@ import java.util.stream.Stream;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.ScriptedExportConversion_FanOutIteration_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
@@ -348,6 +349,78 @@ class OutboundSftpIntegrationTest extends CamelTestSupport
 
 			final String fileContent = Files.readString(uploadedFile);
 			assertThat(fileContent).isEqualTo("payload-content");
+		}
+	}
+
+	@Test
+	void sftpTransport_splitExport_deliversOneFilePerElementNamedWithIndex() throws Exception
+	{
+		try (final EmbeddedSftpServer sftpServer = new EmbeddedSftpServer(sftpRootDir, SFTP_USER, SFTP_PASS))
+		{
+			// Given: a script returning a two-element array (one export split into two parts)
+			final String jsScript = """
+					function transform(messageFromMetasfresh) {
+						return JSON.stringify(["part-one", "part-two"]);
+					}
+					""";
+
+			final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
+					context.resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+			javaScriptRepo.save("sftpFanOutScript", jsScript);
+
+			final String endpointParamsJson = String.format("""
+					{
+					  "value": "sftp-fanout-endpoint",
+					  "transportType": "SFTP",
+					  "arrayFanOut": true,
+					  "sftpHost": "localhost",
+					  "sftpPort": %d,
+					  "sftpUsername": "%s",
+					  "sftpAuthType": "PASSWORD",
+					  "password": "%s",
+					  "sftpRemotePath": "",
+					  "sftpFilenamePattern": "export_{recordid}_{index}.edi"
+					}""", sftpServer.getPort(), SFTP_USER, SFTP_PASS);
+
+			final Exchange exchange = new DefaultExchange(template.getCamelContext());
+			exchange.getIn().setBody(
+					JsonExternalSystemRequest.builder()
+							.orgCode("testOrg")
+							.externalSystemName(JsonExternalSystemName.of("ScriptedAdapter"))
+							.command("ConvertMsgFromMF")
+							.externalSystemConfigId(JsonMetasfreshId.of(1))
+							.traceId("test-trace-sftp-fanout")
+							.externalSystemChildConfigValue("testConfig")
+							.parameter(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, "{\"value\":\"x\"}")
+							.parameter(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, "sftpFanOutScript")
+							.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, endpointParamsJson)
+							.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, "M_InOut")
+							.parameter(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, "555")
+							.build());
+
+			final MockEndpoint mockAttachmentEndpoint = getMockEndpoint(MOCK_ATTACHMENT_ENDPOINT);
+			mockAttachmentEndpoint.expectedMessageCount(2);
+
+			AdviceWith.adviceWith(context,
+					ScriptedExportConversion_FanOutIteration_ROUTE_ID,
+					advice -> advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(mockAttachmentEndpoint));
+
+			context.start();
+
+			// When
+			template.send("direct:" + ScriptedExportConversion_ConvertMsgFromMF_ROUTE_ID, exchange);
+
+			// Then: one file per part, named with the 1-based {index}, each holding its own part
+			MockEndpoint.assertIsSatisfied(context);
+
+			assertThat(Files.readString(sftpRootDir.resolve("export_555_1.edi"))).isEqualTo("part-one");
+			assertThat(Files.readString(sftpRootDir.resolve("export_555_2.edi"))).isEqualTo("part-two");
+			try (final Stream<Path> stream = Files.list(sftpRootDir))
+			{
+				assertThat(stream.filter(Files::isRegularFile).count()).isEqualTo(2);
+			}
 		}
 	}
 }

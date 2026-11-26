@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import lombok.Builder;
@@ -45,14 +46,19 @@ public class JsonProcessCompositeResponse
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	List<JSONInvoiceInfoResponse> invoiceInfoResponse;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonErrorItem error;
+
 	@Builder
 	JsonProcessCompositeResponse(
 			@JsonProperty("orderResponse") final JsonGenerateOrdersResponse orderResponse,
 			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
-			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)
+			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse,
+			@JsonProperty("error") final JsonErrorItem error)
 	{
 		this.orderResponse = orderResponse;
 		this.shipmentResponse = shipmentResponse;
 		this.invoiceInfoResponse = invoiceInfoResponse;
+		this.error = error;
 	}
 }

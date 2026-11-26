@@ -41,9 +41,9 @@ public class AdTableId implements RepoIdAware
 	}
 
 	@Nullable
-	public static AdTableId ofRepoIdOrNull(final int repoId)
+	public static AdTableId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId > 0 ? new AdTableId(repoId) : null;
+		return repoId != null && repoId > 0 ? new AdTableId(repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final AdTableId id)

@@ -8,7 +8,11 @@ import {
   DATE_TIMEZONE_FORMAT,
   TIME_FORMAT,
 } from '../../constants/Constants';
-import { getClassNames, getFormattedDate } from '../../utils/widgetHelpers';
+import {
+  getClassNames,
+  getFormattedDate,
+  isDecimalNumberField,
+} from '../../utils/widgetHelpers';
 import { withForwardedRef } from '../hoc/WithRouterAndRef';
 
 import ActionButton from './ActionButton';
@@ -105,6 +109,7 @@ class WidgetRenderer extends PureComponent {
       widgetField,
       widgetProperties,
       showErrorBorder,
+      decimalRangeValues,
       isFocused,
       charsTyped,
       readonly,
@@ -466,9 +471,10 @@ class WidgetRenderer extends PureComponent {
           return (
             <AmountRange
               widgetField={widgetField}
-              valueFrom={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
+              valueFrom={decimalRangeValues?.from ?? widgetData[0].value}
+              valueTo={decimalRangeValues?.to ?? widgetData[0].valueTo}
               step={step}
+              isDecimalNumber={isDecimalNumberField(widgetType)}
               devices={devices}
               //
               id={widgetProperties.id}
@@ -495,6 +501,7 @@ class WidgetRenderer extends PureComponent {
                 widgetProperties.value /* the value up-to-date, even if was not already PATCHed */
               }
               step={step}
+              isDecimalNumber={isDecimalNumberField(widgetType)}
               devices={devices}
               //
               id={widgetProperties.id}
@@ -523,8 +530,8 @@ class WidgetRenderer extends PureComponent {
             <CostPriceRange
               ref={widgetProperties.ref}
               rank={type}
-              valueFrom={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
+              valueFrom={decimalRangeValues?.from ?? widgetData[0].value}
+              valueTo={decimalRangeValues?.to ?? widgetData[0].valueTo}
               precision={widgetData[0].precision}
               autoComplete={widgetProperties.autoComplete}
               className={widgetProperties.className}
@@ -769,6 +776,7 @@ WidgetRenderer.propTypes = {
   widgetField: PropTypes.string,
   widgetProperties: PropTypes.object.isRequired,
   showErrorBorder: PropTypes.bool,
+  decimalRangeValues: PropTypes.object,
   isFocused: PropTypes.bool,
   charsTyped: PropTypes.number,
   readonly: PropTypes.bool,

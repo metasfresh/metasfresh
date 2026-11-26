@@ -50,6 +50,13 @@ public interface ILotNumberBL extends ISingletonService
 	Optional<String> getAndIncrementLotNo(@NonNull LotNoContext context);
 
 	/**
+	 * Previews, without consuming the sequence, the lot number that {@link #getAndIncrementLotNo(LotNoContext)} would return.
+	 *
+	 * @return the lot number, or empty if the sequence's value depends on its incremental number (see {@link de.metas.document.sequenceno.CustomSequenceNoProvider#isSequenceNoIndependentOfIncrement}) or cannot be built
+	 */
+	Optional<String> previewLotNo(@NonNull LotNoContext context);
+
+	/**
 	 * @param asi
 	 * @return the value of the LotNo attribute if found, null otherwise
 	 */

@@ -2,6 +2,7 @@ package de.metas.material.planning.pporder;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -16,6 +17,11 @@ import lombok.NonNull;
 public interface IPPOrderBOMDAO extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
+
+	/**
+	 * Loads the given BOM lines with a single query (by primary key).
+	 */
+	List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull Set<PPOrderBOMLineId> orderBOMLineIds);
 
 	/**
 	 * Retrieve (active) BOM Lines for a specific PP Order

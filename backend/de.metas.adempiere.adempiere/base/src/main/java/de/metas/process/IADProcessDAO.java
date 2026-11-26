@@ -32,6 +32,9 @@ public interface IADProcessDAO extends ISingletonService
 		return getById(AdProcessId.ofRepoId(processId));
 	}
 
+	/** @return {@code AD_Process.IsPreventConcurrentExecution} (cached) — the engine runs only one instance at a time when {@code true}. */
+	boolean isPreventConcurrentExecution(AdProcessId processId);
+
 	/**
 	 * @return the {@code FilenamePattern} configured on the given process, or {@link Optional#empty()} if null/blank.
 	 * Used by {@code ArchiveFileNameService} to opt into per-process filename templates.

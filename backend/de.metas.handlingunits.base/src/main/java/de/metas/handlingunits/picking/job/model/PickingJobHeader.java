@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +29,8 @@ public class PickingJobHeader
 	boolean isDisplayPickingSlotSuggestions;
 	@Nullable UserId lockedBy;
 	@Nullable BPartnerLocationId handoverLocationId;
+	@Nullable CarrierProductId carrierProductId;
+	boolean carrierAdviseReadOnly;
 
 	@Nullable
 	public BPartnerId getCustomerId() {return this.deliveryBPLocationId != null ? this.deliveryBPLocationId.getBpartnerId() : null;}

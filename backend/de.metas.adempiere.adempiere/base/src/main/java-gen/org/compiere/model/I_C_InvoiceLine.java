@@ -93,33 +93,6 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_CapvsExp = "A_CapvsExp";
 
 	/**
-	 * Set Account.
-	 * Account used
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAccount_ID (int Account_ID);
-
-	/**
-	 * Get Account.
-	 * Account used
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAccount_ID();
-
-	@Nullable org.compiere.model.I_C_ElementValue getAccount();
-
-	void setAccount(@Nullable org.compiere.model.I_C_ElementValue Account);
-
-	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new ModelColumn<>(I_C_InvoiceLine.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
-	String COLUMNNAME_Account_ID = "Account_ID";
-
-	/**
 	 * Set Create Asset.
 	 *
 	 * <br>Type: YesNo
@@ -325,6 +298,33 @@ public interface I_C_InvoiceLine
 	int getC_Charge_ID();
 
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/**
+	 * Set Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ElementValue_Override_ID (int C_ElementValue_Override_ID);
+
+	/**
+	 * Get Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ElementValue_Override_ID();
+
+	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue_Override();
+
+	void setC_ElementValue_Override(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue_Override);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_Override_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_ElementValue_Override_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_C_ElementValue_Override_ID = "C_ElementValue_Override_ID";
 
 	/**
 	 * Set Flatrate Term.
@@ -731,6 +731,31 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_ExternalIds = new ModelColumn<>(I_C_InvoiceLine.class, "ExternalIds", null);
 	String COLUMNNAME_ExternalIds = "ExternalIds";
+
+	/**
+	 * Set Account Override.
+	 * Overridden GL account for this invoice line
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoiceAcctOverride_Indicator (@Nullable java.lang.String InvoiceAcctOverride_Indicator);
+
+	/**
+	 * Get Account Override.
+	 * Overridden GL account for this invoice line
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getInvoiceAcctOverride_Indicator();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_InvoiceAcctOverride_Indicator = new ModelColumn<>(I_C_InvoiceLine.class, "InvoiceAcctOverride_Indicator", null);
+	String COLUMNNAME_InvoiceAcctOverride_Indicator = "InvoiceAcctOverride_Indicator";
 
 	/**
 	 * Set Active.
@@ -1232,7 +1257,7 @@ public interface I_C_InvoiceLine
 	/**
 	 * Set Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1241,7 +1266,7 @@ public interface I_C_InvoiceLine
 	/**
 	 * Get Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

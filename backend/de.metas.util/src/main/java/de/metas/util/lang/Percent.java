@@ -228,6 +228,12 @@ public class Percent implements Comparable<Percent>
 		return ONE_HUNDRED_VALUE.compareTo(value) == 0;
 	}
 
+	/** @return {@code true} if this is strictly greater than 100%. */
+	public boolean isOverOneHundred()
+	{
+		return value.compareTo(ONE_HUNDRED_VALUE) > 0;
+	}
+
 	public Percent add(@NonNull final Percent percent)
 	{
 		if (isZero())

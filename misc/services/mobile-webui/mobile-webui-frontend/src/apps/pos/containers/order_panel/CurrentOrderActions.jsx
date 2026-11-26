@@ -55,7 +55,12 @@ const CurrentOrderActions = ({ disabled: disabledParam }) => {
           {_('deleteLine')}
         </button>
       </div>
-      <button className="button is-large pay-action" onClick={onPayClick} disabled={!isPayAllowed}>
+      <button
+        className="button is-large pay-action"
+        data-testid="pos-order-checkout-button"
+        onClick={onPayClick}
+        disabled={!isPayAllowed}
+      >
         <i className="fas fa-regular fa-money-bill-1"></i>
         <span>{_('pay')}</span>
       </button>

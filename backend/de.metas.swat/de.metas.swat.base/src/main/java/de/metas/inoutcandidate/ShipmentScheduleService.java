@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -43,7 +43,6 @@ import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -52,7 +51,7 @@ import java.util.function.Consumer;
 public class ShipmentScheduleService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
@@ -144,13 +143,13 @@ public class ShipmentScheduleService
 		boolean isProcessed;
 		boolean isClosed;
 		boolean isActive;
-		@NonNull BigDecimal quantityToDeliver;
 		@Nullable CarrierAdviseStatus carrierAdvisingStatus;
 
 		boolean isAuto;
 		boolean isIncludeCarrierAdviseManual;
+		boolean usePickingStartedGate;
 
-		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
+		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 		{
 			return EligibleCarrierAdviseRequest.builder()
 					.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID()))
@@ -158,7 +157,6 @@ public class ShipmentScheduleService
 					.isProcessed(shipmentSchedule.isProcessed())
 					.isClosed(shipmentSchedule.isClosed())
 					.isActive(shipmentSchedule.isActive())
-					.quantityToDeliver(shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule))
 					.carrierAdvisingStatus(CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status()))
 					.build();
 		}
@@ -171,7 +169,6 @@ public class ShipmentScheduleService
 					.isProcessed(shipmentSchedule.isProcessed())
 					.isClosed(shipmentSchedule.isClosed())
 					.isActive(shipmentSchedule.isActive())
-					.quantityToDeliver(shipmentSchedule.getQuantityToDeliver().toBigDecimal())
 					.carrierAdvisingStatus(shipmentSchedule.getCarrierAdvisingStatus())
 					.build();
 		}
@@ -179,7 +176,7 @@ public class ShipmentScheduleService
 
 	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule, shipmentScheduleEffectiveBL);
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
 		return isEligibleForCarrierAdvise(request.toBuilder().isAuto(true).build());
 	}
 
@@ -189,13 +186,31 @@ public class ShipmentScheduleService
 		return !isEligibleForCarrierAdvise(request.toBuilder().isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual).build());
 	}
 
+	/**
+	 * Used by the {@code M_ShipmentSchedule_Advise_Manual} process only.
+	 * Ineligible once picking is actively started (an active, un-shipped picked qty exists).
+	 * This is a <em>more lenient</em> gate than the picking-job-exists check used by the other
+	 * manual paths: the manual-set window stays open even after a picking job schedule exists,
+	 * closing only once actual qty has been picked.
+	 */
+	public boolean isNotEligibleForManualCarrierSet(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	{
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
+		return !isEligibleForCarrierAdvise(request.toBuilder()
+				.isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual)
+				.usePickingStartedGate(true)
+				.build());
+	}
+
 	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request)
 	{
+		// NOTE: no QtyToDeliver gate — the advise request is per-unit (numberOfItems=1), so it is independent of
+		// the deliverable qty. Gating on QtyToDeliver>0 would wrongly skip advise for an open availability-gated
+		// schedule (DeliveryRule='A') that currently has nothing on hand (QtyToDeliver=0 is its normal state).
 		if (request.getShipperId() == null
 				|| request.isProcessed()
 				|| request.isClosed()
-				|| !request.isActive()
-				|| request.getQuantityToDeliver().signum() <= 0)
+				|| !request.isActive())
 		{
 			return false;
 		}
@@ -214,7 +229,24 @@ public class ShipmentScheduleService
 		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 		if (shipmentScheduleId == null) {return true;}
 
+		if (request.isAuto)
+		{
+			// AUTO: ineligible the moment a picking-job-schedule merely exists.
+			return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+		}
+
+		// MANUAL: when usePickingStartedGate is true, stay eligible until picking is actively
+		// started (qty picked > 0); otherwise use the stricter "any picking-job-schedule exists" gate.
+		if (request.isUsePickingStartedGate())
+		{
+			return !isPickingActivelyStarted(shipmentScheduleId);
+		}
 		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+	}
+
+	private boolean isPickingActivelyStarted(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentScheduleId).signum() > 0;
 	}
 
 }

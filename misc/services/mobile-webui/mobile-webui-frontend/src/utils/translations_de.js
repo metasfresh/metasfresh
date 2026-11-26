@@ -17,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -33,12 +38,13 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    Qty: 'Qty',
+    Qty: 'Menge',
     QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
     PackingItemName: 'Packvorschrift',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
+    SerialNo: 'Seriennummer',
     DropToLocator: 'Ziellagerplatz',
     cancelText: 'Abbrechen',
     closeText: 'Schließen',
@@ -82,6 +88,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -117,6 +131,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
+    },
     picking: {
       PickingLine: 'Packzeile',
       PickFromManufacturingOrder: 'Produzieren',
@@ -132,14 +149,32 @@ const translations = {
       unPickBtn: 'Entpacken',
       target: 'Soll',
       picked: 'Ist',
+      available: 'Verfügbar',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'Scannen',
+      scanSerialNo: 'Seriennummer scannen',
+      scanSerialNoAgain: 'Erneut scannen',
+      serialNoCount: '%(scanned)s von %(total)s gescannt',
+      serialNoCountExtra: '(%(extra)s zu viele)',
+      serialNoAlreadyScanned: 'Seriennummer bereits gescannt',
+      serialNoScanDone: 'Fertig',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
       qtyRejectedIgnoreReason: 'Ohne Grund',
+      unpick: {
+        unpickItemBtn: 'Artikel entpacken',
+        scanProduct: 'Produkt scannen',
+        qtyCaption: 'Zu entpackende Menge',
+        scanTargetHU: 'Ziel HU scannen',
+        productNotInPackage: 'Dieses Produkt ist nicht im Paket',
+      },
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        invalidQRCode: 'Der gescannte QR-Code ist nicht lesbar!',
+        missingLotNo: 'Der gescannte QR-Code enthält keine Lot-Nr!',
+        missingBestBeforeDate: 'Der gescannte QR-Code enthält kein Mindesthaltbarkeitsdatum!',
+        invalidBestBeforeDate: 'Der gescannte QR-Code enthält ein ungültiges Mindesthaltbarkeitsdatum!',
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Packzeile überein',
       },
       pickingTarget: {
@@ -159,6 +194,8 @@ const translations = {
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
         count: '%(scanned)s / %(total)s GRAIs gescannt',
         countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
+        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
         save: {
           buttonCaption: 'Speichern',
         },
@@ -183,19 +220,25 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanProduct: 'Artikel scannen',
+      scanHUBarcodePlaceholder: 'HU-Barcode scannen',
+      scanProductGtinPlaceholder: 'Artikel (GTIN) scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
       switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      cannotPickFromSelectedHU:
+        'Aus der gewählten HU kann nicht entnommen werden: %(reason)s. Bitte die HU zum Entnehmen scannen.',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
+        productCodeWhereHUExpected: 'Das ist ein Artikel-Barcode (GTIN), kein HU-Barcode. Bitte zuerst die HU scannen.',
       },
       printMaterialInTransitReport: 'Materialbegleitschein',
     },

@@ -25,11 +25,13 @@ package de.metas.invoice;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
@@ -37,10 +39,14 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
@@ -49,6 +55,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -63,12 +70,17 @@ public class InvoiceService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final AsyncBatchService asyncBatchService;
+	private final CreateInvoiceForModelService createInvoiceForModelService;
 
-	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
+	public InvoiceService(
+			@NonNull final AsyncBatchService asyncBatchService,
+			@NonNull final CreateInvoiceForModelService createInvoiceForModelService)
 	{
 		this.asyncBatchService = asyncBatchService;
+		this.createInvoiceForModelService = createInvoiceForModelService;
 	}
 
 	@NonNull
@@ -80,6 +92,8 @@ public class InvoiceService
 			return ImmutableSet.of();
 		}
 
+		generateMissingInvoiceCandidatesForOrders(shipmentLines);
+
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
@@ -87,6 +101,43 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 
 		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+	}
+
+	/**
+	 * The invoice candidates of the shipped order lines are created asynchronously, by a workpackage that is scheduled when the order is completed.
+	 * That workpackage might still be pending, e.g. because workpackages with a higher priority overtook it.
+	 * Therefore, if a shipped order line has no invoice candidate yet, we create its order's missing candidates within an async batch that we wait for.
+	 */
+	private void generateMissingInvoiceCandidatesForOrders(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		final ImmutableSet<OrderLineId> orderLineIdsWithoutICs = retrieveOrderLineIdsWithoutInvoiceCandidates(shipmentLines);
+		if (orderLineIdsWithoutICs.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<TableRecordReference> orderRefs = orderDAO.retrieveIdsByOrderLineIds(orderLineIdsWithoutICs)
+				.stream()
+				.map(orderId -> TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.collect(ImmutableList.toImmutableList());
+
+		createInvoiceForModelService.generateMissingInvoiceCandidatesForModel(orderRefs);
+	}
+
+	@NonNull
+	private ImmutableSet<OrderLineId> retrieveOrderLineIdsWithoutInvoiceCandidates(@NonNull final List<I_M_InOutLine> shipmentLines)
+	{
+		final ImmutableSet<OrderLineId> orderLineIds = shipmentLines.stream()
+				.map(shipmentLine -> OrderLineId.ofRepoIdOrNull(shipmentLine.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<OrderLineId> orderLineIdsWithICs = invoiceCandDAO.retrieveOrderLineIdsWithInvoiceCandidates(orderLineIds);
+		return Sets.difference(orderLineIds, orderLineIdsWithICs).immutableCopy();
 	}
 
 	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)

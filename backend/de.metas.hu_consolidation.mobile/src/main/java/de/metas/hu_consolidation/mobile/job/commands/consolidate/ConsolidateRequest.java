@@ -1,6 +1,7 @@
 package de.metas.hu_consolidation.mobile.job.commands.consolidate;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -18,4 +19,5 @@ public class ConsolidateRequest
 	@NonNull HUConsolidationJobId jobId;
 	@NonNull PickingSlotId fromPickingSlotId;
 	@Nullable HuId huId;
+	@Nullable GRAI grai;
 }

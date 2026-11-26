@@ -22,7 +22,7 @@
 
 package de.metas.manufacturing.workflows_api.activity_handlers.callExternalSystem;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -80,7 +80,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	private final ManufacturingJobService manufacturingJobService;
 	private final ExportPPOrderToExternalSystem exportToExternalSystemService;
 	private final ResourceService resourceService;
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	private final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -215,7 +215,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 		}
 
 		return ExternalSystemParentConfigId.ofRepoIdOptional(externalSystemResource.getExternalSystemParentConfigId())
-				.flatMap(externalSystemConfigRepo::getChildByParentId)
+				.flatMap(externalSystemConfigRepository::getChildByParentId)
 				.map(IExternalSystemChildConfig::getId)
 				.orElseThrow(() -> new AdempiereException(NOT_AN_EXTERNAL_SYSTEM_ERR_MESSAGE_KEY));
 	}

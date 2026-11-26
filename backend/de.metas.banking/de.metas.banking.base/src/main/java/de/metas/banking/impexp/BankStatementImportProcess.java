@@ -27,6 +27,7 @@ import com.google.common.base.Joiner;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.impexp.BankStatementImportInvoiceResolver.ReferencedInvoice;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
@@ -38,6 +39,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.invoice.paymentbonus.PaymentBonusOnPaymentService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -48,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.model.ModelValidationEngine;
@@ -65,6 +68,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final BankStatementImportInvoiceResolver invoiceResolver = new BankStatementImportInvoiceResolver();
+	/**
+	 * The import process is instantiated by reflection (see {@code IImportProcessFactory}), not by Spring, so the bean cannot be injected.
+	 * Lazy, because it is only needed for a line that references an invoice.
+	 */
+	@NonNull private final SpringContextHolder.Lazy<PaymentBonusOnPaymentService> paymentBonusOnPaymentService = SpringContextHolder.lazyBean(PaymentBonusOnPaymentService.class);
 
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
@@ -183,13 +192,27 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(importRecord.getC_Currency_ID());
 
+		// the lookup is one read-only query per line with a reference (so N queries for N such lines), also for customers without a payment bonus;
+		// the bonus gate decides whether its result is used
+		final ReferencedInvoice referencedInvoice = invoiceResolver.resolve(importRecord)
+				.filter(invoice -> hasPaymentBonusDeduction(invoice, currencyId))
+				.orElse(null);
+		final BPartnerId importedBPartnerId = BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID());
+		final BPartnerId bpartnerId = importedBPartnerId != null || referencedInvoice == null
+				? importedBPartnerId
+				: referencedInvoice.getBpartnerId();
+
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(
 				BankStatementLineCreateRequest.builder()
 						.bankStatementId(BankStatementId.ofRepoId(importRecord.getC_BankStatement_ID()))
 						.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 						.lineNo(importRecord.getLine())
 						//
-						.bpartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))
+						.bpartnerId(bpartnerId)
+						.invoiceId(referencedInvoice != null ? referencedInvoice.getInvoiceId() : null)
+						// the amounts of a line with an invoice are coming from the bank, so they must not be overwritten with the invoice's open amount (like the CAMT import);
+						// a line without an invoice keeps the default, for a user who picks the invoice later
+						.updateAmountsFromInvoice(referencedInvoice == null)
 						.importedBillPartnerName(importRecord.getBill_BPartner_Name())
 						.importedBillPartnerIBAN(importRecord.getIBAN_To())
 						//
@@ -226,6 +249,17 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.build());
 
 		importRecord.setC_BankStatementLine_ID(bankStatementLineId.getRepoId());
+	}
+
+	/**
+	 * The line is only linked to the (sales) invoice if its partner has a payment bonus deduction (an active "Abzug bei Zahlung" contract)
+	 * in the currency of the line.
+	 */
+	private boolean hasPaymentBonusDeduction(@NonNull final ReferencedInvoice invoice, @NonNull final CurrencyId lineCurrencyId)
+	{
+		return paymentBonusOnPaymentService.get()
+				.computeDeduction(invoice.getInvoiceId(), lineCurrencyId)
+				.isPresent();
 	}
 
 	private BankStatementId createBankStatement(@NonNull final I_I_BankStatement importBankStatement)

@@ -5,15 +5,20 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -27,7 +32,7 @@ public class PickingJobBPartnerService
 {
 	@NonNull private final BPartnerBL bpartnerBL;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
-
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
@@ -70,5 +75,24 @@ public class PickingJobBPartnerService
 	{
 		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
 		return GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
+	}
+
+	/**
+	 * @return C_BPartner_Product.ShelfLifeMinDays for the given (bpartner, product) pair,
+	 *         or 0 if no association exists. The org-specific row for {@code orgId} is preferred,
+	 *         with {@code OrgId.ANY} as fallback (handled by the DAO query).
+	 */
+	public int getBPartnerProductShelfLifeMinDays(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
+	{
+		final I_C_BPartner_Product bpProduct = bpartnerProductDAO.retrieveBPartnerProductAssociation(
+				Env.getCtx(),
+				bpartnerId,
+				productId,
+				orgId);
+		if (bpProduct == null)
+		{
+			return 0;
+		}
+		return bpProduct.getShelfLifeMinDays();
 	}
 }

@@ -58,9 +58,6 @@ public class DefaultGroupingProvider implements IOLCandGroupingProvider
 		groupingValues.add(olCand.getBillBPartnerInfo());
 
 		groupingValues.add(olCand.getDateOrdered());
-
-		// task 06269 note that for now we set datepromised only in the header, so different DatePromised values result in different orders, and all ol have the same datepromised
-		groupingValues.add(olCand.getDatePromised());
 		return groupingValues;
 	}
 

@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F_QtyReservation
-@ghActions:run_on_executor5
+@ghActions:run_on_executor8
 Feature: Qty Reservation — shipment attribute and project propagation
 ## Validates that Qty Reservations correctly propagate attributes and project to the shipment line.
 ## Covers bugs reported in https://github.com/metasfresh/me03/issues/28126:

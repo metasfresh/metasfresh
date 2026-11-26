@@ -45,17 +45,16 @@ class HUPackingMaterialDAOTest
 	}
 
 	/**
-	 * A packing material without a dimension UOM (C_UOM_Dimension_ID = 0) must not abort package
-	 * creation. Before the fix, {@code retrievePackageDimensions} ran {@code UomId.ofRepoId(0)} and threw
-	 * "Assumption failure: C_UOM_ID > 0 but it was 0", which aborted "Erstelle Packstücke aus Picking Slots"
-	 * and left the Transportauftrag lineless. Dimensions are optional → expect UNSPECIFIED.
+	 * A packing material with no dimension UOM (C_UOM_Dimension_ID = 0) has unknown, optional dimensions.
+	 * {@code retrievePackageDimensions} must return UNSPECIFIED — resolving UomId.ofRepoId(0) would throw
+	 * "C_UOM_ID > 0 but it was 0" and abort package creation, leaving the Transportauftrag without lines.
 	 */
 	@Test
 	void retrievePackageDimensions_noDimensionUom_returnsUnspecified()
 	{
 		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName("no dimension UOM");
-		// C_UOM_Dimension_ID intentionally left at 0 — the reported production condition (many packing materials had no dimension UOM set).
+		// C_UOM_Dimension_ID intentionally left at 0 (many packing materials have no dimension UOM set).
 		saveRecord(packingMaterial);
 
 		// toUomId is irrelevant here — the guard returns UNSPECIFIED before it is read.

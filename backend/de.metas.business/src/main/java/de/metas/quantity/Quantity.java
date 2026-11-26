@@ -849,7 +849,7 @@ public final class Quantity implements Comparable<Quantity>
 				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
 	}
 
-	private UOMPrecision getUOMPrecision()
+	public UOMPrecision getUOMPrecision()
 	{
 		return UOMPrecision.ofInt(uom.getStdPrecision());
 	}

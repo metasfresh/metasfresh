@@ -116,6 +116,13 @@ public final class DocumentSaveStatus
 
 	private final boolean saved; // computed
 
+	/**
+	 * Computed: this save error is a user-fixable business rejection (e.g. a unique-constraint violation),
+	 * not a system/technical fault. Lets {@link DocumentCollection} keep such an error visible to the user
+	 * instead of self-healing it away on the next child-record cache invalidation.
+	 */
+	private final boolean userValidationError;
+
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
@@ -133,6 +140,7 @@ public final class DocumentSaveStatus
 		this.exception = exception;
 
 		this.saved = !this.hasChangesToBeSaved && this.isPresentInDatabase && !this.error && !this.deleted;
+		this.userValidationError = AdempiereException.isUserValidationError(exception);
 	}
 
 	@Override

@@ -39,6 +39,7 @@ import org.adempiere.banking.model.I_C_BankStatement_Import_File;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +59,29 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 	@And("^bank statement is imported with identifiers (.*), matching invoice amounts$")
 	public void import_camt53_document(@NonNull final String identifier, @NonNull final String fileContent)
 	{
+		importCamt53Document(identifier, fileContent, true);
+	}
+
+	/**
+	 * Imports without matching the statement line's amount against the invoice's open amount, so the invoice is found by its reference only;
+	 * for a customer who pays less than the open amount, e.g. because of the payment bonus.
+	 * The CAMT file is the step's doc string.
+	 * <pre>{@code
+	 * And bank statement is imported with identifiers bs1, not matching invoice amounts
+	 *   """
+	 *   <?xml version="1.0" encoding="UTF-8"?>
+	 *   <Document> ... </Document>
+	 *   """
+	 * }</pre>
+	 */
+	@And("^bank statement is imported with identifiers (.*), not matching invoice amounts$")
+	public void import_camt53_document_notMatchingInvoiceAmounts(@NonNull final String identifier, @NonNull final String fileContent)
+	{
+		importCamt53Document(identifier, fileContent, false);
+	}
+
+	private void importCamt53Document(@NonNull final String identifier, @NonNull final String fileContent, final boolean isMatchAmounts)
+	{
 		final I_C_BankStatement_Import_File importFileRecord = InterfaceWrapperHelper.newInstance(I_C_BankStatement_Import_File.class);
 		InterfaceWrapperHelper.saveRecord(importFileRecord);
 
@@ -66,10 +90,10 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		final ImportBankStatementRequest importBankStatementRequest = ImportBankStatementRequest
 				.builder()
 				.camt53File(AttachmentEntryDataResource.builder()
-									.source(fileContent.getBytes())
+									.source(fileContent.getBytes(StandardCharsets.UTF_8)) // the docstring XML declares UTF-8; the platform charset (cp1252 on Windows) corrupts umlauts
 									.filename("does_not_matter.xml")
 									.build())
-				.isMatchAmounts(true)
+				.isMatchAmounts(isMatchAmounts)
 				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(importFileRecord.getC_BankStatement_Import_File_ID()))
 				.build();
 		

@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
@@ -227,18 +228,20 @@ public class OLCandDAO implements IOLCandDAO
 	}
 
 	@NonNull
-	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
+	public ImmutableSetMultimap<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
 	{
 		if (olCandIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ImmutableSetMultimap.of();
 		}
 
+		// A single C_OLCand can be allocated to N C_OrderLines (e.g. a compensation-group-schema
+		// product exploded into its component order lines), so this must be a multimap.
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						olAlloc -> OLCandId.ofRepoId(olAlloc.getC_OLCand_ID()),
 						olAlloc -> OrderLineId.ofRepoId(olAlloc.getC_OrderLine_ID())
 				));

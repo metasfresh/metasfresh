@@ -98,18 +98,16 @@ public class M_ShipmentSchedule
 
 		huShipmentScheduleBL.updateEffectiveValues(shipmentSchedule);
 
-		if (shipmentSchedule.getC_OrderLine_ID() > 0)
+		// A closed schedule's effective QtyOrdered is its QtyDelivered, not what the customer ordered.
+		// Writing it back would e.g. zero the QtyOrdered of an order line whose order was just reactivated.
+		if (shipmentSchedule.getC_OrderLine_ID() > 0 && !shipmentSchedule.isClosed())
 		{
-		// update orderLine
+			// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
-		// task 09005: make sure the correct qtyOrdered is taken from the shipmentSchedule
 			final BigDecimal qtyOrderedEffective = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
-		orderLine.setQtyOrdered(qtyOrderedEffective);
-
-		InterfaceWrapperHelper.save(orderLine);
+			orderLine.setQtyOrdered(qtyOrderedEffective);
+			InterfaceWrapperHelper.save(orderLine);
 		}
-
 	}
 
 	/**

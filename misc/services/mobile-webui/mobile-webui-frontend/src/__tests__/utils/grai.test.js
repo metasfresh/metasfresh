@@ -6,6 +6,7 @@ import {
   mergeGraiArrays,
   getAssignedGrais,
   getExtraGrais,
+  mergeGraisAfterSend,
 } from '../../utils/grai';
 
 describe('grai list helpers', () => {
@@ -15,43 +16,102 @@ describe('grai list helpers', () => {
   describe('mergeGraiArrays', () => {
     it('appends new GRAIs not already in the list', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['C', 'D']);
-      expect(result).toEqual(['A', 'B', 'C', 'D']);
+      const { merged, skipped } = mergeGraiArrays(prev, ['C', 'D']);
+      expect(merged).toEqual(['A', 'B', 'C', 'D']);
+      expect(skipped).toEqual([]);
     });
 
-    it('deduplicates GRAIs already present', () => {
+    it('deduplicates GRAIs already present (same-buffer re-read — silent, not "skipped")', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['B', 'C']);
-      expect(result).toEqual(['A', 'B', 'C']);
+      const { merged, skipped } = mergeGraiArrays(prev, ['B', 'C']);
+      expect(merged).toEqual(['A', 'B', 'C']);
+      expect(skipped).toEqual([]);
     });
 
     it('returns the SAME array reference when nothing new is added (no re-render)', () => {
       const prev = ['A', 'B'];
-      const result = mergeGraiArrays(prev, ['A', 'B']);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, ['A', 'B']);
+      expect(merged).toBe(prev);
     });
 
     it('handles empty prev', () => {
-      expect(mergeGraiArrays([], ['X'])).toEqual(['X']);
+      expect(mergeGraiArrays([], ['X']).merged).toEqual(['X']);
     });
 
     it('handles empty newGrais', () => {
       const prev = ['A'];
-      const result = mergeGraiArrays(prev, []);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, []);
+      expect(merged).toBe(prev);
     });
 
     it('handles both arrays empty', () => {
       const prev = [];
-      const result = mergeGraiArrays(prev, []);
-      expect(result).toBe(prev);
+      const { merged } = mergeGraiArrays(prev, []);
+      expect(merged).toBe(prev);
     });
 
     it('deduplicates duplicates WITHIN newGrais (RFID re-read of the same crate in one burst)', () => {
       // A GRAI uniquely identifies one returnable asset, so a code repeated within a single scan
       // burst is the same crate read twice — it must collapse to a single entry.
-      expect(mergeGraiArrays([], ['X', 'X'])).toEqual(['X']);
-      expect(mergeGraiArrays(['A'], ['B', 'A', 'B', 'C'])).toEqual(['A', 'B', 'C']);
+      expect(mergeGraiArrays([], ['X', 'X']).merged).toEqual(['X']);
+      expect(mergeGraiArrays(['A'], ['B', 'A', 'B', 'C']).merged).toEqual(['A', 'B', 'C']);
+    });
+
+    describe('existingCodes (LU-wide dedupe mirror)', () => {
+      it('drops a code already present in existingCodes and reports it as skipped', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('mixes fresh and already-on-LU codes in one batch', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'FRESH1', 'FRESH2'], ['G']);
+        expect(merged).toEqual(['FRESH1', 'FRESH2']);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('does not double-report a repeat of the same already-on-LU code within one batch', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['G']);
+      });
+
+      it('a same-crate re-read (already in prev) is NEVER reported as skipped, even if also in existingCodes', () => {
+        // re-scanning the identical GRAI for the SAME crate stays a silent no-op.
+        const prev = ['G'];
+        const { merged, skipped } = mergeGraiArrays(prev, ['G'], ['G']);
+        expect(merged).toBe(prev); // same reference — nothing added, no re-render
+        expect(skipped).toEqual([]);
+      });
+
+      it('defaults to no exclusion when existingCodes is omitted', () => {
+        const { merged, skipped } = mergeGraiArrays(['A'], ['B']);
+        expect(merged).toEqual(['A', 'B']);
+        expect(skipped).toEqual([]);
+      });
+    });
+
+    describe('alreadySkipped (idempotent re-report — dual-reader race)', () => {
+      it('does NOT re-report a code that was already reported in a prior call', () => {
+        // Two readers deliver the same physical already-on-LU scan across two calls; the second must
+        // be a silent no-op so the "N skipped" count/toast fire at most once per crate.
+        const { merged, skipped } = mergeGraiArrays([], ['G'], ['G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual([]);
+      });
+
+      it('still reports a genuinely-new skip while ignoring the already-reported one', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'H'], ['G', 'H'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['H']);
+      });
+
+      it('a redelivered fresh code (already in prev) stays silent regardless of alreadySkipped', () => {
+        const prev = ['FRESH'];
+        const { merged, skipped } = mergeGraiArrays(prev, ['FRESH'], ['G'], ['G']);
+        expect(merged).toBe(prev);
+        expect(skipped).toEqual([]);
+      });
     });
   });
 
@@ -188,6 +248,53 @@ describe('grai parsing', () => {
       expect(parseGraiFromRawInput(undefined)).toBeNull();
       expect(parseGraiFromRawInput(123)).toBeNull();
     });
+
+    // A canonical GRAI whose company prefix starts with "8003" is also accepted by the GS1 parser as
+    // AI 8003 (data "214.95365.1999803101"). Canonical form must win, exactly as in the backend's
+    // de.metas.handlingunits.grai.GRAI.parse; otherwise it is misread as "14.9536.5.199.803101" and
+    // the backend answers 422 GRAINoMatchingTUType. Seen in CI on a random test GRAI (~1 in 10,000):
+    // https://github.com/metasfresh/metasfresh/actions/runs/38117422768
+    it('passes a canonical GRAI whose company prefix starts with 8003 through unchanged', () => {
+      expect(parseGraiFromRawInput('8003214.95365.1999803101')).toBe('8003214.95365.1999803101');
+    });
+
+    it('still parses a genuine GS1 AI 8003 barcode to its exact canonical form', () => {
+      expect(parseGraiFromRawInput(GS1_AI8003_BARCODE)).toBe('7613264.00309.100691412000');
+    });
+
+    describe('randomized: canonical and GS1 inputs never cross over', () => {
+      // Deterministic PRNG (mulberry32) so a failure is reproducible.
+      const mulberry32 = (seed) => () => {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      const random = mulberry32(31020);
+      const digits = (n) => Array.from({ length: n }, () => Math.floor(random() * 10)).join('');
+      const ITERATIONS = 5000;
+
+      it('every canonical GRAI in the test-data format (7.5.10 digits) passes through unchanged', () => {
+        // Same shape as the frontend-testing generator (CreatePackingInstructionsCommand.generateUniqueGRAI);
+        // every second one is forced to the risky "8003" company-prefix start.
+        for (let i = 0; i < ITERATIONS; i++) {
+          const companyPrefix = i % 2 === 0 ? '8003' + digits(3) : digits(7);
+          const canonical = `${companyPrefix}.${digits(5)}.${digits(10)}`;
+          expect(parseGraiFromRawInput(canonical)).toBe(canonical);
+        }
+      });
+
+      it('every numeric GS1 AI 8003 barcode is never taken as canonical and parses to its canonical form', () => {
+        for (let i = 0; i < ITERATIONS; i++) {
+          const companyPrefix = digits(7);
+          const assetType = digits(5);
+          const serial = digits(1 + Math.floor(random() * 16));
+          const barcode = `8003${digits(1)}${companyPrefix}${assetType}${digits(1)}${serial}`;
+          expect(isValidGrai(barcode)).toBe(false);
+          expect(parseGraiFromRawInput(barcode)).toBe(`${companyPrefix}.${assetType}.${serial}`);
+        }
+      });
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -225,9 +332,68 @@ describe('grai parsing', () => {
       expect(parseGraiArrayFromRawInput(raw)).toEqual(['7613204.00307.1', '7613204.00307.2', '7613204.00307.3']);
     });
 
+    it('keeps a canonical GRAI whose company prefix starts with 8003 unchanged in a batch', () => {
+      const raw = '8003214.95365.1999803101\n' + GS1_AI8003_BARCODE;
+      expect(parseGraiArrayFromRawInput(raw)).toEqual(['8003214.95365.1999803101', '7613264.00309.100691412000']);
+    });
+
     it('returns an empty array for empty / null input', () => {
       expect(parseGraiArrayFromRawInput('')).toEqual([]);
       expect(parseGraiArrayFromRawInput(null)).toEqual([]);
     });
+  });
+});
+
+describe('mergeGraisAfterSend', () => {
+  it('nothing changed since the baseline: backend answer plus the baseline extras', () => {
+    expect(
+      mergeGraisAfterSend({
+        baselineGrais: ['A', 'B', 'X'],
+        currentGrais: ['A', 'B', 'X'],
+        backendGrais: ['A', 'B'],
+        tuCount: 2,
+      })
+    ).toEqual(['A', 'B', 'X']);
+  });
+
+  it('the backend lowers the TU count: GRAIs beyond it stay in the list (shown as extras)', () => {
+    const merged = mergeGraisAfterSend({
+      baselineGrais: ['A', 'B'],
+      currentGrais: ['A', 'B'],
+      backendGrais: ['A'],
+      tuCount: 1,
+    });
+    expect(merged).toEqual(['A', 'B']);
+    expect(getAssignedGrais(merged, 1)).toEqual(['A']);
+    expect(getExtraGrais(merged, 1)).toEqual(['B']);
+  });
+
+  it('a code in both the backend answer and the extras appears only once', () => {
+    expect(
+      mergeGraisAfterSend({
+        baselineGrais: ['A', 'B', 'C'],
+        currentGrais: ['A', 'B', 'C'],
+        backendGrais: ['A', 'C'],
+        tuCount: 2,
+      })
+    ).toEqual(['A', 'C']);
+  });
+
+  it('a code added since the baseline that the backend also reports appears only once', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A'], currentGrais: ['A', 'B'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['A', 'B']);
+  });
+
+  it('a code removed and scanned again since the baseline is kept, once', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A', 'B'], currentGrais: ['B', 'A'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['A', 'B']);
+  });
+
+  it('a code removed since the baseline stays removed; a code added is appended', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A', 'B'], currentGrais: ['B', 'C'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['B', 'C']);
   });
 });

@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.facets.customer.CustomerFacet;
 import de.metas.handlingunits.picking.job.model.facets.delivery_day.DeliveryDayFacet;
+import de.metas.handlingunits.picking.job.model.facets.preparation_day.PreparationDayFacet;
 import de.metas.handlingunits.picking.job.model.facets.handover_location.HandoverLocationFacet;
 import de.metas.picking.api.Packageable;
 import lombok.EqualsAndHashCode;
@@ -172,6 +173,7 @@ class PickingJobFacetsAccumulator
 		private final ImmutableSetMultimap<PickingJobFacetGroup, PickingJobFacet> facetsByGroup;
 		private final ImmutableSet<BPartnerId> customerIds;
 		private final ImmutableSet<LocalDate> deliveryDays;
+		private final ImmutableSet<LocalDate> preparationDays;
 		private final ImmutableSet<BPartnerLocationId> handoverLocationIds;
 
 		private FacetAwareItem(@NonNull final Set<PickingJobFacet> facets)
@@ -179,6 +181,7 @@ class PickingJobFacetsAccumulator
 			this.facetsByGroup = facets.stream().collect(ImmutableSetMultimap.toImmutableSetMultimap(PickingJobFacet::getGroup, facet -> facet));
 			this.customerIds = extract(facets, CustomerFacet.class, CustomerFacet::getBpartnerId);
 			this.deliveryDays = extract(facets, DeliveryDayFacet.class, DeliveryDayFacet::getDeliveryDate);
+			this.preparationDays = extract(facets, PreparationDayFacet.class, PreparationDayFacet::getPreparationDate);
 			this.handoverLocationIds = extract(facets, HandoverLocationFacet.class, HandoverLocationFacet::getBPartnerLocationId);
 		}
 
@@ -211,6 +214,7 @@ class PickingJobFacetsAccumulator
 		{
 			return isMatching(customerIds, query.getCustomerIds())
 					&& isMatching(deliveryDays, query.getDeliveryDays())
+					&& isMatching(preparationDays, query.getPreparationDays())
 					&& isMatching(handoverLocationIds, query.getHandoverLocationIds());
 		}
 

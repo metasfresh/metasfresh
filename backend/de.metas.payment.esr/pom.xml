@@ -96,6 +96,7 @@
                         </goals>
                         <configuration>
                             <sources>
+                                <source>src/main/java-xjc_camt054_001_08</source>
                                 <source>src/main/java-xjc_camt054_001_06</source>
                                 <source>src/main/java-xjc_camt054_001_02</source>
                             </sources>
@@ -129,6 +130,7 @@
                   ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
                 After regeneration, commit the changed java-xjc files together with the XSD change.
                 XSD sources:
+                  camt.054.001.08: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.08.zip
                   camt.054.001.06: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip
                   camt.054.001.02: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.02.zip
             -->
@@ -139,6 +141,18 @@
                         <groupId>org.jvnet.jaxb2.maven2</groupId>
                         <artifactId>maven-jaxb2-plugin</artifactId>
                         <executions>
+                            <execution>
+                                <id>generate-de.metas.payment.esr.camt054.001.08</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <schemaDirectory>src/main/xsd/camt.054.001.08</schemaDirectory>
+                                    <generatePackage>de.metas.payment.camt054_001_08</generatePackage>
+                                    <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_08</generateDirectory>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>generate-de.metas.payment.esr.camt054.001.06</id>
                                 <phase>generate-sources</phase>

@@ -103,14 +103,18 @@ public class MaterialEventObserver
 			return;
 		}
 
-		if (traceId2EventProgress.get(traceId) == null)
-		{
-			observe(traceId);
-		}
-
 		final EventProgress eventProgress = traceId2EventProgress.get(traceId);
 
-		Check.assumeNotNull(eventProgress, "EventProgress cannot be null at this point! It is initialized on `observe(traceId)`");
+		if (eventProgress == null)
+		{
+			// A tracking entry exists only while some caller is awaiting that trace via awaitProcessing(traceId).
+			// There is none here, so nobody is waiting and there is nothing to track.
+			// Registering the trace at this point would be actively harmful: the freshly created EventProgress would
+			// immediately look "all processed", we would post an AllEventsProcessedEvent for a trace nobody asked
+			// about, and that event comes back in as yet another processed event for an unobserved trace -- a cycle
+			// that keeps the material-events queue busy until the awaiting caller times out.
+			return;
+		}
 
 		eventProgress.markAsProcessed(event.getEventId());
 

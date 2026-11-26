@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -10,12 +12,12 @@ import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator
 import de.metas.ui.web.window.model.DocumentStandardAction;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /*
  * #%L
@@ -86,6 +88,42 @@ public class JSONDocumentPermissions
 		// TODO: implement... but it's not so critical atm
 	}
 
+	/**
+	 * Transmits an included tab's create-permission result.
+	 * <p>
+	 * The role's refusal reaches us as the bare AD_Message key, because the constant carrying it is shared by
+	 * all sessions and so cannot name the session's role; here the role is known, so the key becomes the
+	 * translated text plus the key itself. Every other refusal is transmitted as the technical name it has
+	 * always been.
+	 */
+	public void setAllowCreateNew(
+			@NonNull final JSONIncludedTabInfo jsonIncludedTabInfo,
+			@NonNull final LogicExpressionResult allowCreateNew,
+			@NonNull final String adLanguage)
+	{
+		if (isRoleCreateRestrictionRefusal(allowCreateNew))
+		{
+			final String roleReasonKey = DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message();
+			final String reason = DocumentPermissionsHelper.roleCreateNotAllowedReason(permissions).translate(adLanguage);
+			jsonIncludedTabInfo.setAllowCreateNew(false, reason, roleReasonKey);
+		}
+		else
+		{
+			jsonIncludedTabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+		}
+	}
+
+	/**
+	 * Whether this refusal is the role's per-table create restriction. It is the one {@code allowCreateNew=false}
+	 * whose (technical) name is the shared {@link DocumentPermissionsHelper#MSG_ROLE_CREATE_NOT_ALLOWED} key —
+	 * that key is what marks it out from every other refusal, and is why it gets the role-named translated reason.
+	 */
+	private static boolean isRoleCreateRestrictionRefusal(@NonNull final LogicExpressionResult allowCreateNew)
+	{
+		return allowCreateNew.isFalse()
+				&& DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message().equals(allowCreateNew.getName());
+	}
+
 	private boolean isReadonly(@NonNull final Document document)
 	{
 		return readonlyDocuments.computeIfAbsent(document.getDocumentPath(), documentPath -> !DocumentPermissionsHelper.canEdit(document, permissions));
@@ -101,9 +139,10 @@ public class JSONDocumentPermissions
 		return logicExpressionRevaluator;
 	}
 
-	public Set<DocumentStandardAction> getStandardActions(@NonNull final Document document)
+	public JSONStandardActions getStandardActions(@NonNull final Document document, @NonNull final String adLanguage)
 	{
 		final HashSet<DocumentStandardAction> standardActions = new HashSet<>(document.getStandardActions());
+		final ImmutableList.Builder<JSONDisabledStandardAction> disabledActions = ImmutableList.builder();
 
 		Boolean allowWindowEdit = null;
 		Boolean allowDocumentEdit = null;
@@ -140,13 +179,33 @@ public class JSONDocumentPermissions
 				if (!allowWindowEdit)
 				{
 					it.remove();
-					//noinspection UnnecessaryContinue
 					continue;
 				}
 			}
 		}
 
-		return ImmutableSet.copyOf(standardActions);
+		//
+		// New and Clone both produce a new record, so both are gated by the role's per-table create permission
+		// ({@link DocumentStandardAction#isCreateNewRecordAction()}). When the role may not create, they are NOT
+		// removed: each stays in the list and is transmitted as disabled-with-a-reason, so the user sees WHY the
+		// action is unavailable (the same treatment for New and Clone alike).
+		final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions);
+		if (roleCanCreate.isFalse())
+		{
+			for (final DocumentStandardAction action : standardActions)
+			{
+				if (action.isCreateNewRecordAction())
+				{
+					final JSONDisabledStandardAction refused = JSONDisabledStandardAction.refusedByRole(action, roleCanCreate, adLanguage);
+					if (refused != null)
+					{
+						disabledActions.add(refused);
+					}
+				}
+			}
+		}
+
+		return new JSONStandardActions(ImmutableSet.copyOf(standardActions), disabledActions.build());
 	}
 
 }

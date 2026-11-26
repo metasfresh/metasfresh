@@ -35,6 +35,7 @@ const createMasterdata = async ({ luUnits, selfPackedOrderCount, createShipmentP
             mobileConfig: {
                 picking: {
                     aggregationType: 'sales_order',
+                    allowCompletingPartialPickingJob: true,
                     allowPickingAnyCustomer: true,
                     allowPickingAnyHU: true,
                     createShipmentPolicy,
@@ -162,6 +163,10 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
                     allowPickingAnyHU: true,
                     // CREATE_AND_COMPLETE so we can assert per-SO how many units were shipped.
                     createShipmentPolicy: 'CREATE_AND_COMPLETE',
+                    // FIFO partial fill leaves the second order's job not fully picked, and mass printing always
+                    // completes the job, which needs this flag. Set it explicitly: when the key is omitted, the
+                    // masterdata endpoint keeps whatever value the previous spec on the same stack left.
+                    allowCompletingPartialPickingJob: true,
                     massPrinting: true,
                     pickTo: ['LU_TU'],
                 }

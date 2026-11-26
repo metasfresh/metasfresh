@@ -22,6 +22,7 @@
 
 package de.metas.costing.methods;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
@@ -331,14 +332,13 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 				requestEffective = request.withAmount(effectiveAmt);
 
-				//noinspection StatementWithEmptyBody
-				if (explicitCostPrice != null && currentCosts.getCurrentQty().isZero())
+				// NOTE: if explicit cost price is provided then use it
+				// we are no longer checking for " && currentCosts.getCurrentQty().isZero()"
+				// because we agreed that is the responsibility of whom is setting the explicit cost price
+				// to decide if it's suitable
+				if (explicitCostPrice != null)
 				{
 					currentCosts.setOwnCostPrice(explicitCostPrice);
-				}
-				else
-				{
-					// Do not change an existing positive cost price if there is also a positive qty
 				}
 			}
 
@@ -495,15 +495,41 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final InvoiceId invoiceId = matchInv.getInvoiceId();
 		final boolean isReversal = invoiceBL.isReversal(invoiceId);
 
-		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
+		// Matched qty for this invoice line. isReversal (invoice-level) flips the sign the reversal MatchInv
+		// stored back to the original receipt's orientation. This is >= 0 for a plain purchase match, but a
+		// credit-memo / material-return match can be negative; computeMatchInvSplit reshapes the on-hand clamp
+		// only for the >= 0 (plain receipt) case and leaves the negative-qty case's split untouched.
+		final Quantity receiptQty = request.getQty().negateIf(isReversal);
 		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
+		return computeMatchInvSplit(invoicedAmt, amtDifference, receiptQty, currentCost)
+				.negateIf(isReversal);
+	}
+
+	/**
+	 * Splits the invoice-vs-receipt price difference: the still-in-stock share adjusts the on-hand cost price, the
+	 * shipped remainder spills to COGS.
+	 */
+	@VisibleForTesting
+	static CostAmountDetailed computeMatchInvSplit(
+			@NonNull final CostAmount invoicedAmt,
+			@NonNull final CostAmount amtDifference,
+			@NonNull final Quantity receiptQty,
+			@NonNull final CurrentCost currentCost)
+	{
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
 
-		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
+		// For a plain purchase match (receiptQty >= 0) a negative on-hand cannot adjust the on-hand cost price,
+		// so clamp it to 0 => the whole difference becomes period cost (COGS), never capitalized. A credit-memo /
+		// material-return match (receiptQty < 0) keeps the pre-existing, un-clamped split unchanged (this method
+		// is behaviour-preserving there — the clamp is a no-op for a negative matched qty).
+		final Quantity onHandForSplit = receiptQty.signum() >= 0
+				? currentCost.getCurrentQty().toZeroIfNegative()
+				: currentCost.getCurrentQty();
+		final Quantity qtyStillInStock = onHandForSplit.min(receiptQty);
 		if (amtDifference.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
@@ -533,8 +559,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.mainAmt(invoicedAmt)
 				.costAdjustmentAmt(costAdjustmentAmt)
 				.alreadyShippedAmt(alreadyShippedAmt)
-				.build()
-				.negateIf(isReversal);
+				.build();
 	}
 
 	private CostAmount getReceiptAmount(

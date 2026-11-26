@@ -23,6 +23,8 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -41,6 +43,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -58,6 +61,15 @@ public class JsonPickingJobLine
 	@Nullable JsonQRCode pickingSlot;
 	@Nullable JsonLUPickingTarget luPickingTarget;
 	@Nullable JsonTUPickingTarget tuPickingTarget;
+
+	//
+	// Carrier advise at line level — for the CU-direct case (picked HUs but no LU/TU picking target).
+	boolean carrierAdviseAvailable;
+	boolean carrierAdviseReadOnly;
+	@Nullable String carrierProductCaption;
+	/** Translated human-readable reason why the "Advise Carrier" button is disabled.
+	 * {@code null} when the button is enabled or carrier advise is unavailable. */
+	@Nullable String carrierAdviseDisabledReason;
 
 	@NonNull PickingUnit pickingUnit;
 	@NonNull String packingItemName;
@@ -77,6 +89,9 @@ public class JsonPickingJobLine
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
+	// Per-line pick attributes the mobile UI should prompt for; extends (does not replace) the job-level
+	// JsonPickingJob.readAttributes by adding SerialNo for serial-no products.
+	@Builder.Default @NonNull Set<PickAttribute> readAttributes = ImmutableSet.of();
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,

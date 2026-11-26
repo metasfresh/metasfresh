@@ -46,19 +46,18 @@ public class PaymentDAO extends AbstractPaymentDAO
 	@Override
 	public void updateDiscountAndPayment(final I_C_Payment payment, final int c_Invoice_ID, final I_C_DocType c_DocType)
 	{
+		// the 2nd argument of invoiceOpen and the 3rd of invoiceDiscount is the C_InvoicePaySchedule_ID; 0 means the whole invoice, like CalloutPayment.invoice without a pay schedule
 		final String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
-				+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
-				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
-				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
+				+ " invoiceOpen(C_Invoice_ID, 0)," // 3
+				+ " invoiceDiscount(C_Invoice_ID,?,0), IsSOTrx " // 4..5 #1
+				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #2
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, c_Invoice_ID);
-			pstmt.setTimestamp(2, payment.getDateTrx());
-			pstmt.setInt(3, c_Invoice_ID);
-			pstmt.setInt(4, c_Invoice_ID);
+			pstmt.setTimestamp(1, payment.getDateTrx());
+			pstmt.setInt(2, c_Invoice_ID);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{

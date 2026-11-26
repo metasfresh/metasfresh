@@ -154,6 +154,8 @@ public class RefundInvoiceCandidateFactory
 		refundInvoiceCandidateRecord.setRecord_ID(refundContract.getId().getRepoId());
 		refundInvoiceCandidateRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 
+		// an amount per unit is refunded in the config's currency, whatever the currency of the sales
+		refundInvoiceCandidateRecord.setC_Currency_ID(refundContract.getRefundCurrencyId(assignableCandidate.getCurrencyId()).getRepoId());
 		refundInvoiceCandidateRecord.setPriceActual(ZERO);
 		refundInvoiceCandidateRecord.setPriceEntered(ZERO);
 
