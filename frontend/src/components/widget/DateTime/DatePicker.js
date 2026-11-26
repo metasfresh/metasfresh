@@ -243,12 +243,8 @@ class DatePicker extends PureComponent {
         return this.setTimezone(dateTime);
       }
       // same conversion as convertInputStringToMomentOnBlur, with the short forms
-      const dateOnly = MomentTZ(text, dateFormats, true, this.props.timeZone);
-      if (!dateOnly.isValid()) {
-        return null;
-      }
-      setMomentToEndOfDay(dateOnly);
-      return dateOnly;
+      const dateOnly = MomentTZ(text, dateFormats, true);
+      return dateOnly.isValid() ? this.toEndOfDayInTimezone(dateOnly) : null;
     }
 
     const date = MomentTZ(text, dateFormats, true);
@@ -298,7 +294,11 @@ class DatePicker extends PureComponent {
 
   callPatchIfNeeded = (date) => {
     const { patch, field, handleChange } = this.props;
-    const { datePatched } = this.state;
+    // a date patched earlier in the same batched event is not in the state yet
+    const datePatched =
+      this.datePatchedNotYetInState !== undefined
+        ? this.datePatchedNotYetInState
+        : this.state.datePatched;
     try {
       // console.log('callPatchIfNeeded: checking', { date, datePatched });
       if (!this.isSameMoment(date, datePatched)) {
@@ -321,7 +321,10 @@ class DatePicker extends PureComponent {
       });
     }
 
-    this.setState({ datePatched: date });
+    this.datePatchedNotYetInState = date;
+    this.setState({ datePatched: date }, () => {
+      this.datePatchedNotYetInState = undefined;
+    });
   };
 
   handleBlur = (dateObj) => {
@@ -376,16 +379,21 @@ class DatePicker extends PureComponent {
     // => convert that date to end of day date+time
     if (this.isDateAndTime()) {
       const dateFormat = this.getMomentDisplayFormat_DatePart(inputValue);
-      const { timeZone } = this.props;
-      const moment = MomentTZ(inputValue, dateFormat, true, timeZone);
+      const moment = MomentTZ(inputValue, dateFormat, true);
       if (moment && moment.isValid()) {
-        setMomentToEndOfDay(moment);
-        return moment;
+        return this.toEndOfDayInTimezone(moment);
       }
     }
 
     //
     return undefined;
+  };
+
+  /** the end of the given (browser-local) moment's day in the session time zone, as a new moment */
+  toEndOfDayInTimezone = (moment) => {
+    const endOfDay = this.setTimezone(moment.clone());
+    setMomentToEndOfDay(endOfDay);
+    return endOfDay;
   };
 
   isDateAndTime = () => {

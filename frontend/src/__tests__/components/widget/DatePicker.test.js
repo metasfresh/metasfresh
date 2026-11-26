@@ -745,5 +745,42 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     picker().handleBlur(MomentTZ('04.01.2027 10:00', 'DD.MM.YYYY HH:mm'));
     expect(patch).toHaveBeenCalledTimes(1);
   });
+
+  it('empty grid cell: a calendar pick of the very day just typed saves it once', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    const picked = MomentTZ('2026-11-21', 'YYYY-MM-DD');
+    // both come from one click handler in react-datetime, so React batches their state updates
+    act(() => {
+      picker().handleBlur(picked);
+      picker().handleDateChange(picked);
+    });
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  ['04.01.2027', '4.1.27'].forEach((typed) => {
+    it(`date+time field, session time zone other than the browser's: "${typed}" is the end of that day in the session time zone`, () => {
+      const timeZone =
+        MomentTZ.tz.guess() === 'Pacific/Kiritimati' ? 'America/New_York' : 'Pacific/Kiritimati';
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        timeFormat: 'HH:mm',
+        timeZone,
+        value: null,
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patch.mock.calls[0][0].clone().tz(timeZone).format('YYYY-MM-DD HH:mm')).toBe(
+        '2027-01-04 23:59'
+      );
+    });
+  });
 });
 
