@@ -345,7 +345,7 @@ public final class AggregationEngine
 		final InOutId inoutId = icInOutLine != null ? InOutId.ofRepoIdOrNull(icInOutLine.getM_InOut_ID()) : null;
 
 		// resolved once per (candidate, shipment line): the same value goes into the aggregation key and onto the invoice
-		final InvoiceVATaxIds invoiceVATaxIds = vatTaxIdResolver.resolve(icRecord, icInOutLine);
+		final InvoiceVATaxIds invoiceVATaxIds = resolveInvoiceVATaxIds(icRecord, icInOutLine);
 
 		//
 		// Get and parse aggregation key
@@ -443,6 +443,21 @@ public final class AggregationEngine
 		// Add invoice candidate to invoice line aggregator
 		final IInvoiceLineAggregationRequest icAggregationRequest = icAggregationRequestBuilder.build();
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
+	}
+
+	@Nullable
+	private InvoiceVATaxIds resolveInvoiceVATaxIds(@NonNull final I_C_Invoice_Candidate icRecord, @Nullable final I_M_InOutLine inOutLine)
+	{
+		try
+		{
+			return vatTaxIdResolver.resolve(icRecord, inOutLine);
+		}
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+					.setParameter("C_Invoice_Candidate_ID", icRecord.getC_Invoice_Candidate_ID())
+					.setParameter("M_InOutLine_ID", inOutLine != null ? inOutLine.getM_InOutLine_ID() : null);
+		}
 	}
 
 	@NonNull

@@ -35,7 +35,7 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
+import de.metas.invoicecandidate.vatid.NoVATaxIdsResolver;
 import de.metas.money.MoneyService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
@@ -47,7 +47,6 @@ import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
-import org.mockito.Mockito;
 
 /**
  * Makes sure the invoice candidates get the right locks along the "enqueue to invoice" process.
@@ -68,9 +67,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
-		// these fixtures lack the master data a real sales invoice candidate has (partner group, shipment location, taxes per country);
-		// the VAT IDs of the invoice are not what they test, so they are not resolved here (InvoiceCandidateLineTaxResolverTest and the vatIdByDelivery cucumber features do)
-		SpringContextHolder.registerJUnitBean(InvoiceCandidateVATaxIdResolver.class, Mockito.mock(InvoiceCandidateVATaxIdResolver.class));
+		NoVATaxIdsResolver.register(); // these fixtures lack the master data to resolve real VAT IDs
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 		SpringContextHolder.registerJUnitBean(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(MatchInvoiceService.newInstanceForUnitTesting());

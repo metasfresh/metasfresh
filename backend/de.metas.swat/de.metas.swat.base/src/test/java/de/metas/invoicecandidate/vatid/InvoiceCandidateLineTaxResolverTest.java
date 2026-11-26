@@ -249,7 +249,6 @@ class InvoiceCandidateLineTaxResolverTest
 		euAreaId = countryArea.getC_CountryArea_ID();
 	}
 
-
 	private void createCountry(final int countryId, final String countryCode)
 	{
 		final I_C_Country country = newInstance(I_C_Country.class);

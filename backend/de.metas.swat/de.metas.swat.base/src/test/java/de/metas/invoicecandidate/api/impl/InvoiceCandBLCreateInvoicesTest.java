@@ -44,7 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
-import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
+import de.metas.invoicecandidate.vatid.NoVATaxIdsResolver;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
 import de.metas.user.UserRepository;
@@ -70,7 +70,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -162,9 +161,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
-		// these fixtures lack the master data a real sales invoice candidate has (partner group, shipment location, taxes per country);
-		// the VAT IDs of the invoice are not what they test, so they are not resolved here (InvoiceCandidateLineTaxResolverTest and the vatIdByDelivery cucumber features do)
-		SpringContextHolder.registerJUnitBean(InvoiceCandidateVATaxIdResolver.class, Mockito.mock(InvoiceCandidateVATaxIdResolver.class));
+		NoVATaxIdsResolver.register(); // these fixtures lack the master data to resolve real VAT IDs
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
