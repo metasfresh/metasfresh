@@ -8,7 +8,7 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface 	I_C_OrderLine 
+public interface I_C_OrderLine 
 {
 
 	String Table_Name = "C_OrderLine";
