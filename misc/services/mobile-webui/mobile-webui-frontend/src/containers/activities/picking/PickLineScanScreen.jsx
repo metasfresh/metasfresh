@@ -201,7 +201,7 @@ const PickLineScanScreen = () => {
     ? computeSuggestedQty({ lastTypedQty: cuEntry?.lastTypedQty, qtyOpen: qtyToPickRemaining }) ?? undefined
     : undefined;
 
-  const onResult = usePostQtyPicked({
+  const postQtyPicked = usePostQtyPicked({
     wfProcessId,
     activityId,
     lineId,
@@ -212,6 +212,9 @@ const PickLineScanScreen = () => {
     sourceHUQRCode: computeSourceHUQRCode({ qrCode, activity }),
     onClose,
   });
+
+  // a count confirmed while a TU is being opened (button or GRAI scan) goes into that TU
+  const onResult = (result) => nextTU.bookAfterTUOpened(() => postQtyPicked(result));
 
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {

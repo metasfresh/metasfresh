@@ -1,4 +1,6 @@
 import { test } from "../../../playwright.config";
+import { expect } from "@playwright/test";
+import { expectErrorToast } from "../../utils/common";
 import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
@@ -12,6 +14,7 @@ import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
 import { allureMeta, book, graiTuType, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_TU, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
 import { MESSAGES } from "../../utils/cuQtyEntryMessages";
+import { delayRequests, delayResponses } from "../../utils/network";
 import { createScanEachMasterdata, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
@@ -56,6 +59,81 @@ test('GRAI scan with a TU open (customer GRAI not required): the open TU is clos
 });
 
 // noinspection JSUnusedLocalSymbols
+test('GRAI scan with a slow request (count typed and OK pressed before the crate is opened): the count is booked into the new TU', async ({ page }) => {
+    allureMeta('Next TU by GRAI');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const grai = masterdata.packingInstructions.G1.grai;
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
+    await book({ qty: 5, expectedQtyTarget: 15 });
+
+    // the picker scans the next crate and types its count at once; the crate's answer comes later
+    const restoreTargetSpeed = await delayRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST', delayMs: 4000 });
+    await PickLineScanScreen.rescanGrai(grai);
+    await book({ qty: 5, expectedQtyTarget: 10 });
+    await restoreTargetSpeed();
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                }
+            }
+        },
+        hus: {
+            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: null } },
+            tu2: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: grai } },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('GRAI scan with a slow answer (crate opened, its answer late; count typed and OK pressed meanwhile): the open quantity shown stays the booked one', async ({ page }) => {
+    allureMeta('Next TU by GRAI');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const grai = masterdata.packingInstructions.G1.grai;
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
+    await book({ qty: 5, expectedQtyTarget: 15 });
+
+    // the server opens the crate at once, its answer reaches the handheld late (it still says 15 open)
+    const restoreAnswerSpeed = await delayResponses({ urlPattern: /\/picking\/job\/[^/]+\/target\/tu/, method: 'POST', delayMs: 4000 });
+    await PickLineScanScreen.rescanGrai(grai);
+    await book({ qty: 5, expectedQtyTarget: 10 });
+    await restoreAnswerSpeed();
+    await GetQuantityDialog.expectQtyTarget(10);
+
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                }
+            }
+        },
+        hus: {
+            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: null } },
+            tu2: { qtyTUs: 1, storages: { P1: '5 PCE' }, attributes: { GRAI: grai } },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('GRAI of a TU type without capacity for the product is refused; the open TU stays and takes the next booking', async ({ page }) => {
     allureMeta('Next TU by GRAI');
 
@@ -76,6 +154,53 @@ test('GRAI of a TU type without capacity for the product is refused; the open TU
 
     // the TU is unchanged: the next booking goes into it, nothing was booked by the refused scan
     await book({ qty: 3, expectedQtyTarget: 12 });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                }
+            }
+        },
+        hus: { tu1: { qtyTUs: 1, storages: { P1: '8 PCE' }, attributes: { GRAI: null } } },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('GRAI of a TU type without capacity, slow refusal (count typed and OK pressed before it): one error, nothing is booked, the typed count stays for the open TU', async ({ page }) => {
+    allureMeta('Next TU by GRAI');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
+        // the TU type of this GRAI has a capacity row for P2 only, none for the line's product P1
+        products: { P2: { price: 1 } },
+        packingInstructions: { GN: { tu: 'TU_GN', product: 'P2', qtyCUsPerTU: 4, graiMapping: true } },
+    });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
+    await book({ qty: 5, expectedQtyTarget: 15 });
+
+    const restoreTargetSpeed = await delayRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST', delayMs: 4000 });
+    // one error: the crate's refusal; the count waiting for that crate is not booked anywhere
+    await expectErrorToast(
+        'slow GRAI refusal, OK pressed before it',
+        async () => {
+            await PickLineScanScreen.rescanGrai(masterdata.packingInstructions.GN.grai);
+            await GetQuantityDialog.typeQtyEntered(3);
+            await page.getByTestId('done-button').tap();
+        },
+        ({ textContent }) => expect(textContent).toContain(MSG_NO_CAPACITY)
+    );
+    await restoreTargetSpeed();
+    await GetQuantityDialog.waitForDialog();
+
+    // the refused crate booked nothing; the typed count is still there and OK books it into the open TU
+    await GetQuantityDialog.expectQtyTarget(15);
+    await GetQuantityDialog.expectQtyEntered(3);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 12 });
     await Backend.expect({
         pickings: {
             [pickingJobId]: {

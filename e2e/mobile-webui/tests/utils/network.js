@@ -40,3 +40,35 @@ export const delayRequests = async ({ urlPattern, delayMs, method }) => {
         await page.unroute(urlPattern);
     };
 };
+
+/**
+ * Lets every request of the given method to the url pattern reach the backend at once, but holds its answer back (a slow network on the way back).
+ * @param {{urlPattern: RegExp, delayMs: number, method?: string}} params `method`: only answers to requests of this HTTP method are held
+ * @returns {Promise<() => Promise<void>>} waits until every held answer has reached the page, then ends the interception
+ */
+export const delayResponses = async ({ urlPattern, delayMs, method }) => {
+    const pendingHandlers = new Set();
+
+    await page.route(urlPattern, async (route) => {
+        const handling = (async () => {
+            if (method && route.request().method() !== method) {
+                await route.continue();
+                return;
+            }
+            const response = await route.fetch();
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+            await route.fulfill({ response });
+        })();
+        pendingHandlers.add(handling);
+        try {
+            await handling;
+        } finally {
+            pendingHandlers.delete(handling);
+        }
+    });
+
+    return async () => {
+        await Promise.all([...pendingHandlers]);
+        await page.unroute(urlPattern);
+    };
+};

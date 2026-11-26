@@ -10,6 +10,9 @@ import { UserMessageError } from '../../../utils/UserMessageError';
 import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
 import { trl } from '../../../utils/translations';
 
+/** Result of a booking that was not sent (the TU it waited for could not be opened); see ScanHUAndGetQtyComponent `isNotBooked` */
+export const NOT_BOOKED = Object.freeze({ isNotBooked: true });
+
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
 /** Closes the open TU target (if any), then opens a new TU of the line's TU packing, or goes to the target selection when the line has no TU packing. */
@@ -49,6 +52,8 @@ export const useOpenNextTU = ({
   const [isProcessing, setProcessing] = useState(false);
   // synchronous twin of isProcessing: a second tap before the next render must not open a second TU
   const isInFlightRef = useRef(false);
+  // the TU opening in flight (button or GRAI scan), so a booking can wait for it (see bookAfterTUOpened)
+  const openingRef = useRef(null);
 
   const isTargetOpen = tuPickingTarget != null;
   const updateWF = (wfProcess) => dispatch(updateWFProcess({ wfProcess }));
@@ -67,16 +72,36 @@ export const useOpenNextTU = ({
     }
     isInFlightRef.current = true;
     setProcessing(true);
+    const opening = action();
+    openingRef.current = opening;
     try {
-      await action();
+      await opening;
     } catch (error) {
       if (isRethrow) throw error;
       toastErrorFromObj(error);
     } finally {
+      openingRef.current = null;
       isInFlightRef.current = false;
       setProcessing(false);
     }
   }, []);
+
+  /**
+   * Books once the TU opening in flight (if any) is done, so the count goes into the TU the picker just opened.
+   * A booking sent during the opening would land in the previous TU, and the opening's later answer would overwrite the booking's newer job state on screen.
+   * When the opening fails, nothing is booked and the result is {@link NOT_BOOKED}: the opening already showed its error (one error toast),
+   * and the quantity block keeps the typed count for the TU that stays open.
+   */
+  const bookAfterTUOpened = useCallback(
+    (book) =>
+      openingRef.current
+        ? openingRef.current.then(
+            () => book(),
+            () => NOT_BOOKED
+          )
+        : book(),
+    []
+  );
 
   const onNextTU = () =>
     runExclusive(async () => {
@@ -110,5 +135,5 @@ export const useOpenNextTU = ({
       { isRethrow: true }
     );
 
-  return { isProcessing, onNextTU, onGraiScanned };
+  return { isProcessing, onNextTU, onGraiScanned, bookAfterTUOpened };
 };

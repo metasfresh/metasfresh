@@ -404,8 +404,8 @@ const ScanHUAndGetQtyComponent = ({
     const resultPromise = onResult(result);
     return isRepeatedBooking && resultPromise?.then
       ? resultPromise.then((value) => {
-          // a done line navigates away: nothing to reset there
-          if (!result.isDone) {
+          // a done line navigates away: nothing to reset there; a booking that was not sent keeps the typed count
+          if (!result.isDone && !value?.isNotBooked) {
             setQuantityBlockKey((key) => key + 1);
           }
           return value;
