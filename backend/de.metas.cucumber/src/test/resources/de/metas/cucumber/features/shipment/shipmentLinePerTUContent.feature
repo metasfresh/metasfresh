@@ -55,6 +55,7 @@ Feature: Shipment line per TU content
       | M_HU_PI_Version_ID | M_Attribute.Value | UseInASI |
       | 100                | Lot-Nummer        | Y        |
     And M_ShipmentSchedule_AttributeConfig is active for M_Attribute.Value Lot-Nummer
+    # M_Attribute.Value 1000001 is the list attribute 'Herkunft' (country of origin) of the seed database; the scenarios below use it as the second attribute that splits a shipment line.
     And M_ShipmentSchedule_AttributeConfig is active for M_Attribute.Value 1000001
 
   @Id:S34165_10

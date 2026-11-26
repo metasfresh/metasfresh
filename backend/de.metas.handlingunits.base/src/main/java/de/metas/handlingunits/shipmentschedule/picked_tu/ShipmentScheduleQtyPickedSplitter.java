@@ -107,7 +107,10 @@ class ShipmentScheduleQtyPickedSplitter
 			}
 			return source;
 		}
-		return splitOff(source, partQty, catchWeightShare);
+		else
+		{
+			return splitOff(source, partQty, catchWeightShare);
+		}
 	}
 
 	/**

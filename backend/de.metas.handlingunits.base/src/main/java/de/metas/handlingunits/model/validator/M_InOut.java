@@ -50,6 +50,7 @@ import de.metas.inout.InOutId;
 import de.metas.material.MovementType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -69,6 +70,7 @@ import java.util.TreeSet;
 
 @Interceptor(I_M_InOut.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOut
 {
 	private static final String SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned = "CustomerReturnsInOut.FailIfNoHUsAssigned";
@@ -87,14 +89,6 @@ public class M_InOut
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
-
-	public M_InOut(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade,
-			@NonNull final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService)
-	{
-		this.returnsServiceFacade = returnsServiceFacade;
-		this.shipmentReversalPickRestoreService = shipmentReversalPickRestoreService;
-	}
 
 	@Init
 	public void init()
