@@ -17,14 +17,16 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * the stored value 20.11.2026 is November: a calendar that opens on today's month is distinguishable
  * from one that opens on the value's month.
  *
- * Scenarios (REQUIREMENTS.md section 5):
- * - TC3: the calendar opened on a cell holding 20.11.2026 shows November 2026, not today's month.
+ * Scenarios:
+ * - the calendar opened on a cell holding 20.11.2026 shows November 2026, not today's month.
  *   The value is injected as the display string "20.11.2026" (not ISO): it does not parse to a valid
- *   moment, so react-datetime has no selectedDate and opens on today's month (the customer's symptom).
+ *   moment, so react-datetime has no selectedDate and opens on today's month (the reported symptom).
  *   A clean ISO value opens on the value's month on the unfixed code, so it could not be RED.
- * - TC5b (keyboard spec) is a regression guard that passes on the unfixed code by design.
- * - TC4a: entering the cell by keyboard (Tab) does NOT open the calendar, and typing works
- * - TC4b: a single pointer click on the static date cell DOES open the calendar
+ * - 'Enter without typing keeps the stored value' (keyboard spec) is a regression guard that passes on the unfixed code by design.
+ * - entering the cell by keyboard (Tab) does NOT open the calendar, and typing works
+ * - a single pointer click on the static date cell DOES open the calendar
+ * - after that single click, typing a date REPLACES the stored one (before, the caret
+ *   landed at the end of the text, so `20.11.2026` + typing `03.12.2026` gave `20.11.202603.12.2026`)
  *
  * Features tested:
  * - F5010: Order Lines Grid
@@ -140,7 +142,7 @@ async function serveOrderLinesWithDateColumn(page, { field, caption, initialValu
   return state;
 }
 
-/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the customer's time zone */
+/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the user's time zone */
 function patchedDay(patchValue) {
   const date = new Date(patchValue);
   const parts = new Intl.DateTimeFormat('de-DE', {
@@ -205,7 +207,7 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
     allure.severity('critical');
   });
 
-  test('TC3: the calendar opened on a cell holding 20.11.2026 shows the value month (November 2026)', async ({
+  test('the calendar opened on a cell holding 20.11.2026 shows the value month (November 2026)', async ({
     page,
   }) => {
     test.setTimeout(300000);
@@ -227,7 +229,7 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
     ).toContainText(/(November|Nov)/i);
   });
 
-  test('TC4a: entering the cell by keyboard does not open the calendar, and typing works', async ({ page }) => {
+  test('entering the cell by keyboard does not open the calendar, and typing works', async ({ page }) => {
     test.setTimeout(300000);
     await page.clock.setFixedTime(FIXED_NOW);
     await page.setViewportSize({ width: 1920, height: 1080 });
@@ -247,7 +249,34 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
     );
   });
 
-  test('TC4b: a single pointer click on the static date cell opens the calendar', async ({ page }) => {
+  test('the calendar icon of the open grid Date editor does not overlap the date text', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.clock.setFixedTime(FIXED_NOW);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await dateCell.dblclick();
+    const input = dateCell.locator('.datepicker input.js-input-field').first();
+    const icon = dateCell.locator('.datepicker .meta-icon-calendar').first();
+    await expect(input, 'the grid Date editor is open').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(icon, 'the calendar icon is shown next to the input').toBeVisible();
+
+    const inputBox = await input.boundingBox();
+    const iconBox = await icon.boundingBox();
+    const paddingRight = await input.evaluate((el) => parseFloat(getComputedStyle(el).paddingRight));
+    const textRightEdge = inputBox.x + inputBox.width - paddingRight; // the date text never extends past this
+    expect(
+      iconBox.x,
+      `the calendar icon (left edge ${iconBox.x}) starts at or after the right edge of the input's text area (${textRightEdge})`
+    ).toBeGreaterThanOrEqual(textRightEdge - 1);
+  });
+
+  test('a single pointer click on the static date cell opens the calendar', async ({ page }) => {
     test.setTimeout(300000);
     await page.clock.setFixedTime(FIXED_NOW);
     await page.setViewportSize({ width: 1920, height: 1080 });
@@ -261,5 +290,32 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
 
     await dateCell.click();
     await expect(calendar(page), 'one pointer click opens the calendar').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+  });
+
+  test('a single click on a date cell then typing replaces the stored date (not appended), PATCHed', async ({
+    page,
+  }) => {
+    test.setTimeout(300000);
+    await page.clock.setFixedTime(FIXED_NOW);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+    await expect(dateCellText(dateCell), 'the stored value is shown').toHaveText(STORED_DISPLAY_VALUE);
+
+    await dateCell.click();
+    const input = dateCell.locator('.datepicker input.js-input-field').first();
+    await expect(input, 'one pointer click opens the grid Date editor').toBeFocused({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(calendar(page), 'one pointer click opens the calendar').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await page.keyboard.type('03.12.2026', { delay: 50 });
+    await expect(input, 'the typed date REPLACES the stored one (not appended to 20.11.2026)').toHaveValue('03.12.2026');
+    await page.keyboard.press('Tab'); // leave the cell: the typed date is saved on blur
+
+    await expect.poll(() => state.patches.length, { message: 'a PATCH carries the new date', timeout: 10000 }).toBe(1);
+    expect(patchedDay(state.patches[0].value), 'the PATCH denotes the typed day').toBe('03.12.2026');
+    await expect(dateCellText(dateCell), 'the cell shows exactly the new date after leaving it').toHaveText('03.12.2026');
   });
 });
