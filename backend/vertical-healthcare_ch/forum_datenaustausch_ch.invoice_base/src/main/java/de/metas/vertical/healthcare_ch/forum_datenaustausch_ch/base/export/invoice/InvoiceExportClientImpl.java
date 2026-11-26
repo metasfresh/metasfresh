@@ -135,9 +135,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocSubType());
 			return false;
 		}
-		if (HealthCareInvoiceDocSubType.EA.equals(docType))
+		if (HealthCareInvoiceDocSubType.EA.equals(docType) || HealthCareInvoiceDocSubType.GM.equals(docType))
 		{
-			logger.debug("The given invoice's DocSubType=EA (patient-invoice) is not supposed to be exported; -> return false");
+			logger.debug("The given invoice's DocSubType={} (patient/municipality invoice) is not supposed to be exported; -> return false", docType);
 			return false;
 		}
 
