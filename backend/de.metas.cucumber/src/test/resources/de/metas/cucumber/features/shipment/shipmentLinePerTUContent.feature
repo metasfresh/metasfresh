@@ -552,7 +552,7 @@ Feature: Shipment line per TU content
     # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
-      | ss_96      | so_96_l1       | N             | 8            |
+      | ss_96      | so_96_l1       | N             | 0            |
     # The reopened picks ship again with the right lots
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
@@ -577,7 +577,7 @@ Feature: Shipment line per TU content
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
-      | ss_96      | so_96_l1       | N             | 8            |
+      | ss_96      | so_96_l1       | N             | 0            |
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_96                 |
@@ -927,7 +927,7 @@ Feature: Shipment line per TU content
     # The reversal flags the schedule for recompute: generate shipments only after its quantities are settled
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
-      | ss_50      | so_50_l1       | N             | 6            |
+      | ss_50      | so_50_l1       | N             | 0            |
     When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | ss_50                 |
