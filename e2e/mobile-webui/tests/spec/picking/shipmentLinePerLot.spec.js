@@ -12,6 +12,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/scre
 
 // Shipment lines of a picked box that holds units of several lots: one shipment line per lot
 // (shipment policy CL, the lot is a shipment-line aggregation key).
+// The shipment lines follow the pick order, and the test backend compares them in that order.
 
 const LOT_ATTRIBUTE = 'Lot-Nummer';
 
@@ -113,7 +114,6 @@ test('mixed-lot box: one shipment line per lot', async ({ page }) => {
         salesOrders: {
             SO1: {
                 shipments: [{
-                    // the shipment lines follow the pick order (L1, L2, L3), and the test backend compares them in that order
                     lines: [
                         { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
                         { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
