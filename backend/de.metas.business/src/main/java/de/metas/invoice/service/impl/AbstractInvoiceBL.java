@@ -34,7 +34,6 @@ import de.metas.allocation.api.InvoiceOpenRequest;
 import de.metas.allocation.api.InvoiceOpenResult;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -71,7 +70,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
@@ -85,6 +83,9 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.InvoiceLineReTaxInput;
+import de.metas.invoice.service.InvoiceLineTaxLocationProviders;
+import de.metas.invoice.service.TaxLocationAndFromCountry;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -92,6 +93,9 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -135,6 +139,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -1519,35 +1524,74 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 
 		for (final I_C_InvoiceLine il : lines)
 		{
-			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
-
-			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
-			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
-
-			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
-
-			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
-
-			final BPartnerLocationAndCaptureId taxBPartnerLocationId = io != null
-					? InOutDocumentLocationAdapterFactory.locationAdapter(io).getBPartnerLocationAndCaptureId()
-					: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
-
-			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
-
-			final CountryId countryFromId = getFromCountryId(invoice, il);
-			final WarehouseId warehouseId = getFromWarehouseId(invoice, il);
-
-			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, warehouseId, taxBPartnerLocationId, isSOTrx);
+			invoiceLineBL.setTaxForInvoiceLine(il, getReTaxInput(invoice, il, null));
 
 			invoiceDAO.save(il);
 		}
+	}
+
+	@Override
+	public InvoiceLineReTaxInput getReTaxInput(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine,
+			@Nullable final Timestamp dateInvoicedOverride)
+	{
+		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
+		if (inoutLineId != null)
+		{
+			final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
+			final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+			return InvoiceLineReTaxInput.ofShipment(io, getFromCountryId(invoice, invoiceLine), getFromWarehouseId(invoice, invoiceLine));
+		}
+
+		final InvoiceLineReTaxInput.InvoiceLineReTaxInputBuilder reTaxInput = InvoiceLineReTaxInput.builder()
+				.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+				.taxDate(CoalesceUtil.coalesceNotNull(dateInvoicedOverride, invoice.getDateInvoiced()))
+				.isSOTrx(invoice.isSOTrx());
+
+		final TaxLocationAndFromCountry deliveryTaxLocation = invoice.isSOTrx() ? getDeliveryTaxLocation(invoiceLine).orElse(null) : null;
+		if (deliveryTaxLocation != null)
+		{
+			return reTaxInput
+					.taxLocation(deliveryTaxLocation.getLocation())
+					.countryFromId(CoalesceUtil.coalesceSuppliersNotNull(deliveryTaxLocation::getFromCountryId, () -> getFromCountryId(invoice, invoiceLine)))
+					.warehouseId(deliveryTaxLocation.getWarehouseId())
+					.build();
+		}
+
+		return reTaxInput
+				.taxLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId())
+				.countryFromId(getFromCountryId(invoice, invoiceLine))
+				.warehouseId(getFromWarehouseId(invoice, invoiceLine))
+				.build();
+	}
+
+	/**
+	 * Where a sales invoice line without shipment line was taxed when it was created: its order line, else what a {@link de.metas.invoice.service.InvoiceLineTaxLocationProvider} knows.
+	 */
+	private Optional<TaxLocationAndFromCountry> getDeliveryTaxLocation(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(invoiceLine.getC_OrderLine_ID());
+		if (orderLineId != null)
+		{
+			// the inputs OrderLineBL.setTax uses
+			final org.compiere.model.I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+			final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
+			return Optional.of(new TaxLocationAndFromCountry(
+					OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId(),
+					Services.get(IWarehouseBL.class).getCountryId(warehouseId),
+					warehouseId));
+		}
+
+		return SpringContextHolder.getBeanOrSupply(InvoiceLineTaxLocationProviders.class, () -> InvoiceLineTaxLocationProviders.of(ImmutableList.of()))
+				.getTaxLocation(invoiceLine);
 	}
 
 	@Override

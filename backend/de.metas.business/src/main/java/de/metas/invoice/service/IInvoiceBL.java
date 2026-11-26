@@ -442,7 +442,29 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 
+	/**
+	 * Re-taxes every line of the given invoice (e.g. after its {@code DateInvoiced} or {@code M_Warehouse_ID} changed) with the inputs of {@link #getReTaxInput}, and saves it.
+	 */
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
+
+	/**
+	 * The inputs with which the given invoice line is re-taxed:
+	 * <ul>
+	 * <li>a line with shipment line: the shipment's org, movement date, partner location and SO flag;</li>
+	 * <li>else the invoice's org, {@code DateInvoiced} (or the given override) and SO flag, and the tax location:
+	 * <ul>
+	 * <li>for a sales invoice line with order line: the order line's delivery location, with the ship-from country and warehouse of the order line's warehouse
+	 * (the inputs the order line was taxed with);</li>
+	 * <li>for another sales invoice line: the location an {@link InvoiceLineTaxLocationProvider} knows (e.g. that of the line's invoice candidates);</li>
+	 * <li>else (lines added by hand, purchase invoices): the invoice's bill location.</li>
+	 * </ul>
+	 * </li>
+	 * </ul>
+	 * Ship-from country and warehouse are {@link #getFromCountryId} and {@link #getFromWarehouseId} unless stated above.
+	 *
+	 * @param dateInvoicedOverride the tax date to use instead of the invoice's {@code DateInvoiced}, e.g. the date a completion will set; {@code null} = the invoice's
+	 */
+	InvoiceLineReTaxInput getReTaxInput(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine, @Nullable Timestamp dateInvoicedOverride);
 
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 

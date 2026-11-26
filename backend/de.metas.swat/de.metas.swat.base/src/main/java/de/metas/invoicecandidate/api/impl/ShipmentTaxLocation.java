@@ -45,6 +45,7 @@ public class ShipmentTaxLocation
 				InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
 				orgId,
 				inOut.getMovementDate(),
-				warehouseId != null ? Services.get(IWarehouseBL.class).getCountryId(warehouseId) : null);
+				warehouseId != null ? Services.get(IWarehouseBL.class).getCountryId(warehouseId) : null,
+				warehouseId);
 	}
 }

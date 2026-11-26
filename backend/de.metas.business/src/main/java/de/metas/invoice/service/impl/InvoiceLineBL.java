@@ -12,12 +12,12 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.InvoiceLineReTaxInput;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -76,7 +76,6 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -172,51 +171,33 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final TaxCategoryId taxCategoryId)
 	{
-		return createTaxQuery(
-				OrgId.ofRepoId(shipment.getAD_Org_ID()),
-				shipment.getMovementDate(),
-				countryFromId,
-				warehouseId,
-				InOutDocumentLocationAdapterFactory.locationAdapter(shipment).getBPartnerLocationAndCaptureId(),
-				shipment.isSOTrx(),
-				taxCategoryId);
+		return createTaxQuery(InvoiceLineReTaxInput.ofShipment(shipment, countryFromId, warehouseId), taxCategoryId);
 	}
 
+	@Override
 	@NonNull
-	private static TaxQuery createTaxQuery(
-			@NonNull final OrgId orgId,
-			@Nullable final Timestamp taxDate,
-			@Nullable final CountryId countryFromId,
-			@Nullable final WarehouseId warehouseId,
-			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
-			final boolean isSOTrx,
-			@Nullable final TaxCategoryId taxCategoryId)
+	public TaxQuery createTaxQuery(@NonNull final InvoiceLineReTaxInput reTaxInput, @Nullable final TaxCategoryId taxCategoryId)
 	{
 		return TaxQuery.builder()
-				.fromCountryId(countryFromId)
-				.warehouseId(warehouseId)
-				.orgId(orgId)
-				.bPartnerLocationId(partnerLocationId)
-				.dateOfInterest(taxDate)
+				.fromCountryId(reTaxInput.getCountryFromId())
+				.warehouseId(reTaxInput.getWarehouseId())
+				.orgId(reTaxInput.getOrgId())
+				.bPartnerLocationId(reTaxInput.getTaxLocation())
+				.dateOfInterest(reTaxInput.getTaxDate())
 				.taxCategoryId(taxCategoryId)
-				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.soTrx(SOTrx.ofBoolean(reTaxInput.isSOTrx()))
 				.build();
 	}
 
 	@Override
 	public boolean setTaxForInvoiceLine(
-			final org.compiere.model.I_C_InvoiceLine il,
-			@NonNull final OrgId orgId,
-			final Timestamp taxDate,
-			final CountryId countryFromId,
-			@Nullable final WarehouseId warehouseId,
-			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
-			final boolean isSOTrx)
+			@NonNull final org.compiere.model.I_C_InvoiceLine il,
+			@NonNull final InvoiceLineReTaxInput reTaxInput)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
 
-		return setTaxForInvoiceLine(il, invoice, taxCategoryId -> createTaxQuery(orgId, taxDate, countryFromId, warehouseId, partnerLocationId, isSOTrx, taxCategoryId));
+		return setTaxForInvoiceLine(il, invoice, taxCategoryId -> createTaxQuery(reTaxInput, taxCategoryId));
 	}
 
 	/**

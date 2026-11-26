@@ -23,9 +23,7 @@ package de.metas.invoice.service;
  */
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
-import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
@@ -36,7 +34,6 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -62,6 +59,11 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * Shared with callers that must predict that tax before the invoice line exists.
 	 */
 	TaxQuery createShipmentTaxQuery(I_M_InOut shipment, CountryId countryFromId, @Nullable WarehouseId warehouseId, @Nullable TaxCategoryId taxCategoryId);
+
+	/**
+	 * The tax query of the given re-tax inputs (see {@link IInvoiceBL#getReTaxInput}) and tax category; {@link #createShipmentTaxQuery} builds the same query.
+	 */
+	TaxQuery createTaxQuery(InvoiceLineReTaxInput reTaxInput, @Nullable TaxCategoryId taxCategoryId);
 
 	/**
 	 * @return true if invoice line's prices are locked (i.e. should be the same as linked OrderLine)
@@ -105,9 +107,11 @@ public interface IInvoiceLineBL extends ISingletonService
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
 	/**
-	 * @param warehouseId the warehouse the line ships from (see {@link de.metas.invoice.service.IInvoiceBL#getFromWarehouseId}); used by the tax query, e.g. for drop-ship warehouses
+	 * Sets the tax of the given re-tax inputs (see {@link IInvoiceBL#getReTaxInput}) on the given line, without saving it.
+	 *
+	 * @return true if the line's tax changed
 	 */
-	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, @Nullable WarehouseId warehouseId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, InvoiceLineReTaxInput reTaxInput);
 
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 

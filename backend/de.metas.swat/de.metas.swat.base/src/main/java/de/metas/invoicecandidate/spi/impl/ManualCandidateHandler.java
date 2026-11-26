@@ -135,7 +135,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 				InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
 				warehouseId != null ? warehouseBL.getWarehouseOrgId(warehouseId) : icOrgId,
 				ic.getDateOrdered(),
-				warehouseId != null ? warehouseBL.getCountryId(warehouseId) : null));
+				warehouseId != null ? warehouseBL.getCountryId(warehouseId) : null,
+				warehouseId));
 	}
 
 	@Override

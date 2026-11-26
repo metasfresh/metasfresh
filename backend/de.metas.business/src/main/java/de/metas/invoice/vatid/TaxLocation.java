@@ -27,13 +27,14 @@ import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 /**
  * Where, by whom and when a line is taxed: the delivery partner location, the org, the tax date
- * and the ship-from country the line's tax code was determined with.
+ * and the ship-from country and warehouse the line's tax code was determined with.
  */
 @Value
 public class TaxLocation
@@ -46,4 +47,32 @@ public class TaxLocation
 	 * The ship-from country the line was taxed with; {@code null} = not known (a re-tax then keeps its default).
 	 */
 	@Nullable CountryId fromCountryId;
+
+	/**
+	 * The warehouse the line's tax code passed to the tax query (e.g. for the warehouse drop-ship rule); {@code null} = none.
+	 */
+	@Nullable WarehouseId warehouseId;
+
+	public TaxLocation(
+			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@NonNull final OrgId orgId,
+			@NonNull final Timestamp taxDate,
+			@Nullable final CountryId fromCountryId)
+	{
+		this(bpartnerLocationId, orgId, taxDate, fromCountryId, null);
+	}
+
+	public TaxLocation(
+			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@NonNull final OrgId orgId,
+			@NonNull final Timestamp taxDate,
+			@Nullable final CountryId fromCountryId,
+			@Nullable final WarehouseId warehouseId)
+	{
+		this.bpartnerLocationId = bpartnerLocationId;
+		this.orgId = orgId;
+		this.taxDate = taxDate;
+		this.fromCountryId = fromCountryId;
+		this.warehouseId = warehouseId;
+	}
 }

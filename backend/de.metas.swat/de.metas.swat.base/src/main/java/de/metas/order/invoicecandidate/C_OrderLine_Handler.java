@@ -559,7 +559,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 				orderLine.getDatePromised(),
-				Services.get(IWarehouseBL.class).getCountryId(warehouseId)));
+				Services.get(IWarehouseBL.class).getCountryId(warehouseId),
+				warehouseId));
 	}
 
 	@Override
