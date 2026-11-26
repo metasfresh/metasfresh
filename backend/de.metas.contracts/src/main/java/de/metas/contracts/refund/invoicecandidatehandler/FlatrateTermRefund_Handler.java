@@ -1,5 +1,8 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
+import java.util.Optional;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.invoice.vatid.TaxLocation;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -215,6 +218,29 @@ public class FlatrateTermRefund_Handler
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.taxId(taxId)
 				.build();
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #calculatePriceAndTax}: the candidate's bill location, the candidate's org and {@code COALESCE(DateOrdered, DateToInvoice)}.
+	 * Empty if that tax code does not run either (no bill location or no date).
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		final Timestamp taxDate = CoalesceUtil.coalesce(invoiceCandidateRecord.getDateOrdered(), invoiceCandidateRecord.getDateToInvoice());
+		if (taxDate == null || invoiceCandidateRecord.getBill_BPartner_ID() <= 0 || invoiceCandidateRecord.getBill_Location_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(invoiceCandidateRecord.getAD_Org_ID());
+		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(invoiceCandidateRecord).getBPartnerLocationAndCaptureId();
+
+		return Optional.of(new TaxLocation(
+				billLocationId.getBpartnerLocationId(),
+				orgId,
+				taxDate,
+				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
 	}
 
 	private PriceListId retrievePriceListIdInCurrency(

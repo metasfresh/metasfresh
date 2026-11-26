@@ -1,5 +1,8 @@
 package de.metas.contracts.commission.invoicecandidate;
 
+import java.util.Optional;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -372,6 +375,23 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return TableRecordReference
 				.ofReferenced(ic)
 				.getModel(I_C_Commission_Share.class);
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #createInvoiceCandidateRecordFor}: the term's bill-to location, the share's org and the candidate's {@code DeliveryDate}.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_C_Commission_Share commissionShareRecord = TableRecordReference.ofReferenced(icRecord).getModel(I_C_Commission_Share.class);
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
+		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
+
+		return Optional.of(new TaxLocation(
+				ContractLocationHelper.extractBillToLocationId(flatrateTerm).getBpartnerLocationId(),
+				orgId,
+				icRecord.getDeliveryDate(),
+				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
 	}
 
 	@Override

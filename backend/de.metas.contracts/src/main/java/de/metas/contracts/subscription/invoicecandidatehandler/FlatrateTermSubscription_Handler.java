@@ -1,5 +1,9 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import java.util.Optional;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
@@ -73,6 +77,30 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				? CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES
 				: CandidatesAutoCreateMode.CREATE_CANDIDATES;
 
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #calculatePriceAndTax}: the term's drop-ship location (else its bill-to), the term's org and the candidate's {@code DateOrdered}.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (ic.getDateOrdered() == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> ContractLocationHelper.extractDropshipLocationId(term),
+				() -> ContractLocationHelper.extractBillToLocationId(term));
+
+		return Optional.of(new TaxLocation(
+				shipToLocationId.getBpartnerLocationId(),
+				orgId,
+				ic.getDateOrdered(),
+				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
 	}
 
 	private boolean isEligibleForInvoiceAutoCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)

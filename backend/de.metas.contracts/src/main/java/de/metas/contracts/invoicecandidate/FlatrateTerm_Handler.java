@@ -1,5 +1,7 @@
 package de.metas.contracts.invoicecandidate;
 
+import java.util.Optional;
+import de.metas.invoice.vatid.TaxLocation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -216,6 +218,13 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
 		return handler.calculatePriceAndTax(ic);
+	}
+
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
+		return getSpecificHandler(term).getTaxLocation(ic);
 	}
 
 	@Override
