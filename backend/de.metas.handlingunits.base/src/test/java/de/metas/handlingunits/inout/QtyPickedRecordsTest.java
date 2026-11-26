@@ -1,4 +1,4 @@
-package de.metas.handlingunits.shipmentschedule.picked_tu;
+package de.metas.handlingunits.inout;
 
 /*
  * #%L

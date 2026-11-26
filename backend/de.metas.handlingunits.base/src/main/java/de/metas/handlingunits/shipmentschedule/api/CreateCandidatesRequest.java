@@ -24,7 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.shipmentschedule.picked_tu.PickedHUsBySchedule;
-import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

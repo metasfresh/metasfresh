@@ -34,7 +34,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.shipmentschedule.api.CreateCandidatesRequest;
-import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;

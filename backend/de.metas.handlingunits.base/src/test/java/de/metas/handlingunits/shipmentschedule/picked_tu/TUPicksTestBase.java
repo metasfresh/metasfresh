@@ -24,8 +24,9 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.inout.ShipmentScheduleId;
+
 import java.util.HashSet;
 import java.util.Set;
 import de.metas.handlingunits.AbstractHUTest;

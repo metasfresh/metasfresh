@@ -1,4 +1,4 @@
-package de.metas.handlingunits.shipmentschedule.picked_tu;
+package de.metas.handlingunits.inout;
 
 /*
  * #%L
@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
+import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -37,6 +38,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 /**
@@ -61,7 +63,13 @@ public final class QtyPickedRecords implements Iterable<I_M_ShipmentSchedule_Qty
 		return rows.isEmpty() ? EMPTY : new QtyPickedRecords(ImmutableList.copyOf(rows));
 	}
 
+	public static Collector<I_M_ShipmentSchedule_QtyPicked, ?, QtyPickedRecords> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(QtyPickedRecords::of);
+	}
+
 	@Override
+	@NonNull
 	public Iterator<I_M_ShipmentSchedule_QtyPicked> iterator()
 	{
 		return rows.iterator();

@@ -31,20 +31,17 @@ import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.vendor.VendorReturnFromReceiptHUHandler;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentReversalPickRestoreService;
 import de.metas.handlingunits.shipping.IHUPackageBL;
-import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
@@ -81,13 +78,11 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
 
@@ -116,6 +111,7 @@ public class M_InOut
 	public void addPackingMaterialLinesForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
+		//noinspection StatementWithEmptyBody
 		if (movementType.isOutboundTransaction() && shipment.isSOTrx())
 		{
 			huInOutBL.createPackingMaterialLines(shipment);
@@ -252,8 +248,8 @@ public class M_InOut
 			return;
 		}
 
-		final QtyPickedRecords assignedQuantities = QtyPickedRecords.of(
-				huShipmentAssignmentBL.retrieveAssignedQuantities(shipment));
+		final QtyPickedRecords assignedQuantities = huShipmentAssignmentBL.retrieveAssignedQuantities(shipment);
+		
 		//
 		// Remove all HU Assignments
 		huShipmentAssignmentBL.removeHUAssignments(shipment);
@@ -276,6 +272,7 @@ public class M_InOut
 
 		//
 		// Shipment
+		//noinspection StatementWithEmptyBody
 		if (inout.isSOTrx())
 		{
 			// TODO: change HUStatus from Shipped back to Picked
