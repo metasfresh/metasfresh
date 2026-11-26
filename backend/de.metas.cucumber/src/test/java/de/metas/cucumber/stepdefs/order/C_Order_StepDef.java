@@ -37,7 +37,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.DocumentProcessingInTrx;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -103,6 +102,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -129,6 +129,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -200,6 +201,7 @@ public class C_Order_StepDef
 
 	@NonNull private final Logger logger = LogManager.getLogger(C_Order_StepDef.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -576,7 +578,7 @@ public class C_Order_StepDef
 		{
 			case reactivated:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				processExInTrx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
 				logger.info("Order {} was reactivated", order);
 				break;
 			case completed:
@@ -584,15 +586,15 @@ public class C_Order_StepDef
 				break;
 			case closed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				processExInTrx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			case voided:
 				order.setDocAction(IDocument.ACTION_Complete);
-				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				processExInTrx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			case reversed:
 				order.setDocAction(IDocument.ACTION_Complete);
-				DocumentProcessingInTrx.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				processExInTrx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
@@ -980,6 +982,21 @@ public class C_Order_StepDef
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::validateLinkedOrderIsCreated);
+	}
+
+	/**
+	 * Runs the doc-action <b>and</b> the subsequent save of the document header in ONE transaction, like the WebUI does
+	 * (it runs each document action within a transaction).
+	 * <p>
+	 * Without an enclosing transaction, {@link IDocumentBL#processEx(Object, String, String)} lets the document engine commit
+	 * its own transaction <i>before</i> it saves the header with the new {@code DocStatus}. An async consumer running in between
+	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
+	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the order as completed,
+	 * and the candidate keeps its pre-reactivation values.
+	 */
+	private void processExInTrx(@NonNull final Object document, @NonNull final String docAction, @Nullable final String expectedDocStatus)
+	{
+		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(document, docAction, expectedDocStatus));
 	}
 
 	private void validateLinkedOrderIsCreated(@NonNull final DataTableRow row)
