@@ -126,6 +126,12 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
+	public boolean exists(@NonNull final UserId adUserId)
+	{
+		return retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId()) != null;
+	}
+
+	@Override
 	public org.compiere.model.I_AD_User getById(@NonNull final UserId adUserId)
 	{
 		final org.compiere.model.I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());

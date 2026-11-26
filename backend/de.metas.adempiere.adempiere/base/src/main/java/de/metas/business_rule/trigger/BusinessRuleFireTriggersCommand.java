@@ -18,13 +18,11 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -78,15 +76,9 @@ public class BusinessRuleFireTriggersCommand
 	@VisibleForTesting
 	static UserId extractTriggeringUserId(@NonNull final IUserDAO userDAO, @NonNull final Object sourceModel)
 	{
-		final Object updatedByObj = InterfaceWrapperHelper.getValueOrNull(sourceModel, "UpdatedBy");
-		final UserId updatedBy = UserId.ofRepoIdOrSystem(NumberUtils.asInt(updatedByObj, -1));
-		if (updatedBy.equals(UserId.SYSTEM))
-		{
-			return UserId.SYSTEM;
-		}
-
-		final boolean isUserExisting = userDAO.retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
-		return isUserExisting ? updatedBy : UserId.SYSTEM;
+		return InterfaceWrapperHelper.getUpdatedByIfExists(sourceModel)
+				.filter(updatedBy -> updatedBy.isSystemUser() || userDAO.exists(updatedBy))
+				.orElse(UserId.SYSTEM);
 	}
 
 	public void execute()

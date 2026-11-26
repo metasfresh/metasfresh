@@ -1212,9 +1212,15 @@ public class InterfaceWrapperHelper
 	@NonNull
 	public static UserId getUpdatedBy(@NonNull final Object model)
 	{
-		return getValue(model, "UpdatedBy")
-				.map(userIdObj -> RepoIdAwares.ofObject(userIdObj, UserId.class))
+		return getUpdatedByIfExists(model)
 				.orElseThrow(() -> new AdempiereException("Cannot determine UpdatedBy from " + model));
+	}
+
+	@NonNull
+	public static Optional<UserId> getUpdatedByIfExists(@NonNull final Object model)
+	{
+		return getValue(model, "UpdatedBy")
+				.map(userIdObj -> RepoIdAwares.ofObjectOrNull(userIdObj, UserId.class));
 	}
 
 	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
