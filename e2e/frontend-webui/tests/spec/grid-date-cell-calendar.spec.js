@@ -247,6 +247,33 @@ test.describe('Grid Date cell - calendar (de_DE, browser clock fixed to 2026-10-
     );
   });
 
+  test('TC6: the calendar icon of the open grid Date editor does not overlap the date text', async ({ page }) => {
+    test.setTimeout(300000);
+    await page.clock.setFixedTime(FIXED_NOW);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const state = await serveOrderLinesWithDateColumn(page, {
+      field: DATE_FIELD,
+      caption: 'MHD',
+      initialValue: STORED_WIRE_VALUE,
+    });
+    const { dateCell } = await openOrderLineGrid(page, state, DATE_FIELD);
+
+    await dateCell.dblclick();
+    const input = dateCell.locator('.datepicker input.js-input-field').first();
+    const icon = dateCell.locator('.datepicker .meta-icon-calendar').first();
+    await expect(input, 'the grid Date editor is open').toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await expect(icon, 'the calendar icon is shown next to the input').toBeVisible();
+
+    const inputBox = await input.boundingBox();
+    const iconBox = await icon.boundingBox();
+    const paddingRight = await input.evaluate((el) => parseFloat(getComputedStyle(el).paddingRight));
+    const textRightEdge = inputBox.x + inputBox.width - paddingRight; // the date text never extends past this
+    expect(
+      iconBox.x,
+      `the calendar icon (left edge ${iconBox.x}) starts at or after the right edge of the input's text area (${textRightEdge})`
+    ).toBeGreaterThanOrEqual(textRightEdge - 1);
+  });
+
   test('TC4b: a single pointer click on the static date cell opens the calendar', async ({ page }) => {
     test.setTimeout(300000);
     await page.clock.setFixedTime(FIXED_NOW);
