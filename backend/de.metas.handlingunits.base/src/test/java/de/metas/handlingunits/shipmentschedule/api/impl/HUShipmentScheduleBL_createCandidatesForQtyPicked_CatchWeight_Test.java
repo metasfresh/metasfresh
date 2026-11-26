@@ -165,10 +165,11 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		final List<ShipmentScheduleWithHU> candidates = createCandidates(record, helper.getHUContext());
 
 		assertThat(candidates).hasSize(3);
-		assertCatchQtys(candidates, "3.333", "3.333", "3.334");
+		// 10 kg over 3 pieces, rounded up cumulatively (UOMPrecision#getRoundingMode): the first part takes the indivisible gram
+		assertCatchQtys(candidates, "3.334", "3.333", "3.333");
 		final List<I_M_ShipmentSchedule_QtyPicked> records = retrieveAllRecords(schedule);
 		assertThat(records).hasSize(3);
-		assertRecordCatch(records, "3.333", "3.333", "3.334");
+		assertRecordCatch(records, "3.334", "3.333", "3.333");
 		assertThat(sumCatch(records)).isEqualByComparingTo("10.000");
 	}
 
@@ -214,9 +215,9 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 
 		final List<I_M_ShipmentSchedule_QtyPicked> records = retrieveAllRecords(schedule);
 		assertThat(records).hasSize(3);
-		assertRecordCatch(records, "3.333", "3.333", "3.334");
+		assertRecordCatch(records, "3.334", "3.333", "3.333");
 		assertThat(rerunCandidates).hasSize(3);
-		assertCatchQtys(rerunCandidates, "3.333", "3.333", "3.334");
+		assertCatchQtys(rerunCandidates, "3.334", "3.333", "3.333");
 		assertThat(sumCatch(records)).isEqualByComparingTo("10.000");
 	}
 
