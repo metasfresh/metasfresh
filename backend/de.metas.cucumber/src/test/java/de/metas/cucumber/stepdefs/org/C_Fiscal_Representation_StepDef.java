@@ -57,9 +57,9 @@ public class C_Fiscal_Representation_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>AD_Org_ID</b> — (optional, identifier-ref) the organisation; defaults to the standard test organisation<br>
 	 *   <b>To_Country_ID.CountryCode</b> — (required) ISO code of the destination country<br>
-	 *   <b>VATaxID</b> — (required) the VAT ID the representative holds in that country<br>
-	 *   <b>C_BPartner_Representative_ID</b> — (required, identifier-ref) the representative partner<br>
-	 *   <b>C_BPartner_Location_ID</b> — (required, identifier-ref) the representative's location<br>
+	 *   <b>VATaxID</b> — (optional) the organisation's VAT ID in that country; empty for a registration through a representative that holds it<br>
+	 *   <b>C_BPartner_Representative_ID</b> — (optional, identifier-ref) the representative partner; empty for an own registration<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) the representative's location<br>
 	 *   <b>ValidFrom</b> — (required) start date<br>
 	 *   <b>ValidTo</b> — (optional) end date
 	 * @cucumber.depends StepDefData: AD_Org_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
@@ -88,9 +88,13 @@ public class C_Fiscal_Representation_StepDef
 				.orElseThrow(() -> new IllegalArgumentException("Column To_Country_ID.CountryCode is missing: " + row)));
 		record.setTo_Country_ID(toCountryId.getRepoId());
 
-		record.setVATaxID(row.getAsString(I_C_Fiscal_Representation.COLUMNNAME_VATaxID));
-		record.setC_BPartner_Representative_ID(row.getAsIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Representative_ID).lookupNotNullIn(bpartnerTable).getC_BPartner_ID());
-		record.setC_BPartner_Location_ID(row.getAsIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Location_ID).lookupNotNullIn(bpartnerLocationTable).getC_BPartner_Location_ID());
+		row.getAsOptionalString(I_C_Fiscal_Representation.COLUMNNAME_VATaxID).ifPresent(record::setVATaxID);
+		row.getAsOptionalIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Representative_ID)
+				.map(identifier -> identifier.lookupNotNullIn(bpartnerTable).getC_BPartner_ID())
+				.ifPresent(record::setC_BPartner_Representative_ID);
+		row.getAsOptionalIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Location_ID)
+				.map(identifier -> identifier.lookupNotNullIn(bpartnerLocationTable).getC_BPartner_Location_ID())
+				.ifPresent(record::setC_BPartner_Location_ID);
 		record.setValidFrom(row.getAsLocalDateTimestamp(I_C_Fiscal_Representation.COLUMNNAME_ValidFrom));
 		row.getAsOptionalLocalDateTimestamp(I_C_Fiscal_Representation.COLUMNNAME_ValidTo).ifPresent(record::setValidTo);
 

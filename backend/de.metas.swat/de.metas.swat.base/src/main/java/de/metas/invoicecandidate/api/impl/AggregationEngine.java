@@ -57,6 +57,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.FiscalRepresentationId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.product.ProductId;
@@ -358,9 +359,9 @@ public final class AggregationEngine
 					.invoiceCandidate(icRecord)
 					.inoutLine(icInOutLine)
 					.build();
-			// the VAT ID is appended after parsing, so it is never evaluated as an expression,
-			// and neither an aggregation override nor a customer aggregation can drop it
-			headerAggregationKey = appendBuyerVATaxId(headerAggregationKeyUnparsed.parse(evalCtx), invoiceVATaxIds);
+			// the VAT IDs are appended after parsing, so they are never evaluated as an expression,
+			// and neither an aggregation override nor a customer aggregation can drop them
+			headerAggregationKey = appendVATaxIds(headerAggregationKeyUnparsed.parse(evalCtx), invoiceVATaxIds);
 			icAggregationOrNull = Optional.of(icRecord.getHeaderAggregationKeyBuilder_ID())
 					.map(AggregationId::ofRepoIdOrNull)
 					.filter(Objects::nonNull)
@@ -460,14 +461,21 @@ public final class AggregationEngine
 		}
 	}
 
+	/**
+	 * One invoice per buyer VAT ID and per seller VAT ID (with the fiscal representation it comes from), so the values stored on the invoice hold for all its lines.
+	 */
 	@NonNull
-	private static AggregationKey appendBuyerVATaxId(@NonNull final AggregationKey headerAggregationKey, @Nullable final InvoiceVATaxIds invoiceVATaxIds)
+	private static AggregationKey appendVATaxIds(@NonNull final AggregationKey headerAggregationKey, @Nullable final InvoiceVATaxIds invoiceVATaxIds)
 	{
 		if (invoiceVATaxIds == null)
 		{
 			return headerAggregationKey;
 		}
-		return headerAggregationKey.append("BuyerVAT=" + coalesceNotNull(invoiceVATaxIds.getBuyerVATaxId(), "-"));
+		final FiscalRepresentationId fiscalRepresentationId = invoiceVATaxIds.getFiscalRepresentationId();
+		return headerAggregationKey
+				.append("BuyerVAT=" + coalesceNotNull(invoiceVATaxIds.getBuyerVATaxId(), "-"))
+				.append("SellerVAT=" + coalesceNotNull(invoiceVATaxIds.getSellerVATaxId(), "-"))
+				.append("FiscalRep=" + (fiscalRepresentationId != null ? String.valueOf(fiscalRepresentationId.getRepoId()) : "-"));
 	}
 
 	private void addToInvoiceHeader(
