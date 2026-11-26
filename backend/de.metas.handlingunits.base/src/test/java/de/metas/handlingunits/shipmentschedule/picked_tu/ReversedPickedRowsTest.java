@@ -30,7 +30,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
+import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import org.junit.jupiter.api.Test;
 
@@ -198,5 +200,55 @@ class ReversedPickedRowsTest extends TUPicksTestBase
 
 		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of(cuId))).singleElement().satisfies(rowOfCU -> assertThat(rowOfCU.getVHU_ID()).isEqualTo(cuId.getRepoId()));
 		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of())).as("no picking job covers the row").isEmpty();
+	}
+
+	@Test
+	void reopenRequest_listsEveryCUOnceAndOnlyTheSchedulesThatHaveCUs()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule scheduleWithoutHU = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("1"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked rowOfTU = createTUOnlyRow(schedule, tu, "4");
+		final I_M_ShipmentSchedule_QtyPicked rowWithoutHU = createTUOnlyRow(scheduleWithoutHU, tu, "1");
+		rowWithoutHU.setM_TU_HU_ID(0);
+		saveRecord(rowWithoutHU);
+		final ReversedPickedRows reversedRows = new ReversedPickedRows(QtyPickedRecords.of(ImmutableList.of(rowOfTU, rowWithoutHU)), PickedHUsBySchedule.EMPTY);
+
+		final ReopenPickingJobRequest request = reversedRows.toReopenRequest();
+
+		final List<HuId> cuIds = handlingUnitsDAO.retrieveIncludedHUs(tu).stream().map(cu -> HuId.ofRepoId(cu.getM_HU_ID())).collect(ImmutableList.toImmutableList());
+		assertThat(request.getHuIds()).containsExactlyInAnyOrderElementsOf(cuIds);
+		assertThat(request.getShipmentScheduleIds()).containsExactly(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
+		assertThat(reversedRows.getScheduleIds()).containsExactly(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
+	}
+
+	@Test
+	void rowThatReferencesItsCU_isRestoredAsItIs_whenItsCUIsCovered()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked rowOfCU = createTUOnlyRow(schedule, tu, "2");
+		final HuId cuId = HuId.ofRepoId(handlingUnitsDAO.retrieveIncludedHUs(tu).get(0).getM_HU_ID());
+		rowOfCU.setVHU_ID(cuId.getRepoId());
+		saveRecord(rowOfCU);
+		final ReversedPickedRows reversedRows = new ReversedPickedRows(QtyPickedRecords.of(ImmutableList.of(rowOfCU)), PickedHUsBySchedule.EMPTY);
+
+		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of(cuId))).containsExactly(rowOfCU);
+		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of())).as("not covered by a picking job").isEmpty();
+	}
+
+	@Test
+	void rowOfAVirtualTU_standsForNoCU()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = createTUOnlyRow(schedule, tu, "2");
+		final HuId cuId = HuId.ofRepoId(handlingUnitsDAO.retrieveIncludedHUs(tu).get(0).getM_HU_ID());
+		row.setM_TU_HU_ID(cuId.getRepoId()); // a virtual HU in the TU column: no TU to expand
+		saveRecord(row);
+		final ReversedPickedRows reversedRows = new ReversedPickedRows(QtyPickedRecords.of(ImmutableList.of(row)), PickedHUsBySchedule.EMPTY);
+
+		assertThat(reversedRows.toReopenRequest().getHuIds()).isEmpty();
+		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of(cuId))).as("a row of a virtual TU stands for no CU of its own: nothing to restore").isEmpty();
 	}
 }

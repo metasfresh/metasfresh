@@ -219,4 +219,57 @@ class QtyPickedCandidatesCreatorTest extends TUPicksTestBase
 		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_FR)).isEqualByComparingTo("2.100");
 		assertThat(candidatesOfCountry(candidates, HUTestHelper.COUNTRYMADEIN_RO)).isEqualByComparingTo("2.000");
 	}
+
+	@Test
+	void zeroQtyRow_amongTwoCountries_givesAZeroCandidateAndTheOtherRowsStillSplitPerCountry()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		createTUOnlyRow(schedule, tu, "4");
+		final I_M_ShipmentSchedule_QtyPicked zeroRow = createTUOnlyRow(schedule, tu, "0");
+
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(retrieveRows(schedule));
+
+		assertThat(candidates).as("2 DE + 2 FR of the row of 4, and the zero row").hasSize(3);
+		assertThat(candidates)
+				.filteredOn(candidate -> candidate.getQtyPicked().signum() > 0)
+				.extracting(candidate -> candidate.getQtyPicked().toBigDecimal())
+				.allSatisfy(qty -> assertThat(qty).isEqualByComparingTo("2"));
+		assertThat(candidates)
+				.filteredOn(candidate -> candidate.getShipmentScheduleQtyPicked().getM_ShipmentSchedule_QtyPicked_ID() == zeroRow.getM_ShipmentSchedule_QtyPicked_ID())
+				.singleElement()
+				.satisfies(candidate -> assertThat(candidate.getQtyPicked().toBigDecimal()).isZero());
+	}
+
+	@Test
+	void rowOfAnotherProductThanTheCUsOfTheTU_givesTheDefaultCandidate()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE);
+		final I_M_ShipmentSchedule scheduleOfTomato = shipmentScheduleHelper.createShipmentSchedule(helper.pTomato, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
+		final I_M_ShipmentSchedule_QtyPicked row = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
+				scheduleOfTomato,
+				StockQtyAndUOMQtys.ofQtyInStockUOM(Quantity.of(new BigDecimal("2"), uomEach), helper.pTomatoProductId),
+				I_M_ShipmentSchedule_QtyPicked.class);
+		row.setM_TU_HU_ID(tu.getM_HU_ID());
+		saveRecord(row);
+
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(ImmutableList.of(row));
+
+		assertThat(candidates).as("the TU holds no CU of the tomato: nothing to expand").hasSize(1);
+		assertThat(candidates.get(0).getQtyPicked().toBigDecimal()).isEqualByComparingTo("2");
+	}
+
+	@Test
+	void reversalRowWithNegativeQty_isNotHandedTheContentOfTheTU()
+	{
+		final I_M_HU tu = createTU(HUTestHelper.COUNTRYMADEIN_DE, HUTestHelper.COUNTRYMADEIN_FR);
+		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
+		createTUOnlyRow(schedule, tu, "4");
+		createTUOnlyRow(schedule, tu, "-4");
+
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(retrieveRows(schedule));
+
+		assertThat(candidates).as("each row alone: the whole-TU pick splits per country, the negative row stays one candidate").hasSize(3);
+		assertThat(candidates).filteredOn(candidate -> candidate.getQtyPicked().signum() < 0).hasSize(1);
+	}
 }
