@@ -122,8 +122,12 @@ export const HUConsolidationJobScreen = {
 
     /** Expect the first picking slot row to follow the pallet button directly: less than one button height between them, i.e. no gap where the Scan (GRAI) button would be. */
     expectFirstPickingSlotDirectlyBelowPalletButton: async () => await test.step(`${NAME} - Expect the first picking slot directly below the pallet button (no gap)`, async () => {
-        const palletBox = await page.getByTestId('targetLU-button').boundingBox();
-        const slotBox = await page.locator('[data-pickingslotid]').first().boundingBox();
+        const palletButton = page.getByTestId('targetLU-button');
+        const firstSlot = page.locator('[data-pickingslotid]').first();
+        await expect(palletButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(firstSlot).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const palletBox = await palletButton.boundingBox();
+        const slotBox = await firstSlot.boundingBox();
         const gap = slotBox.y - (palletBox.y + palletBox.height);
         expect(gap, 'gap (px) between the pallet button and the first picking slot').toBeLessThan(palletBox.height);
     }),
