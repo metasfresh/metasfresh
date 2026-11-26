@@ -1764,7 +1764,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 					null,
 					null,
 					catchQty.map(qty -> qty.getUomId().getRepoId()).orElse(0),
-					catchQty.map(Quantity::toBigDecimal).orElse(null));
+					catchQty.map(qty -> qty.toBigDecimal()).orElse(null));
 		}
 
 		void applyTo(@NonNull final I_M_ShipmentSchedule_QtyPicked restored)
