@@ -3,6 +3,7 @@
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.api.Aggregation;
@@ -227,6 +228,17 @@ public final class AggregationEngine
 				.add("key2headerAndAggregators", key2headerAndAggregators)
 				.add("alwaysUseDefaultHeaderAggregationKeyBuilder", alwaysUseDefaultHeaderAggregationKeyBuilder)
 				.toString();
+	}
+
+	/**
+	 * @return the header aggregation keys of the invoices aggregated so far, as strings
+	 */
+	@VisibleForTesting
+	public ImmutableList<String> getHeaderAggregationKeyStrings()
+	{
+		return key2headerAndAggregators.keySet().stream()
+				.map(AggregationKey::getAggregationKeyString)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public AggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)

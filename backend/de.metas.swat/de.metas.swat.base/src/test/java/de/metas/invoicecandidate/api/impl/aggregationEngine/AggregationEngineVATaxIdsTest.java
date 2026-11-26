@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -50,7 +51,6 @@ import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
-import de.metas.inout.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -134,7 +134,9 @@ public class AggregationEngineVATaxIdsTest extends AbstractAggregationEngineTest
 		final InvoiceVATaxIds invoiceVATaxIds = invoices.get(0).getInvoiceVATaxIds();
 		assertThat(invoiceVATaxIds).isNotNull();
 		assertThat(invoiceVATaxIds.getSellerVATaxId()).isEqualTo(REGISTRATION_VAT_ID);
-		assertThat(engine.toString()).contains("SellerVAT=" + REGISTRATION_VAT_ID);
+		final List<String> headerAggregationKeys = engine.getHeaderAggregationKeyStrings();
+		assertThat(headerAggregationKeys).hasSize(1);
+		assertThat(headerAggregationKeys.get(0)).contains("SellerVAT=" + REGISTRATION_VAT_ID);
 	}
 
 	private void createEUArea()

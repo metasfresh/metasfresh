@@ -27,8 +27,10 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -36,6 +38,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Fiscal_Representation;
+
+import java.util.Optional;
 
 /**
  * Creates {@link I_C_Fiscal_Representation} records.
@@ -58,7 +62,8 @@ public class C_Fiscal_Representation_StepDef
 	 *   <b>AD_Org_ID</b> — (optional, identifier-ref) the organisation; defaults to the standard test organisation<br>
 	 *   <b>To_Country_ID.CountryCode</b> — (required) ISO code of the destination country<br>
 	 *   <b>VATaxID</b> — (optional) the organisation's VAT ID in that country; empty for a registration through a representative that holds it<br>
-	 *   <b>C_BPartner_Representative_ID</b> — (optional, identifier-ref) the representative partner; empty for an own registration<br>
+	 *   <b>C_BPartner_Representative_ID</b> — (optional, identifier-ref) the representative partner; empty for an own registration.
+	 *   A row needs at least one of VATaxID and C_BPartner_Representative_ID<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) the representative's location<br>
 	 *   <b>ValidFrom</b> — (required) start date<br>
 	 *   <b>ValidTo</b> — (optional) end date
@@ -88,8 +93,15 @@ public class C_Fiscal_Representation_StepDef
 				.orElseThrow(() -> new IllegalArgumentException("Column To_Country_ID.CountryCode is missing: " + row)));
 		record.setTo_Country_ID(toCountryId.getRepoId());
 
-		row.getAsOptionalString(I_C_Fiscal_Representation.COLUMNNAME_VATaxID).ifPresent(record::setVATaxID);
-		row.getAsOptionalIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Representative_ID)
+		final Optional<String> vatTaxId = row.getAsOptionalString(I_C_Fiscal_Representation.COLUMNNAME_VATaxID).filter(Check::isNotBlank);
+		final Optional<StepDefDataIdentifier> representative = row.getAsOptionalIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Representative_ID);
+		if (!vatTaxId.isPresent() && !representative.isPresent())
+		{
+			// such a registration never yields a seller VAT ID
+			throw new IllegalArgumentException("Either VATaxID or C_BPartner_Representative_ID is required: " + row);
+		}
+		vatTaxId.ifPresent(record::setVATaxID);
+		representative
 				.map(identifier -> identifier.lookupNotNullIn(bpartnerTable).getC_BPartner_ID())
 				.ifPresent(record::setC_BPartner_Representative_ID);
 		row.getAsOptionalIdentifier(I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Location_ID)
