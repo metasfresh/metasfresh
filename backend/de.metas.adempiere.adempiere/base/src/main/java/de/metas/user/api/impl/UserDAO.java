@@ -126,7 +126,7 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public boolean exists(@NonNull final UserId adUserId)
+	public boolean isExistingUser(@NonNull final UserId adUserId)
 	{
 		return retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId()) != null;
 	}

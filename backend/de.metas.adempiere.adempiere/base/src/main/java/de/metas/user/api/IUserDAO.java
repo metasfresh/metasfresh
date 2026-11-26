@@ -60,7 +60,7 @@ public interface IUserDAO extends ISingletonService
 		return getById(UserId.ofRepoId(adUserRepoId));
 	}
 
-	boolean exists(@NonNull UserId adUserId);
+	boolean isExistingUser(@NonNull UserId adUserId);
 
 	org.compiere.model.I_AD_User getById(UserId adUserId);
 
