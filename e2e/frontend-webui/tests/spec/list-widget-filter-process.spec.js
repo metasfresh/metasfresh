@@ -60,12 +60,13 @@ async function pickKeyByKeyboard(page, wantedKey) {
   await page.keyboard.press('ArrowDown');
   await page.locator(LIST_OPTION).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   const highlighted = page.locator(HIGHLIGHTED);
-  let key = null;
-  for (let i = 0; i < 20; i++) {
+  // The open list may already highlight an option (in CI it highlighted the first one, DR): check it before moving,
+  // else the first ArrowDown skips it and the loop runs to the end of the list.
+  let key = (await highlighted.count()) === 1 ? (await highlighted.getAttribute('data-testid')).replace(/^option-/, '') : null;
+  for (let i = 0; i < 20 && key !== wantedKey; i++) {
     await page.keyboard.press('ArrowDown');
     await expect(highlighted, 'ArrowDown highlights one option').toHaveCount(1);
     key = (await highlighted.getAttribute('data-testid')).replace(/^option-/, '');
-    if (key === wantedKey) break;
   }
   expect(key, `ArrowDown reaches the option with key ${wantedKey}`).toBe(wantedKey);
   await page.keyboard.press('Enter');
