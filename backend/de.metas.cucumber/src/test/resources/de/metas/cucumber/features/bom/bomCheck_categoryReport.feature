@@ -35,26 +35,28 @@ Feature: Verify BOMs with a product category, report the products that failed
       | Identifier       | PP_Product_BOM_ID | M_Product_ID      | ValidFrom  | QtyBatch | ComponentType |
       | valid_bom_line   | valid_bom         | valid_component   | 2021-01-01 | 1        | CO            |
       | failing_bom_line | failing_bom       | failing_component | 2021-01-01 | 1        | CO            |
-    # only the valid BOM is completed, so the failing product (IsBOM = Y) has no default BOM; real case: a BOM product without a default BOM; the process messages are German (local cucumber language)
+    # only the valid BOM is completed, so the failing product (IsBOM = Y) has no default BOM; real case: a BOM product without a default BOM
     And the PP_Product_BOM identified by valid_bom is completed
+    # a Name different from the generated Value, as in real data
     And update M_Product:
-      | M_Product_ID      | IsVerified |
-      | valid_product     | N          |
-      | valid_component   | Y          |
-      | failing_product   | N          |
-      | failing_component | Y          |
-    And the existing AD_Issue records are remembered
+      | M_Product_ID      | Name                | IsVerified |
+      | valid_product     | Valid BOM product   | N          |
+      | valid_component   | Valid component     | Y          |
+      | failing_product   | Failing BOM product | N          |
+      | failing_component | Failing component   | Y          |
 
     When run PP_Product_BOM_Check for PP_Product_BOM valid_bom with M_Product_Category category_1
 
-    Then the PP_Product_BOM_Check result is OK with message key PP_Product_BOM_Check.CategoryRunFailed and parameters:
+    Then the PP_Product_BOM_Check result is OK with message key org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed and parameters:
       | Param           |
       | 1               |
       | 2               |
       | failing_product |
     And the PP_Product_BOM_Check process log contains:
-      | M_Product_ID    | ReasonContains      |
-      | failing_product | Standard-Stückliste |
+      | M_Product_ID    | ReasonMessageKey                      |
+      | failing_product | NO_Default_PP_Product_BOM_For_Product |
+    # one line only: none for the valid product
+    And the PP_Product_BOM_Check process log has 1 lines
     And M_Product is verified:
       | M_Product_ID    | IsVerified |
       | valid_product   | Y          |
@@ -81,16 +83,15 @@ Feature: Verify BOMs with a product category, report the products that failed
     And metasfresh contains PP_Product_BOMLines
       | Identifier       | PP_Product_BOM_ID | M_Product_ID      | ValidFrom  | QtyBatch | ComponentType |
       | failing_bom_line | failing_bom       | failing_component | 2021-01-01 | 1        | CO            |
+    # a Name different from the generated Value, as in real data
     And update M_Product:
-      | M_Product_ID      | IsVerified |
-      | failing_product   | N          |
-      | failing_component | Y          |
+      | M_Product_ID      | Name                | IsVerified |
+      | failing_product   | Failing BOM product | N          |
+      | failing_component | Failing component   | Y          |
 
     When run PP_Product_BOM_Check for PP_Product_BOM failing_bom
 
-    Then the PP_Product_BOM_Check result is user validation error containing:
-      | MessageContains     |
-      | Standard-Stückliste |
+    Then the PP_Product_BOM_Check result is user validation error with message key NO_Default_PP_Product_BOM_For_Product for M_Product failing_product
     And M_Product is verified:
       | M_Product_ID    | IsVerified |
       | failing_product | N          |

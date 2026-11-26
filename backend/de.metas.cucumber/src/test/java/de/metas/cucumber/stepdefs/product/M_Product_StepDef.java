@@ -516,6 +516,7 @@ public class M_Product_StepDef
 		assertThat(productRecord).isNotNull();
 
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Name).ifPresent(productRecord::setName);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));

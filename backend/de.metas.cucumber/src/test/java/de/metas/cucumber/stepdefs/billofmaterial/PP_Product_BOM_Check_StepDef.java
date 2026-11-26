@@ -49,6 +49,7 @@ import org.eevolution.process.PP_Product_BOM_Check;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -150,7 +151,7 @@ public class PP_Product_BOM_Check_StepDef
 	 *   <b>Param</b> — (required) one value per row, in the order of the message parameters {0}, {1}, ...; the identifier of a product stands for its Value<br>
 	 * @cucumber.example
 	 * <pre>
-	 * Then the PP_Product_BOM_Check result is OK with message key PP_Product_BOM_Check.CategoryRunOK and parameters:
+	 * Then the PP_Product_BOM_Check result is OK with message key org.eevolution.process.PP_Product_BOM_Check.CategoryRunOK and parameters:
 	 *   | Param |
 	 *   | 1     |
 	 * </pre>
@@ -189,59 +190,87 @@ public class PP_Product_BOM_Check_StepDef
 	}
 
 	/**
-	 * Checks that the process ended with an error that is a user validation error and that its message contains the given texts.
+	 * Checks that the process ended with an error that is a user validation error, and that its message is the given AD_Message (translated)
+	 * for the given product, and so names the product's Value and Name.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>MessageContains</b> — (required) text that the end message must contain; one row per text<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * Then the PP_Product_BOM_Check result is user validation error containing:
-	 *   | MessageContains |
-	 *   | not found       |
+	 * Then the PP_Product_BOM_Check result is user validation error with message key NO_Default_PP_Product_BOM_For_Product for M_Product product_1
 	 * </pre>
 	 */
-	@Then("the PP_Product_BOM_Check result is user validation error containing:")
-	public void result_is_user_validation_error(@NonNull final DataTable dataTable)
+	@Then("the PP_Product_BOM_Check result is user validation error with message key {word} for M_Product {word}")
+	public void result_is_user_validation_error(@NonNull final String messageKey, @NonNull final String productIdentifier)
 	{
 		final ProcessExecutionResult processResult = getResult();
 		assertThat(processResult.isError()).as("PP_Product_BOM_Check ended with an error, summary=%s", processResult.getSummary()).isTrue();
 		assertThat(AdempiereException.isUserValidationError(processResult.getThrowable()))
 				.as("throwable is a user validation error: %s", processResult.getThrowable())
 				.isTrue();
-		DataTableRows.of(dataTable).forEach(row -> assertThat(processResult.getSummary()).contains(row.getAsString("MessageContains")));
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(processResult.getSummary()).contains(expectedProductMessage(messageKey, product));
+	}
+
+	/** the message as the process builds it: the only parameter is the product's {@code Value_Name} */
+	@NonNull
+	private String expectedProductMessage(@NonNull final String messageKey, @NonNull final I_M_Product product)
+	{
+		return msgBL.getMsg(Env.getCtx(), AdMessageKey.of(messageKey), new Object[] { product.getValue() + "_" + product.getName() });
 	}
 
 	/**
-	 * Checks the process log (AD_PInstance_Log): per row one log line that names the product (by its Value) and contains the reason text.
+	 * Checks the process log (AD_PInstance_Log): per row one log line that names the product (Value and Name) and contains the reason
+	 * (the given AD_Message, translated, for the product).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product the log line is about<br>
-	 *   <b>ReasonContains</b> — (required) text that the log line must contain<br>
+	 *   <b>ReasonMessageKey</b> — (required) AD_Message.Value of the reason; its parameter is the product's Value_Name<br>
 	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then the PP_Product_BOM_Check process log contains:
-	 *   | M_Product_ID | ReasonContains  |
-	 *   | product_1               | no default BOM  |
+	 *   | M_Product_ID | ReasonMessageKey                     |
+	 *   | product_1    | NO_Default_PP_Product_BOM_For_Product |
 	 * </pre>
 	 */
 	@Then("the PP_Product_BOM_Check process log contains:")
 	public void process_log_contains(@NonNull final DataTable dataTable)
 	{
-		final ProcessExecutionResult processResult = getResult();
-		processResult.syncLogsToDB();
-		final String logInfo = processResult.getLogInfo();
-		final List<String> logLines = Arrays.asList(logInfo.split("\n"));
+		final List<String> logLines = getLogLines();
 
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final String reasonContains = row.getAsString("ReasonContains");
+			final String reason = expectedProductMessage(row.getAsString("ReasonMessageKey"), product);
 			assertThat(logLines)
-					.as("process log of PP_Product_BOM_Check, expected a line with product Value %s and text '%s'", product.getValue(), reasonContains)
-					.anySatisfy(line -> assertThat(line).contains(product.getValue()).contains(reasonContains));
+					.as("process log of PP_Product_BOM_Check, expected a line with product Value %s, Name %s and text '%s'", product.getValue(), product.getName(), reason)
+					.anySatisfy(line -> assertThat(line).contains(product.getValue()).contains(product.getName()).contains(reason));
 		});
+	}
+
+	/**
+	 * Checks the number of lines in the process log (AD_PInstance_Log).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PP_Product_BOM_Check process log has 1 lines
+	 * </pre>
+	 */
+	@Then("the PP_Product_BOM_Check process log has {int} lines")
+	public void process_log_has_lines(final int expectedCount)
+	{
+		assertThat(getLogLines()).as("lines of the process log of PP_Product_BOM_Check").hasSize(expectedCount);
+	}
+
+	@NonNull
+	private List<String> getLogLines()
+	{
+		final ProcessExecutionResult processResult = getResult();
+		processResult.syncLogsToDB();
+		final String logInfo = processResult.getLogInfo();
+		return Arrays.stream(logInfo.split("\n")).filter(line -> !line.trim().isEmpty()).collect(Collectors.toList());
 	}
 
 	/**
