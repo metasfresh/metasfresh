@@ -362,23 +362,33 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			if (vhuId != null)
 			{
 				restoreUnshippedQtyPickedForUnit(alloc, vhuId, alloc.getQtyPicked(), true, processedKeys);
-				continue;
 			}
+			else
+			{
+				restoreUnshippedQtyPickedForBoxUnits(alloc, unitIdsOfRowsWithUnit, storageFactory, processedKeys);
+			}
+		}
+	}
 
-			final HuId tuId = HuId.ofRepoIdOrNull(alloc.getM_TU_HU_ID());
-			if (tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
+	private void restoreUnshippedQtyPickedForBoxUnits(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked boxAlloc,
+			@NonNull final Set<HuId> unitIdsOfRowsWithUnit,
+			@NonNull final IHUStorageFactory storageFactory,
+			@NonNull final Set<String> processedKeys)
+	{
+		final HuId tuId = HuId.ofRepoIdOrNull(boxAlloc.getM_TU_HU_ID());
+		if (tuId == null || handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuId)))
+		{
+			return; // neither a unit nor a box: nothing to restore this way
+		}
+		final ProductId productId = ProductId.ofRepoId(boxAlloc.getM_ShipmentSchedule().getM_Product_ID());
+		for (final I_M_HU unit : retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(tuId), boxAlloc, storageFactory))
+		{
+			final HuId unitId = HuId.ofRepoId(unit.getM_HU_ID());
+			if (!unitIdsOfRowsWithUnit.contains(unitId))
 			{
-				continue; // neither a unit nor a box: nothing to restore this way
-			}
-			final ProductId productId = ProductId.ofRepoId(alloc.getM_ShipmentSchedule().getM_Product_ID());
-			for (final I_M_HU unit : retrieveBoxUnitsOfSchedule(handlingUnitsBL.getById(tuId), alloc, storageFactory))
-			{
-				final HuId unitId = HuId.ofRepoId(unit.getM_HU_ID());
-				if (!unitIdsOfRowsWithUnit.contains(unitId))
-				{
-					final BigDecimal unitQty = storageFactory.getStorage(unit).getProductStorage(productId).getQty().toBigDecimal();
-					restoreUnshippedQtyPickedForUnit(alloc, unitId, unitQty, false, processedKeys);
-				}
+				final BigDecimal unitQty = storageFactory.getStorage(unit).getProductStorage(productId).getQty().toBigDecimal();
+				restoreUnshippedQtyPickedForUnit(boxAlloc, unitId, unitQty, false, processedKeys);
 			}
 		}
 	}
@@ -1471,7 +1481,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (!boxRows.isEmpty())
 		{
 			final List<BoxContentGroup> contentGroups = retrieveBoxContentGroups(box, boxRows.get(0), unitIdsOfRowsWithUnit, huContext);
-			if (rowsPickedWholeContent(boxRows, contentGroups))
+			// One combination only and the whole box is this schedule's content: there is nothing to split, so the rows keep the
+			// handling they had before, the line takes the box's attributes.
+			final long unitsOfBox = handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(box.getBoxId())).stream().filter(handlingUnitsBL::isVirtual).count();
+			final long unitsOfContent = contentGroups.stream().mapToLong(BoxContentGroup::unitCount).sum();
+			final boolean hasSeveralCombinations = contentGroups.size() > 1 || unitsOfContent < unitsOfBox;
+			if (hasSeveralCombinations && rowsPickedWholeContent(boxRows, contentGroups))
 			{
 				result.addAll(createCandidatesPerContentGroup(boxRows, contentGroups, huContext, qtyTypeToUse));
 			}
@@ -1710,6 +1725,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		I_C_UOM uom()
 		{
 			return storages.get(0).getQty().getUOM();
+		}
+
+		int unitCount()
+		{
+			return storages.size();
 		}
 
 		I_M_HU firstVhu()
