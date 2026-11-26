@@ -61,7 +61,9 @@ async function pickKeyByKeyboard(page, wantedKey) {
   await page.locator(LIST_OPTION).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   const highlighted = page.locator(HIGHLIGHTED);
   // The open list may already highlight an option (in CI it highlighted the first one, DR): check it before moving,
-  // else the first ArrowDown skips it and the loop runs to the end of the list.
+  // else the first ArrowDown skips it and the loop runs to the end of the list. Two frames first: the highlight
+  // class can land one render after the options become visible.
+  await twoFrames(page);
   let key = (await highlighted.count()) === 1 ? (await highlighted.getAttribute('data-testid')).replace(/^option-/, '') : null;
   for (let i = 0; i < 20 && key !== wantedKey; i++) {
     await page.keyboard.press('ArrowDown');
