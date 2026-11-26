@@ -27,14 +27,14 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.VATIdentifier;
-import org.adempiere.service.ClientId;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BPartner_Location;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -179,6 +179,39 @@ public class BPartnerAddressEffectiveBLTest
 		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
 
 		assertThat(result.getVatTaxId()).isNull();
+	}
+
+	@Test
+	public void vatTaxId_ignorePartnerVATID_locationVAT_stillWins()
+	{
+		Services.get(ISysConfigBL.class).setValue(IBPartnerBL.SYS_CONFIG_IgnorePartnerVATID, true, ClientId.SYSTEM, OrgId.ANY);
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE369391233");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+		setLocationVATaxID(locationId, "NL827764364B01");
+
+		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
+
+		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL827764364B01"));
+	}
+
+	@Test
+	public void vatTaxId_dropShipLocation_isUsedInsteadOfMainLocation()
+	{
+		final I_C_BPartner mainBP = createBPartner(createPlainBPGroup());
+		mainBP.setVATaxID("DE369391233");
+		saveRecord(mainBP);
+		final BPartnerLocationId mainLocationId = createLocation(mainBP);
+		setLocationVATaxID(mainLocationId, "DE811128135");
+
+		final I_C_BPartner dropShipBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId dropShipLocationId = createLocation(dropShipBP);
+		setLocationVATaxID(dropShipLocationId, "NL827764364B01");
+
+		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(dropShipLocationId, mainLocationId);
+
+		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL827764364B01"));
 	}
 
 	private static void setLocationVATaxID(final BPartnerLocationId locationId, final String vatTaxId)
