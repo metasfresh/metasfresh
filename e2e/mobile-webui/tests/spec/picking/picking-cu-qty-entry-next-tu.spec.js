@@ -32,8 +32,8 @@ test('GRAI scan with a TU open (customer GRAI not required): the open TU is clos
     const grai = masterdata.packingInstructions.G1.grai;
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 5, expectedQtyTarget: 15 });
 
     await PickLineScanScreen.rescanGrai(grai);
@@ -68,8 +68,8 @@ test('GRAI of a TU type without capacity for the product is refused; the open TU
     });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 5, expectedQtyTarget: 15 });
 
     await PickLineScanScreen.rescanGraiRefused(masterdata.packingInstructions.GN.grai, MSG_NO_CAPACITY);
@@ -100,8 +100,8 @@ test('"Next TU" opens a TU of the line\'s TU type in one tap (no "Gebinde" list)
     const grai = masterdata.packingInstructions.G1.grai;
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 20 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await PickLineScanScreen.expectNextTUButtonInQuantityBlock();   // the button sits next to OK
     await book({ qty: 5, expectedQtyTarget: 15 });
 
@@ -194,8 +194,8 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
     await test.step('line of the other customer: TU opened with "Next TU"', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
-        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata }));
+        await PickLineScanScreen.openTU();
         await book({ qty: 4 });
         await PickingJobScreen.waitForScreen();
     });
@@ -246,8 +246,8 @@ test('customer GRAI required, TU opened with "Next TU": "Fertigstellen" is refus
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 5, graiRequired: 'Y' }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 5 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 5 });
     await PickingJobScreen.waitForScreen();
 

@@ -130,7 +130,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    await PickLineScanScreen.openTU();
+                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weitere Kiste" before the first scan
                     await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), txt(lang, 'noFormat'), {
                         whileToastShown: async () => await layout(`${M} refusal: no label format on the profile (scan screen + toast)`),
                     });
@@ -145,7 +145,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                     });
                     await startJob(masterdata, { qtyToDeliver: 3 });
                     await openModeLine(mode);
-                    await PickLineScanScreen.openTU();
+                    if (mode === MODE_SCAN_EACH) await PickLineScanScreen.openTU(); // Scan once has no "Weitere Kiste" before the first scan
                     const otherProductLabel = packLabelOf({ masterdata: { products: { P1: masterdata.products.P2 } }, packId: 1 });
                     await PickLineScanScreen.scanCULabelRefused(otherProductLabel, txt(lang, 'differentProduct'), {
                         whileToastShown: async () => await layout(`${M} refusal: label of another product (scan screen + toast)`),
@@ -248,16 +248,17 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await layout(`${M} scan screen before the pallet target is set`);
                 await setLUTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
                 await layout(`${M} scan screen with a pallet target, no TU open`);
-                await PickLineScanScreen.openTU();
-                await layout(`${M} scan screen with a pallet target, TU open`);
                 if (mode === MODE_SCAN_EACH) {
+                    await PickLineScanScreen.openTU();
+                    await layout(`${M} scan screen with a pallet target, TU open`);
                     await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
                     await layout(`${M} scan screen after the first booking into the TU on the pallet`);
                     await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
                     await layout(`${M} scan screen after the second booking into the same TU`);
                 } else {
                     await scanLabel(labelOf({ masterdata, lot }));
-                    await layout(`${M} quantity block with a pallet target ("OK und LU schliessen" shown if the app offers it)`, DIALOG_SCOPE);
+                    await PickLineScanScreen.openTU();
+                    await layout(`${M} quantity block with a pallet target, TU open ("OK und LU schliessen" shown if the app offers it)`, DIALOG_SCOPE);
                     await GetQuantityDialog.typeQtyEntered(1);
                     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 3 });
                     await layout(`${M} quantity block after the first booking`, DIALOG_SCOPE);

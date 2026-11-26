@@ -72,6 +72,14 @@ const clickOk = async () => {
 };
 
 describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
+  it('shows no "Weitere Kiste" (next TU) button on the scan screen before the first scan; the pop-up has it', async () => {
+    renderComponent({ onResult: jest.fn() });
+    expect(screen.queryByTestId('next-tu-button')).not.toBeInTheDocument();
+
+    await scan('scanHUBarcode-input', 'RAW-A');
+    expect(screen.getByTestId('next-tu-button')).toBeInTheDocument();
+  });
+
   it('OK with open quantity left reports "not done" and reopens the quantity block with the suggestion, no new scan', async () => {
     const onResult = jest.fn().mockResolvedValue();
     const view = renderComponent({ onResult });

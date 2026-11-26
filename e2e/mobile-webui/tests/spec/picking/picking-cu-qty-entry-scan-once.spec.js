@@ -9,6 +9,20 @@ restoreSysconfigsAfterEach(test);
 
 /** CU quantity entry, Scan once ("one label, type a count") */
 // noinspection JSUnusedLocalSymbols
+test('Scan once: the scan screen before the first label scan has no "Weitere Kiste"; the pop-up has it', async ({ page }) => {
+    allureMeta('Scan once count');
+
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    await startJob(masterdata, { qtyToDeliver: 10 });
+    await openLine({ index: 1 });
+    await PickLineScanScreen.expectNextTUButtonHiddenOnLabelLine();
+    await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.expectNextTUButtonInQuantityBlock();
+    await GetQuantityDialog.clickCancel();
+    await PickingJobScreen.waitForScreen();
+});
+
+// noinspection JSUnusedLocalSymbols
 test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) books ONE CU of 5 in the TU', async ({ page }) => {
     allureMeta('Scan once count');
 
@@ -16,8 +30,8 @@ test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) bo
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
+    await PickLineScanScreen.openTU();
     await GetQuantityDialog.expectQtyEntered('');  // the field is empty after the scan
     await GetQuantityDialog.typeQtyEntered(5);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 }); // line open 5
@@ -58,8 +72,8 @@ test('Scan once field starts empty (not 0) with the zero-as-initial-value settin
 
         await test.step('Scan once line: field empty after the label scan', async () => {
             await openLine({ index: 1 });
-            await PickLineScanScreen.openTU();
             await scanLabel(labelOf({ masterdata }));
+            await PickLineScanScreen.openTU();
             await GetQuantityDialog.expectQtyEntered('');
             await GetQuantityDialog.clickCancel();
             await PickingJobScreen.waitForScreen();
@@ -121,8 +135,8 @@ test('the CUs come from the "Kommissionieren aus" HU; the source pallet drops by
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }], anonymousPickHUsOnTheFly: false });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await GetQuantityDialog.typeQtyEntered(5);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 5 });
 
@@ -148,8 +162,8 @@ test('open TU holding 3, count 5 (needs two source TUs) books ONE CU of 5 into i
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
+    await PickLineScanScreen.openTU();
 
     await test.step('first booking: 3 into the TU (leaves 1 piece in the first source TU)', async () => {
         await GetQuantityDialog.typeQtyEntered(3);
@@ -189,8 +203,8 @@ test('a count smaller than the open quantity is not a rejection', async ({ page 
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await GetQuantityDialog.typeQtyEntered(4);
     await GetQuantityDialog.expectNoQtyRejected();   // no reject reason asked
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 6 }); // line open 6
@@ -217,8 +231,8 @@ test('the booking that reaches the open quantity finishes the line and goes back
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
 
     await GetQuantityDialog.typeQtyEntered(8);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });  // booked 8: the picker stays on the line
@@ -270,8 +284,8 @@ test('a count above the open quantity is blocked, on a Manual line and on a Scan
     await test.step('Scan once line (12 open): 13 is refused by the same validation', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
-        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata }));
+        await PickLineScanScreen.openTU();
         await GetQuantityDialog.typeQtyEntered(13);
         await GetQuantityDialog.expectDoneDisabled();
         await GetQuantityDialog.expectQtyValidationError('above max');
@@ -292,8 +306,8 @@ test('on a line whose packing is a TU packing, a SECOND CU booking into the open
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await GetQuantityDialog.typeQtyEntered(1);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 9 });
     await test.step('second booking into the existing TU: no "Cannot pick TUs when TU pick target is set!"', async () => {
@@ -327,10 +341,10 @@ test('Pallet target (Scan once): pallet + new TU: counts 3 and 2 book one CU eac
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
     await setLUTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
-    await PickLineScanScreen.openTU();
 
     await test.step('counts 3 and 2: one CU each, in the same TU, the TU on the pallet', async () => {
         await scanLabel(labelOf({ masterdata, lot }));
+        await PickLineScanScreen.openTU();
         await GetQuantityDialog.typeQtyEntered(3);
         await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 7 });
         await GetQuantityDialog.typeQtyEntered(2);

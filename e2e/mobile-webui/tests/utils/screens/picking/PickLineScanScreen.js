@@ -65,6 +65,16 @@ export const PickLineScanScreen = {
         await expect(nextTUButton()).toHaveCount(0);
     }),
 
+    /**
+     * Asserts that the scan screen of a label line (Scan once) shows no "Weitere Kiste" / "Next TU" before the first scan.
+     * Waits until the line is rendered as a label line (data-cu-label-required), so a button that is merely not drawn yet cannot pass as hidden.
+     */
+    expectNextTUButtonHiddenOnLabelLine: async () => await step(`${NAME} - Expect Next TU button hidden on the label line's scan screen`, async () => {
+        await PickLineScanScreen.waitForScreen();
+        await expect(containerElement()).toHaveAttribute('data-cu-label-required', 'true');
+        await expect(nextTUButton()).toHaveCount(0);
+    }),
+
     /** Scans one raw CU label on the pick-line scan screen */
     scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
         await PickLineScanScreen.waitForScreen();

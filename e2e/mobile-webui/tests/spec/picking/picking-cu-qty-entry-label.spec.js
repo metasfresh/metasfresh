@@ -76,14 +76,17 @@ const openLineScanScreen = async (masterdata) => {
     return { pickingJobId };
 };
 
-/** Scan once */
-const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false }) => {
+/** Scan once; `openTU`: tap "Weitere Kiste" in the pop-up after the first scan (the scan screen has no such button) */
+const bookWithLabel = async ({ label, qty, expectedQtyTarget, isRescan = false, openTU = false }) => {
     if (isRescan) {
         await PickLineScanScreen.rescanCULabel(label);
     } else {
         await PickLineScanScreen.scanCULabel(label);
     }
     await GetQuantityDialog.waitForDialog();
+    if (openTU) {
+        await PickLineScanScreen.openTU();
+    }
     await GetQuantityDialog.typeQtyEntered(qty);
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget });
 };
@@ -100,10 +103,9 @@ test('buyer A: Scan once reads the label with the profile format without PackId 
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openTU();
 
     await test.step('A, L(1): label with counter is booked', async () => {
-        await bookWithLabel({ label: buildCULabel({ gtin, productValue, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1, openTU: true });
     });
 
     await test.step('A, L0: label without counter is booked too (the format has no PackId part)', async () => {
@@ -141,7 +143,6 @@ test('no effective format on the line, another active format that reads the labe
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openTU();
     await PickLineScanScreen.scanCULabelRefused(label, MESSAGES.noFormat.en);
 
     await Backend.expect({
@@ -159,7 +160,6 @@ test('label with a "]d2" prefix is refused by the linked format', async ({ page 
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openTU();
     await PickLineScanScreen.scanCULabelRefused(label, MSG_FORMAT_MISMATCH);
 
     await Backend.expect({
@@ -178,10 +178,9 @@ test('label of the line product opens the quantity block, books lot and best-bef
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openTU();
 
     await test.step('Label of the line product: quantity block opens, book 5', async () => {
-        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore: BEST_BEFORE, packId: 1 }), qty: 5, expectedQtyTarget: LINE_QTY - 5 });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore: BEST_BEFORE, packId: 1 }), qty: 5, expectedQtyTarget: LINE_QTY - 5, openTU: true });
     });
 
     await test.step('Label of another product: refused with the app message, the block stays, nothing more is booked', async () => {
@@ -220,10 +219,9 @@ test('product match uses the label product part against M_Product.Value, the GTI
     const { pickingJobId } = await openLineScanScreen(masterdata);
 
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
-    await PickLineScanScreen.openTU();
 
     await test.step('(1) product part = P1 value, GTIN of P2: accepted', async () => {
-        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1 });
+        await bookWithLabel({ label: buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, packId: 1 }), qty: 1, expectedQtyTarget: LINE_QTY - 1, openTU: true });
     });
 
     await test.step('(2) product part = P2 value: refused, the block stays, nothing more is booked', async () => {
@@ -273,14 +271,13 @@ test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weite
     const lot = uniqueLot();
     await page.setViewportSize({ width: 360, height: 720 });
     await openLineScanScreen(masterdata);
-    await PickLineScanScreen.openTU();
 
-    await test.step('first scan screen: its own visible scanner stays, the button brings no second scanner, the icon is in the button', async () => {
+    await test.step('first scan screen: its own visible scanner stays, no "Weitere Kiste" and so no second scanner', async () => {
+        await PickLineScanScreen.expectNextTUButtonHiddenOnLabelLine();
         await expect(page.getByTestId('scanHUBarcode-input')).toBeAttached();
         await expect(page.locator('.scan-prompt')).toHaveCount(1);
         await expect(page.getByTestId('rescanCULabel-input')).toHaveCount(0);
         await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
-        await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
     });
 
     await PickLineScanScreen.scanCULabel(buildCULabel({ gtin, productValue, lot, packId: 1 }));

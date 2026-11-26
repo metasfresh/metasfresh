@@ -150,13 +150,32 @@ describe('next TU button placement', () => {
     expect(screen.queryByTestId('next-tu-button')).toBeNull();
   });
 
-  it('scan step (before any booking): button is shown under the scan field', async () => {
+  it('Scan once scan step (before the first scan): no button; the pop-up has it', async () => {
     render(
       <Provider store={store()}>
         <ScanHUAndGetQtyComponent
           qtyMax={1}
           qtyTarget={1}
           uom="PCE"
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
+          nextTUActions={nextTUActions}
+          onResult={jest.fn()}
+        />
+      </Provider>
+    );
+    await act(async () => {});
+    expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
+    expect(screen.queryByTestId('next-tu-button')).toBeNull();
+  });
+
+  it('Scan each CU scan step: button is shown under the scan field, next to Schließen', async () => {
+    render(
+      <Provider store={store()}>
+        <ScanHUAndGetQtyComponent
+          qtyMax={1}
+          qtyTarget={1}
+          uom="PCE"
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_EACH_CU)}
           nextTUActions={nextTUActions}
           onResult={jest.fn()}
         />
@@ -165,6 +184,7 @@ describe('next TU button placement', () => {
     await act(async () => {});
     expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
     expect(screen.getByTestId('next-tu-button')).toBeInTheDocument();
+    expect(screen.getByTestId('scan-each-close-button')).toBeInTheDocument();
   });
 
   it('a scan that only opened a TU does not open the quantity block', async () => {
@@ -443,10 +463,17 @@ describe('hidden scanner inside the quantity block', () => {
     expect(screen.queryByTestId('rescanCULabel-input')).toBeNull();
   });
 
-  it('first scan screen: exactly one scanner (its own visible one), the button brings none', async () => {
+  it('Scan each CU first scan screen: exactly one scanner (its own visible one), the button brings none', async () => {
     render(
       <Provider store={store()}>
-        <ScanHUAndGetQtyComponent qtyMax={1} qtyTarget={1} uom="PCE" nextTUActions={asButton} onResult={jest.fn()} />
+        <ScanHUAndGetQtyComponent
+          qtyMax={1}
+          qtyTarget={1}
+          uom="PCE"
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_EACH_CU)}
+          nextTUActions={asButton}
+          onResult={jest.fn()}
+        />
       </Provider>
     );
     await act(async () => {});

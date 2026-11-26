@@ -37,6 +37,7 @@ const EMPTY_LU_GRAIS = [];
 /**
  * @param nextTUActions the node as is, or a function `({ scanner }) => node` for a button that owns the hidden scanner of the
  *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
+ *   The first scan screen shows it only when a scan books right away (Scan each CU); Scan once shows it in the pop-up only.
  *   The pop-up's rescan scanner exists ONLY through the function form: a plain node adds no scanner, so a line that is repeated-booking
  *   but passes no function has no rescan (today every scan-once line passes it, see PickLineScanScreen).
  * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
@@ -45,20 +46,20 @@ const EMPTY_LU_GRAIS = [];
 const renderNextTUActions = (nextTUActions, scanner) =>
   typeof nextTUActions === 'function' ? nextTUActions({ scanner }) : nextTUActions;
 
+// Scan each CU (isBookedOnScan) has no pop-up: its scan screen is the only place for "Weitere Kiste", next to "Schließen".
+// Scan once opens its crate in the quantity pop-up (the refusal comes at OK), so this scan screen shows no "Weitere Kiste" before the first scan.
 const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
-  if (!nextTUActions && !isBookedOnScan) return null;
+  if (!isBookedOnScan) return null;
 
   return (
     <div className="buttons is-centered mb-4">
       {renderNextTUActions(nextTUActions, undefined)}
-      {isBookedOnScan && (
-        <DialogButton
-          captionKey="general.closeText"
-          className="is-danger"
-          testId="scan-each-close-button"
-          onClick={onCloseDialog}
-        />
-      )}
+      <DialogButton
+        captionKey="general.closeText"
+        className="is-danger"
+        testId="scan-each-close-button"
+        onClick={onCloseDialog}
+      />
     </div>
   );
 };

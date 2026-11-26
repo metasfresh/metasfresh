@@ -22,8 +22,8 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
 
     await test.step('line 1, TU 1: scan the label, type 5, OK', async () => {
         await openLine({ index: 1 });
-        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata, lot: lotA }));
+        await PickLineScanScreen.openTU();
         await GetQuantityDialog.expectQtyEntered('');  // nothing pinned yet
         await book({ qty: 5, expectedQtyTarget: 7 });
     });
@@ -47,8 +47,8 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
     await test.step('next line (same product, other customer): the field starts empty', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
         await openLine({ index: 2 });
-        await PickLineScanScreen.openTU();
         await scanLabel(labelOf({ masterdata, lot: lotA }));
+        await PickLineScanScreen.openTU();
         await GetQuantityDialog.expectQtyEntered('');
         await GetQuantityDialog.clickCancel();
         await PickingJobScreen.waitForScreen();
@@ -89,8 +89,8 @@ test('a label of another lot scanned in the open block replaces the remembered l
     const lotB = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 12 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot: lotA }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 5, expectedQtyTarget: 7 });
 
     await PickLineScanScreen.nextTU();
@@ -121,8 +121,8 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 6, expectedQtyTarget: 4 });
     await GetQuantityDialog.clickCancel();
     await PickingJobScreen.waitForScreen();
@@ -167,8 +167,8 @@ test('Re-entry via "HU verpacken": the quantity block reopens with the remembere
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 10 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata, lot }));
+    await PickLineScanScreen.openTU();
     await book({ qty: 6, expectedQtyTarget: 4 });
     await GetQuantityDialog.clickCancel();
     await PickingJobScreen.waitForScreen();

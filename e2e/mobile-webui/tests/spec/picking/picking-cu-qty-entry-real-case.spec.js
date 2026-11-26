@@ -35,8 +35,8 @@ test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with
 
     await test.step('buyer A: 50 CU in 11 TUs', async () => {
         await openLine({ index: 1 });
-        await PickLineScanScreen.openTU();                 // TU 1
         await scanLabel(labelOf({ masterdata, lot }));
+        await PickLineScanScreen.openTU();                 // TU 1
         await book({ qty: 3, expectedQtyTarget: 47 });
         await PickLineScanScreen.rescanCULabel(labelOf({ masterdata, lot }));
         await PickLineScanScreen.nextTU();                  // TU 2

@@ -23,8 +23,8 @@ for (const viewport of PHONE_VIEWPORTS) {
                 const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: lang });
                 await startJob(masterdata, { qtyToDeliver: 12 });
                 await openLine({ index: 1 });
-                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
+                await PickLineScanScreen.openTU();
 
                 // above the open quantity
                 await GetQuantityDialog.typeQtyEntered(13);
@@ -97,8 +97,8 @@ for (const viewport of PHONE_VIEWPORTS) {
                 // line 1: Once
                 await openLine({ index: 1 });
                 await layout('mixed: Once line scan screen');
-                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata, lot }));
+                await PickLineScanScreen.openTU();
                 await layout('mixed: Once quantity block', DIALOG_SCOPE);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
@@ -150,8 +150,8 @@ for (const viewport of PHONE_VIEWPORTS) {
             await layout('job screen, two customers');
 
             await openLine({ index: 1 });
-            await PickLineScanScreen.openTU();
             await scanLabel(labelOf({ masterdata, lot }));
+            await PickLineScanScreen.openTU();
             await book({ qty: 3, expectedQtyTarget: 11 });
             await PickLineScanScreen.rescanGrai(graiOfTU(3));
             await layout('Once quantity block, TU opened by a GRAI scan', DIALOG_SCOPE);

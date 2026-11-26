@@ -31,8 +31,8 @@ for (const viewport of PHONE_VIEWPORTS) {
 
             await test.step('Scan once: field, lot, best-before, OK, Cancel and Next TU are on the screen', async () => {
                 await openLine({ index: 1 });
-                await PickLineScanScreen.openTU();
                 await scanLabel(labelOf({ masterdata }));
+                await PickLineScanScreen.openTU();
                 const dialog = GetQuantityDialog.container();
                 await expectInsideScreen(dialog.locator('#qty-input'), 'Scan once quantity field', viewport);
                 await expectInsideScreen(dialog.getByTestId('lotNo'), 'Scan once lot field', viewport);
@@ -120,7 +120,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 await openLine({ index: 1 });
                 await layout('Once scan screen, no TU open');
-                await expectOnScreenWithoutScrolling(PickLineScanScreen.nextTUButtonLocator(), 'Once scan screen: Next TU button', viewport);
+                await PickLineScanScreen.expectNextTUButtonHiddenOnLabelLine(); // Scan once: "Weitere Kiste" lives in the pop-up only
 
                 await scanLabel(labelOf({ masterdata }));
                 await layout('Once quantity block, no TU open', DIALOG_SCOPE);
@@ -358,8 +358,8 @@ test('The barcode icon of "Weitere Kiste" keeps the button rows of the pop-up (n
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: 'de_DE' });
     await startJob(masterdata, { qtyToDeliver: 12 });
     await openLine({ index: 1 });
-    await PickLineScanScreen.openTU();
     await scanLabel(labelOf({ masterdata }));
+    await PickLineScanScreen.openTU();
     await GetQuantityDialog.waitForDialog();
     await expectIconKeepsTheRows(page, {
         scope: (p) => p.locator('.get-qty-dialog'),
