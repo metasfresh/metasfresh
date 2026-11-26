@@ -131,7 +131,7 @@ describe('TableCell — grid date wiring', () => {
     expect(handleDoubleClick.mock.calls[0][0]).toMatchObject({ pointer: true });
   });
 
-  // me03#33085: a click into a static date cell must leave the date selected, like the keyboard
+  // a click into a static date cell must leave the date selected, like the keyboard
   // entry does, so that typing replaces it (`20.11.2026` + `03…` must not become `20.11.202603`)
   describe('pointer entry selects the date text, so typing replaces it', () => {
     const PROPERTY = 'PriceEntered'; // fixture field, given the widget type under test

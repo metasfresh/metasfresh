@@ -25,7 +25,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * - TC5b (keyboard spec) is a regression guard that passes on the unfixed code by design.
  * - TC4a: entering the cell by keyboard (Tab) does NOT open the calendar, and typing works
  * - TC4b: a single pointer click on the static date cell DOES open the calendar
- * - TC4c: after that single click, typing a date REPLACES the stored one (me03#33085: the caret
+ * - TC4c: after that single click, typing a date REPLACES the stored one (before, the caret
  *   landed at the end of the text, so `20.11.2026` + typing `03.12.2026` gave `20.11.202603.12.2026`)
  *
  * Features tested:
