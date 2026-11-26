@@ -109,6 +109,16 @@ Feature: Shipment line per TU content
       | M_Product_ID | MovementQty | attr.1000001 |
       | p_coo        | 2           | IT           |
       | p_coo        | 2           | DE           |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_tu as shipped_tu10
+    And the CUs of the TU identified by shipped_tu10 are exactly, in any order:
+      | M_HU_ID | Qty | attr.1000001 |
+      | cu_it10 | 2   | IT           |
+      | cu_de10 | 2   | DE           |
+    And the HU assignments of the shipment lines of inout_tu are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 2           | IT           | shipped_tu10 | cu_it10 |
+      | p_coo        | 2           | DE           | shipped_tu10 | cu_de10 |
 
   @Id:S34165_80
   Scenario: Equal-quantity picks of two origins into one TU that sits on a LU ship as two lines
@@ -182,6 +192,17 @@ Feature: Shipment line per TU content
       | M_Product_ID | MovementQty | attr.1000001 |
       | p_coo        | 2           | IT           |
       | p_coo        | 2           | DE           |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_80 as shipped_tu80
+    And register the LU of the TU identified by shipped_tu80 as shipped_lu80
+    And the CUs of the TU identified by shipped_tu80 are exactly, in any order:
+      | M_HU_ID | Qty | attr.1000001 |
+      | cu_it80 | 2   | IT           |
+      | cu_de80 | 2   | DE           |
+    And the HU assignments of the shipment lines of inout_80 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID  | M_LU_HU_ID   |
+      | p_coo        | 2           | IT           | shipped_tu80 | cu_it80 | shipped_lu80 |
+      | p_coo        | 2           | DE           | shipped_tu80 | cu_de80 | shipped_lu80 |
 
   @Id:S34165_91
   Scenario: One TU with two CUs of unequal quantities per origin, origins picked interleaved, ships as one line per origin with the summed quantity
@@ -251,6 +272,22 @@ Feature: Shipment line per TU content
       | p_coo        | 5           | IT           |
       | p_coo        | 5           | DE           |
       | p_coo        | 4           | FR           |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_90 as shipped_tu91
+    And the CUs of the TU identified by shipped_tu91 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.1000001 |
+      | cu_it91a | 2   | IT           |
+      | cu_it91b | 3   | IT           |
+      | cu_de91a | 1   | DE           |
+      | cu_de91b | 4   | DE           |
+      | cu_fr91a | 2   | FR           |
+      | cu_fr91b | 2   | FR           |
+    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    And the HU assignments of the shipment lines of inout_90 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID   | VHU_ID   |
+      | p_coo        | 5           | IT           | shipped_tu91 |          |
+      | p_coo        | 5           | DE           | shipped_tu91 |          |
+      | p_coo        | 4           | FR           | shipped_tu91 |          |
 
   @Id:S34165_90
   Scenario: One TU with four equal-quantity CUs of three lots, two CUs of the same lot from one stock HU, ships as one line per lot
@@ -312,6 +349,20 @@ Feature: Shipment line per TU content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_3lot as shipped_tu90
+    And the CUs of the TU identified by shipped_tu90 are exactly, in any order:
+      | M_HU_ID | Qty | attr.Lot-Nummer |
+      | cu_a90a | 2   | LOTA            |
+      | cu_a90b | 2   | LOTA            |
+      | cu_b90  | 2   | LOTB            |
+      | cu_c90  | 2   | LOTC            |
+    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    And the HU assignments of the shipment lines of inout_3lot are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 4           | LOTA            | shipped_tu90 |         |
+      | p_coo        | 2           | LOTB            | shipped_tu90 | cu_b90  |
+      | p_coo        | 2           | LOTC            | shipped_tu90 | cu_c90  |
 
   @Id:S34165_95
   Scenario: One TU with three CUs of three lots ships as three product lines and one packing material line for the one TU
@@ -408,6 +459,18 @@ Feature: Shipment line per TU content
       | p_coo        | 2           | LOT2            |
       | p_coo        | 2           | LOT3            |
       | pm_product95 | 1           |                 |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_95 as shipped_tu95
+    And the CUs of the TU identified by shipped_tu95 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.Lot-Nummer |
+      | cu_l1_95 | 2   | LOT1            |
+      | cu_l2_95 | 2   | LOT2            |
+      | cu_l3_95 | 2   | LOT3            |
+    And the HU assignments of the shipment lines of inout_95 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID   |
+      | p_coo        | 2           | LOT1            | shipped_tu95 | cu_l1_95 |
+      | p_coo        | 2           | LOT2            | shipped_tu95 | cu_l2_95 |
+      | p_coo        | 2           | LOT3            | shipped_tu95 | cu_l3_95 |
 
   @Id:S34165_96
   Scenario: Reversing the shipment of a TU with two CUs of one lot and one CU each of two other lots reopens the whole picked quantity
@@ -468,6 +531,20 @@ Feature: Shipment line per TU content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_96 as shipped_tu96
+    And the CUs of the TU identified by shipped_tu96 are exactly, in any order:
+      | M_HU_ID | Qty | attr.Lot-Nummer |
+      | cu_a96a | 2   | LOTA            |
+      | cu_a96b | 2   | LOTA            |
+      | cu_b96  | 2   | LOTB            |
+      | cu_c96  | 2   | LOTC            |
+    # a line that adds up several CUs is assigned to the TU and to one CU of its group (the cell is empty: not checked which)
+    And the HU assignments of the shipment lines of inout_96_1 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 4           | LOTA            | shipped_tu96 |         |
+      | p_coo        | 2           | LOTB            | shipped_tu96 | cu_b96  |
+      | p_coo        | 2           | LOTC            | shipped_tu96 | cu_c96  |
     And all M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
     # The reversal must give back every picked CU, also the two CUs of lot A that share one shipment line
     When the shipment identified by inout_96_1 is reversed as inout_96_1_reversal
@@ -488,6 +565,37 @@ Feature: Shipment line per TU content
       | p_coo        | 4           | LOTA            |
       | p_coo        | 2           | LOTB            |
       | p_coo        | 2           | LOTC            |
+    # the reopened picks are one row per CU, so each CU of lot A is assigned to the line
+    And the HU assignments of the shipment lines of inout_96_2 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96a |
+      | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96b |
+      | p_coo        | 2           | LOTB            | shipped_tu96 | cu_b96  |
+      | p_coo        | 2           | LOTC            | shipped_tu96 | cu_c96  |
+    # The second shipment came from 'generate shipments', not from the completed picking job: reversing it must give the picks back as well
+    When the shipment identified by inout_96_2 is reversed as inout_96_2_reversal
+    Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_96 sum to 8
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_96      | so_96_l1       | N             |
+    When 'generate shipments' process is invoked with QuantityType=P, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_96                 |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_96                 | inout_96_3 | CO        |
+    Then the shipment lines of inout_96_3 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer |
+      | p_coo        | 4           | LOTA            |
+      | p_coo        | 2           | LOTB            |
+      | p_coo        | 2           | LOTC            |
+    # the reopened picks are one row per CU, so each CU of lot A is assigned to the line
+    And the HU assignments of the shipment lines of inout_96_3 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96a |
+      | p_coo        | 4           | LOTA            | shipped_tu96 | cu_a96b |
+      | p_coo        | 2           | LOTB            | shipped_tu96 | cu_b96  |
+      | p_coo        | 2           | LOTC            | shipped_tu96 | cu_c96  |
 
   @Id:S34165_20
   Scenario: Two CUs of the same lot but different origins in one TU ship as one line per origin
@@ -539,6 +647,16 @@ Feature: Shipment line per TU content
       | M_Product_ID | MovementQty | attr.Lot-Nummer | attr.1000001 |
       | p_coo        | 2           | L1              | DE           |
       | p_coo        | 2           | L1              | IT           |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_20 as shipped_tu20
+    And the CUs of the TU identified by shipped_tu20 are exactly, in any order:
+      | M_HU_ID | Qty | attr.Lot-Nummer | attr.1000001 |
+      | cu_de20 | 2   | L1              | DE           |
+      | cu_it20 | 2   | L1              | IT           |
+    And the HU assignments of the shipment lines of inout_20 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | attr.1000001 | M_TU_HU_ID   | VHU_ID  |
+      | p_coo        | 2           | L1              | DE           | shipped_tu20 | cu_de20 |
+      | p_coo        | 2           | L1              | IT           | shipped_tu20 | cu_it20 |
 
   @Id:S34165_25
   Scenario: One TU shared by two order lines of one product with equal quantities ships each order line only the CUs picked for it
@@ -593,6 +711,16 @@ Feature: Shipment line per TU content
       | M_Product_ID | MovementQty | C_OrderLine_ID | attr.Lot-Nummer |
       | p_coo        | 2           | so_25_lA       | L1              |
       | p_coo        | 2           | so_25_lB       | L2              |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_25_A as shipped_tu25
+    And the CUs of the TU identified by shipped_tu25 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.Lot-Nummer |
+      | cu_l1_25 | 2   | L1              |
+      | cu_l2_25 | 2   | L2              |
+    And the HU assignments of the shipment lines of inout_25 are exactly, in any order:
+      | M_Product_ID | MovementQty | C_OrderLine_ID | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID   |
+      | p_coo        | 2           | so_25_lA       | L1              | shipped_tu25 | cu_l1_25 |
+      | p_coo        | 2           | so_25_lB       | L2              | shipped_tu25 | cu_l2_25 |
 
   @Id:S34165_30
   Scenario: A TU with three lots ships as one line when the lot number is not a line aggregation attribute
@@ -651,6 +779,18 @@ Feature: Shipment line per TU content
     Then the shipment lines of inout_30_1 are exactly, in any order:
       | M_Product_ID | MovementQty | attr.Lot-Nummer |
       | p_coo        | 6           |                 |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_30 as shipped_tu30
+    And the CUs of the TU identified by shipped_tu30 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.Lot-Nummer |
+      | cu_l1_30 | 2   | L1              |
+      | cu_l2_30 | 3   | L2              |
+      | cu_l3_30 | 1   | L3              |
+    And the HU assignments of the shipment lines of inout_30_1 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID   |
+      | p_coo        | 6           |                 | shipped_tu30 | cu_l1_30 |
+      | p_coo        | 6           |                 | shipped_tu30 | cu_l2_30 |
+      | p_coo        | 6           |                 | shipped_tu30 | cu_l3_30 |
 
   @Id:S34165_40
   Scenario: CUs taken out of a picked TU by hand keep per-row handling
@@ -769,6 +909,18 @@ Feature: Shipment line per TU content
       | p_coo        | 2           | L1              |
       | p_coo        | 3           | L2              |
       | p_coo        | 1           | L3              |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And register the picked TU of M_ShipmentSchedule identified by ss_50 as shipped_tu50
+    And the CUs of the TU identified by shipped_tu50 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.Lot-Nummer |
+      | cu_l1_50 | 2   | L1              |
+      | cu_l2_50 | 3   | L2              |
+      | cu_l3_50 | 1   | L3              |
+    And the HU assignments of the shipment lines of inout_50_1 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID   | VHU_ID   |
+      | p_coo        | 2           | L1              | shipped_tu50 | cu_l1_50 |
+      | p_coo        | 3           | L2              | shipped_tu50 | cu_l2_50 |
+      | p_coo        | 1           | L3              | shipped_tu50 | cu_l3_50 |
     And all M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_50 sum to 6
     When the shipment identified by inout_50_1 is reversed as inout_50_1_reversal
     Then open M_ShipmentSchedule_QtyPicked rows of M_ShipmentSchedule identified by ss_50 sum to 6
@@ -841,6 +993,15 @@ Feature: Shipment line per TU content
       | M_Product_ID | MovementQty | attr.Lot-Nummer |
       | p_coo        | 2           | L1              |
       | p_coo        | 2           | L2              |
+    # The shipment carries exactly the picked TU and its CUs, and each line is assigned to the CUs it shows
+    And the CUs of the TU identified by shipped_tu60 are exactly, in any order:
+      | M_HU_ID  | Qty | attr.Lot-Nummer |
+      | cu_l1_60 | 2   | L1              |
+      | cu_l2_60 | 2   | L2              |
+    And the HU assignments of the shipment lines of inout_60_1 are exactly, in any order:
+      | M_Product_ID | MovementQty | attr.Lot-Nummer | M_TU_HU_ID    | VHU_ID   |
+      | p_coo        | 2           | L1              | shipped_tu60 | cu_l1_60 |
+      | p_coo        | 2           | L2              | shipped_tu60 | cu_l2_60 |
 
   @Id:S34165_70
   Scenario: The shipment report prints quantity and lot number of every line of a TU with three lots

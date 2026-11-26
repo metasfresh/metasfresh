@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -32,9 +33,11 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -81,6 +84,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -97,6 +101,8 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 public class M_InOut_Line_StepDef
 {
 	private static final String ATTRIBUTE_COLUMN_PREFIX = "attr.";
+	/** columns of {@code the HU assignments of the shipment lines of ... are exactly} that do not identify the line */
+	private static final Set<String> HU_ASSIGNMENT_COLUMNS = ImmutableSet.of(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, I_M_HU_Assignment.COLUMNNAME_VHU_ID, I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID);
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -112,6 +118,7 @@ public class M_InOut_Line_StepDef
 	private final M_HU_PI_Item_Product_StepDefData huPIItemProductTable;
 	private final M_AttributeSetInstance_StepDefData asiTable;
 	private final C_Project_StepDefData projectTable;
+	private final M_HU_StepDefData huTable;
 
 	/**
 	 * Finds one line of the given shipment or material receipt per row and validates it.
@@ -291,11 +298,112 @@ public class M_InOut_Line_StepDef
 				.isEmpty();
 	}
 
+	/**
+	 * Asserts which HUs the lines of a shipment are assigned to ({@code M_HU_Assignment} of the line): one row per line and
+	 * assigned CU, nothing else. A line of a TU with several CUs of one attribute combination has one assignment per CU.
+	 * The line is identified by the columns of {@code the shipment lines of ... are exactly}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_Product_ID</b>, <b>MovementQty</b>, <b>attr.&lt;M_Attribute.Value&gt;</b> — (as in the lines step) which line<br>
+	 * <b>M_TU_HU_ID</b> — (required, identifier-ref) the TU the assignment is for<br>
+	 * <b>VHU_ID</b> — (identifier-ref) the CU the assignment is for; an empty cell: not checked (a line that adds up several CUs is assigned to one CU of its group)<br>
+	 * <b>M_LU_HU_ID</b> — (optional, identifier-ref or null) the LU the assignment is for; {@code null} expects none
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData, M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And the HU assignments of the shipment lines of inout_tu are exactly, in any order:
+	 *   | M_Product_ID | MovementQty | attr.1000001 | M_TU_HU_ID | VHU_ID |
+	 *   | p_coo        | 2           | IT           | shipped_tu | cu_it  |
+	 *   | p_coo        | 2           | DE           | shipped_tu | cu_de  |
+	 * </pre>
+	 */
+	@And("^the HU assignments of the shipment lines of (.*) are exactly, in any order:$")
+	public void validate_shipment_line_HU_assignments(@NonNull final String shipmentIdentifier, @NonNull final DataTable table)
+	{
+		final I_M_InOut shipment = StepDefDataIdentifier.ofString(shipmentIdentifier).lookupNotNullIn(inoutTable);
+		final List<ActualAssignment> unconsumed = new ArrayList<>();
+		for (final I_M_InOutLine line : inOutDAO.retrieveLines(shipment, I_M_InOutLine.class))
+		{
+			if (!line.isActive() || line.getMovementQty().signum() <= 0)
+			{
+				continue;
+			}
+			queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(line))
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, line.getM_InOutLine_ID())
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.list().forEach(assignment -> unconsumed.add(new ActualAssignment(line, assignment)));
+		}
+
+		final List<DataTableRow> expectedRows = DataTableRows.of(table).stream().collect(ImmutableList.toImmutableList());
+		final List<String> unmatchedExpectedRows = new ArrayList<>();
+		for (final DataTableRow expectedRow : expectedRows)
+		{
+			final ActualAssignment matched = unconsumed.stream().filter(actual -> matchesExpectedAssignment(actual, expectedRow)).findFirst().orElse(null);
+			if (matched == null)
+			{
+				unmatchedExpectedRows.add(expectedRow.getColumnNames().stream()
+						.map(column -> column + "=" + expectedRow.getAsOptionalString(column).orElse(""))
+						.collect(Collectors.joining(", ", "{", "}")));
+			}
+			else
+			{
+				unconsumed.remove(matched);
+			}
+		}
+
+		final List<String> unconsumedDescriptions = unconsumed.stream()
+				.map(actual -> describeLine(actual.line, expectedRows) + " M_TU_HU_ID=" + actual.assignment.getM_TU_HU_ID() + " VHU_ID=" + actual.assignment.getVHU_ID() + " M_LU_HU_ID=" + actual.assignment.getM_LU_HU_ID())
+				.collect(Collectors.toList());
+		assertThat(unmatchedExpectedRows)
+				.as("Expected HU assignments that no actual assignment matched (unconsumed actual assignments: %s)", unconsumedDescriptions)
+				.isEmpty();
+		assertThat(unconsumedDescriptions).as("Actual HU assignments that no expected row consumed").isEmpty();
+	}
+
+	private static final class ActualAssignment
+	{
+		private final I_M_InOutLine line;
+		private final I_M_HU_Assignment assignment;
+
+		private ActualAssignment(@NonNull final I_M_InOutLine line, @NonNull final I_M_HU_Assignment assignment)
+		{
+			this.line = line;
+			this.assignment = assignment;
+		}
+	}
+
+	private boolean matchesExpectedAssignment(@NonNull final ActualAssignment actual, @NonNull final DataTableRow expectedRow)
+	{
+		if (!matchesExpectedRow(actual.line, expectedRow))
+		{
+			return false;
+		}
+		if (huTable.getId(expectedRow.getAsIdentifier(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID)).getRepoId() != actual.assignment.getM_TU_HU_ID())
+		{
+			return false;
+		}
+		final StepDefDataIdentifier expectedCU = expectedRow.getAsOptionalIdentifier(I_M_HU_Assignment.COLUMNNAME_VHU_ID).orElse(null);
+		if (expectedCU != null && huTable.getId(expectedCU).getRepoId() != actual.assignment.getVHU_ID())
+		{
+			return false;
+		}
+		final StepDefDataIdentifier expectedLU = expectedRow.getAsOptionalIdentifier(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID).orElse(null);
+		if (expectedLU == null)
+		{
+			return true;
+		}
+		return expectedLU.isNullPlaceholder()
+				? actual.assignment.getM_LU_HU_ID() <= 0
+				: huTable.getId(expectedLU).getRepoId() == actual.assignment.getM_LU_HU_ID();
+	}
+
 	private boolean matchesExpectedRow(final I_M_InOutLine line, final DataTableRow expectedRow)
 	{
 		for (final String column : expectedRow.getColumnNames())
 		{
-			if (!COLUMNNAME_M_Product_ID.equals(column) && !COLUMNNAME_MovementQty.equals(column) && !COLUMNNAME_C_OrderLine_ID.equals(column) && !column.startsWith(ATTRIBUTE_COLUMN_PREFIX))
+			if (!COLUMNNAME_M_Product_ID.equals(column) && !COLUMNNAME_MovementQty.equals(column) && !COLUMNNAME_C_OrderLine_ID.equals(column) && !column.startsWith(ATTRIBUTE_COLUMN_PREFIX)
+					&& !HU_ASSIGNMENT_COLUMNS.contains(column))
 			{
 				throw new AdempiereException("Unsupported column: " + column);
 			}
