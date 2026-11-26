@@ -25,13 +25,11 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.inout.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.util.List;
 
 /**
  * The rows to create shipment candidates for, and what is needed to do so.
@@ -40,7 +38,7 @@ import java.util.List;
 @Builder
 public class CreateCandidatesRequest
 {
-	@NonNull List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords;
+	@NonNull QtyPickedRecords qtyPickedRecords;
 	@NonNull IHUContext huContext;
 	@NonNull M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse;
 	/**

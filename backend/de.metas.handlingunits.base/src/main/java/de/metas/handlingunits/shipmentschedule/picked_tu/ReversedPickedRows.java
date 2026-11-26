@@ -74,7 +74,7 @@ class ReversedPickedRows
 	private final TUContentLoader tuContentLoader = new TUContentLoader();
 	private final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
-	private final List<I_M_ShipmentSchedule_QtyPicked> rows;
+	private final QtyPickedRecords rows;
 	private final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedulesById = new HashMap<>();
 	private final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule;
 	private final Map<ScheduleTUKey, List<TUContentCU>> cusByTU = new HashMap<>();
@@ -84,7 +84,7 @@ class ReversedPickedRows
 	 * @param pickedHuIdsBySchedule the HUs that the picking of each schedule recorded as picked
 	 */
 	ReversedPickedRows(
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rows,
+			@NonNull final QtyPickedRecords rows,
 			@NonNull final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule)
 	{
 		this.rows = rows;
@@ -98,13 +98,6 @@ class ReversedPickedRows
 				cusByTU.computeIfAbsent(tuKey, this::retrieveCUsOfTU);
 			}
 		}
-	}
-
-	static Set<ShipmentScheduleId> extractScheduleIds(@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rows)
-	{
-		return rows.stream()
-				.map(row -> ShipmentScheduleId.ofRepoId(row.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	Set<ShipmentScheduleId> getScheduleIds()
@@ -142,15 +135,10 @@ class ReversedPickedRows
 	 * @return the rows to restore: the rows whose CU (or, for a TU-only row, its TU or one of its CUs) is covered by a picking
 	 * job; a TU-only row is replaced by one row per CU that it stands for
 	 */
-	List<I_M_ShipmentSchedule_QtyPicked> toRowsToRestore(@NonNull final Set<HuId> huIdsCoveredByPickingJobs)
+	QtyPickedRecords toRowsToRestore(@NonNull final Set<HuId> huIdsCoveredByPickingJobs)
 	{
-		final List<I_M_ShipmentSchedule_QtyPicked> coveredRows = rows.stream()
-				.filter(row -> isCovered(row, huIdsCoveredByPickingJobs))
-				.collect(ImmutableList.toImmutableList());
-		final Set<HuId> cuIdsOfRowsWithCU = coveredRows.stream()
-				.filter(row -> HuId.ofRepoIdOrNull(row.getVHU_ID()) != null)
-				.map(row -> HuId.ofRepoId(row.getVHU_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+		final QtyPickedRecords coveredRows = rows.filter(row -> isCovered(row, huIdsCoveredByPickingJobs));
+		final Set<HuId> cuIdsOfRowsWithCU = coveredRows.extractCUIds();
 		final Map<ScheduleTUKey, TUBudget> budgetByTU = new HashMap<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : coveredRows)
 		{
@@ -175,7 +163,7 @@ class ReversedPickedRows
 				result.addAll(toRowsOfCUs(row, tuKey, budgetByTU.get(tuKey), cuIdsOfRowsWithCU));
 			}
 		}
-		return result;
+		return QtyPickedRecords.of(result);
 	}
 
 	private boolean isCovered(@NonNull final I_M_ShipmentSchedule_QtyPicked row, @NonNull final Set<HuId> huIdsCoveredByPickingJobs)

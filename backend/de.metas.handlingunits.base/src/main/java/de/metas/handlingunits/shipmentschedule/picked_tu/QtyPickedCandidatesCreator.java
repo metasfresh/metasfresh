@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
@@ -52,7 +51,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -105,7 +103,7 @@ public class QtyPickedCandidatesCreator
 	 * @return the candidates of the rows, in the order of the rows: the candidates of a TU come where the first row of that TU is.
 	 * This order does not decide which candidates share a shipment line.
 	 */
-	public List<ShipmentScheduleWithHU> createCandidates(@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rows)
+	public List<ShipmentScheduleWithHU> createCandidates(@NonNull final QtyPickedRecords rows)
 	{
 		final LinkedHashMap<ScheduleTUKey, List<I_M_ShipmentSchedule_QtyPicked>> rowsByTU = new LinkedHashMap<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : rows)
@@ -128,7 +126,7 @@ public class QtyPickedCandidatesCreator
 			}
 			else if (doneTUs.add(tuKey))
 			{
-				result.addAll(createCandidatesForTU(tuKey, rowsByTU.get(tuKey)));
+				result.addAll(createCandidatesForTU(tuKey, QtyPickedRecords.of(rowsByTU.get(tuKey))));
 			}
 		}
 		return result.build();
@@ -161,19 +159,12 @@ public class QtyPickedCandidatesCreator
 	 */
 	private List<ShipmentScheduleWithHU> createCandidatesForTU(
 			@NonNull final ScheduleTUKey tuKey,
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> rows)
+			@NonNull final QtyPickedRecords rows)
 	{
 		// A row that already references its CU (e.g. from an earlier generation) is not a TU-only row and is not part of the content to hand out.
-		final List<I_M_ShipmentSchedule_QtyPicked> rowsWithCU = rows.stream()
-				.filter(row -> HuId.ofRepoIdOrNull(row.getVHU_ID()) != null)
-				.collect(ImmutableList.toImmutableList());
-		final Set<HuId> cuIdsOfRowsWithCU = rowsWithCU.stream()
-				.map(row -> HuId.ofRepoId(row.getVHU_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-		final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows = rows.stream()
-				.filter(row -> HuId.ofRepoIdOrNull(row.getVHU_ID()) == null)
-				.sorted(Comparator.comparingInt(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_QtyPicked_ID))
-				.collect(ImmutableList.toImmutableList());
+		final QtyPickedRecords rowsWithCU = rows.withCU();
+		final Set<HuId> cuIdsOfRowsWithCU = rowsWithCU.extractCUIds();
+		final QtyPickedRecords tuOnlyRows = rows.tuOnlySortedById();
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 		for (final I_M_ShipmentSchedule_QtyPicked row : rowsWithCU)
@@ -189,7 +180,7 @@ public class QtyPickedCandidatesCreator
 
 	private List<ShipmentScheduleWithHU> createCandidatesForTUOnlyRows(
 			@NonNull final ScheduleTUKey tuKey,
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows,
+			@NonNull final QtyPickedRecords tuOnlyRows,
 			@NonNull final Set<HuId> cuIdsToSkip)
 	{
 		final I_M_HU tu = handlingUnitsBL.getById(tuKey.getTuId());
@@ -256,23 +247,20 @@ public class QtyPickedCandidatesCreator
 	}
 
 	private static boolean rowsPickedWholeContent(
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows,
+			@NonNull final QtyPickedRecords tuOnlyRows,
 			@NonNull final TUContentGroupList contentGroups)
 	{
-		if (contentGroups.isEmpty() || tuOnlyRows.stream().anyMatch(row -> row.getQtyPicked().signum() < 0))
+		if (contentGroups.isEmpty() || tuOnlyRows.hasNegativeQty())
 		{
 			return false;
 		}
 		final Quantity contentQty = contentGroups.totalQty();
-		final Quantity pickedQty = tuOnlyRows.stream()
-				.map(row -> Quantity.of(row.getQtyPicked(), contentQty.getUOM())) // both in the stock UOM
-				.reduce(Quantity::add)
-				.get();
+		final Quantity pickedQty = tuOnlyRows.totalQtyPicked(contentQty.getUOM()); // both in the stock UOM
 		return contentQty.qtyAndUomCompareToEquals(pickedQty);
 	}
 
 	private List<ShipmentScheduleWithHU> createCandidatesPerContentGroup(
-			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> tuOnlyRows,
+			@NonNull final QtyPickedRecords tuOnlyRows,
 			@NonNull final TUContentGroupList contentGroups,
 			@NonNull final ProductId productId)
 	{

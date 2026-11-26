@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentReversalPickRestoreService;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -261,7 +262,7 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		shipmentReversalPickRestoreService.restorePickedQtys(assignedQuantities);
+		shipmentReversalPickRestoreService.restorePickedQtys(QtyPickedRecords.of(assignedQuantities));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -32,9 +31,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-
 
 /**
  * Gives the picks back that a reversed shipment had taken: reopens the picking jobs of the shipment's rows and, where that
@@ -52,11 +48,11 @@ public class ShipmentReversalPickRestoreService
 	/**
 	 * @param reversedRows the rows that were assigned to the reversed shipment
 	 */
-	public void restorePickedQtys(@NonNull final List<I_M_ShipmentSchedule_QtyPicked> reversedRows)
+	public void restorePickedQtys(@NonNull final QtyPickedRecords reversedRows)
 	{
 		final ReversedPickedRows rows = new ReversedPickedRows(
 				reversedRows,
-				pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(ReversedPickedRows.extractScheduleIds(reversedRows)));
+				pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(reversedRows.extractScheduleIds()));
 		pickingJobService.reopenPickingJobs(rows.toReopenRequest());
 
 		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment
@@ -70,7 +66,7 @@ public class ShipmentReversalPickRestoreService
 		final ImmutableSet<HuId> huIdsCoveredByPickingJobs = pickingJobService.getHuIdsCoveredByPickingJobs(rows.getScheduleIds());
 		if (!huIdsCoveredByPickingJobs.isEmpty())
 		{
-			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(rows.toRowsToRestore(huIdsCoveredByPickingJobs));
+			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(rows.toRowsToRestore(huIdsCoveredByPickingJobs).toList());
 		}
 	}
 }

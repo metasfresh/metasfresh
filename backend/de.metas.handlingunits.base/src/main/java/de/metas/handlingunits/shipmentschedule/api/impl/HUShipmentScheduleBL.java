@@ -45,6 +45,7 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.i18n.AdMessageKey;
@@ -1202,7 +1203,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 					.filter(I_M_ShipmentSchedule_QtyPicked::isActive)
 					.collect(ImmutableList.toImmutableList());
 			final List<ShipmentScheduleWithHU> candidatesForHU = createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
-					.qtyPickedRecords(activeQtyPickedRecords)
+					.qtyPickedRecords(QtyPickedRecords.of(activeQtyPickedRecords))
 					.huContext(huContext)
 					.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 					.build());

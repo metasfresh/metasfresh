@@ -74,6 +74,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -1308,14 +1309,12 @@ public class ShipmentScheduleWithHUService
 			@NonNull final IHUContext huContext,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
-		final ImmutableSet<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
-				.map(qtyPicked -> ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+		final QtyPickedRecords rows = QtyPickedRecords.of(qtyPickedRecords);
 		return huShipmentScheduleBL.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
-				.qtyPickedRecords(qtyPickedRecords)
+				.qtyPickedRecords(rows)
 				.huContext(huContext)
 				.qtyTypeToUse(quantityType)
-				.pickedHuIdsBySchedule(pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(scheduleIds))
+				.pickedHuIdsBySchedule(pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(rows.extractScheduleIds()))
 				.build());
 	}
 

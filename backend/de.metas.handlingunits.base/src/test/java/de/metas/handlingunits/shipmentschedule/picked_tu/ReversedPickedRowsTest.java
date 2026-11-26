@@ -195,7 +195,7 @@ class ReversedPickedRowsTest extends TUPicksTestBase
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pSalad, uomEach, new BigDecimal("2"), BigDecimal.ZERO);
 		final I_M_ShipmentSchedule_QtyPicked row = createTUOnlyRow(schedule, tu, "2");
 		final HuId cuId = HuId.ofRepoId(handlingUnitsDAO.retrieveIncludedHUs(tu).get(0).getM_HU_ID());
-		final ReversedPickedRows reversedRows = new ReversedPickedRows(ImmutableList.of(row), ImmutableSetMultimap.of());
+		final ReversedPickedRows reversedRows = new ReversedPickedRows(QtyPickedRecords.of(ImmutableList.of(row)), ImmutableSetMultimap.of());
 
 		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of(cuId))).singleElement().satisfies(rowOfCU -> assertThat(rowOfCU.getVHU_ID()).isEqualTo(cuId.getRepoId()));
 		assertThat(reversedRows.toRowsToRestore(ImmutableSet.of())).as("no picking job covers the row").isEmpty();

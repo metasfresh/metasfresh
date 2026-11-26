@@ -259,7 +259,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 
 	protected List<ShipmentScheduleWithHU> createCandidates(final List<I_M_ShipmentSchedule_QtyPicked> rows)
 	{
-		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, ImmutableSetMultimap.of()).createCandidates(rows);
+		return new QtyPickedCandidatesCreator(helper.getHUContext(), QTY_TYPE, ImmutableSetMultimap.of()).createCandidates(QtyPickedRecords.of(rows));
 	}
 
 	/**
@@ -268,7 +268,7 @@ abstract class TUPicksTestBase extends AbstractHUTest
 	protected void restoreAfterReversal(final List<I_M_ShipmentSchedule_QtyPicked> reversedRows)
 	{
 		final ImmutableSetMultimap<ShipmentScheduleId, HuId> pickedHuIdsBySchedule = PickingJobRepository.newInstanceForUnitTesting()
-				.getPickedHuIdsByShipmentScheduleIds(ReversedPickedRows.extractScheduleIds(reversedRows));
+				.getPickedHuIdsByShipmentScheduleIds(QtyPickedRecords.of(reversedRows).extractScheduleIds());
 		final Set<HuId> coveredHuIds = new HashSet<>();
 		for (final I_M_ShipmentSchedule_QtyPicked row : reversedRows)
 		{
@@ -279,6 +279,6 @@ abstract class TUPicksTestBase extends AbstractHUTest
 			}
 		}
 		huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(
-				new ReversedPickedRows(reversedRows, pickedHuIdsBySchedule).toRowsToRestore(coveredHuIds));
+				new ReversedPickedRows(QtyPickedRecords.of(reversedRows), pickedHuIdsBySchedule).toRowsToRestore(coveredHuIds).toList());
 	}
 }
