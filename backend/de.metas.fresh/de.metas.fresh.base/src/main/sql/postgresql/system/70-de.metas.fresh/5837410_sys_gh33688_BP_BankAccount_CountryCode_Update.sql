@@ -1,0 +1,4 @@
+-- 2026-11-26T09:04:10.287Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic=NULL,Updated=TO_TIMESTAMP('2026-11-26 17:04:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=8212
+;
