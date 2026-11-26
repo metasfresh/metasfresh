@@ -1013,12 +1013,6 @@ public class PickingJobService implements PickingSlotListener
 	 * on-the-fly shipments (which have no picking job and whose reverse must clear the HU's BPartner + return it
 	 * to Active stock).
 	 */
-	@NonNull
-	public PickedHUsBySchedule getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		return pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(shipmentScheduleIds);
-	}
-
 	public ImmutableSet<HuId> getHuIdsCoveredByPickingJobs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())
@@ -1033,6 +1027,15 @@ public class PickingJobService implements PickingSlotListener
 				.map(this::getById)
 				.flatMap(pickingJob -> pickingJob.getAllPickedHuIds().stream())
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return per shipment schedule, the HUs recorded as picked by its active picking job steps
+	 */
+	@NonNull
+	public PickedHUsBySchedule getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(shipmentScheduleIds);
 	}
 
 	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)

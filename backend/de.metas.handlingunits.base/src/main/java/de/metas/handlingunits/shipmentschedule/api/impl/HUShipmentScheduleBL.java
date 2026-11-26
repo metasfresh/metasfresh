@@ -35,6 +35,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.CreateCandidatesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -43,7 +44,6 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -1198,7 +1198,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				throw new HUException("HU " + hu + " shall be top level");
 			}
-			// Each row alone, not the list based creator: that one saves the rows it splits, which would lock them in this transaction.
+			// Each row alone: the list based creator also splits and saves the rows of a TU picked in several steps, which would keep them locked in this transaction.
 			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
 			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu))
 			{

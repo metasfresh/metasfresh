@@ -22,9 +22,9 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -32,6 +32,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -48,7 +49,6 @@ import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
-import de.metas.common.util.CoalesceUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;

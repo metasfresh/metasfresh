@@ -22,7 +22,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.CoalesceUtil;
@@ -32,6 +31,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentScheduleQtyPickedSplitter.CandidatePart;

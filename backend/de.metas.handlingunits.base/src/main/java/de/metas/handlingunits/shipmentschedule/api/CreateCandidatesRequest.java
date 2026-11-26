@@ -23,8 +23,8 @@ package de.metas.handlingunits.shipmentschedule.api;
  */
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.inout.QtyPickedRecords;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

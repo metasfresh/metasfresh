@@ -22,7 +22,6 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUTestHelper;
@@ -32,6 +31,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;

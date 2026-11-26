@@ -22,15 +22,9 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
  * #L%
  */
 
-import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inout.QtyPickedRecords;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-
-import java.util.HashSet;
-import java.util.Set;
 import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -41,6 +35,7 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStr
 import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
@@ -49,6 +44,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
@@ -64,7 +61,9 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM_Conversion;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
