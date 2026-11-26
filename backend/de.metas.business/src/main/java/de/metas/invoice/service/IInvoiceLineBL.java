@@ -30,7 +30,9 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -93,7 +95,10 @@ public interface IInvoiceLineBL extends ISingletonService
 	 */
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
-	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
+	/**
+	 * @param warehouseId the warehouse the line ships from (see {@link de.metas.invoice.service.IInvoiceBL#getFromWarehouseId}); used by the tax query, e.g. for drop-ship warehouses
+	 */
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, @Nullable WarehouseId warehouseId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
 
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 

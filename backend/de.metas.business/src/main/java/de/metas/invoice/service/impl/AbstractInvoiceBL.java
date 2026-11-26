@@ -1542,8 +1542,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
 			final CountryId countryFromId = getFromCountryId(invoice, il);
+			final WarehouseId warehouseId = getFromWarehouseId(invoice, il);
 
-			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, taxBPartnerLocationId, isSOTrx);
+			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, warehouseId, taxBPartnerLocationId, isSOTrx);
 
 			invoiceDAO.save(il);
 		}
@@ -1592,6 +1593,28 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return countryFromId;
+	}
+
+	@Override
+	@Nullable
+	public WarehouseId getFromWarehouseId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.@NonNull I_C_InvoiceLine invoiceLine)
+	{
+		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+		if (invoiceWarehouseId != null)
+		{
+			return invoiceWarehouseId;
+		}
+
+		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
+		if (inoutLineId == null)
+		{
+			return null;
+		}
+
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
+		final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+		return WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
 	}
 
 	@Override

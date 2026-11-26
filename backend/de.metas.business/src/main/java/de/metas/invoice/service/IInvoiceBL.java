@@ -56,6 +56,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -444,6 +445,13 @@ public interface IInvoiceBL extends ISingletonService
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	/**
+	 * @return the warehouse the given line ships from: the invoice's warehouse, else the warehouse of the line's shipment, else {@code null}.
+	 * Same order as {@link #getFromCountryId(I_C_Invoice, org.compiere.model.I_C_InvoiceLine)}.
+	 */
+	@Nullable
+	WarehouseId getFromWarehouseId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
 

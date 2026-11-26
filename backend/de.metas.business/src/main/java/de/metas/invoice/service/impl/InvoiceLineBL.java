@@ -56,6 +56,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
@@ -167,8 +168,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final boolean isSOTrx = io.isSOTrx();
 
 		final CountryId countryFromId = invoiceBL.getFromCountryId(invoice, il);
+		final WarehouseId warehouseId = invoiceBL.getFromWarehouseId(invoice, il);
 
-		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, shipToPartnerLocationId, isSOTrx);
+		return setTaxForInvoiceLine(il, inOutOrgId, shipDate, countryFromId, warehouseId, shipToPartnerLocationId, isSOTrx);
 	}
 
 	@Override
@@ -177,6 +179,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
+			@Nullable final WarehouseId warehouseId,
 			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
 			final boolean isSOTrx)
 	{
@@ -206,6 +209,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 												 .fromCountryId(countryFromId)
+												 .warehouseId(warehouseId)
 												 .orgId(orgId)
 												 .bPartnerLocationId(partnerLocationId)
 												 .dateOfInterest(taxDate)

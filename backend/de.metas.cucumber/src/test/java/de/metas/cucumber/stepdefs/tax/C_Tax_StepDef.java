@@ -51,6 +51,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,12 +98,13 @@ public class C_Tax_StepDef
 	 *         Set it to {@code N} to make a tax invisible to tax determination, which only ever
 	 *         considers active records</li>
 	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
-	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies to a BPartner
+	 *         (blank/omitted leaves the DB default {@code N} on a new record) — this tax only applies to a BPartner
 	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
 	 *         {@code TaxDAO}</li>
-	 *     <li>{@code IsFiscalRepresentation} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
-	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies when the
-	 *         organisation has (or lacks) a fiscal representation in the destination country</li>
+	 *     <li>{@code IsFiscalRepresentation} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column —
+	 *         this tax only applies when the organisation has (or lacks) a fiscal representation in the
+	 *         destination country. An empty cell stores NULL (matches regardless); omitting the column leaves
+	 *         the DB default {@code N} on a new record</li>
 	 * </ul>
 	 *
 	 * <p>Upserts by {@code Name}, so repeated runs neither collide on the unique-name constraint nor skip
@@ -181,6 +183,18 @@ public class C_Tax_StepDef
 				.ifPresent(value -> taxRecord.setIsFiscalRepresentation(StringUtils.ofBoolean(value)));
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
+
+		// an empty IsFiscalRepresentation cell means NULL (matches with and without fiscal representation);
+		// the insert skips NULL values, so the column's DB default 'N' applies -> reload and write the NULL with an update
+		if (isEmptyCell(tableRow, I_C_Tax.COLUMNNAME_IsFiscalRepresentation))
+		{
+			InterfaceWrapperHelper.refresh(taxRecord);
+			if (taxRecord.getIsFiscalRepresentation() != null)
+			{
+				taxRecord.setIsFiscalRepresentation(null);
+				InterfaceWrapperHelper.saveRecord(taxRecord);
+			}
+		}
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> taxTable.putOrReplace(identifier, TaxUtils.from(taxRecord)));
@@ -377,6 +391,20 @@ public class C_Tax_StepDef
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
 		taxTable.putOrReplace(identifier, TaxUtils.from(taxRecord));
+	}
+
+	/**
+	 * @return {@code true} if the table has the given column and the row's cell is empty
+	 */
+	private static boolean isEmptyCell(@NonNull final DataTableRow row, @NonNull final String columnName)
+	{
+		final Map<String, String> map = row.asMap();
+		if (!map.containsKey(columnName))
+		{
+			return false;
+		}
+		final String value = map.get(columnName);
+		return value == null || value.trim().isEmpty();
 	}
 
 	private @Nullable I_C_Tax retrieveTaxRecordByName(final String taxName)
