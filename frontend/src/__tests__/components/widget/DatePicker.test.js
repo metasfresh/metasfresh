@@ -1,8 +1,10 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import MomentTZ from 'moment-timezone';
+import counterpart from 'counterpart';
 
 import DatePicker from '../../../components/widget/DateTime/DatePicker';
 import TetheredDateTime from '../../../components/widget/DateTime/TetheredDateTime';
@@ -16,8 +18,7 @@ const DISPLAY_FORMAT = 'DD.MM.YYYY';
 
 const mounted = [];
 
-const mountPicker = (props) => {
-  const store = createStore(() => ({}));
+const mountPicker = (props, store = createStore(() => ({}))) => {
   const wrapper = mount(
     <Provider store={store}>
       <DatePicker
@@ -302,3 +303,526 @@ describe('DatePicker — grid date cell, review follow-ups', () => {
     expect(picker().getGridViewDate()).toBe(first); // react-datetime compares viewDate by reference
   });
 });
+
+/**
+ * Typed dates: besides the exact display format, a missing leading zero and a two-digit year are
+ * accepted when the input is left; a typed text that is no date is reported, not silently dropped.
+ */
+describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
+  const stored = () => MomentTZ('2026-11-20', 'YYYY-MM-DD');
+  const typeInto = (wrapper, text) =>
+    wrapper.find('input').simulate('change', { target: { value: text } });
+  const patchedDay = (patch) => patch.mock.calls[0][0].format('YYYY-MM-DD');
+  const mountWithStore = (props) => {
+    const store = createStore(() => ({}));
+    const dispatch = jest.spyOn(store, 'dispatch');
+    const notifications = () =>
+      dispatch.mock.calls
+        .map(([action]) => action)
+        .filter((action) => action && action.type === 'ADD_NOTIFICATION');
+    return { ...mountPicker(props, store), notifications };
+  };
+
+  beforeAll(() =>
+    counterpart.registerTranslations('en', {
+      widget: {
+        datePicker: {
+          invalidDate: {
+            title: 'Invalid date',
+            text: '"%(value)s" is not a valid date. Example: %(example)s',
+          },
+        },
+      },
+    })
+  );
+
+  [
+    ['4.12.2027', '2027-12-04'],
+    ['04.1.2027', '2027-01-04'],
+    ['05.12.27', '2027-12-05'],
+    ['6.1.27', '2027-01-06'],
+  ].forEach(([typed, expected]) => {
+    it(`grid: "${typed}" is saved as ${expected} when the cell is left`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        isGridCell: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patchedDay(patch)).toBe(expected);
+      expect(notifications()).toHaveLength(0);
+    });
+  });
+
+  it('grid: a short form is saved by Enter too', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.27');
+    picker().handleKeydown(keyEvent('Enter'));
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+  });
+
+  it('grid: Escape discards a typed short form', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.2027');
+    picker().handleKeydown(keyEvent('Escape'));
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  ['31.02.2027', '12/09/2027', '07122027', '10.12.', 'abc'].forEach((typed) => {
+    it(`grid: "${typed}" is not saved, the stored date stays and an error is shown`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        isGridCell: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).not.toHaveBeenCalled();
+      wrapper.update();
+      expect(wrapper.find('input').prop('value')).toBe('20.11.2026');
+      const shown = notifications();
+      expect(shown).toHaveLength(1);
+      expect(shown[0].notifType).toBe('error');
+      expect(shown[0].title).toBe('Invalid date');
+      expect(shown[0].msg).toBe(
+        `"${typed}" is not a valid date. Example: ${MomentTZ().format(DISPLAY_FORMAT)}`
+      );
+    });
+  });
+
+  it('grid: leaving the cell without typing shows no error, also for an unparseable stored value', () => {
+    const { picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: 'not a date',
+    });
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('grid, session format "L" in English: "12/5/27" is saved as 2027-12-05', () => {
+    MomentTZ.locale('en');
+    window.localStorage.setItem('metasfreshLanguage', 'en');
+    try {
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        isGridCell: true,
+        dateFormat: true,
+        value: stored(),
+        patch,
+      });
+      typeInto(wrapper, '12/5/27');
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patchedDay(patch)).toBe('2027-12-05');
+    } finally {
+      window.localStorage.removeItem('metasfreshLanguage');
+    }
+  });
+
+  it('non-grid: a short form is not patched while typing but when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '4.12.27');
+    expect(patch).not.toHaveBeenCalled();
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a typed text that is no date is reported when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '31.02.2027');
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(1);
+  });
+
+  it('non-grid: leaving the field without typing shows no error', () => {
+    const { picker, notifications } = mountWithStore({ value: stored() });
+    picker().handleFocus();
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a full date typed and saved while typing raises no error when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('time-only field: a typed valid time raises no error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      dateFormat: false,
+      timeFormat: 'HH:mm',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '12:30');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  [
+    ['04.01.2027', '2027-01-04'],
+    ['4.1.27', '2027-01-04'],
+  ].forEach(([typed, expected]) => {
+    it(`date+time field: the date "${typed}" without a time is saved once as the end of ${expected}, no error`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        timeFormat: 'HH:mm',
+        value: null,
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(notifications()).toHaveLength(0);
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patch.mock.calls[0][0].format('YYYY-MM-DD HH:mm')).toBe(`${expected} 23:59`);
+    });
+  });
+
+  it('date+time field: a short form with a time is saved with that time', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      timeFormat: 'HH:mm',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '4.1.27 10:30');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(
+      patch.mock.calls[0][0].clone().tz('Europe/Berlin').format('YYYY-MM-DD HH:mm')
+    ).toBe('2027-01-04 10:30');
+  });
+
+  it('non-grid: Escape cancels the typing, no error when the field is left', () => {
+    const { wrapper, picker, notifications } = mountWithStore({ value: stored() });
+    typeInto(wrapper, 'abc');
+    picker().handleKeydown(keyEvent('Escape'));
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a calendar pick after typing an invalid text raises no error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, 'abc');
+    picker().handleDateChange(MomentTZ('2026-12-05', 'YYYY-MM-DD'));
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('empty field: a calendar pick after typing an invalid text raises no error (react-datetime blurs before onChange)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, 'abc');
+    const picked = MomentTZ('2026-12-05', 'YYYY-MM-DD');
+    // react-datetime's order for a field without value: onBlur(date), then onChange(date)
+    picker().handleBlur(picked);
+    picker().handleDateChange(picked);
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('spaces around a typed date are ignored', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, ' 4.12.2027 ');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patchedDay(patch)).toBe('2027-12-04');
+  });
+
+  it('typing only spaces keeps the stored value without an error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '   ');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('a text with "-" is read as full ISO YYYY-MM-DD only: "12-05-27" is no date', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '12-05-27');
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(1);
+  });
+
+  it('the calendar icon resets the input: the earlier typing is neither saved nor reported later', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    picker().handleFocus(); // opens the calendar
+    typeInto(wrapper, 'abc');
+    picker().toggleCalendarOpenClosed(); // closes it and resets the input to the stored date
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('non-grid: an ISO date with time zone accepted while typing raises no error when the field is left', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '2026-12-05T00:00:00.000+01:00');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('typing replaced in the input by a new value (e.g. from the server) is not saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '5.1.27');
+    // react-datetime rewrites the input when the field gets a new value
+    picker().picker.setSelectedDateAndInputValue({
+      selectedDate: MomentTZ('2026-11-21', 'YYYY-MM-DD'),
+      inputValue: '21.11.2026',
+    });
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: after a short form is saved on leave, the input shows the saved date (blur batched as in react-datetime)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({ value: stored(), patch });
+    typeInto(wrapper, '4.12.27');
+    act(() => {
+      picker().handleBlur();
+    });
+    expect(patch).toHaveBeenCalledTimes(1);
+    wrapper.update();
+    expect(wrapper.find('input').prop('value')).toBe('04.12.2027');
+  });
+
+  ['21.11.2026', ''].forEach((typed) => {
+    it(`grid: the calendar icon resets the input, so the typed "${typed}" is not saved on leave`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        isGridCell: true,
+        isPointerEdit: true,
+        value: stored(),
+        patch,
+      });
+      picker().handleFocus(); // pointer entry opens the calendar
+      typeInto(wrapper, typed);
+      picker().toggleCalendarOpenClosed(); // closes it and resets the input to the stored date
+      picker().handleBlur();
+      expect(patch).not.toHaveBeenCalled();
+    });
+  });
+
+  it('non-grid: a click outside with the calendar closed still saves the typing', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({ value: stored(), patch });
+    typeInto(wrapper, '4.1.27');
+    expect(picker().state.isCalendarOpen).toBe(false);
+    picker().handleClickOutside();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-01-04');
+  });
+
+  it('grid: a typed full date replaced in the input by a new value is not saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().picker.setSelectedDateAndInputValue({
+      selectedDate: MomentTZ('2026-11-22', 'YYYY-MM-DD'),
+      inputValue: '22.11.2026',
+    });
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it('empty grid cell: a calendar pick after typing a full date saves only the picked day', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    const picked = MomentTZ('2026-12-05', 'YYYY-MM-DD');
+    // react-datetime's order for a field without value: onBlur(date), then onChange(date)
+    picker().handleBlur(picked);
+    picker().handleDateChange(picked);
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2026-12-05');
+  });
+
+  it('empty grid cell: Tab after typing a full date saves it (react-datetime blurs with the typed moment)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    picker().handleBlur(MomentTZ('2026-11-21', 'YYYY-MM-DD'));
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2026-11-21');
+  });
+
+  it('empty date+time grid cell, session time zone other than the browser\'s: Tab after typing saves the typed date', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      timeFormat: 'HH:mm',
+      timeZone: MomentTZ.tz.guess() === 'Pacific/Kiritimati' ? 'America/New_York' : 'Pacific/Kiritimati',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '04.01.2027 10:00');
+    // react-datetime blurs an empty field with its own (browser-local) moment of the typed date
+    picker().handleBlur(MomentTZ('04.01.2027 10:00', 'DD.MM.YYYY HH:mm'));
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('empty grid cell: a calendar pick of the very day just typed saves it once', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      isGridCell: true,
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '21.11.2026');
+    const picked = MomentTZ('2026-11-21', 'YYYY-MM-DD');
+    // both come from one click handler in react-datetime, so React batches their state updates
+    act(() => {
+      picker().handleBlur(picked);
+      picker().handleDateChange(picked);
+    });
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  ['04.01.2027', '4.1.27'].forEach((typed) => {
+    it(`date+time field, session time zone other than the browser's: "${typed}" is the end of that day in the session time zone`, () => {
+      const timeZone =
+        MomentTZ.tz.guess() === 'Pacific/Kiritimati' ? 'America/New_York' : 'Pacific/Kiritimati';
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        timeFormat: 'HH:mm',
+        timeZone,
+        value: null,
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patch.mock.calls[0][0].clone().tz(timeZone).format('YYYY-MM-DD HH:mm')).toBe(
+        '2027-01-04 23:59'
+      );
+    });
+  });
+
+  it('time-only field: a click outside with the calendar closed behaves as before (no blur)', () => {
+    const { wrapper, picker } = mountWithStore({
+      dateFormat: false,
+      timeFormat: 'HH:mm',
+      value: null,
+    });
+    const blur = jest.spyOn(picker(), 'handleBlur');
+    typeInto(wrapper, '12:3');
+    picker().handleClickOutside();
+    expect(blur).not.toHaveBeenCalled();
+  });
+
+  it('grid: a typed full ISO date (shown reformatted in the input) is saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      isGridCell: true,
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '2027-01-04');
+    picker().handleBlur();
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patchedDay(patch)).toBe('2027-01-04');
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('date+time field: a calendar pick after typing a date without time saves the pick only', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({
+      timeFormat: 'HH:mm',
+      value: MomentTZ('2026-11-20 10:00', 'YYYY-MM-DD HH:mm'),
+      patch,
+    });
+    typeInto(wrapper, '04.01.2027');
+    const picked = MomentTZ('2026-12-05 10:00', 'YYYY-MM-DD HH:mm');
+    picker().handleDateChange(picked); // the pick, while the parent has not passed the new value yet
+    // react-datetime then closes the calendar and blurs a field with value with its input text
+    picker().handleBlur('04.01.2027');
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patch.mock.calls[0][0].format('YYYY-MM-DD')).toBe('2026-12-05');
+  });
+});
+
