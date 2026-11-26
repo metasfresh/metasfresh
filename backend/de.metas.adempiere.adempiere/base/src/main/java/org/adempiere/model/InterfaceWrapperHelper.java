@@ -1212,12 +1212,18 @@ public class InterfaceWrapperHelper
 	@NonNull
 	public static UserId getUpdatedBy(@NonNull final Object model)
 	{
-		return getUpdatedByIfExists(model)
+		return getUpdatedByIfSet(model)
 				.orElseThrow(() -> new AdempiereException("Cannot determine UpdatedBy from " + model));
 	}
 
+	/**
+	 * Reads the <code>UpdatedBy</code> column only. Does not check that the user exists.
+	 *
+	 * @return the user id, or empty if the column has no value (null or not a valid user id)
+	 * @throws AdempiereException if the model has no <code>UpdatedBy</code> column
+	 */
 	@NonNull
-	public static Optional<UserId> getUpdatedByIfExists(@NonNull final Object model)
+	public static Optional<UserId> getUpdatedByIfSet(@NonNull final Object model)
 	{
 		return getValue(model, "UpdatedBy")
 				.map(userIdObj -> RepoIdAwares.ofObjectOrNull(userIdObj, UserId.class));

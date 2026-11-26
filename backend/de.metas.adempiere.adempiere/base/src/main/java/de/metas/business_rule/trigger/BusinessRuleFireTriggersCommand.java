@@ -76,7 +76,7 @@ public class BusinessRuleFireTriggersCommand
 	@VisibleForTesting
 	static UserId extractTriggeringUserId(@NonNull final IUserDAO userDAO, @NonNull final Object sourceModel)
 	{
-		return InterfaceWrapperHelper.getUpdatedByIfExists(sourceModel)
+		return InterfaceWrapperHelper.getUpdatedByIfSet(sourceModel)
 				.filter(updatedBy -> updatedBy.isSystemUser() || userDAO.exists(updatedBy))
 				.orElse(UserId.SYSTEM);
 	}
