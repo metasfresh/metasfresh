@@ -430,6 +430,18 @@
         padding-left: 0;
         padding-right: 0;
       }
+
+      /*
+       * The date editor renders a calendar icon absolutely positioned at the input's right edge
+       * (DatePicker.js, `.input-icon-right`: 18px wide, 5px from the edge). In a narrow grid cell
+       * the date text would run under it, so reserve room for the icon on the date editor's input.
+       * It sits here, beside the `input { padding-right: 0 }` above, because it must out-specify it;
+       * only the grid-cell date input carries `js-input-field` (DatePicker.renderInput), so non-grid
+       * date widgets are untouched.
+       */
+      .datepicker input.js-input-field {
+        padding-right: 26px;
+      }
     }
   }
 
