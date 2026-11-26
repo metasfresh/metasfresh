@@ -915,6 +915,7 @@ public class M_ShipmentSchedule_StepDef
 	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
 	 *     as a plain calendar date compared in the order's time zone<br>
+	 *   <b>Carrier_Advising_Status</b> — (optional) expected carrier advising status; polled for, like QtyToDeliver<br>
 	 *   <b>PriorityRule</b> — (optional) expected priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor)<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
