@@ -17,6 +17,7 @@ import de.metas.product.impl.ProductDAO;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UOMConversionsMap;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -66,6 +67,7 @@ public class M_Product
 {
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
+	public static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
 
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -89,6 +91,24 @@ public class M_Product
 	{
 		ProductDAO.extractIssuingToleranceSpec(product); // validate
 		normalizeProductCodeFields(product);
+		validateCoProductCostDistributionPercent(product);
+	}
+
+	/**
+	 * Per-product data-entry range guard: {@code CoProductCostDistributionPercent} only accepts
+	 * {@code [0, 100]}. Blank reads as {@code 0} (the generated getter never returns null), which
+	 * passes. Distinct from the per-order {@code Σp ≤ 100%} guard (enforced elsewhere, at
+	 * cost-calculation time), which bounds the sum across an order.
+	 */
+	private void validateCoProductCostDistributionPercent(@NonNull final I_M_Product product)
+	{
+		final Percent percent = Percent.of(product.getCoProductCostDistributionPercent());
+
+		if (percent.signum() < 0 || percent.isOverOneHundred())
+		{
+			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE, percent)
+					.markAsUserValidationError();
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)

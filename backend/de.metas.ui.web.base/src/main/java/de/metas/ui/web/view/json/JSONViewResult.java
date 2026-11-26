@@ -38,6 +38,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDisabledStandardAction;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
@@ -167,6 +168,15 @@ public final class JSONViewResult
 
 	@JsonProperty("allowNew")
 	@Setter private boolean allowNew = true;
+
+	/**
+	 * The standard actions this view offers but which shall be rendered disabled, each with its reason.
+	 * Absent when nothing is disabled, so {@link #allowNew} keeps serving every consumer which only needs
+	 * to know whether creating is possible.
+	 */
+	@JsonProperty("disabledStandardActions")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Setter private List<JSONDisabledStandardAction> disabledStandardActions;
 
 	private JSONViewResult(@NonNull final ViewResult viewResult, @Nullable final List<? extends JSONViewRowBase> rows, @NonNull final JSONOptions jsonOpts)
 	{

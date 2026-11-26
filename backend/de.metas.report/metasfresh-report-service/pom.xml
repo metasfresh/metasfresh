@@ -173,6 +173,15 @@
             <version>1.0.0</version>
         </dependency>
 
+        <!-- Adobe XMP library — required by JasperReports PdfXmpCreator to write pdfaid:part/conformance
+             XMP namespace for PDF/A output. Declared optional in the jasperreports POM; must be
+             pulled in explicitly for PDF/A-3B export (IsPdfA3Output = true) to produce conformant XMP.
+             Version managed in misc/parent-pom/pom.xml. -->
+        <dependency>
+            <groupId>com.adobe.xmp</groupId>
+            <artifactId>xmpcore</artifactId>
+        </dependency>
+
         <!-- JXls integration -->
         <dependency>
             <groupId>org.jxls</groupId>

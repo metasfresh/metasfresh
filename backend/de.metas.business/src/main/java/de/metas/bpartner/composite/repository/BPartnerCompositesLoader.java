@@ -13,6 +13,8 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
@@ -57,7 +59,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -362,8 +363,8 @@ final class BPartnerCompositesLoader
 				//
 				.changeLog(recordChangeLog)
 				//
-				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
-				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
+				.creditorId(CreditorId.ofNullableNo(bpartnerRecord.getCreditorId()))
+				.debtorId(DebtorId.ofNullableNo(bpartnerRecord.getDebtorId()))
 				//
 				.build();
 	}

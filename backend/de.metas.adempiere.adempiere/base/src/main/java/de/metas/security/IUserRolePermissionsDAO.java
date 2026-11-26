@@ -8,6 +8,7 @@ import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
+import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
@@ -127,6 +128,16 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void createOrgAccess(RoleId adRoleId, OrgId adOrgId);
 
 	List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(OrgId adOrgId);
+
+	/**
+	 * Creates one {@code AD_Table_Access} row for the role.
+	 * <p>
+	 * Unlike {@link #createWindowAccess(CreateWindowAccessRequest)} and the other {@code create*Access} methods,
+	 * this one INSERTS unconditionally - it is not an upsert and there is no {@code deleteTableAccess} counterpart.
+	 * Calling it twice for the same (role, table) hits the unique index, so the caller has to ensure each table is
+	 * passed at most once.
+	 */
+	void createTableAccess(CreateTableAccessRequest request);
 
 	void createWindowAccess(CreateWindowAccessRequest request);
 

@@ -7,7 +7,10 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                                                                             IN p_AD_Language Character Varying(6))
     RETURNS TABLE
             (
-                Line                   Numeric(10, 0),
+                -- scale 4 must match C_Doc_TextLine.Line and DocTextLineRepository.LINE_SCALE. It is
+                -- documentation, not a rounding guard: PostgreSQL does not enforce a RETURNS TABLE
+                -- typmod, so a fractional position survives either declaration (measured).
+                Line                   Numeric(10, 4),
                 Name                   Character Varying,
                 Attributes             Text,
                 HUQty                  Numeric,
@@ -34,10 +37,26 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                 catchweight            Numeric,
                 weight_uom             Character Varying,
                 docstatus              char(2),
-                QtyPattern             text
+                QtyPattern             text,
+                IsTextLine             Character(1),
+                -- Breaks a tie between two rows landing on the same "line" AND the same IsTextLine
+                -- (in practice: two C_Doc_TextLine rows at one position -- two article rows can never
+                -- tie here, M_InOutLine.Line is distinct per shipment). Carries each row's own id: the
+                -- text branch's C_Doc_TextLine_ID (matching DocTextLineRepository.getByDocument's own
+                -- "ORDER BY Line, C_Doc_TextLine_ID"), the article branch's M_InOutLine_ID. The article
+                -- value is never actually compared against a text row's: IsTextLine ('N' vs 'Y')
+                -- already differs for that pair, so ORDER BY never reaches this third key for an
+                -- article/text comparison -- a real id is used anyway (never NULL) so the column
+                -- carries a meaningful value in both branches.
+                LineTieBreakId         Numeric
             )
 AS
-$$ SELECT iol.line,
+$$
+-- Article lines (M_InOutLine). Their Line is a whole number; the decimal positions that let a text
+-- line sit between two of them (TextLineShipmentCopier's anchor ties and its 0.0001 block-member
+-- offsets) come from the text branch below and are never rounded -- see the RETURNS TABLE comment
+-- on the Line column for what that declaration does and does not guarantee.
+SELECT iol.line,
           COALESCE(pt.Name, p.name)                                                                       AS NAME,
           CASE
               WHEN LENGTH(att.Attributes) > 15
@@ -83,7 +102,9 @@ $$ SELECT iol.line,
           w.catchweight                                                                                   AS catchweight,
           w.weight_uom                                                                                    AS weight_uom,
           io.docstatus,
-          report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern
+          report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern,
+          'N'                                                                                             AS IsTextLine,
+          iol.M_InOutLine_ID                                                                              AS LineTieBreakId
    FROM M_InOutLine iol
             INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
             LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
@@ -182,7 +203,62 @@ $$ SELECT iol.line,
      AND (COALESCE(pc.M_Product_Category_ID, -1) !=
           getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID))
      AND iol.QtyEntered != 0 -- Don't display lines without a Qty. See 08293
-   ORDER BY line
+
+UNION ALL
+
+-- Free-text lines (C_Doc_TextLine): the shipment's OWN copies, written by TextLineShipmentCopier when
+-- the shipment was generated. The carry rule -- does this text line's run reach this shipment? -- was
+-- decided there, so this branch only reads the result and must not re-apply any of it.
+-- Deliberately NOT sharing the article branch's WHERE clauses: the packing-material exclusion and
+-- "QtyEntered != 0" describe an ARTICLE line, so applying them here would filter out every text line.
+-- Column shape: document-level values carried through, article-level values NULL. catchweight and
+-- weight_uom are the DOCUMENT's summed weight and the summary bands read them off whichever record is
+-- last -- NULL them and a trailing text line erases the document's weight total (measured).
+SELECT tl.line,
+       NULL::character varying     AS Name,
+       NULL::text                  AS Attributes,
+       NULL::numeric               AS HUQty,
+       NULL::text                  AS HUName,
+       NULL::numeric               AS QtyEntered,
+       NULL::numeric               AS PriceEntered,
+       NULL::character varying(10) AS UOMSymbol,
+       NULL::numeric(10, 0)        AS StdPrecision,
+       NULL::numeric               AS LineNetAmt,
+       NULL::numeric               AS Discount,
+       bp.isDiscountPrinted,
+       bp.IsShipmentPricePrinted,
+       tl.TextLine                 AS description,
+       NULL::character varying(30) AS bp_product_no,
+       NULL::character varying(100) AS bp_product_name,
+       NULL::text                  AS best_before_date,
+       NULL::character varying     AS lotno,
+       NULL::character varying(30) AS p_value,
+       NULL::character varying(255) AS p_description,
+       io.description              AS inout_description,
+       NULL::character(1)          AS iscampaignprice,
+       NULL::numeric               AS qtyordered,
+       NULL::character varying(10) AS orderUOMSymbol,
+       w.catchweight               AS catchweight,
+       w.weight_uom                AS weight_uom,
+       io.docstatus,
+       NULL::text                  AS QtyPattern,
+       'Y'                         AS IsTextLine,
+       tl.C_Doc_TextLine_ID        AS LineTieBreakId
+FROM C_Doc_TextLine tl
+         INNER JOIN M_InOut io ON tl.M_InOut_ID = io.M_InOut_ID
+         LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
+         LEFT OUTER JOIN
+    de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(p_Record_ID, p_AD_Language) AS w ON TRUE
+WHERE tl.M_InOut_ID = p_Record_ID
+  AND tl.isActive = 'Y'
+
+-- Postgres UNION ORDER BY only allows result-column names, no expressions -- 'Y' > 'N', so DESC
+-- puts a text line ahead of an article line landing on the exact same position. That tie is the
+-- normal case here, not an edge case: TextLineShipmentCopier stores a carried text line AT its
+-- anchor shipment line's own Line precisely so this rule renders it immediately before that line.
+-- LineTieBreakId is the third key, for the one case the first two leave undecided: two text rows
+-- tied at the same line.
+ORDER BY line, IsTextLine DESC, LineTieBreakId
 
 $$
     LANGUAGE sql

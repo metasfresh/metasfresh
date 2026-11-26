@@ -114,6 +114,11 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
       | orderLine                 | 75             | 75             |
+    # Let the async recompute of the (still closed) shipment schedule run before re-completing.
+    # It must not overwrite the reduced C_OrderLine.QtyOrdered, or the reconcile below has nothing to shrink against.
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
     And the order identified by order is completed
 
     # Reconcile assertion: the reservation is shrunk to the new ordered qty,

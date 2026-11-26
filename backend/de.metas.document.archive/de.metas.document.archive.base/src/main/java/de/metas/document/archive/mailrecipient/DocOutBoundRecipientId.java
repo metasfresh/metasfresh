@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import javax.annotation.Nullable;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,6 +50,11 @@ public class DocOutBoundRecipientId implements RepoIdAware
 			return null;
 		}
 		return new DocOutBoundRecipientId(repoId);
+	}
+
+	public static int toRepoId(@Nullable final DocOutBoundRecipientId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	public static DocOutBoundRecipientId ofUserId(@NonNull UserId userId)

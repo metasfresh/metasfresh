@@ -49,6 +49,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
+	List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(@NonNull Set<PPOrderBOMLineId> orderBOMLineIds);
+
 	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
 
 	<T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
@@ -117,6 +119,10 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
+	/**
+	 * @return {@code M_Product.CoProductCostDistributionPercent} of the co-product carried by this order BOM line,
+	 * read live from the product; {@link Percent#ZERO} when unset.
+	 */
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	void addQty(OrderBOMLineQtyChangeRequest request);

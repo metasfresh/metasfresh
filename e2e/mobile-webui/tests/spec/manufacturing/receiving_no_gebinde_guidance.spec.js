@@ -20,7 +20,8 @@ const createMasterdata = async () => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
-            mobileConfig: { manufacturing: { receiveUnitType: 'TU' } },
+            // The guidance only appears while this is off; state the precondition rather than lean on the default.
+            mobileConfig: { manufacturing: { receiveUnitType: 'TU', isAllowReceiveWithoutPackingItem: false } },
             warehouses: { "wh": {} },
             products: {
                 "COMP1": {},

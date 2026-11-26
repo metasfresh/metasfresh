@@ -25,6 +25,7 @@ public enum DistributionFacetGroupType
 	PRODUCT("product", TranslatableStrings.adElementOrMessage("M_Product_ID")),
 	QUANTITY("qty", TranslatableStrings.adElementOrMessage("Qty")),
 	PLANT_RESOURCE_ID("plantResourceId", TranslatableStrings.adElementOrMessage("PP_Plant_ID")),
+	CARRIER_PRODUCT("carrierProduct", TranslatableStrings.adElementOrMessage("Carrier_Product_ID")),
 	;
 
 	private static final ImmutableMap<String, DistributionFacetGroupType> byCode = Maps.uniqueIndex(Arrays.asList(values()), DistributionFacetGroupType::getCode);

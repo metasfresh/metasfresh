@@ -744,6 +744,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setIsWithoutCharge(cand.isWithoutCharge());
 				invoiceLine.setReason(cand.isWithoutCharge() ? cand.getReason() : null);
 
+				// F01010.4 — propagate override account from IC to invoice line
+				invoiceLine.setC_ElementValue_Override_ID(cand.getC_ElementValue_Override_ID());
+
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
 				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
 
@@ -1138,6 +1141,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					result.add(note);
 				}
 			}
+
+			// This method is the one choke point all three failure call sites reach.
+			// Survives the rollback that is about to happen: the AD_Note is created out-of-trx (TRXNAME_None).
+			getCollector().addFailedCandidates(affectedCands, error);
+
 			return result;
 
 		}

@@ -36,6 +36,7 @@ import de.metas.banking.camt53.wrapper.IStatementLineWrapper;
 import de.metas.banking.camt53.wrapper.ITransactionDtlsWrapper;
 import de.metas.banking.camt53.wrapper.v02.BatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.v04.BatchBankToCustomerStatementV04Wrapper;
+import de.metas.banking.camt53.wrapper.v08.BatchBankToCustomerStatementV08Wrapper;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.log.BankStatementImportFileLogRepository;
 import de.metas.banking.importfile.log.BankStatementImportFileLoggable;
@@ -105,6 +106,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.banking.camt53.Camt53Version.V02;
 import static de.metas.banking.camt53.Camt53Version.V04;
+import static de.metas.banking.camt53.Camt53Version.V08;
 
 @Service
 public class BankStatementCamt53Service
@@ -597,6 +599,10 @@ public class BankStatementCamt53Service
 			{
 				return getAccountStatementsV04(xmlStreamReader);
 			}
+			else if (V08.getCode() == camt53Version.getCode() )
+			{
+				return getAccountStatementsV08(xmlStreamReader);
+			}
 			else
 			{
 				throw new AdempiereException("Unsupported Camt53 version !");
@@ -709,6 +715,27 @@ public class BankStatementCamt53Service
 
 			return BatchBankToCustomerStatementV04Wrapper
 					.of(docV04.getValue().getBkToCstmrStmt())
+					.getAccountStatementWrappers(bankAccountService, currencyRepository, msgBL);
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	@NonNull
+	private ImmutableList<IAccountStatementWrapper> getAccountStatementsV08(@NonNull final XMLStreamReader xmlStreamReader)
+	{
+		try
+		{
+			final JAXBContext context = JAXBContext.newInstance(de.metas.banking.camt53.jaxb.camt053_001_08.ObjectFactory.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			@SuppressWarnings("unchecked") final JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_08.Document> docV08 =
+					(JAXBElement<de.metas.banking.camt53.jaxb.camt053_001_08.Document>)unmarshaller.unmarshal(xmlStreamReader);
+
+			return BatchBankToCustomerStatementV08Wrapper
+					.of(docV08.getValue().getBkToCstmrStmt())
 					.getAccountStatementWrappers(bankAccountService, currencyRepository, msgBL);
 		}
 		catch (final JAXBException e)

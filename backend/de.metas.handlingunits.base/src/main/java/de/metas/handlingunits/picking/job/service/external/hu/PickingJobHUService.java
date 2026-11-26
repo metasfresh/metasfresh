@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service.external.hu;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -88,6 +90,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -209,6 +212,39 @@ public class PickingJobHUService
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
 
 	/**
+	 * Returns the parent transport unit of the given CU, or {@code null} if the CU has no TU parent (e.g. it is a
+	 * standalone/top-level CU). Used to resolve, at unpick time, the TU a bare-TU pick recorded its
+	 * {@code M_ShipmentSchedule_QtyPicked} row against — the leaf CU carries no such reference and the TU can only
+	 * be resolved from its parent before extraction detaches it.
+	 */
+	@Nullable
+	public HuId getParentTransportUnitId(@NonNull final HuId cuId)
+	{
+		final I_M_HU cu = handlingUnitsBL.getById(cuId);
+		final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(cu);
+		return tuHU != null ? HuId.ofRepoId(tuHU.getM_HU_ID()) : null;
+	}
+
+	/**
+	 * @return {@code true} if the given TU sits under a loading unit (LU). Used to discriminate, at unpick time,
+	 * a bare-TU pick (schedule row keyed to the TU) from a TU-under-LU pick (schedule row keyed to the leaf CU).
+	 */
+	public boolean hasLoadingUnit(@NonNull final HuId tuId)
+	{
+		final I_M_HU tuHU = handlingUnitsBL.getById(tuId);
+		return handlingUnitsBL.getLoadingUnitHU(tuHU) != null;
+	}
+
+	/**
+	 * @return the top-level HU id for the given HU — itself when it is already top-level, or its loading unit (LU)
+	 * when it is a TU nested under one.
+	 */
+	public HuId getTopLevelHuId(@NonNull final HuId huId)
+	{
+		return HuId.ofRepoId(handlingUnitsBL.getTopLevelParent(huId).getM_HU_ID());
+	}
+
+	/**
 	 * Returns all non-empty product storages on the given HU (e.g. an LU).
 	 */
 	@NonNull
@@ -220,6 +256,29 @@ public class PickingJobHUService
 				.stream()
 				.filter(s -> !s.isEmpty())
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Stamps the given consignee (BPartner + delivery location) onto the HU, but ONLY when the HU carries no
+	 * BPartner yet. Picking LUs materialised in the non-pack-for-shipping flow have no {@code C_BPartner_ID}, so
+	 * the per-BPartner {@code M_HU_Label_Config} never matches and the SSCC auto-print at close-LU is skipped
+	 * (me03 #30763). Persisting the consignee here lets the (unchanged) label-matching path select the correct
+	 * per-BPartner config — for the close-time auto-print and later re-print. The {@code M_HU} {@code updateChildren}
+	 * interceptor cascades the BPartner + location down to the child TUs/CUs on save.
+	 * <p>
+	 * Guarded to only-if-unset so pack-for-shipping LUs (already stamped in {@link PackToHUsProducer}) are untouched.
+	 */
+	public void setBPartnerAndLocationIfNotSet(@NonNull final HuId huId, @NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (hu.getC_BPartner_ID() > 0)
+		{
+			return;
+		}
+
+		hu.setC_BPartner_ID(bpLocationId.getBpartnerId().getRepoId());
+		hu.setC_BPartner_Location_ID(bpLocationId.getRepoId());
+		handlingUnitsBL.saveHU(hu);
 	}
 
 	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo) {return handlingUnitsBL.getFirstHuIdByExternalLotNo(externalLotNo);}
@@ -382,6 +441,8 @@ public class PickingJobHUService
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
 
+	public Map<HuId, HUQRCode> getSingleQRCodeByHuIds(@NonNull final Collection<HuId> huIds) {return huQRCodesService.getSingleQRCodeByHuIds(huIds);}
+
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId) {return huQRCodesService.getOrCreateQRCodesByHuId(huId);}
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
@@ -391,6 +452,19 @@ public class PickingJobHUService
 	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}
 
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req) {return inventoryService.createInventoryForMissingQty(req);}
+
+	public MoveHUCommand.MoveHUCommandBuilder newMoveHUCommandBuilder()
+	{
+		return MoveHUCommand.builder().huQRCodesService(huQRCodesService);
+	}
+
+	public HUTransformService newHUTransformService(@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
+		return HUTransformService.builder()
+				.huQRCodesService(huQRCodesService)
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build();
+	}
 
 	public PickFromHUsSupplier newPickFromHUsSupplier()
 	{
@@ -537,7 +611,7 @@ public class PickingJobHUService
 	@Nullable
 	public ProductAvailableStocks newAvailableStocksProvider(@NonNull final Workplace workplace)
 	{
-		final Set<LocatorId> pickFromLocatorIds = warehouseService.getPickFromLocatorIds(workplace);
+		final Set<LocatorId> pickFromLocatorIds = warehouseService.getLocatorIdsOfTheSamePickingGroup(workplace.getWarehouseId());
 		if (pickFromLocatorIds.isEmpty())
 		{
 			return null;

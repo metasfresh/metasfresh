@@ -29,6 +29,7 @@ import de.metas.location.ICountryAreaBL;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -49,6 +50,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
@@ -85,6 +87,9 @@ class TaxDAOTest
 
 	private static final int NON_EU_COUNTRY_ID = 1011;
 	private static final String NON_EU_COUNTRY_CODE = "DD";
+
+	private static final int RATE_TEST_COUNTRY_ID = 1020;
+	private static final String RATE_TEST_COUNTRY_CODE = "RA";
 
 	private static final int COUNTRY_AREA_ID = 10000;
 
@@ -182,6 +187,56 @@ class TaxDAOTest
 				.build());
 		assertThat(tax).isNotNull();
 		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByWarehouseIdMap.get(type));
+	}
+
+	@Nested
+	class GetBy
+	{
+		@Test
+		void noRateCriterion_behavesAsBefore()
+		{
+			// existing fixture: one active 19% C_Tax in the candidate's context
+			createRateTestTax("19");
+			assertThat(taxDAO.getBy(baseRateQuery()).getRate()).isEqualByComparingTo("19");
+		}
+
+		@Test
+		void withRateCriterion_matchesOnlyThatRate()
+		{
+			// fixture: two active C_Tax rows, same category and context, 19% and 7%
+			createRateTestTax("19");
+			createRateTestTax("7");
+			final TaxQuery query = baseRateQuery().toBuilder().rate(Percent.of("7")).build();
+			assertThat(taxDAO.getBy(query).getRate()).isEqualByComparingTo("7");
+		}
+	}
+
+	private TaxQuery baseRateQuery()
+	{
+		final BPartnerLocationAndCaptureId bPartnerLocationId = createBPartnerData(RATE_TEST_COUNTRY_ID, RATE_TEST_COUNTRY_CODE, false);
+		return TaxQuery.builder()
+				.orgId(ORG_ID)
+				.bPartnerLocationId(bPartnerLocationId)
+				.dateOfInterest(DATE_OF_INTEREST)
+				.soTrx(SOTrx.SALES)
+				.build();
+	}
+
+	private void createRateTestTax(final String rate)
+	{
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("RateTest-" + rate);
+		tax.setAD_Org_ID(ORG_ID.getRepoId());
+		tax.setC_Country_ID(ORG_COUNTRY_ID);
+		tax.setTo_Country_ID(RATE_TEST_COUNTRY_ID);
+		tax.setTypeOfDestCountry(OUTSIDE_COUNTRY_AREA.getCode());
+		tax.setRequiresTaxCertificate(null);
+		tax.setIsSmallbusiness(null);
+		tax.setValidFrom(VALID_FROM);
+		tax.setSOPOType(SOPOType.BOTH.getCode());
+		tax.setC_TaxCategory_ID(C_TAX_CATEGORY_ID);
+		tax.setRate(new BigDecimal(rate));
+		save(tax);
 	}
 
 	private void createTestData()

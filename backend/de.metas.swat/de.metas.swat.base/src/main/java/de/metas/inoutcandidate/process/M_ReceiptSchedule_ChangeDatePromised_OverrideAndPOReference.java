@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.process;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.UpdateReceiptScheduleOverridesRequest;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -49,6 +50,9 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_POReference)
 	private String poReference;
+
+	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_IsConfirmedBySupplier)
+	private Boolean isConfirmedBySupplier;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -81,7 +85,13 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
 					.markAsUserValidationError();
 		}
-		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
+		final int updatedCnt = receiptScheduleBL.updateReceiptScheduleOverrides(
+				UpdateReceiptScheduleOverridesRequest.builder()
+						.pinstanceId(getPinstanceId())
+						.datePromisedOverride(datePromisedOverride)
+						.poReference(poReference)
+						.isConfirmedBySupplier(isConfirmedBySupplier)
+						.build());
 		addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 
 		return MSG_OK;

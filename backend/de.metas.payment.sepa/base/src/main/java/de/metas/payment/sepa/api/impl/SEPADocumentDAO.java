@@ -100,4 +100,10 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 				.addEqualsFilter(I_SEPA_Export_Line_Ref.COLUMNNAME_SEPA_Export_ID, line.getSEPA_Export_ID())
 				.create();
 	}
+
+	@Override
+	public void save(@NonNull final I_SEPA_Export export)
+	{
+		InterfaceWrapperHelper.save(export);
+	}
 }

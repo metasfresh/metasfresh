@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Forecast extends org.compiere.model.PO implements I_M_Forecast, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -418626558L;
+	private static final long serialVersionUID = 1397664288L;
 
     /** Standard Constructor */
     public X_M_Forecast (final Properties ctx, final int M_Forecast_ID, @Nullable final String trxName)
@@ -264,6 +264,18 @@ public class X_M_Forecast extends org.compiere.model.PO implements I_M_Forecast,
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public void setIsBudgetForecast (final boolean IsBudgetForecast)
+	{
+		set_Value (COLUMNNAME_IsBudgetForecast, IsBudgetForecast);
+	}
+
+	@Override
+	public boolean isBudgetForecast() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBudgetForecast);
 	}
 
 	@Override

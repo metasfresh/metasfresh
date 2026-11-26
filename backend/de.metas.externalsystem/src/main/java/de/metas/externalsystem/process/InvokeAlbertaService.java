@@ -33,11 +33,10 @@ import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
@@ -77,7 +76,7 @@ public class InvokeAlbertaService
 
 	private final AlbertaRoleRepository albertaRoleRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemConfigRepository externalSystemConfigDAO;
 	private final ExternalSystemConfigService externalSystemConfigService;
 	private final ExternalSystemRepository externalSystemRepository;
 

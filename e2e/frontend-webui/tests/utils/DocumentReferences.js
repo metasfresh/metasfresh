@@ -1,5 +1,5 @@
 import { test } from '../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
+import { getPage, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from './common';
 
 /**
  * DocumentReferences - Utility for working with Alt+6 related documents panel.
@@ -51,6 +51,22 @@ export async function waitForReferences({ timeout = 8000 } = {}) {
 }
 
 /**
+ * Wait until the Alt+6 panel has received ALL references: the panel shows its spinner (`.docref-spinner-wrapper`)
+ * from the moment it opens until the SSE stream reports COMPLETED (DocumentReferences.js), so once the spinner is gone
+ * every reference the document has is rendered. Fails when the stream does not complete within `timeout`.
+ *
+ * Unlike waitForReferences() (first reference, any one, given up after 8 s) this waits for the complete list, however
+ * long the server takes for it, up to `timeout`.
+ *
+ * @param {Object} options - Configuration options
+ * @param {number} options.timeout - Maximum time for the stream to complete (default: VERY_SLOW_ACTION_TIMEOUT)
+ */
+export async function waitForReferencesComplete({ timeout = VERY_SLOW_ACTION_TIMEOUT } = {}) {
+  const page = getPage();
+  await page.locator('.order-list-panel-open .docref-spinner-wrapper').waitFor({ state: 'detached', timeout });
+}
+
+/**
  * Open the Alt+6 references panel and wait for it to load.
  *
  * @param {Object} options - Configuration options
@@ -84,6 +100,48 @@ export async function openReferencesPanel({ timeout = 5000 } = {}) {
 }
 
 /**
+ * Open the Alt+6 panel and wait until its reference stream has COMPLETED, so the rendered list is final.
+ *
+ * Reading the panel earlier is unreliable: references arrive group by group over SSE, and a reference first rendered
+ * from a generic relation (e.g. data-cy "reference-169 (Todo: ...)") is REPLACED by the higher-priority relation for
+ * the same target window (e.g. "reference-C_Order_to_M_InOut_SO") once that one is streamed — so an expected data-cy
+ * can be absent from a mid-stream read although the final panel shows it.
+ *
+ * If the stream does not complete (the frontend closes the EventSource on an SSE error and never removes the spinner),
+ * the panel is closed and re-opened, which starts a new stream.
+ *
+ * The default streamTimeout (FAST_ACTION_TIMEOUT) is far above the observed stream duration (the whole SSE response took
+ * 0.16-0.28 s in CI) and keeps one attempt as cheap as the former "first reference visible" wait, so callers with many
+ * attempts stay within their test timeout.
+ *
+ * @param {Object} options - Configuration options
+ * @param {number} options.maxAttempts - How often to (re)open the panel (default: 3)
+ * @param {number} options.streamTimeout - Maximum time per attempt for the stream to complete (default: FAST_ACTION_TIMEOUT)
+ * @returns {Promise<boolean>} True if the panel is open and its stream completed, false if no attempt completed
+ */
+export async function openReferencesPanelComplete({ maxAttempts = 3, streamTimeout = FAST_ACTION_TIMEOUT } = {}) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const panelOpened = await openReferencesPanel();
+    if (!panelOpened) {
+      console.log(`[openReferencesPanelComplete] Panel did not open (attempt ${attempt}/${maxAttempts})`);
+      continue;
+    }
+    try {
+      await waitForReferencesComplete({ timeout: streamTimeout });
+      return true;
+    } catch (error) {
+      if (error?.name !== 'TimeoutError') {
+        throw error;
+      }
+      console.log(
+        `[openReferencesPanelComplete] Reference stream not completed within ${streamTimeout}ms (attempt ${attempt}/${maxAttempts})`
+      );
+    }
+  }
+  return false;
+}
+
+/**
  * Wait for spinners to disappear in the references panel.
  *
  * @param {Object} options - Configuration options
@@ -92,8 +150,12 @@ export async function openReferencesPanel({ timeout = 5000 } = {}) {
 export async function waitForSpinnersToDisappear({ timeout = 10000 } = {}) {
   const page = getPage();
 
+  // .first(): the selector usually matches several elements (the Alt+6 panel spinner alone renders a div.spinner AND an
+  // i.spinner); a strict locator would throw a strict-mode violation at once, swallowed below, so nothing was waited
+  // for. "first match detached" == "no match left".
   await page
     .locator('.rotating, .spinner, .indicator-pending')
+    .first()
     .waitFor({
       state: 'detached',
       timeout,
@@ -111,13 +173,14 @@ export async function waitForSpinnersToDisappear({ timeout = 10000 } = {}) {
 export async function getVisibleReferences() {
   const page = getPage();
 
-  const allRefs = await page.locator('[data-cy^="reference-"]').all();
-  return Promise.all(
-    allRefs.map(async (el) => ({
-      dataCy: await el.getAttribute('data-cy'),
-      text: await el.textContent().catch(() => 'N/A'),
-    }))
-  );
+  // One DOM pass: data-cy and text of each element are read together. Reading them via separate per-index locators
+  // (locator.all() returns nth=i locators that re-resolve on every call) can pair the data-cy of one reference with
+  // the text of another while the panel re-renders.
+  return page
+    .locator('[data-cy^="reference-"]')
+    .evaluateAll((elements) =>
+      elements.map((el) => ({ dataCy: el.getAttribute('data-cy'), text: el.textContent }))
+    );
 }
 
 /**
@@ -202,12 +265,10 @@ export async function openRelatedDocument({
           await page.waitForTimeout(1000);
         }
 
-        // Open the references panel
-        const panelOpened = await openReferencesPanel();
-        console.log(`[Attempt ${attempt}] Panel opened: ${panelOpened}`);
-
-        // Wait for spinners to disappear
-        await waitForSpinnersToDisappear();
+        // Open the references panel and wait until its reference stream has completed (a mid-stream read can see a
+        // reference not yet rendered or with an interim data-cy - see openReferencesPanelComplete)
+        const panelComplete = await openReferencesPanelComplete({ maxAttempts: 1 });
+        console.log(`[Attempt ${attempt}] Panel opened and reference stream completed: ${panelComplete}`);
 
         // Wait for SSE references to load
         const referencesLoaded = await waitForReferences();

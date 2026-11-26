@@ -23,7 +23,7 @@ public class DDOrderReferenceQuery
 	@NonNull @Default DistributionFacetIdsCollection activeFacetIds = DistributionFacetIdsCollection.EMPTY;
 	boolean excludeAlreadyStarted;
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
-	@Nullable WarehouseId warehouseToId;
-	@Nullable LocatorId locatorToId;
+	@Nullable WarehouseId workplaceWarehouseId;
+	@Nullable LocatorId workplacePickFromLocatorId;
 	@Nullable Set<LocatorId> excludeLocatorToIds;
 }

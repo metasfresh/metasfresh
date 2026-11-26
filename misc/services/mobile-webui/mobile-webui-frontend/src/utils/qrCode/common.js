@@ -1,3 +1,6 @@
+import { checkPartialHUScannedCode } from './hu';
+import { ScanCompleteness } from './scanCompleteness';
+
 export const ATTR_barcodeType = 'barcodeType';
 export const ATTR_isUnique = 'isUnique';
 export const ATTR_productId = 'productId';
@@ -77,6 +80,49 @@ export const isBarcodeProductNoMatching = ({
     return isProductValueMatching || isEAN13MatchingGS1ProductCodes({ barcodeProductNo, expectedGS1ProductCodes });
   } else {
     return expectedProductNoStr === barcodeProductNoStr;
+  }
+};
+
+//
+// Partial-scan (streamed QR code) completeness classification.
+//
+
+// ScanCompleteness is defined in ./scanCompleteness (a leaf module both ./common and ./hu import
+// from), so the ENUM itself is not part of any cycle. NOTE: ./common and ./hu DO still import each
+// other — common.js → checkPartialHUScannedCode, hu.js → the ATTR_*/QRCODE_* constants — a real
+// circular dependency. It stays safe ONLY because every cross-module symbol is read inside a
+// FUNCTION BODY (this file's lazy PARTIAL_SCAN_CHECKS list; hu.js's in-function "HU#" prefix), never
+// at module top level, so neither module reads a half-initialised sibling during load. Imported
+// above for internal use and re-exported here so existing importers of './common' keep working.
+// See ./scanCompleteness for the full contract, incl. the TERMINAL INVARIANT that gates COMPLETE_SCAN.
+export { ScanCompleteness };
+
+// Classify how complete an in-progress scanned code is (see ScanCompleteness).
+// MUST NOT throw: any unexpected error degrades to NOT_APPLICABLE (i.e. default reader behaviour).
+//
+// The per-format classifier list is built lazily HERE (at call time), NOT at module scope, on
+// purpose: common.js imports checkPartialHUScannedCode from ./hu while ./hu imports constants back
+// from ./common. Referencing the imported check only at call time — never at module-load — keeps
+// that dependency out of the module-init order, so it can't silently degrade to NOT_APPLICABLE
+// after a future reorder. Extend the list as more streamed QR-code formats need partial-scan
+// awareness; each returns NOT_APPLICABLE when the code is not its format, and must honour the
+// TERMINAL INVARIANT (see ./scanCompleteness) before returning COMPLETE_SCAN.
+export const checkPartialScannedCode = (scannedCode) => {
+  try {
+    if (!scannedCode) {
+      return ScanCompleteness.NOT_APPLICABLE;
+    }
+    const partialScanChecks = [checkPartialHUScannedCode];
+    for (const check of partialScanChecks) {
+      const result = check(scannedCode);
+      if (result && result !== ScanCompleteness.NOT_APPLICABLE) {
+        return result;
+      }
+    }
+    return ScanCompleteness.NOT_APPLICABLE;
+  } catch (error) {
+    console.debug('checkPartialScannedCode: unexpected error, treating as NOT_APPLICABLE', { scannedCode, error });
+    return ScanCompleteness.NOT_APPLICABLE;
   }
 };
 

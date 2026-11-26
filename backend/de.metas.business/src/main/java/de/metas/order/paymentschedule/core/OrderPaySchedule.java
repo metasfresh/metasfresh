@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 public class OrderPaySchedule
 {
 	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+	private static final AdMessageKey MSG_MultipleAdvanceBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleAdvanceBreaksUnsupported");
 
 	@NonNull @Getter OrderId orderId;
 	@NonNull private final ArrayList<OrderPayScheduleLine> lines;
@@ -61,6 +62,15 @@ public class OrderPaySchedule
 	public Stream<OrderPayScheduleLine> streamLines()
 	{
 		return lines.stream();
+	}
+
+	/**
+	 * True if any line is linked to a committed downstream document (a goods receipt or a matched invoice).
+	 * See {@link OrderPayScheduleLine#isLinkedToDownstreamDocument()}.
+	 */
+	public boolean hasLineLinkedToDownstreamDocument()
+	{
+		return lines.stream().anyMatch(OrderPayScheduleLine::isLinkedToDownstreamDocument);
 	}
 
 	public OrderPayScheduleLine getLineById(@NonNull final OrderPayScheduleId payScheduleLineId)
@@ -113,7 +123,9 @@ public class OrderPaySchedule
 
 		for (final OrderPayScheduleLine line : lines)
 		{
-			if (line.getStatus().isPending())
+			// A still-Pending line is (re)computed as usual; an unsettled Awaiting_Pay material-receipt line
+			// is additionally refreshed so a post-completion BL/ETA correction still reaches it.
+			if (line.getStatus().isPending() || line.isUnsettledAwaitingPayMaterialReceipt())
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
 				final OrderPayScheduleLineContext dueDateAndStatus = context.computeLineContext(termBreak);
@@ -149,6 +161,32 @@ public class OrderPaySchedule
 		else
 		{
 			return Optional.of(lcLines.get(0));
+		}
+	}
+
+	/**
+	 * The single prepaid line of the payment term — the one step settled up front via a proforma
+	 * ({@link OrderPayScheduleLine#isPrepaidLine()}: a Letter-of-Credit or an order-date/advance break).
+	 * Callers resolve the LC line first via {@link #getSingleLCLine()} and only fall through to here for
+	 * the no-LC case, so on a schedule carrying both an LC and an OD break this counts both as prepaid
+	 * and fails loud — that misuse never happens on the guarded caller path.
+	 */
+	public Optional<OrderPayScheduleLine> getSinglePrepaidLine()
+	{
+		final ImmutableList<OrderPayScheduleLine> prepaidLines = lines.stream()
+				.filter(OrderPayScheduleLine::isPrepaidLine)
+				.collect(ImmutableList.toImmutableList());
+		if (prepaidLines.isEmpty())
+		{
+			return Optional.empty();  // no prepaid break in payment term — no-op
+		}
+		else if (prepaidLines.size() > 1)
+		{
+			throw new AdempiereException(MSG_MultipleAdvanceBreaksUnsupported, orderId);
+		}
+		else
+		{
+			return Optional.of(prepaidLines.get(0));
 		}
 	}
 }

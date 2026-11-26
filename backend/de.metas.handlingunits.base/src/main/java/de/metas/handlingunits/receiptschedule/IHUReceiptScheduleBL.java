@@ -3,6 +3,7 @@
  */
 package de.metas.handlingunits.receiptschedule;
 
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -111,6 +112,19 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		@NonNull ReceiptMovementDateRule movementDateRule;
 
 		@Nullable Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+
+		/**
+		 * The delivery planning each selected HU is being received for, keyed by the HU handed over in
+		 * {@link #getSelectedHuIds()}; {@code null} or absent for every caller and every HU that is not receiving
+		 * for a planning. It travels with the REQUEST because this call completes the receipt before returning -
+		 * an id written afterwards is invisible to the {@code TIMING_AFTER_COMPLETE} interceptor that derives the
+		 * planning's delivered state.
+		 * <p>
+		 * Keyed by HU rather than by receipt schedule because a split copies {@code M_ReceiptSchedule_ID} onto
+		 * every sibling planning: several plannings share ONE schedule, and the HU created for each is the only
+		 * thing that tells them apart.
+		 */
+		@Nullable Map<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId;
 	}
 
 	/**

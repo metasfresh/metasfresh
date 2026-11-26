@@ -2,7 +2,9 @@ package de.metas.frontend_testing.masterdata.invoice;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
@@ -45,23 +47,53 @@ public class InvoiceCreateCommand
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonInvoiceCreateRequest request;
+	@NonNull private final Identifier identifier;
 
+	/**
+	 * Enqueueing (step 2) MUST commit before we poll for the resulting invoice (step 3): the actual invoice
+	 * generation runs in a background workpackage processor, on its OWN connection, which can only see
+	 * ENQUEUE's writes (the {@code C_Queue_WorkPackage} row) once they're committed. Wrapping steps 1-3 in one
+	 * ambient transaction (as this used to) holds that row uncommitted for as long as step 3 polls — the
+	 * background processor can never see it, so the poll always times out, deterministically, every time.
+	 * {@link #enqueueForInvoicing} therefore runs in its own fresh, immediately-committing transaction wrapping
+	 * ONLY the write (the poll for candidates, a plain read, runs outside it, same as {@link #pollForInvoice}
+	 * runs outside any wrapper).
+	 */
 	public JsonInvoiceCreateResponse execute()
-	{
-		return trxManager.callInThreadInheritedTrx(this::execute0);
-	}
-
-	private JsonInvoiceCreateResponse execute0()
 	{
 		final OrderId orderId = resolveOrderId();
 
-		// 1. Poll for invoice candidates
+		// 1. Poll for invoice candidates (plain read - no isolation needed, so no trx held open across the sleeps)
 		final List<I_C_Invoice_Candidate> invoiceCandidates = pollForInvoiceCandidates(orderId);
 		if (invoiceCandidates.isEmpty())
 		{
 			throw new AdempiereException("No invoice candidates found for order " + orderId);
 		}
 
+		trxManager.runInNewTrx(() -> enqueueForInvoicing(invoiceCandidates));
+
+		// 3. Poll for the generated invoice
+		final I_C_Invoice invoice = pollForInvoice(orderId);
+
+		// Register under this masterdata section's own key (e.g. "INV1") so a LATER section can reference this
+		// invoice by identifier - e.g. Backend.expect({ pos: { invoices: [{ invoice: 'INV1', ... }] } }). Without
+		// this, AssertPOSExpectationsCommand#assertInvoice's context lookup misses and falls back to parsing the
+		// identifier string itself as a raw InvoiceId, which throws.
+		context.putIdentifier(identifier, InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		return JsonInvoiceCreateResponse.builder()
+				.id(String.valueOf(invoice.getC_Invoice_ID()))
+				.documentNo(invoice.getDocumentNo())
+				.build();
+	}
+
+	/**
+	 * The actual write (step 2): enqueue the already-polled candidates for invoicing. Runs inside
+	 * {@link #execute()}'s fresh {@code runInNewTrx} so it commits promptly, without holding a connection
+	 * open across {@link #pollForInvoiceCandidates}'s sleeps (which now run before this is called).
+	 */
+	private void enqueueForInvoicing(final List<I_C_Invoice_Candidate> invoiceCandidates)
+	{
 		// 2. Enqueue candidates for invoicing (with default invoicing params)
 		final ImmutableSet<InvoiceCandidateId> candidateIds = invoiceCandidates.stream()
 				.map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
@@ -76,14 +108,6 @@ public class InvoiceCreateCommand
 				.setInvoicingParams(invoicingParams)
 				.setFailIfNothingEnqueued(true)
 				.prepareAndEnqueueSelection(selectionId);
-
-		// 3. Poll for the generated invoice
-		final I_C_Invoice invoice = pollForInvoice(orderId);
-
-		return JsonInvoiceCreateResponse.builder()
-				.id(String.valueOf(invoice.getC_Invoice_ID()))
-				.documentNo(invoice.getDocumentNo())
-				.build();
 	}
 
 	private OrderId resolveOrderId()

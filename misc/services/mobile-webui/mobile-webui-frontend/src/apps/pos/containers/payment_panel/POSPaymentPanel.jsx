@@ -91,7 +91,7 @@ const POSPaymentPanel = ({ disabled }) => {
   //
 
   return (
-    <div className="pos-content pos-payment-panel">
+    <div className="pos-content pos-payment-panel" data-testid="pos-payment-panel">
       <PendingPaymentModal
         posTerminalId={posTerminal.id}
         order_uuid={currentOrder.uuid}

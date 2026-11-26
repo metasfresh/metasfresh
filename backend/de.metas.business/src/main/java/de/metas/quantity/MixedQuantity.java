@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,6 +100,17 @@ public final class MixedQuantity
 		{
 			throw new AdempiereException("Expected none or single value but got many: " + map.values());
 		}
+	}
+
+	/**
+	 * Tolerant variant of {@link #toNoneOrSingleValue()}: returns {@code null} when there is no value
+	 * <b>or</b> when the values span multiple UOMs (instead of throwing). Use where a single-UOM quantity
+	 * is wanted for display but a genuine multi-UOM aggregate must simply resolve to "no single value".
+	 */
+	@Nullable
+	public Quantity toSingleValueOrNull()
+	{
+		return map.size() == 1 ? map.values().iterator().next() : null;
 	}
 
 	public MixedQuantity add(@NonNull final Quantity qtyToAdd)

@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.shopware6.interceptor;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -36,11 +36,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExternalSystem_Config_Shopware6
 {
-	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+	public final ExternalSystemConfigRepository externalSystemConfigRepository;
 
-	public ExternalSystem_Config_Shopware6(final ExternalSystemConfigRepo externalSystemConfigRepo)
+	public ExternalSystem_Config_Shopware6(final ExternalSystemConfigRepository externalSystemConfigRepository)
 	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemConfigRepository = externalSystemConfigRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -48,7 +48,7 @@ public class ExternalSystem_Config_Shopware6
 	public void checkType(final I_ExternalSystem_Config_Shopware6 config)
 	{
 		final String parentType =
-				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
+				externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
 
 		if (!ExternalSystemType.Shopware6.getValue().equals(parentType))
 		{

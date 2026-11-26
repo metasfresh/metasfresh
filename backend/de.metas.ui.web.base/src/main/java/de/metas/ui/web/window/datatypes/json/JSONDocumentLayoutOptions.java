@@ -74,6 +74,12 @@ public class JSONDocumentLayoutOptions
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 	@Getter
 	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
+	// Role fingerprint for the layout ETag (distinct per role, changes when the role's permissions change).
+	// Folded into the ETag by ETagResponseEntityBuilder.includeRoleInETag() so the role-dependent parts of
+	// the layout (the lookup "new record" option) are not cached across roles or across a permission change.
+	@Getter
+	@Nullable
+	private final String roleETagFingerprint;
 	private final Supplier<Duration> defaultLookupSearchStartDelaySupplier;
 	private static final Supplier<Duration> ZERO_DURATION_SUPPLIER = Suppliers.ofInstance(Duration.ZERO);
 
@@ -86,6 +92,7 @@ public class JSONDocumentLayoutOptions
 			final boolean debugShowColumnNamesForCaption,
 			@Nullable final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
 			@Nullable final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
+			@Nullable final String roleETagFingerprint,
 			@Nullable final Supplier<Duration> defaultLookupSearchStartDelaySupplier)
 	{
 		this.jsonOpts = jsonOpts;
@@ -93,6 +100,7 @@ public class JSONDocumentLayoutOptions
 		this.debugShowColumnNamesForCaption = debugShowColumnNamesForCaption;
 		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
 		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
+		this.roleETagFingerprint = roleETagFingerprint;
 		this.defaultLookupSearchStartDelaySupplier = defaultLookupSearchStartDelaySupplier != null
 				? defaultLookupSearchStartDelaySupplier
 				: ZERO_DURATION_SUPPLIER;

@@ -2,7 +2,7 @@
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00700_Invoicing
 @F00700
-@ghActions:run_on_executor2
+@ghActions:run_on_executor1
 Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
 ## F00700: Invoice
 

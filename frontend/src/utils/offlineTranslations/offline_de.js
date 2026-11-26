@@ -8,4 +8,9 @@ module.exports = {
     description:
       'Es treten Verbindungsprobleme auf. Bitte kontrolliere die Verbindung und lade die Seite neu.',
   },
+  invalidNumber: {
+    title: 'Ungültige Zahl',
+    description:
+      '„%(text)s“ ist keine gültige Zahl: Bitte Ziffern mit „,“ oder „.“ als Dezimaltrennzeichen eingeben (z. B. %(example)s).',
+  },
 };

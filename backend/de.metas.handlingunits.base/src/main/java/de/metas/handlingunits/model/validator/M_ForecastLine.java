@@ -15,12 +15,16 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 
 @Interceptor(I_M_ForecastLine.class)
 @Callout(I_M_ForecastLine.class)
 public class M_ForecastLine
 {
+	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@Init
 	public void registerCallout()
 	{
@@ -59,14 +63,13 @@ public class M_ForecastLine
 	public void updateQtyCU(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
-		final Integer qtyPacks = packingAware.getQtyTU().intValue();
-		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
+		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU());
 	}
 
 	private void updateQtyPacks(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		huPackingAwareBL.setQtyTU(packingAware);
 	}
 
 	private void updateQtyCalculated(final I_M_ForecastLine forecastLine)

@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -100,6 +101,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -135,6 +137,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
+	private final TextLineShipmentCopier textLineShipmentCopier = new TextLineShipmentCopier();
 
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
@@ -174,6 +177,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
+
+	/**
+	 * The planning to stamp onto each shipment LINE this producer creates, or {@code null} for none.
+	 * Every candidate of one run belongs to the one planning the request names, so the run-level scalar is
+	 * the line-level value.
+	 *
+	 * @see #setDeliveryPlanningId(DeliveryPlanningId)
+	 */
+	@Nullable private DeliveryPlanningId deliveryPlanningId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -505,6 +517,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final ImmutableList<InOutLineId> shipmentLineIdsWithLineNoCollisions = shipmentLineNoInfo.getShipmentLineIdsWithLineNoCollisions();
 		inOutDAO.unsetLineNos(shipmentLineIdsWithLineNoCollisions);
 
+		// must run AFTER unsetLineNos: nothing else writes a shipment line's Line between here and document
+		// completion. The collision set itself -- not a shipment line's Line value -- is what the copier uses
+		// to tell a genuinely-usable run member from one a collision has renumbered away from its real
+		// position; see TextLineShipmentCopier's javadoc for why the Line value itself cannot be used for that.
+		textLineShipmentCopier.copyTextLinesToShipment(currentShipment, ImmutableSet.copyOf(shipmentLineIdsWithLineNoCollisions));
+
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
 
 		// because this is the time when we are actually generating the shipment lines,
@@ -690,6 +708,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
+			currentShipmentLineBuilder.setDeliveryPlanningId(deliveryPlanningId);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
@@ -731,6 +750,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
 	{
 		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		this.deliveryPlanningId = deliveryPlanningId;
 		return this;
 	}
 

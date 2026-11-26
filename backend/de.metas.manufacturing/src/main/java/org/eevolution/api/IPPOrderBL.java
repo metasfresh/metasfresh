@@ -31,6 +31,8 @@ public interface IPPOrderBL extends ISingletonService
 
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
+	List<I_PP_Order_BOMLine> getOrderBOMLinesByIds(Set<PPOrderBOMLineId> orderBOMLineIds);
+
 	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
 
 	void save(I_PP_Order ppOrder);
@@ -95,6 +97,13 @@ public interface IPPOrderBL extends ISingletonService
 	void closeOrder(I_PP_Order ppOrder);
 
 	void closeOrdersByIds(@NonNull Set<PPOrderId> ppOrderIds);
+
+	/**
+	 * Closes every manufacturing order of the given selection, each one in a transaction of its own, so that a
+	 * failing order neither aborts the batch nor rolls back the orders already closed - unlike
+	 * {@link #closeOrdersByIds(Set)}, which closes them in the caller's transaction.
+	 */
+	PPOrderCloseResult closeOrdersInSelection(@NonNull PInstanceId selectionId);
 
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered

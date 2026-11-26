@@ -3,6 +3,7 @@ package de.metas.contracts.refund.grossprofit;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.refund.RefundContractRepository;
+import de.metas.contracts.refund.packaging.RefundPackagingFilter;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualComponent;
 import de.metas.money.grossprofit.ProfitPriceActualComponentProvider;
@@ -36,18 +37,21 @@ public class RefundProfitPriceActualComponentProvider implements ProfitPriceActu
 {
 	private final RefundContractRepository refundContractRepository;
 	private final MoneyService moneyService;
+	private final RefundPackagingFilter refundPackagingFilter;
 
 	public RefundProfitPriceActualComponentProvider(
 			@NonNull final RefundContractRepository refundContractRepository,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final RefundPackagingFilter refundPackagingFilter)
 	{
 		this.refundContractRepository = refundContractRepository;
 		this.moneyService = moneyService;
+		this.refundPackagingFilter = refundPackagingFilter;
 	}
 
 	@Override
 	public ProfitPriceActualComponent provideForRequest(@NonNull final CalculateProfitPriceActualRequest request)
 	{
-		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService);
+		return new RefundProfitPriceActualComponent(request, refundContractRepository, moneyService, refundPackagingFilter);
 	}
 }

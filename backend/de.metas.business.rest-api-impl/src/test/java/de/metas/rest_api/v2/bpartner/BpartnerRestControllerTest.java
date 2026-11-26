@@ -70,6 +70,7 @@ import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.greeting.GreetingRepository;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -81,6 +82,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -92,6 +94,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -359,6 +362,139 @@ class BpartnerRestControllerTest
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + 2);
+	}
+
+	/**
+	 * A provided {@code priceListId} must set the bpartner's customer pricing system
+	 * ({@code C_BPartner.M_PricingSystem_ID}) to the price list's pricing system.
+	 */
+	@Test
+	void createOrUpdateBPartner_setsCustomerPricingSystemFromPriceListId()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+		final int pricingSystemId = 540123;
+		final I_M_PriceList priceListRecord = createPriceList(pricingSystemId);
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		bpartnerComposite.getBpartner().setGroup(BP_GROUP_RECORD_NAME);
+		bpartnerComposite.getBpartner().setPriceListId(JsonMetasfreshId.of(priceListRecord.getM_PriceList_ID()));
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(
+				bpartnerRestController.createOrUpdateBPartner(priceListUpsertRequest(bPartnerIdentifier, bpartnerComposite)),
+				bPartnerIdentifier);
+
+		assertThat(bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()))
+				.getBpartner().getCustomerPricingSystemId())
+				.isEqualTo(PricingSystemId.ofRepoId(pricingSystemId));
+	}
+
+	/**
+	 * When no {@code priceListId} is provided on create, the customer pricing system stays unset — the
+	 * field is set-only and never clears an existing value.
+	 */
+	@Test
+	void createOrUpdateBPartner_noPriceListId_leavesCustomerPricingSystemUnset()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		bpartnerComposite.getBpartner().setGroup(BP_GROUP_RECORD_NAME);
+		// intentionally no priceListId
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(
+				bpartnerRestController.createOrUpdateBPartner(priceListUpsertRequest(bPartnerIdentifier, bpartnerComposite)),
+				bPartnerIdentifier);
+
+		assertThat(bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()))
+				.getBpartner().getCustomerPricingSystemId()).isNull();
+	}
+
+	/**
+	 * On a subsequent update that omits {@code priceListId}, the bpartner's existing customer pricing
+	 * system must be preserved (not cleared) — the field cannot unset a value.
+	 */
+	@Test
+	void createOrUpdateBPartner_update_priceListIdOmitted_preservesCustomerPricingSystem()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+		final int pricingSystemId = 540123;
+		final I_M_PriceList priceListRecord = createPriceList(pricingSystemId);
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+
+		// create with priceListId -> pricing system set
+		final JsonRequestComposite createComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		createComposite.getBpartner().setGroup(BP_GROUP_RECORD_NAME);
+		createComposite.getBpartner().setPriceListId(JsonMetasfreshId.of(priceListRecord.getM_PriceList_ID()));
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(assertUpsertResultOK(
+				bpartnerRestController.createOrUpdateBPartner(priceListUpsertRequest(bPartnerIdentifier, createComposite)),
+				bPartnerIdentifier).getValue());
+		assertThat(bpartnerCompositeRepository.getById(bpartnerId).getBpartner().getCustomerPricingSystemId())
+				.isEqualTo(PricingSystemId.ofRepoId(pricingSystemId)); // guard: precondition established
+
+		// update WITHOUT priceListId -> pricing system preserved
+		final JsonRequestComposite updateComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		updateComposite.getBpartner().setGroup(BP_GROUP_RECORD_NAME);
+		updateComposite.getBpartner().setName("updated name");
+		// intentionally no priceListId
+		assertUpsertResultOK(
+				bpartnerRestController.createOrUpdateBPartner(priceListUpsertRequest(bPartnerIdentifier, updateComposite)),
+				bPartnerIdentifier);
+
+		assertThat(bpartnerCompositeRepository.getById(bpartnerId).getBpartner().getCustomerPricingSystemId())
+				.isEqualTo(PricingSystemId.ofRepoId(pricingSystemId));
+	}
+
+	/**
+	 * A {@code priceListId} that references no existing price list must fail loudly, never a silent no-op.
+	 * In production the persister's guard raises {@link MissingResourceException} (a subtype of
+	 * {@link AdempiereException}); the in-memory test layer raises the not-found on load first — both are
+	 * {@link AdempiereException}, so the env-independent contract asserted here is "fails loudly".
+	 */
+	@Test
+	void createOrUpdateBPartner_unknownPriceListId_isRejected()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		bpartnerComposite.getBpartner().setGroup(BP_GROUP_RECORD_NAME);
+		bpartnerComposite.getBpartner().setPriceListId(JsonMetasfreshId.of(9_999_999)); // no such price list
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+
+		assertThatThrownBy(() -> bpartnerRestController.createOrUpdateBPartner(priceListUpsertRequest(bPartnerIdentifier, bpartnerComposite)))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("9999999");
+	}
+
+	private I_M_PriceList createPriceList(final int pricingSystemId)
+	{
+		final I_M_PriceList priceListRecord = newInstance(I_M_PriceList.class);
+		priceListRecord.setM_PricingSystem_ID(pricingSystemId);
+		saveRecord(priceListRecord);
+		return priceListRecord;
+	}
+
+	private static JsonRequestBPartnerUpsert priceListUpsertRequest(final String bPartnerIdentifier, final JsonRequestComposite bpartnerComposite)
+	{
+		return JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier(bPartnerIdentifier)
+						.externalVersion(BP_EXTERNAL_VERSION)
+						.bpartnerComposite(bpartnerComposite)
+						.build())
+				.build();
 	}
 
 	/**

@@ -90,6 +90,13 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
+	public void resetEngineStateForRetry()
+	{
+		justPrepared = false;
+		processMsg = null;
+	}
+
+	@Override
 	public boolean unlockIt()
 	{
 		model.setProcessing(false);
@@ -131,6 +138,18 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 
 	@Override
 	public String completeIt()
+	{
+		try
+		{
+			return completeIt0();
+		}
+		finally
+		{
+			justPrepared = false; // consumed; a later completion of this instance has to prepare again
+		}
+	}
+
+	private String completeIt0()
 	{
 		// Re-Check
 		if (!justPrepared)
@@ -196,6 +215,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	@Override
 	public boolean reActivateIt()
 	{
+		justPrepared = false; // a reactivated document has to be prepared again when it is completed
 		fireDocValidateEvent(ModelValidator.TIMING_BEFORE_REACTIVATE);
 		handler.reactivateIt(model);
 		fireDocValidateEvent(ModelValidator.TIMING_AFTER_REACTIVATE);

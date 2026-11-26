@@ -2,6 +2,7 @@ import { test } from '../../../../playwright.config';
 import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ErrorToast } from '../../dialogs/ErrorToast';
 
 const NAME = 'PickGraiScreen';
 
@@ -27,10 +28,15 @@ export const PickGraiScreen = {
 
     /**
      * Scan a GRAI barcode through the live scanner (the offscreen hardware-scan input).
-     * Dispatches keyboard events at document level, terminated with Enter (DataWedge behaviour).
+     * Appends an explicit Enter terminator. `BarcodeScannerComponent.type()` dispatches all keystrokes
+     * instantaneously (0ms wall-clock), so back-to-back scans would concatenate in the
+     * `useKeyboardBarcodeReader` buffer before the ~1500ms GRAI debounce could flush; the Enter
+     * force-completes each instantaneous test-harness scan immediately, so each code is a distinct
+     * barcode. In PRODUCTION a GRAI is a non-HU-prefix code (`NOT_APPLICABLE`) that completes via the
+     * debounce flush without any Enter — the Enter is purely a test-harness need.
      */
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
-        await BarcodeScannerComponent.type(graiString);
+        await BarcodeScannerComponent.type({ scannedCode: graiString, terminator: 'Enter' });
     }),
 
     /**
@@ -83,6 +89,21 @@ export const PickGraiScreen = {
             { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    /**
+     * Assert the LU-wide-dedupe "N skipped" notice: the caption next to the count
+     * (`grai-count-skipped`, shown when one or more scans were dropped because that GRAI is already
+     * assigned to another crate of this loading unit) AND the accompanying non-blocking toast (a
+     * plain success notice — never the blocking red error toast). Asserts EXACTLY ONE success toast:
+     * one skipped scan must surface once, never as stacked duplicates (the dual-reader race), per the
+     * mobile-webui "user must see exactly ONE" rule.
+     */
+    expectSkippedNotice: async ({ count }) => await test.step(`${NAME} - Expect "${count} skipped" notice`, async () => {
+        await expect(page.getByTestId('grai-count-skipped')).toContainText(String(count), { timeout: SLOW_ACTION_TIMEOUT });
+        // Exactly one non-blocking success notice, and never a blocking (red) error toast.
+        await ErrorToast.expectSuccessToastCount(1);
+        await ErrorToast.expectNoErrorToast();
+    }),
+
     /** Assert the save button is enabled (exactly N GRAIs captured). */
     expectSaveEnabled: async () => await test.step(`${NAME} - Expect save enabled`, async () => {
         await expect(page.getByTestId('grai-save-button')).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
@@ -96,5 +117,60 @@ export const PickGraiScreen = {
     /** Tap the save ("Save"/"Speichern") button — sends the atomic pick (qty + GRAIs). */
     clickSave: async () => await test.step(`${NAME} - Click save`, async () => {
         await page.getByTestId('grai-save-button').tap();
+    }),
+    /**
+     * Hold the response of the NEXT pick event open: the request reaches the server (so it books), the
+     * answer is withheld until `release()` is called. Makes the "pick is in flight" window deterministic.
+     * `getPickEventCount()` tells how many pick events the app has sent since.
+     */
+    holdNextPickEventResponse: async () => await test.step(`${NAME} - Hold the next pick event response`, async () => {
+        const urlPattern = '**/picking/event';
+        let count = 0;
+        let release;
+        const released = new Promise((resolve) => { release = resolve; });
+        let seen;
+        const firstEventReachedServer = new Promise((resolve) => { seen = resolve; });
+        let markFulfilled;
+        const firstResponseFulfilled = new Promise((resolve) => { markFulfilled = resolve; });
+        const handler = async (route) => {
+            if (route.request().method() !== 'POST') return route.fallback();
+            count++;
+            if (count > 1) return route.fallback(); // a second event is the bug: let it through, so it gets booked and caught
+            try {
+                const response = await route.fetch();
+                seen();
+                await released;
+                await route.fulfill({ response });
+            } finally {
+                markFulfilled();
+            }
+        };
+        await page.route(urlPattern, handler);
+        return {
+            firstEventReachedServer,
+            getPickEventCount: () => count,
+            release: async () => {
+                release();
+                // wait until the held response is actually fulfilled BEFORE unrouting, otherwise unroute races the
+                // in-flight handler and Playwright throws "Route is already handled!" (dropping the first pick's response)
+                await firstResponseFulfilled;
+                await page.unroute(urlPattern, handler);
+            },
+        };
+    }),
+
+    /**
+     * A second Save while the first pick is still in flight (an impatient double tap). With the in-flight
+     * guard the save button is gone (spinner shown), so there is nothing to press.
+     * Returns whether a save button was still there to press.
+     */
+    clickSaveAgainWhilePickInFlight: async () => await test.step(`${NAME} - Click save again while the pick is in flight`, async () => {
+        const wasPressed = await page.evaluate(() => {
+            const button = document.querySelector('[data-testid="grai-save-button"]');
+            button?.click();
+            return !!button;
+        });
+        await page.waitForTimeout(500); // give a (buggy) second POST time to reach the server
+        return wasPressed;
     }),
 };

@@ -85,4 +85,7 @@ public interface IDocTypeBL extends ISingletonService
 	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
 
 	DocTypeId cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
+
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull DocTypeId docTypeId);
 }

@@ -70,6 +70,12 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
+		// The MaterialPlanningContext below references product id=1; PurchaseOrderDemandMatcher's
+		// product life-cycle guard loads that product (null status => allowed), so it must exist.
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setM_Product_ID(1);
+		save(productRecord);
+
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		this.productPlanning = productPlanningDAO.save(ProductPlanning.builder()
 				.isPurchased(true)

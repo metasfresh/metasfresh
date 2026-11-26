@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -6,6 +7,7 @@ import { connect, useSelector } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
 import {
+  getMasterViewDisabledStandardActions,
   getMasterViewStandardActions,
   getSelection,
   getTableId,
@@ -15,7 +17,10 @@ import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 import { DocumentAction } from '../../constants/DocumentAction';
-import { getMasterDocumentStandardActions } from '../../reducers/windowHandler';
+import {
+  getMasterDocumentDisabledStandardActions,
+  getMasterDocumentStandardActions,
+} from '../../reducers/windowHandler';
 
 const simplifyName = (name) => name.toLowerCase().replace(/\s/g, '');
 
@@ -239,9 +244,92 @@ export const getStandardActions = ({ state, windowId, documentId, viewId }) => {
   }
 };
 
+/**
+ * @summary the standard actions which are transmitted but shall be rendered disabled, each with the
+ *          reason why. Both routes carry them: the view route from the table state fed by
+ *          `JSONViewResult`, the single document route from the window state fed by `createWindow`.
+ * @return {Array} entries of `{ action, reason, reasonKey }`
+ */
+export const getDisabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+  viewId,
+}) => {
+  if (!windowId) {
+    return [];
+  }
+
+  if (viewId) {
+    return getMasterViewDisabledStandardActions({ state, windowId, viewId });
+  } else if (documentId) {
+    return getMasterDocumentDisabledStandardActions({
+      state,
+      windowId,
+      documentId,
+    });
+  } else {
+    return [];
+  }
+};
+
+/**
+ * @summary the standard actions which may actually be triggered: present in the list and not disabled.
+ *          The single source both the menu item's click handling and the keyboard shortcuts read,
+ *          so the permission is never derived twice.
+ */
+export const getEnabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+  viewId,
+}) => {
+  const standardActions = getStandardActions({
+    state,
+    windowId,
+    documentId,
+    viewId,
+  });
+
+  const disabledStandardActions = getDisabledStandardActions({
+    state,
+    windowId,
+    documentId,
+    viewId,
+  });
+  if (!disabledStandardActions.length) {
+    return standardActions;
+  }
+
+  return standardActions.filter(
+    (action) =>
+      !disabledStandardActions.some((disabled) => disabled.action === action)
+  );
+};
+
 const useStandardActions = ({ windowId, documentId, viewId }) => {
   return useSelector((state) =>
     getStandardActions({ state, windowId, documentId, viewId })
+  );
+};
+
+const useDisabledStandardAction = ({
+  windowId,
+  documentId,
+  viewId,
+  action,
+}) => {
+  return useSelector(
+    (state) =>
+      getDisabledStandardActions({ state, windowId, documentId, viewId }).find(
+        (disabled) => disabled.action === action
+      ) ?? null
+  );
+};
+
+const useDisabledStandardActions = ({ windowId, documentId, viewId }) => {
+  return useSelector((state) =>
+    getDisabledStandardActions({ state, windowId, documentId, viewId })
   );
 };
 
@@ -262,6 +350,19 @@ const MenuNavigationColumn = ({
   onAction,
 }) => {
   const standardActions = useStandardActions({
+    windowId,
+    documentId: dataId,
+    viewId,
+  });
+
+  const newDocumentDisabled = useDisabledStandardAction({
+    windowId,
+    documentId: dataId,
+    viewId,
+    action: DocumentAction.NEW_DOCUMENT,
+  });
+
+  const disabledStandardActions = useDisabledStandardActions({
     windowId,
     documentId: dataId,
     viewId,
@@ -307,6 +408,9 @@ const MenuNavigationColumn = ({
         hotkey={keymap.NEW_DOCUMENT}
         onAction={onAction}
         visible={standardActions.includes(DocumentAction.NEW_DOCUMENT)}
+        disabled={!!newDocumentDisabled}
+        disabledReason={newDocumentDisabled?.reason}
+        disabledReasonKey={newDocumentDisabled?.reasonKey}
       />
       <MenuItem
         action={DocumentAction.ABOUT_DOCUMENT}
@@ -324,6 +428,7 @@ const MenuNavigationColumn = ({
       />
       <DocumentStandardActionMenuItems
         enabledActions={standardActions}
+        disabledActions={disabledStandardActions}
         onAction={onAction}
         visible={!!windowId && !!dataId}
       />
@@ -402,27 +507,39 @@ const STANDARD_ACTIONS_AVAILABLE = [
 
 const DocumentStandardActionMenuItems = ({
   enabledActions,
+  disabledActions = [],
   visible = true,
   onAction,
 }) => {
-  if (!visible || !enabledActions || enabledActions.length <= 0) return null;
+  if (!visible) return null;
+  const enabled = enabledActions ?? [];
+  if (enabled.length <= 0 && disabledActions.length <= 0) return null;
 
   return STANDARD_ACTIONS_AVAILABLE.map(
-    ({ action, icon, captionKey, hotkey }) => (
-      <MenuItem
-        key={action}
-        action={action}
-        captionKey={captionKey}
-        icon={icon}
-        hotkey={hotkey}
-        visible={enabledActions.includes(action)}
-        onAction={onAction}
-      />
-    )
+    ({ action, icon, captionKey, hotkey }) => {
+      // An action the role may not perform (e.g. Clone when create is denied) is transmitted as disabled
+      // with a reason so the user sees WHY, rather than silently dropped — same treatment as New.
+      const disabled = disabledActions.find((d) => d.action === action) ?? null;
+      return (
+        <MenuItem
+          key={action}
+          action={action}
+          captionKey={captionKey}
+          icon={icon}
+          hotkey={hotkey}
+          visible={enabled.includes(action) || !!disabled}
+          disabled={!!disabled}
+          disabledReason={disabled?.reason}
+          disabledReasonKey={disabled?.reasonKey}
+          onAction={onAction}
+        />
+      );
+    }
   );
 };
 DocumentStandardActionMenuItems.propTypes = {
   enabledActions: PropTypes.array,
+  disabledActions: PropTypes.array,
   visible: PropTypes.bool,
   onAction: PropTypes.func.isRequired,
 };
@@ -440,6 +557,9 @@ const MenuItem = ({
   icon,
   hotkey,
   visible = true,
+  disabled = false,
+  disabledReason,
+  disabledReasonKey,
   onAction,
 }) => {
   if (!visible) return null;
@@ -450,13 +570,25 @@ const MenuItem = ({
     <div
       id={`subheaderNav_${simplifyName(caption)}`}
       key={action}
-      className="subheader-item js-subheader-item"
+      className={classnames('subheader-item js-subheader-item', {
+        'subheader-item-disabled': disabled,
+      })}
       tabIndex={0}
-      onClick={() => onAction({ action: action })}
+      onClick={disabled ? null : () => onAction({ action: action })}
+      data-testid={
+        disabled && disabledReasonKey
+          ? `disabledReasonKey-${disabledReasonKey}`
+          : undefined
+      }
     >
       <i className={icon} />
       {caption}
       <span className="tooltip-inline">{hotkey}</span>
+      {disabled && disabledReason && (
+        <p className="one-line">
+          <small>({disabledReason})</small>
+        </p>
+      )}
     </div>
   );
 };
@@ -467,6 +599,9 @@ MenuItem.propTypes = {
   icon: PropTypes.string,
   hotkey: PropTypes.string,
   visible: PropTypes.any,
+  disabled: PropTypes.bool,
+  disabledReason: PropTypes.string,
+  disabledReasonKey: PropTypes.string,
   onAction: PropTypes.func.isRequired,
 };
 

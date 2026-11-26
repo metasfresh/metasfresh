@@ -27,6 +27,7 @@ import de.metas.allocation.api.WriteOffType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.paymentbonus.PaymentBonusDeduction;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -34,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -96,13 +98,18 @@ public class PayableDocument
 	private final Money openAmtInitial;
 
 	@Getter
-	private final AllocationAmounts amountsToAllocateInitial;
+	private AllocationAmounts amountsToAllocateInitial;
 	@Getter
 	private AllocationAmounts amountsToAllocate;
 	private AllocationAmounts amountsAllocated;
 
 	@Getter
 	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+
+	/** The bonus that the customer deducted when paying; its gross amount is the {@link AllocationAmounts#getPaymentBonus()} to allocate. */
+	@Getter
+	@Nullable
+	private PaymentBonusDeduction paymentBonusDeduction;
 
 	@Getter
 	private final ClientAndOrgId clientAndOrgId;
@@ -132,6 +139,7 @@ public class PayableDocument
 			@NonNull final Money openAmt,
 			@NonNull final AllocationAmounts amountsToAllocate,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@Nullable final PaymentBonusDeduction paymentBonusDeduction,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate date,
 			@Nullable final LocalDate dateAcct,
@@ -148,6 +156,20 @@ public class PayableDocument
 		if (amountsToAllocate.getInvoiceProcessingFee().signum() != 0 && invoiceProcessingFeeCalculation == null)
 		{
 			throw new AdempiereException("invoiceProcessingFeeCalculation is required when the fee is not zero");
+		}
+		if (amountsToAllocate.getPaymentBonus().signum() != 0)
+		{
+			if (paymentBonusDeduction == null)
+			{
+				throw new AdempiereException("paymentBonusDeduction is required when the payment bonus is not zero");
+			}
+			if (!paymentBonusDeduction.getGrossAmount().isEqualByComparingTo(amountsToAllocate.getPaymentBonus()))
+			{
+				throw new AdempiereException("The payment bonus to allocate needs to be the gross amount of the payment bonus deduction")
+						.appendParametersToMessage()
+						.setParameter("paymentBonus", amountsToAllocate.getPaymentBonus())
+						.setParameter("paymentBonusDeduction", paymentBonusDeduction);
+			}
 		}
 
 		if (invoiceId != null)
@@ -185,6 +207,7 @@ public class PayableDocument
 		this.amountsAllocated = amountsToAllocate.toZero();
 
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
+		this.paymentBonusDeduction = paymentBonusDeduction;
 
 		this.clientAndOrgId = clientAndOrgId;
 		this.date = date;
@@ -202,6 +225,28 @@ public class PayableDocument
 	{
 		amountsAllocated = amountsAllocated.add(amounts);
 		amountsToAllocate = amountsToAllocate.subtract(amounts);
+	}
+
+	/**
+	 * Lowers the payment bonus to the given scaled deduction; the amount by which it is lowered is to be paid instead.
+	 * Nothing may be allocated yet.
+	 *
+	 * @param reducedPaymentBonusDeduction the deduction scaled down to the new bonus, e.g. by {@link PaymentBonusDeduction#withLargestReachableGrossAmountNotAbove(Money)};
+	 *                                     {@code null} if the customer gets no bonus at all
+	 */
+	void reducePaymentBonusTo(@Nullable final PaymentBonusDeduction reducedPaymentBonusDeduction)
+	{
+		final Money oldPaymentBonus = amountsToAllocate.getPaymentBonus();
+		final Money paymentBonus = reducedPaymentBonusDeduction != null
+				? reducedPaymentBonusDeduction.getGrossAmount()
+				: oldPaymentBonus.toZero();
+		Check.assume(!paymentBonus.isGreaterThan(oldPaymentBonus), "the payment bonus {} shall not be raised to {}", oldPaymentBonus, paymentBonus);
+
+		this.paymentBonusDeduction = reducedPaymentBonusDeduction;
+
+		final Money payAmtToAdd = oldPaymentBonus.subtract(paymentBonus);
+		this.amountsToAllocate = amountsToAllocate.withPaymentBonus(paymentBonus).addPayAmt(payAmtToAdd);
+		this.amountsToAllocateInitial = amountsToAllocateInitial.withPaymentBonus(paymentBonus).addPayAmt(payAmtToAdd);
 	}
 
 	public void moveRemainingOpenAmtToDiscount()

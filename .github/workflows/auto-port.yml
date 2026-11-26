@@ -37,7 +37,7 @@ env:
   # Groups to ALWAYS exclude (independent branch lines, never port to new_dawn_uat)
   FORCE_EXCLUDE: "inner_silence temporary_test202412"
   # Groups to ALWAYS include (have _uat on remote but should still port to new_dawn_uat)
-  FORCE_INCLUDE: "science_vessel"
+  FORCE_INCLUDE: "science_vessel new_dawn"
 
   # NOTE: For auto-merge to work, the target branch must be listed in .mergify.yml
   # under *ALL_BASE_BRANCHES (UAT, HOTFIX, or RELEASE lists). If you onboard a new

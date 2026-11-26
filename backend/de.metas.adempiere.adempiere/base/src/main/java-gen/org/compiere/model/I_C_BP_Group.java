@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_Group
  *  @author metasfresh (generated) 
@@ -443,27 +420,6 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Association.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAssociation (boolean IsAssociation);
-
-	/**
-	 * Get Association.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAssociation();
-
-	ModelColumn<I_C_BP_Group, Object> COLUMN_IsAssociation = new ModelColumn<>(I_C_BP_Group.class, "IsAssociation", null);
-	String COLUMNNAME_IsAssociation = "IsAssociation";
-
-	/**
 	 * Set Auto Invoice.
 	 *
 	 * <br>Type: List
@@ -552,6 +508,48 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_BP_Group.class, "IsDefault", null);
 	String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Alternate Invoice Recipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeviatingBillBPartner (boolean IsDeviatingBillBPartner);
+
+	/**
+	 * Get Alternate Invoice Recipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeviatingBillBPartner();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsDeviatingBillBPartner = new ModelColumn<>(I_C_BP_Group.class, "IsDeviatingBillBPartner", null);
+	String COLUMNNAME_IsDeviatingBillBPartner = "IsDeviatingBillBPartner";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BP_Group.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Discount Schema.
@@ -645,6 +643,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -654,6 +653,7 @@ public interface I_C_BP_Group
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -938,28 +938,6 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_PriorityBase = new ModelColumn<>(I_C_BP_Group.class, "PriorityBase", null);
 	String COLUMNNAME_PriorityBase = "PriorityBase";
-
-	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPurchaser_User_ID (int Purchaser_User_ID);
-
-	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPurchaser_User_ID();
-
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Credit Status.

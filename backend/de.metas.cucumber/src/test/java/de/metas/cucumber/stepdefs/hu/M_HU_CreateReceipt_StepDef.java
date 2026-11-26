@@ -22,13 +22,17 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.deliveryplanning.M_Delivery_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -48,9 +52,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,7 +75,18 @@ public class M_HU_CreateReceipt_StepDef
 	@NonNull private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 
+	/**
+	 * Books the given handling units, the way the HU editor's confirm ({@code WEBUI_M_HU_CreateReceipt_*}) does.
+	 * <p>
+	 * {@code OPT.M_Delivery_Planning_ID} is the provenance the editor's confirm resolves off the row that launched
+	 * it: given it, every selected HU is mapped to that planning through the SHARED
+	 * {@link ReceiptFromReceiptScheduleService#deliveryPlanningIdByHuId} the confirm itself uses, so this step
+	 * reproduces the confirm's call rather than restating its rule. What it does NOT cover is the resolution of a
+	 * launching grid row into that planning - {@code de.metas.cucumber} excludes {@code de.metas.ui.web.base}, so
+	 * the process class is not loadable here; that step is covered by {@code HUEditorReceiptSourcesTest}.
+	 */
 	@And("create material receipt")
 	public void createMaterialReceipts(@NonNull final DataTable dataTable)
 	{
@@ -86,16 +103,40 @@ public class M_HU_CreateReceipt_StepDef
 					InterfaceWrapperHelper.refresh(receiptSchedule);
 				});
 
+		final Set<HuId> selectedHuIds = extractHuIds(row);
+
 		final I_M_InOut materialReceipt = createMaterialReceipt(
 				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
 						.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 						.ctx(Env.getCtx())
 						.receiptSchedules(ImmutableList.of(receiptSchedule))
-						.selectedHuIds(extractHuIds(row))
+						.selectedHuIds(selectedHuIds)
+						.deliveryPlanningIdByHuId(extractDeliveryPlanningIdByHuId(row, selectedHuIds))
 						.build()
 		);
 
 		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).ifPresent(inoutIdentifier -> inOutTable.putOrReplace(inoutIdentifier, materialReceipt));
+	}
+
+	private ImmutableMap<HuId, DeliveryPlanningId> extractDeliveryPlanningIdByHuId(
+			@NonNull final DataTableRow row,
+			@Nullable final Set<HuId> selectedHuIds)
+	{
+		final DeliveryPlanningId deliveryPlanningId = row
+				.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_Delivery_Planning_ID)
+				.map(deliveryPlanningTable::get)
+				.map(deliveryPlanning -> DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()))
+				.orElse(null);
+		if (deliveryPlanningId == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		assertThat(selectedHuIds)
+				.as("receiving for a delivery planning requires the HUs to be named, because the map is keyed by them")
+				.isNotNull();
+
+		return ReceiptFromReceiptScheduleService.deliveryPlanningIdByHuId(selectedHuIds, deliveryPlanningId);
 	}
 
 	private Optional<ApplyReceiptScheduleChangesRequest> extractApplyReceiptScheduleChangesRequest(

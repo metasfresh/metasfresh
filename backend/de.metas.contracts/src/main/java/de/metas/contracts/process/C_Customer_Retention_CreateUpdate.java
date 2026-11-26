@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.bpartner.ContractPartnerRepository;
 import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.process.JavaProcess;
+import de.metas.util.collections.IteratorUtils;
 
 /*
  * #%L
@@ -41,11 +42,17 @@ public class C_Customer_Retention_CreateUpdate extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<BPartnerId> customers = contractPartnerRepo.retrieveAllPartnersWithContracts();
-
-		while(customers.hasNext())
+		final Iterator<BPartnerId> customers = contractPartnerRepo.iteratePartnersForCustomerRetention();
+		try
 		{
-			customerRetentionRepo.createUpdateCustomerRetention(customers.next());
+			while (customers.hasNext())
+			{
+				customerRetentionRepo.createUpdateCustomerRetention(customers.next());
+			}
+		}
+		finally
+		{
+			IteratorUtils.close(customers); // drops the iterator's ID snapshot also when the run aborts
 		}
 
 		return MSG_OK;

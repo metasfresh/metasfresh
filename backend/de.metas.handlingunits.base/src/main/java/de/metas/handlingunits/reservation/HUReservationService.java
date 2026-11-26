@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -377,6 +378,79 @@ public class HUReservationService
 	{
 		huReservationRepository.deleteReservationsByVhuIds(vhuIds);
 		handlingUnitsBL.setReservedByHUIds(vhuIds, false);
+	}
+
+	/**
+	 * Releases only a part of the HU reservation: reduces {@code M_HU_Reservation.QtyReserved} of the given VHUs by the given CU quantity.
+	 * VHUs are processed in ascending {@code M_HU_ID} order; if the quantity exceeds one VHU's reserved qty, the rest carries over to the next VHU.
+	 * A VHU whose reservation reaches zero is released like in {@link #deleteReservationsByVHUIds(Set)}.
+	 *
+	 * <b>Contract:</b> this method does NOT scope by document - the caller (the WEBUI reverse-reservation process) must pass only the current document's VHUs.
+	 *
+	 * @throws AdempiereException if the quantity exceeds the total reserved quantity of the given VHUs (nothing is changed in that case)
+	 */
+	public void reduceReservation(@NonNull final Set<HuId> vhuIds, @NonNull final Quantity qtyToUnreserveCU)
+	{
+		if (!qtyToUnreserveCU.isPositive())
+		{
+			throw new AdempiereException("qtyToUnreserveCU must be positive")
+					.setParameter("qtyToUnreserveCU", qtyToUnreserveCU);
+		}
+		trxManager.runInThreadInheritedTrx(() -> reduceReservationInTrx(vhuIds, qtyToUnreserveCU));
+	}
+
+	private void reduceReservationInTrx(@NonNull final Set<HuId> vhuIds, @NonNull final Quantity qtyToUnreserveCU)
+	{
+		final List<HUReservationEntry> entries = huReservationRepository.getEntriesByVHUIds(vhuIds)
+				.stream()
+				.sorted(Comparator.comparingInt(entry -> entry.getVhuId().getRepoId()))
+				.collect(ImmutableList.toImmutableList());
+
+		final Quantity totalReserved = entries.stream()
+				.map(HUReservationEntry::getQtyReserved)
+				.reduce(Quantity.zero(qtyToUnreserveCU.getUOM()), Quantity::add);
+		if (qtyToUnreserveCU.compareTo(totalReserved) > 0)
+		{
+			throw new AdempiereException("Cannot unreserve " + qtyToUnreserveCU + " because only " + totalReserved + " is reserved")
+					.setParameter("qtyToUnreserveCU", qtyToUnreserveCU)
+					.setParameter("totalReserved", totalReserved)
+					.setParameter("vhuIds", vhuIds);
+		}
+
+		Quantity qtyRemaining = qtyToUnreserveCU;
+		final ArrayList<HuId> vhuIdsToRelease = new ArrayList<>();
+		final ArrayList<HUReservationEntryUpdateRepoRequest> updateRequests = new ArrayList<>();
+		for (final HUReservationEntry entry : entries)
+		{
+			if (qtyRemaining.signum() <= 0)
+			{
+				break;
+			}
+
+			final Quantity qtyToReduce = qtyRemaining.min(entry.getQtyReserved());
+			final Quantity qtyNewReserved = entry.getQtyReserved().subtract(qtyToReduce);
+			qtyRemaining = qtyRemaining.subtract(qtyToReduce);
+
+			if (qtyNewReserved.signum() <= 0)
+			{
+				vhuIdsToRelease.add(entry.getVhuId());
+			}
+			else
+			{
+				updateRequests.add(HUReservationEntryUpdateRepoRequest.builder()
+						.documentRef(entry.getDocumentRef())
+						.customerId(entry.getCustomerId())
+						.vhuId(entry.getVhuId())
+						.qtyReserved(qtyNewReserved)
+						.build());
+			}
+		}
+
+		huReservationRepository.createOrUpdateEntries(updateRequests);
+		if (!vhuIdsToRelease.isEmpty())
+		{
+			deleteReservationsByVHUIdsInTrx(ImmutableSet.copyOf(vhuIdsToRelease));
+		}
 	}
 
 	public void deleteReservationsByDocumentRefs(@NonNull final Set<HUReservationDocRef> documentRefs)

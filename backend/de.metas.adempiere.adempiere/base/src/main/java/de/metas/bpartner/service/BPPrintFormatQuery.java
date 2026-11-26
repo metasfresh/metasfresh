@@ -65,4 +65,11 @@ public class BPPrintFormatQuery
 
 	@Builder.Default
 	boolean isExactMatch = false;
+
+	/**
+	 * {@code null} means "no drop-ship info supplied" -- {@code getByQuery} then skips the {@code IsDropShip}
+	 * criterion entirely, so callers that don't know about drop-ship (most of them) are unaffected.
+	 */
+	@Nullable
+	Boolean isDropShip;
 }
