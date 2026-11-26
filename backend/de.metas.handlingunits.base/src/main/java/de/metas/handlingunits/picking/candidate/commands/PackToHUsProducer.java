@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public class PackToHUsProducer
@@ -114,7 +115,7 @@ public class PackToHUsProducer
 		@NonNull TableRecordReference documentRef;
 		boolean checkIfAlreadyPacked;
 		boolean createInventoryForMissingQty;
-		/** CU quantity entry modes only: the source HUs are merged into one new CU that is booked as the picked HU inside a partial TU. */
+		/** Label-required CU quantity entry modes only: the source HUs are merged into one new CU that is booked as the picked HU inside a partial TU. */
 		boolean isBookAsSingleCUInTU;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
@@ -205,7 +206,7 @@ public class PackToHUsProducer
 		@NonNull PackedHUWeightNetUpdater weightUpdater;
 	}
 
-	/** CU quantity entry modes: the booked CU is the picked HU, packed as the single CU of a partial TU. */
+	/** Label-required CU quantity entry modes: the booked CU is the picked HU, packed as the single CU of a partial TU. */
 	private LUTUResult packAsSingleCUInTU(@NonNull final PackContext ctx)
 	{
 		final PackToHURequest request = ctx.getRequest();
@@ -215,21 +216,18 @@ public class PackToHUsProducer
 		{
 			final I_M_HU tuRecord = handlingUnitsBL.getById(request.getPackToInfo().getTu().getTuIdNotNull());
 			final I_M_HU cuRecord = pickFromHUsToPack.getSingleHU().toM_HU();
-			newHUTransformService(request.getHuContext(), request.getAllowedReservedVhuIds()).addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
-
-			ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
-			ctx.getWeightUpdater().updatePackToHU(cuRecord);
-
-			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
-			return luRecord == null
-					? LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord)))
-					: toLUResultOfPreExistingTU(tuRecord, luRecord, cuRecord);
+			return addCUToExistingTU(
+					ctx,
+					newHUTransformService(request.getHuContext(), request.getAllowedReservedVhuIds()),
+					tuRecord,
+					cuRecord,
+					() -> LUTUResult.ofTopLevelTUs(TUsList.of(TU.ofSingleTU(tuRecord, cuRecord))));
 		}
 
 		return loadIntoNewDestination(ctx, pickFromHUsToPack, this::toPartialTUWithItsSingleCU);
 	}
 
-	/** Manual mode: the picked quantity is split out of the source HUs into the pack-to target. */
+	/** Default flow (every caller that does not book a single CU in a TU): the picked quantity is split out of the source HUs into the pack-to target. */
 	private LUTUResult packAsPickedQty(@NonNull final PackContext ctx)
 	{
 		final PackToHURequest request = ctx.getRequest();
@@ -267,15 +265,7 @@ public class PackToHUsProducer
 					.qtyCU(qtyPicked)
 					.reservedVHUsPolicy(toReservedHUsPolicy(allowedReservedVhuIds))
 					.build());
-			huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
-
-			ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
-			ctx.getWeightUpdater().updatePackToHU(cuRecord);
-
-			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
-			return luRecord == null
-					? LUTUResult.ofSingleTopLevelTU(tuRecord)
-					: toLUResultOfPreExistingTU(tuRecord, luRecord, cuRecord);
+			return addCUToExistingTU(ctx, huTransformService, tuRecord, cuRecord, () -> LUTUResult.ofSingleTopLevelTU(tuRecord));
 		}
 		//
 		// Case: We have to split out and pack our HU
@@ -283,6 +273,25 @@ public class PackToHUsProducer
 		{
 			return loadIntoNewDestination(ctx, pickFromHUsToPack, UnaryOperator.identity());
 		}
+	}
+
+	/** Adds the CU to the existing TU and updates the weights; the result is that of the LU if the TU sits in one, else {@code resultIfNoLU}. */
+	private LUTUResult addCUToExistingTU(
+			@NonNull final PackContext ctx,
+			@NonNull final HUTransformService huTransformService,
+			@NonNull final I_M_HU tuRecord,
+			@NonNull final I_M_HU cuRecord,
+			@NonNull final Supplier<LUTUResult> resultIfNoLU)
+	{
+		huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
+
+		ctx.getWeightUpdater().updatePickFromHUs(ctx.getPickFromHUs().toHUsList());
+		ctx.getWeightUpdater().updatePackToHU(cuRecord);
+
+		final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+		return luRecord == null
+				? resultIfNoLU.get()
+				: toLUResultOfPreExistingTU(tuRecord, luRecord, cuRecord);
 	}
 
 	private LUTUResult toLUResultOfPreExistingTU(@NonNull final I_M_HU tuRecord, @NonNull final I_M_HU luRecord, @NonNull final I_M_HU cuRecord)

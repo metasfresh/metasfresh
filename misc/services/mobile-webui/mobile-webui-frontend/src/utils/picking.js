@@ -99,5 +99,5 @@ export const computeCUEntryToRemember = ({
   label: { cuLabel, lotNo, bestBeforeDate },
 });
 
-/** The backend decides per job (profile switch, no line needing a label scan) and publishes the answer */
+/** The backend decides per job (profile switch, no line requiring a label) and publishes the answer */
 export const isQuickPackAllAllowed = ({ activity }) => activity?.dataStored?.isQuickPackAllAllowed ?? false;

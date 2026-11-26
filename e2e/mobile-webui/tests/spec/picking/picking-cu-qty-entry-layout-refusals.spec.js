@@ -10,7 +10,7 @@ import { SelectPickTargetTUScreen } from "../../utils/screens/picking/SelectPick
 import { uniqueGTIN, uniqueLot } from "../../utils/cuLabel";
 import {
     allureMeta, createMasterdata, createMasterdataRememberingSysconfigs, graiTuType, labelOf, LAUNCHERS_LIMIT_SYSCONFIGS, login, MODE_MANUAL, MODE_SCAN_ONCE, uniqueFormatName, openLine,
-    restoreSysconfigsAfterEach, scanLabel, setPalletTarget, startJob,
+    restoreSysconfigsAfterEach, scanLabel, setLUTarget, startJob,
 } from "../../utils/cuQtyEntryCommon";
 import { txt } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
@@ -246,7 +246,7 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await startJob(masterdata, { qtyToDeliver: 4 });
                 await openModeLine(mode);
                 await layout(`${M} scan screen before the pallet target is set`);
-                await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
+                await setLUTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
                 await layout(`${M} scan screen with a pallet target, no TU open`);
                 await PickLineScanScreen.openTU();
                 await layout(`${M} scan screen with a pallet target, TU open`);

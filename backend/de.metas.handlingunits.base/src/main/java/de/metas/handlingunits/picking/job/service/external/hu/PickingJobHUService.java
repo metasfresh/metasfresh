@@ -151,7 +151,7 @@ public class PickingJobHUService
 	@NonNull private final HUGraiService huGraiService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
-	/** The GRAI snapshots of the picked HUs; a CU booked with a label scan is replaced by its TU, which carries the GRAI. */
+	/** The GRAI snapshots of the picked HUs; a CU booked with a label is replaced by its TU, which carries the GRAI. */
 	@VisibleForTesting
 	@NonNull
 	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
@@ -179,7 +179,7 @@ public class PickingJobHUService
 			{
 				if (hu.getM_HU_Item_Parent_ID() <= 0)
 				{
-					throw new AdempiereException("HU " + huId.getRepoId() + " is booked with a label scan but has no parent item, so there is no TU to carry the GRAI");
+					throw new AdempiereException("HU " + huId.getRepoId() + " is booked with a label but has no parent item, so there is no TU to carry the GRAI");
 				}
 				result.add(computeOncePerParentItem(carrierHuIdByParentItemId, hu, this::getTUIdOrSelf));
 			}

@@ -28,8 +28,8 @@ import java.util.function.Supplier;
 /**
  * The steps of one pick that depend on the CU quantity entry policy of the line: resolving the scanned CU label,
  * the open-TU and duplicate-label checks, the pick attributes read from the label, stamping the pack ID on the
- * created CUs and the QR-code owner of the picked HU. {@link PickingJobPickCommand} builds one per pick and asks it;
- * it does not look at the label-related policy flags itself.
+ * created CUs and the QR-code owner of the picked HU. {@link PickingJobPickCommand} builds one per pick and asks it
+ * for these steps; the other rules of the policy (whole TU, EACH unit, CU quantity, over-pick, single-CU booking) stay in the command.
  */
 final class CULabelBooking
 {
@@ -61,8 +61,6 @@ final class CULabelBooking
 		this.cuLabelFormatId = cuLabelFormatId;
 		this.modeName = modeName;
 	}
-
-	boolean isLabelRequired() {return policy.isLabelRequired();}
 
 	/** Refuses a booking without an open TU, or of a label already picked in the job (when the pack ID is used). No-op when no label is required; the open-TU supplier is then not called. */
 	void assertBookingAllowed(@NonNull final PickingJob pickingJob, @NonNull final BooleanSupplier isOpenTUPresent)

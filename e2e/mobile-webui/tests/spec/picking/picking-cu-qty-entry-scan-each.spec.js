@@ -4,7 +4,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
-import { allureMeta, MSG_NO_OPEN_TU, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setPalletTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, MSG_NO_OPEN_TU, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setLUTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
 import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
@@ -374,7 +374,7 @@ test('Pallet target (Scan each CU): pallet + new TU: every scan books one CU int
     const lot = uniqueLot();
     const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1, openTU: false });
-    await setPalletTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
+    await setLUTarget({ lu: masterdata.packingInstructions.P1_20x4.luName });
     await PickLineScanScreen.openTU();
 
     await test.step('CUs 1 and 2: one CU of 1 each, in the same TU, the TU on the pallet', async () => {

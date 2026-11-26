@@ -29,6 +29,11 @@ public final class CUQtyEntryPolicy
 
 	public boolean isPackIdRequired() {return isPackIdRequired;}
 
+	/**
+	 * @return true if a refusal appends its parameters to the picker's message (Manual); the label-required modes keep the handheld toast short and write the parameters to the log instead.
+	 */
+	public boolean isRefusalParametersShownToPicker() {return !isLabelRequired;}
+
 	/** @return true if a pick above the line's open quantity is refused whatever the profile's over-pick setting */
 	public boolean isOverPickAlwaysRefused() {return isPackIdRequired;}
 

@@ -601,7 +601,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Behaviour switches (the caller maps its own mode onto them)
   /** the screen stays after every booking until the open quantity is booked; label can be rescanned */
   isRepeatedBooking: PropTypes.bool,
-  /** the quantity block opens right after the scan: every scan books one unit */
+  /** every scan books one unit at once, without a quantity block; the scan step stays open and shows a Close button */
   isBookedOnScan: PropTypes.bool,
   isLotAndBestBeforeShownReadOnly: PropTypes.bool,
   isSubmitOnEnter: PropTypes.bool,

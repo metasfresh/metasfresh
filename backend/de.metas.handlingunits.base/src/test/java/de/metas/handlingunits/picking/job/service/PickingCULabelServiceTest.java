@@ -58,9 +58,9 @@ class PickingCULabelServiceTest
 	private static final String GTIN = "04012345678901";
 
 	private static final AdMessageKey HU_PRODUCT_NOT_MATCHING = MobileQRCodeMessages.HU_PRODUCT_NOT_MATCHING;
-	private static final AdMessageKey CU_LABEL_NO_PACK_ID = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_PACK_ID");
-	private static final AdMessageKey CU_LABEL_FORMAT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_FORMAT_MISMATCH");
-	private static final AdMessageKey CU_LABEL_NO_FORMAT = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_LABEL_NO_FORMAT");
+	private static final AdMessageKey CU_LABEL_NO_PACK_ID = PickingCULabelService.MSG_CU_LABEL_NO_PACK_ID;
+	private static final AdMessageKey CU_LABEL_FORMAT_MISMATCH = PickingCULabelService.MSG_CU_LABEL_FORMAT_MISMATCH;
+	private static final AdMessageKey CU_LABEL_NO_FORMAT = PickingCULabelService.MSG_CU_LABEL_NO_FORMAT;
 
 	private PickingCULabelService service;
 	private ScannableCodeFormatService formatService;

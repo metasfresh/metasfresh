@@ -16,7 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 @Builder
 public class PickingJobPickAllCommand
 {
-	private static final AdMessageKey MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_QUICK_PACK_ALL_NOT_ALLOWED");
+	public static final AdMessageKey MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_QUICK_PACK_ALL_NOT_ALLOWED");
 
 	// services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -53,7 +53,7 @@ public class PickingJobPickAllCommand
 		return pickingJobService.complete(pickingJobChanged);
 	}
 
-	/** Pick-all books without a label scan, so one line in a label-required CU quantity entry mode refuses the whole job. */
+	/** Pick-all books without a label, so one line in a label-required CU quantity entry mode refuses the whole job. */
 	private void assertNoLabelRequiredLine(final PickingJob pickingJob)
 	{
 		if (configService.isAnyLabelRequiredLine(pickingJob.getLines()))

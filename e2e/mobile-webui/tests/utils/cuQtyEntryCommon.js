@@ -152,7 +152,7 @@ export const openLine = async ({ index }) => {
     await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
 };
 
-export const setPalletTarget = async ({ lu }) => {
+export const setLUTarget = async ({ lu }) => {
     await PickLineScanScreen.goBack();
     await PickingJobLineScreen.clickLUTargetButton();
     await SelectPickTargetLUScreen.clickLUButton({ lu });

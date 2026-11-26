@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -35,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobPickAllCommandTest
 {
-	private static final AdMessageKey CU_QUICK_PACK_ALL_NOT_ALLOWED = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_QUICK_PACK_ALL_NOT_ALLOWED");
+	private static final AdMessageKey CU_QUICK_PACK_ALL_NOT_ALLOWED = PickingJobPickAllCommand.MSG_CU_QUICK_PACK_ALL_NOT_ALLOWED;
 	private static final UserId PICKER_ID = UserId.ofRepoId(1234);
 
 	private PickingJobTestHelper helper;

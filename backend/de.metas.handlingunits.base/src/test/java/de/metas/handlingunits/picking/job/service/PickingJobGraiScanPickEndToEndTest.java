@@ -555,7 +555,7 @@ class PickingJobGraiScanPickEndToEndTest
 				.hasMessageContaining("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
 	}
 
-	private static final String GRAI_COUNT_MISMATCH_KEY = "de.metas.handlingunits.picking.GRAICountMismatch";
+	private static final String GRAI_COUNT_MISMATCH_KEY = HUGraiSnapshot.GRAI_COUNT_MISMATCH.toAD_Message();
 
 	@Nested
 	class GetGraiSnapshots

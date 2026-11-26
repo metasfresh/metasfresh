@@ -234,7 +234,7 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = line.getPickingUnit(); // CU for label-required-mode lines: the loader (PickingJobLoaderAndSaver#computePickingUnit) applies that rule
+		this.pickingUnit = line.getPickingUnit(); // a line in a label-required mode is a CU line
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
@@ -403,8 +403,7 @@ public class PickingJobPickCommand
 				.setParameter("qtyOrdered", line.getQtyToPick())
 				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
 
-		final boolean isParametersAppendedToMessage = !cuLabelBooking.isLabelRequired();
-		if (isParametersAppendedToMessage)
+		if (cuQtyEntryPolicy.isRefusalParametersShownToPicker())
 		{
 			throw exception.appendParametersToMessage();
 		}
