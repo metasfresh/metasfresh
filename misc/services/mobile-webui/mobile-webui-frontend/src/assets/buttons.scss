@@ -3,6 +3,11 @@
 .button {
   height: 2.5em;
 
+  // icon of a DialogButton (prop `icon`): 1 em wide plus a small gap, so the button grows by ~22 px only and keeps the row of its neighbours
+  .dialog-button-icon {
+    margin-right: 0.4em;
+  }
+
   .full-size-btn {
     //border: 1px dotted yellow;
     width: 100%;

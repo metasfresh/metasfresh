@@ -62,7 +62,6 @@ const GetQuantityDialog = ({
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
   nextTUActions,
-  labelRescan,
   //
   validateQtyEntered,
   getConfirmationPromptForQty,
@@ -529,8 +528,6 @@ const GetQuantityDialog = ({
             </div>
           </form>
         )}
-        {/* outside the form: a text input of the scanner (manual entry) must not submit the quantity form on Enter */}
-        {!isCustomView() && labelRescan && <div>{labelRescan}</div>}
       </Dialog>
     </div>
   );
@@ -590,7 +587,6 @@ GetQuantityDialog.propTypes = {
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
   nextTUActions: PropTypes.node,
-  labelRescan: PropTypes.node,
   customQRCodeFormats: PropTypes.array,
 
   // Callbacks

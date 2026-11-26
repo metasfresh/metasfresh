@@ -8,6 +8,7 @@ import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComp
 import { reducer as settings } from '../../../../reducers/settings';
 import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
+import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
@@ -21,6 +22,9 @@ jest.mock('../../../../utils/toast', () => ({
   toastErrorFromObj: jest.fn(),
   toastNotification: jest.fn(),
 }));
+
+// the real wiring (PickLineScanScreen): the "next TU" button owns the hidden scanner of the quantity block
+const nextTUActions = ({ scanner }) => <OpenNextTUButton onNextTU={jest.fn()} scanner={scanner} />;
 
 const store = () => createStore(combineReducers({ settings }));
 
@@ -37,6 +41,7 @@ const renderComponent = ({ onResult, resolveScannedBarcode, ...props }) =>
         qtyTarget={12}
         uom="PCE"
         {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
+        nextTUActions={nextTUActions}
         resolveScannedBarcode={resolveScannedBarcode ?? (async (code) => labels[code])}
         onResult={onResult}
         {...props}
@@ -90,6 +95,7 @@ describe('ScanHUAndGetQtyComponent: scan once stays on the line', () => {
           suggestedQty={5}
           uom="PCE"
           {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
+          nextTUActions={nextTUActions}
           resolveScannedBarcode={async (code) => labels[code]}
           onResult={onResult}
         />

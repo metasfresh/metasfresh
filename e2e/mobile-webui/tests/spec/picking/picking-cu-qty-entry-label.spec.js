@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { test } from "../../../playwright.config";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
@@ -18,12 +19,12 @@ const LINE_QTY = 20;
 const BEST_BEFORE = defaultBestBefore();
 
 
-const createMasterdata = async ({ profileFormatName, formats, p2 = {} }) => {
+const createMasterdata = async ({ profileFormatName, formats, p2 = {}, language = "en_US" }) => {
     return await createMasterdataRememberingSysconfigs({
-        language: "en_US",
+        language,
         request: {
             sysconfigs: LAUNCHERS_LIMIT_SYSCONFIGS,
-            login: { user: { language: "en_US" } },
+            login: { user: { language } },
             mobileConfig: {
                 picking: {
                     aggregationType: "product",
@@ -243,5 +244,105 @@ test('product match uses the label product part against M_Product.Value, the GTI
                 }
             }
         },
+    });
+});
+
+
+/** Box (Playwright boundingBox) and the styles that decide the look of the quantity block's buttons */
+const measureButtons = async (page) => {
+    const read = async (testId) => {
+        const button = page.locator('.get-qty-dialog').getByTestId(testId);
+        const box = await button.boundingBox();
+        const style = await button.evaluate((el) => {
+            const cs = getComputedStyle(el);
+            return { fontSize: cs.fontSize, fontFamily: cs.fontFamily, lineHeight: cs.lineHeight, paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, borderTopWidth: cs.borderTopWidth };
+        });
+        return { ...box, ...style };
+    };
+    return { ok: await read('done-button'), cancel: await read('cancel-button'), nextTU: await read('next-tu-button') };
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Scan once pop-up shows no scanner visuals, the barcode icon sits in "Weitere Kiste", which is as big as OK and Abbrechen', async ({ page }) => {
+    allureMeta('CU label reading');
+
+    const formatName = `cuqe-lbl-${uniqueProductValue()}`;
+    const masterdata = await createMasterdata({ profileFormatName: formatName, formats: [buildCULabelFormat({ name: formatName })], language: 'de_DE' });
+    const gtin = uniqueGTIN();
+    const productValue = masterdata.products.P1.productCode;
+    const lot = uniqueLot();
+    const shotsDir = process.env.AFTER_SHOTS_DIR;
+    const shot = async (name) => { if (shotsDir) await page.screenshot({ path: `${shotsDir}/after-${name}.png` }); };
+    await page.setViewportSize({ width: 360, height: 720 });
+    await openLineScanScreen(masterdata);
+    await PickLineScanScreen.openTU();
+
+    await test.step('first scan screen: its own visible scanner stays, the button brings no second scanner, the icon is in the button', async () => {
+        await expect(page.getByTestId('scanHUBarcode-input')).toBeAttached();
+        await expect(page.locator('.scan-prompt')).toHaveCount(1);
+        await expect(page.getByTestId('rescanCULabel-input')).toHaveCount(0);
+        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
+        await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
+        await shot('first-scan-screen-360x720');
+    });
+
+    await PickLineScanScreen.scanCULabel(buildCULabel({ gtin, productValue, lot, packId: 1 }));
+    await GetQuantityDialog.waitForDialog();
+
+    await test.step('pop-up: no scanner visuals (icon, "Barcode scannen", "Manuell eingeben"), one hidden scanner', async () => {
+        await expect(page.locator('.scan-prompt')).toHaveCount(0);
+        await expect(page.locator('.barcode-scanner-footer')).toHaveCount(0);
+        await expect(page.getByTestId('barcode-scanner-enter-manually')).toHaveCount(0);
+        await expect(page.getByText('Barcode scannen')).toHaveCount(0);
+        await expect(page.getByText('Manuell eingeben')).toHaveCount(0);
+        await expect(page.getByTestId('scanHUBarcode-input')).toHaveCount(0);
+        await expect(page.getByTestId('rescanCULabel-input')).toBeAttached();
+        await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
+        // the only barcode icon of the dialog is the one inside "Weitere Kiste"
+        await expect(page.locator('.get-qty-dialog [class*="fa-barcode"]')).toHaveCount(1);
+        await expect(page.getByTestId('next-tu-button').locator('[class*="fa-barcode"]')).toHaveCount(1);
+        await expect(page.getByTestId('next-tu-button')).toContainText('Weitere Kiste');
+    });
+
+    await test.step('pop-up: a pack label of a new lot, scanned on the hidden scanner, switches the lot', async () => {
+        const newLot = uniqueLot();
+        await PickLineScanScreen.rescanCULabel(buildCULabel({ gtin, productValue, lot: newLot, packId: 2 }));
+        await expect(page.getByTestId('lotNo')).toHaveValue(newLot);
+    });
+
+    const viewports = [{ width: 360, height: 720 }, { width: 393, height: 727 }];
+    const withIcon = {};
+    for (const viewport of viewports) {
+        await test.step(`pop-up at ${viewport.width}x${viewport.height}: "Weitere Kiste" with icon is as high as OK and Abbrechen`, async () => {
+            await page.setViewportSize(viewport);
+            await expect(page.getByTestId('next-tu-button')).toBeVisible();
+            const { ok, cancel, nextTU } = await measureButtons(page);
+            withIcon[viewport.width] = { ok, cancel, nextTU };
+            console.log(`BUTTONS ${viewport.width}x${viewport.height} | ${JSON.stringify({ ok, cancel, nextTU })}`);
+            expect.soft(nextTU.height, 'height of Weitere Kiste vs OK').toBe(ok.height);
+            expect.soft(nextTU.height, 'height of Weitere Kiste vs Abbrechen').toBe(cancel.height);
+            for (const key of ['fontSize', 'fontFamily', 'lineHeight', 'paddingTop', 'paddingBottom', 'borderTopWidth']) {
+                expect.soft(nextTU[key], `${key} of Weitere Kiste vs OK`).toBe(ok[key]);
+            }
+            expect.soft(nextTU.x + nextTU.width, 'Weitere Kiste inside the screen').toBeLessThanOrEqual(viewport.width);
+            await expect(page.locator('.Toastify__toast')).toHaveCount(0, { timeout: 15000 }); // clean picture: no toast over the buttons
+            await page.getByTestId('next-tu-button').scrollIntoViewIfNeeded();
+            await shot(`pop-up-${viewport.width}x${viewport.height}`);
+        });
+    }
+
+    // At 393 px the three buttons just fit one row without the icon (57 + 111 + 129 px + 3 x 8 px margins = 321 of 329 px) and the
+    // icon (16 px + gap) cannot fit: "Weitere Kiste" then takes its own row, the layout the Zebra TC22 (360 px) has anyway.
+    await test.step('Zebra TC22 360x720: the icon moves no button (same boxes without it; icon removed from the DOM for this check only)', async () => {
+        await page.getByTestId('next-tu-button').locator('.dialog-button-icon').evaluate((el) => el.remove());
+        for (const viewport of viewports.slice(0, 1)) {
+            await page.setViewportSize(viewport);
+            const without = await measureButtons(page);
+            for (const key of ['ok', 'cancel', 'nextTU']) {
+                for (const dim of ['x', 'y', 'height']) {
+                    expect.soft(withIcon[viewport.width][key][dim], `${viewport.width}: ${key}.${dim} with the icon vs without`).toBe(without[key][dim]);
+                }
+            }
+        }
     });
 });

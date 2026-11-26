@@ -28,6 +28,16 @@ const isEditableElement = (element) =>
 const isOperatorTypingElsewhere = (inputElement) =>
   isEditableElement(document.activeElement) && document.activeElement !== inputElement;
 
+/**
+ * The scanner's input reacts to Enter on key-up (see handleInputTextKeyPress). Its Enter must never also submit a form the
+ * input sits in: the hidden scanner of the quantity block is in the same form as the OK button, and a scan would book the quantity.
+ */
+const preventEnterFromSubmittingForm = (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+  }
+};
+
 const HardwareModePanel = ({
   invisible,
   inputPlaceholderText,
@@ -195,6 +205,7 @@ const HardwareModePanel = ({
       onFocus={handleInputTextFocus}
       onBlur={handleInputTextBlur}
       onChange={handleInputTextChangedDebounced}
+      onKeyDown={preventEnterFromSubmittingForm}
       onKeyUp={handleInputTextKeyPress}
       data-testid={testId ?? 'qrCode-input'}
     />

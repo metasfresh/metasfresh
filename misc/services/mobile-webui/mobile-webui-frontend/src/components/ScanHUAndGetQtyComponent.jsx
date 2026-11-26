@@ -34,12 +34,21 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 // dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
 const EMPTY_LU_GRAIS = [];
 
+/**
+ * @param nextTUActions the node as is, or a function `({ scanner }) => node` for a button that owns the hidden scanner of the
+ *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
+ * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
+ * @return the node to render, or undefined when there are no next-TU actions
+ */
+const renderNextTUActions = (nextTUActions, scanner) =>
+  typeof nextTUActions === 'function' ? nextTUActions({ scanner }) : nextTUActions;
+
 const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
   if (!nextTUActions && !isBookedOnScan) return null;
 
   return (
     <div className="buttons is-centered mb-4">
-      {nextTUActions}
+      {renderNextTUActions(nextTUActions, undefined)}
       {isBookedOnScan && (
         <DialogButton
           captionKey="general.closeText"
@@ -52,7 +61,7 @@ const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) =
   );
 };
 HUScanActionButtons.propTypes = {
-  nextTUActions: PropTypes.node,
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   isBookedOnScan: PropTypes.bool,
   onCloseDialog: PropTypes.func,
 };
@@ -508,18 +517,13 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
-          nextTUActions={nextTUActions}
-          labelRescan={
-            isRepeatedBooking ? (
-              <BarcodeScannerComponent
-                testId="rescanCULabel-input"
-                isCoexistingWithTypedInput
-                isCompact
-                resolveScannedBarcode={handleResolveHUScannedBarcode}
-                onResolvedResult={onCULabelRescanned}
-              />
-            ) : undefined
-          }
+          nextTUActions={renderNextTUActions(
+            nextTUActions,
+            // the label rescan (new lot / best-before, next crate by its code) is read by the hidden scanner of the "next TU" button
+            isRepeatedBooking
+              ? { resolveScannedBarcode: handleResolveHUScannedBarcode, onResolvedResult: onCULabelRescanned }
+              : undefined
+          )}
           //
           getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
@@ -606,7 +610,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   isLotAndBestBeforeShownReadOnly: PropTypes.bool,
   isSubmitOnEnter: PropTypes.bool,
   isShowCloseTargetButton: PropTypes.bool,
-  nextTUActions: PropTypes.node,
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   suggestedQty: PropTypes.number,
   rememberedCULabel: PropTypes.shape({
     cuLabel: PropTypes.string,

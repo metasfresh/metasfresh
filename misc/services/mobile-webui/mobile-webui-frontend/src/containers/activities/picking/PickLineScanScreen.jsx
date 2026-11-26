@@ -252,9 +252,11 @@ const PickLineScanScreen = () => {
       rememberedCULabel={computeRememberedCULabel({ isScanOnce, isResume, cuEntry })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextTUActions={
-        isLabelRequiredLine ? (
-          <OpenNextTUButton isProcessing={nextTU.isProcessing} onNextTU={nextTU.onNextTU} />
-        ) : undefined
+        isLabelRequiredLine
+          ? ({ scanner }) => (
+              <OpenNextTUButton isProcessing={nextTU.isProcessing} onNextTU={nextTU.onNextTU} scanner={scanner} />
+            )
+          : undefined
       }
       //
       resolveScannedBarcode={resolveScannedBarcode}

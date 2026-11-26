@@ -8,6 +8,7 @@ import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComp
 import { reducer as settings } from '../../../../reducers/settings';
 import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
+import OpenNextTUButton from '../../../../apps/picking/cuQtyEntry/OpenNextTUButton';
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
@@ -22,6 +23,9 @@ jest.mock('../../../../utils/toast', () => ({
   toastNotification: jest.fn(),
 }));
 
+// the real wiring (PickLineScanScreen): the "next TU" button owns the hidden scanner of the quantity block
+const nextTUActions = ({ scanner }) => <OpenNextTUButton onNextTU={jest.fn()} scanner={scanner} />;
+
 const label = { lotNo: 'LOTA', bestBeforeDate: '2026-11-07', cuLabel: 'RAW-A' };
 
 const renderOpenQuantityBlock = async ({ resolveScannedBarcode, isShowCloseTargetButton = false }) => {
@@ -33,6 +37,7 @@ const renderOpenQuantityBlock = async ({ resolveScannedBarcode, isShowCloseTarge
         uom="PCE"
         {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
         isShowCloseTargetButton={isShowCloseTargetButton}
+        nextTUActions={nextTUActions}
         resolveScannedBarcode={resolveScannedBarcode}
         onResult={jest.fn().mockResolvedValue()}
       />
@@ -110,14 +115,14 @@ describe('ScanHUAndGetQtyComponent: scan once, the count field is typed into', (
     expect(firstSubmitter).toBe(screen.getByTestId('done-button'));
   });
 
-  it('no text input of the label rescan scanner (manual entry included) sits inside the quantity form', async () => {
+  it('the label rescan scanner shows nothing (no icon, no caption, no manual entry) and its Enter cannot submit the quantity form', async () => {
     await renderOpenQuantityBlock({ resolveScannedBarcode: jest.fn().mockResolvedValue(label) });
-    await act(async () => {
-      fireEvent.click(screen.getByTestId('barcode-scanner-enter-manually'));
-    });
-    const form = document.querySelector('form');
-    const manualInput = screen.getByTestId('manual-entry-input');
-    expect(form.contains(manualInput)).toBe(false);
-    expect(form.contains(screen.getByTestId('rescanCULabel-input'))).toBe(false);
+    expect(screen.getByTestId('rescanCULabel-input')).toBeInTheDocument();
+    expect(document.querySelector('.scan-prompt')).toBeNull();
+    expect(document.querySelector('.barcode-scanner-footer')).toBeNull();
+    expect(screen.queryByTestId('barcode-scanner-enter-manually')).toBeNull();
+    expect(screen.queryByTestId('manual-entry-input')).toBeNull();
+    const enterNotPrevented = fireEvent.keyDown(screen.getByTestId('rescanCULabel-input'), { key: 'Enter' });
+    expect(enterNotPrevented).toBe(false); // default prevented: no implicit form submit
   });
 });

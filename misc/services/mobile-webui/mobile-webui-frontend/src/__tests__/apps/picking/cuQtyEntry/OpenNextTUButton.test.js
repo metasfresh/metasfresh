@@ -349,3 +349,110 @@ describe('useOpenNextTU', () => {
     });
   });
 });
+
+describe('OpenNextTUButton owns the hidden scanner of the quantity block', () => {
+  const renderWithScanner = (scanner) =>
+    render(
+      <Provider store={store()}>
+        <OpenNextTUButton onNextTU={jest.fn()} scanner={scanner} />
+      </Provider>
+    );
+
+  it('shows the barcode icon inside the button', () => {
+    renderWithScanner(undefined);
+    expect(screen.getByTestId('next-tu-button').querySelector('i.fa-barcode')).not.toBeNull();
+  });
+
+  it('without a scanner prop (first scan screen): no second scanner', () => {
+    renderWithScanner(undefined);
+    expect(screen.queryByTestId('rescanCULabel-input')).toBeNull();
+  });
+
+  it('with a scanner prop: one hidden scanner, no scanner visuals', async () => {
+    renderWithScanner({ resolveScannedBarcode: jest.fn(), onResolvedResult: jest.fn() });
+    await act(async () => {});
+    expect(screen.getByTestId('rescanCULabel-input')).toBeInTheDocument();
+    expect(document.querySelectorAll('input[data-testid="rescanCULabel-input"]')).toHaveLength(1);
+    expect(document.querySelector('.scan-prompt')).toBeNull();
+    expect(document.querySelector('.scan-prompt-icon')).toBeNull();
+    expect(document.querySelector('.barcode-scanner-footer')).toBeNull();
+    expect(screen.queryByTestId('barcode-scanner-enter-manually')).toBeNull();
+  });
+
+  it('a scan on the hidden scanner is resolved and forwarded to the caller', async () => {
+    const resolveScannedBarcode = jest.fn(async ({ scannedBarcode }) => ({ scannedBarcode, ok: true }));
+    const onResolvedResult = jest.fn();
+    renderWithScanner({ resolveScannedBarcode, onResolvedResult });
+    await act(async () => {});
+    const input = screen.getByTestId('rescanCULabel-input');
+    input.value = 'LABEL-1';
+    await act(async () => {
+      fireEvent.keyUp(input, { key: 'Enter' });
+    });
+    await act(async () => {});
+    expect(onResolvedResult).toHaveBeenCalledWith({ scannedBarcode: 'LABEL-1', ok: true });
+  });
+});
+
+describe('hidden scanner inside the quantity block', () => {
+  const renderBlock = (nextTUActions) =>
+    render(
+      <Provider store={store()}>
+        <ScanHUAndGetQtyComponent
+          qtyMax={12}
+          qtyTarget={12}
+          uom="PCE"
+          {...toQtyEntryBehaviorProps(POLICY.SCAN_ONCE_ENTER_QTY)}
+          rememberedCULabel={{ cuLabel: 'RAW-A', lotNo: 'LOTA', bestBeforeDate: '2026-11-07' }}
+          resolveScannedBarcode={async (code) => ({ cuLabel: code, lotNo: `LOT-${code}` })}
+          nextTUActions={nextTUActions}
+          onResult={jest.fn()}
+        />
+      </Provider>
+    );
+  const asButton = ({ scanner }) => <OpenNextTUButton onNextTU={jest.fn()} scanner={scanner} />;
+
+  it('pop-up: no scanner visuals at all, the scanner input is outside the OK / Abbrechen submit flow', async () => {
+    renderBlock(asButton);
+    await act(async () => {});
+    expect(screen.getByTestId('rescanCULabel-input')).toBeInTheDocument();
+    expect(document.querySelector('.scan-prompt')).toBeNull();
+    expect(document.querySelector('.barcode-scanner-footer')).toBeNull();
+    expect(screen.queryByTestId('barcode-scanner-enter-manually')).toBeNull();
+    expect(screen.queryByText('Manuell eingeben')).toBeNull();
+    // an Enter of the scanner must never submit (= book) the quantity form
+    const keyDownNotPrevented = fireEvent.keyDown(screen.getByTestId('rescanCULabel-input'), { key: 'Enter' });
+    expect(keyDownNotPrevented).toBe(false);
+  });
+
+  it('pop-up: a label scanned on the hidden scanner switches the lot', async () => {
+    renderBlock(asButton);
+    await act(async () => {});
+    const input = screen.getByTestId('rescanCULabel-input');
+    input.value = 'RAW-B';
+    await act(async () => {
+      fireEvent.keyUp(input, { key: 'Enter' });
+    });
+    await act(async () => {});
+    expect(screen.getByTestId('lotNo').value).toBe('LOT-RAW-B');
+  });
+
+  it('pop-up with a plain node (no scanner support): no scanner is added', async () => {
+    renderBlock(<button data-testid="next-tu-button">x</button>);
+    await act(async () => {});
+    expect(screen.queryByTestId('rescanCULabel-input')).toBeNull();
+  });
+
+  it('first scan screen: exactly one scanner (its own visible one), the button brings none', async () => {
+    render(
+      <Provider store={store()}>
+        <ScanHUAndGetQtyComponent qtyMax={1} qtyTarget={1} uom="PCE" nextTUActions={asButton} onResult={jest.fn()} />
+      </Provider>
+    );
+    await act(async () => {});
+    expect(screen.getByTestId('next-tu-button')).toBeInTheDocument();
+    expect(screen.getByTestId('scanHUBarcode-input')).toBeInTheDocument();
+    expect(screen.queryByTestId('rescanCULabel-input')).toBeNull();
+    expect(document.querySelectorAll('input.input-text-offscreen')).toHaveLength(1);
+  });
+});

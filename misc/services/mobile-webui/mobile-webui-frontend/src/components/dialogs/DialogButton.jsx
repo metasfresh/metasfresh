@@ -10,6 +10,7 @@ const DialogButton = ({
   testId: testIdParam,
   captionKey,
   caption: captionParam,
+  icon,
   className,
   disabled,
   type,
@@ -35,7 +36,17 @@ const DialogButton = ({
       type={type}
       onClick={fireOnClick}
     >
-      {caption}
+      {icon ? (
+        <>
+          {/* span = stable React-owned parent: FontAwesome swaps the <i> for an <svg> in place (see HardwareModePanel) */}
+          <span className="dialog-button-icon">
+            <i className={cx('fas', icon)} aria-hidden="true" />
+          </span>
+          {caption}
+        </>
+      ) : (
+        caption
+      )}
     </button>
   );
 };
@@ -45,6 +56,8 @@ DialogButton.propTypes = {
   testId: PropTypes.string,
   captionKey: PropTypes.string,
   caption: PropTypes.string,
+  /** FontAwesome icon class (e.g. `fa-barcode`) shown left of the caption; none by default (the markup is then the plain caption) */
+  icon: PropTypes.string,
   className: PropTypes.string,
   disabled: PropTypes.bool,
   type: PropTypes.oneOf(['button', 'submit']),
