@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobProgress;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
@@ -120,7 +121,7 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		final PickingJob pickingJob = mock(PickingJob.class);
 		when(pickingJob.getCustomerId()).thenReturn(HEADER_CUSTOMER);
 		when(pickingJob.getAggregationType()).thenReturn(PickingJobAggregationType.PRODUCT);
-		when(pickingJob.getProgress()).thenReturn(de.metas.handlingunits.picking.job.model.PickingJobProgress.NOT_STARTED);
+		when(pickingJob.getProgress()).thenReturn(PickingJobProgress.NOT_STARTED);
 		when(pickingJob.getPickFromHU()).thenReturn(Optional.empty());
 		when(pickingJob.getLuPickingTarget(any())).thenReturn(Optional.empty());
 		when(pickingJob.getTuPickingTarget(any())).thenReturn(Optional.empty());

@@ -22,17 +22,16 @@ describe('toastError', () => {
     expect(ERROR_TOAST_BODY_STYLE).toEqual({ overflow: 'auto', maxHeight: 'calc(100vh - 8rem)' });
   });
 
-  it('shows only the localized message of the key, never the technical details', () => {
+  it('shows the details (the reason) after the localized message of the key', () => {
     const toastErrorSpy = jest.spyOn(toast, 'error').mockImplementation(() => undefined);
 
     toastError({ messageKey: 'picking.cuLabel.formatMismatch', details: "Expected constant '01' but got ']d'" });
 
     const message = toastErrorSpy.mock.calls[0][0].props.message;
-    expect(message).not.toContain('Expected constant');
-    expect(message.length).toBeGreaterThan(0);
+    expect(message).toMatch(/^\S.* Expected constant '01' but got '\]d'$/);
   });
 
-  it('traces the details of the refusal for support, not in the toast', () => {
+  it('also traces the details of the refusal for support', () => {
     jest.spyOn(toast, 'error').mockImplementation(() => undefined);
 
     toastError({
@@ -46,13 +45,13 @@ describe('toastError', () => {
     );
   });
 
-  it('shows a UserMessageError as its localized message without the details, not as a server error', () => {
+  it('shows a UserMessageError as its localized message with the details, not as a server error', () => {
     const toastErrorSpy = jest.spyOn(toast, 'error').mockImplementation(() => undefined);
 
     toastErrorFromObj(new UserMessageError('picking.cuLabel.formatMismatch', 'part 3 does not fit'));
 
     const message = toastErrorSpy.mock.calls[0][0].props.message;
-    expect(message).not.toContain('part 3 does not fit');
+    expect(message).toMatch(/^\S.* part 3 does not fit$/);
     expect(toastErrorSpy.mock.calls[0][0].props.code).toBe('picking.cuLabel.formatMismatch');
   });
 

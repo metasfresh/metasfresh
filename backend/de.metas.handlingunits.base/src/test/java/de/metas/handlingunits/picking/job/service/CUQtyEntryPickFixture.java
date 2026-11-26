@@ -78,6 +78,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -209,7 +210,7 @@ abstract class CUQtyEntryPickFixture
 		{
 			logger.detachAppender(logAppender);
 		}
-		return logAppender.list.stream().map(ILoggingEvent::getFormattedMessage).collect(java.util.stream.Collectors.toList());
+		return logAppender.list.stream().map(ILoggingEvent::getFormattedMessage).collect(Collectors.toList());
 	}
 
 	/** Builds the picking job (sales-order aggregation, picking slot set) the tests start from. */
