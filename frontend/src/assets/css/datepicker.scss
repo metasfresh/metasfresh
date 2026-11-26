@@ -3,11 +3,3 @@
   justify-content: space-between;
   align-items: center;
 }
-
-// Grid-cell date editor (its input carries `js-input-field`, see DatePicker.renderInput): the
-// absolutely positioned calendar icon (.input-icon-right: 18px wide, 5px from the right edge)
-// would sit on the last digits of the date in a narrow cell, so reserve room for it.
-// Non-grid date inputs have no `js-input-field` and stay unchanged.
-.datepicker .form-control.js-input-field {
-  padding-right: 26px;
-}
