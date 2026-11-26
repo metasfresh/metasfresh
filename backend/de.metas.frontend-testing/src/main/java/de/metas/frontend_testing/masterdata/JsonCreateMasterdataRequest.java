@@ -123,6 +123,16 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateProductRequest> products;
 
 	/**
+	 * Attribute codes ({@code M_Attribute.Value}, e.g. {@code ["Lot-Nummer", "HU_BestBeforeDate"]}) to make sure are active in
+	 * {@code M_ShipmentSchedule_AttributeConfig} of the sales-order-line shipment schedule handler, so that shipment lines
+	 * are split by them. An existing active row is kept as is; when none exists a new active row is inserted
+	 * (inactive rows are not touched). The rows stay after the run and are global to the database:
+	 * every later shipment there is split by these attributes. Applied BEFORE
+	 * {@code salesOrders}. See {@link de.metas.frontend_testing.masterdata.shipment_schedule.EnsureShipmentScheduleAttributeConfigCommand}.
+	 */
+	@Nullable List<String> shipmentScheduleAttributeConfigs;
+
+	/**
 	 * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing. Applied AFTER {@code products}
 	 * (whose identifiers it may reference to price them into its own {@code M_PriceList_Version}) and
 	 * {@code bpartners} (whose identifiers it may reference as the walk-in customer). See

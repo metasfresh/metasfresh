@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.function.Supplier;
 
 @Builder
 class PickedHUAttributesUpdater
@@ -83,9 +84,12 @@ class PickedHUAttributesUpdater
 		updateHUPickAttributes(cu.toHU(), pickAttributes, false, serialNoPickingEnabled);
 	}
 
-	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean recomputeFromChildren, final boolean serialNoPickingEnabled)
+	private void updateHUPickAttributes(@NonNull final I_M_HU hu, @NonNull final PickAttributes pickAttributes, final boolean isRecomputeFromChildren, final boolean serialNoPickingEnabled)
 	{
-		if (!pickAttributes.isSetBestBeforeDate()
+		// With isRecomputeFromChildren, lot and best-before date are always recomputed from the children (even when the pick
+		// did not set them), so that the HU never keeps a value that does not match its content.
+		if (!isRecomputeFromChildren
+				&& !pickAttributes.isSetBestBeforeDate()
 				&& !pickAttributes.isSetProductionDate()
 				&& !pickAttributes.isSetLotNo()
 				&& !serialNoPickingEnabled)
@@ -96,20 +100,12 @@ class PickedHUAttributesUpdater
 		final IAttributeStorage huAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(hu);
 		huAttributes.setSaveOnChange(true);
 
-		if (pickAttributes.isSetBestBeforeDate())
-		{
-			if (recomputeFromChildren)
-			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_BestBeforeDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
-			}
-			else
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, pickAttributes.getBestBeforeDate());
-			}
-		}
+		applyPickOrRecompute(huAttributes, AttributeConstants.ATTR_BestBeforeDate, isRecomputeFromChildren, pickAttributes.isSetBestBeforeDate(),
+				pickAttributes::getBestBeforeDate, () -> computeDateValueFromChildren(huAttributes, AttributeConstants.ATTR_BestBeforeDate));
+		// ProductionDate is deliberately not part of applyPickOrRecompute: only lot and best-before are kept on a pick without a sent value
 		if (pickAttributes.isSetProductionDate())
 		{
-			if (recomputeFromChildren)
+			if (isRecomputeFromChildren)
 			{
 				huAttributes.setValueNoPropagate(AttributeConstants.ProductionDate, computeDateValueFromChildren(huAttributes, AttributeConstants.ProductionDate));
 			}
@@ -118,22 +114,13 @@ class PickedHUAttributesUpdater
 				huAttributes.setValue(AttributeConstants.ProductionDate, pickAttributes.getProductionDate());
 			}
 		}
-		if (pickAttributes.isSetLotNo())
-		{
-			if (recomputeFromChildren)
-			{
-				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_LotNumber, computeLotNoFromChildren(huAttributes));
-			}
-			else
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, pickAttributes.getLotNo());
-			}
-		}
+		applyPickOrRecompute(huAttributes, AttributeConstants.ATTR_LotNumber, isRecomputeFromChildren, pickAttributes.isSetLotNo(),
+				pickAttributes::getLotNo, () -> computeLotNoFromChildren(huAttributes));
 		// SerialNo: only when the product opts in (serialNoPickingEnabled) AND the HU storage actually supports the attribute.
 		// A product flagged IsSerialNoPicked=Y whose picked HU lacks the SerialNo attribute is a config gap → no write, no error.
 		if (serialNoPickingEnabled && huAttributes.hasAttribute(AttributeConstants.ATTR_SerialNo))
 		{
-			if (recomputeFromChildren)
+			if (isRecomputeFromChildren)
 			{
 				huAttributes.setValueNoPropagate(AttributeConstants.ATTR_SerialNo, computeSerialNoFromChildren(huAttributes));
 			}
@@ -148,6 +135,27 @@ class PickedHUAttributesUpdater
 				}
 				huAttributes.setValue(AttributeConstants.ATTR_SerialNo, SerialNoSet.toCommaSeparatedStringOrNull(serialNos));
 			}
+		}
+	}
+
+	private static void applyPickOrRecompute(
+			@NonNull final IAttributeStorage huAttributes,
+			@NonNull final AttributeCode attributeCode,
+			final boolean isRecomputeFromChildren,
+			final boolean isPickValueSet,
+			@NonNull final Supplier<Object> pickValue,
+			@NonNull final Supplier<Object> valueFromChildren)
+	{
+		if (isRecomputeFromChildren)
+		{
+			if (huAttributes.hasAttribute(attributeCode))
+			{
+				huAttributes.setValueNoPropagate(attributeCode, valueFromChildren.get());
+			}
+		}
+		else if (isPickValueSet)
+		{
+			huAttributes.setValue(attributeCode, pickValue.get());
 		}
 	}
 
