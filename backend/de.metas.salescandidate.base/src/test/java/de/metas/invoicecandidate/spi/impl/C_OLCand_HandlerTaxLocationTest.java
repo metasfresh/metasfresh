@@ -29,6 +29,7 @@ import de.metas.location.CountryId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
@@ -41,8 +42,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
-
-import de.metas.util.Services;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -117,6 +116,19 @@ public class C_OLCand_HandlerTaxLocationTest
 		assertThat(result.getOrgId()).isEqualTo(orgId);
 		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-06 00:00:00"));
 		assertThat(result.getFromCountryId()).isEqualTo(orgCountryId);
+	}
+
+	@Test
+	void datePromisedOnly_isTaxDate()
+	{
+		final I_C_OLCand olCand = createOLCand();
+		olCand.setDatePromised(Timestamp.valueOf("2026-03-05 00:00:00"));
+		olCand.setPresetDateInvoiced(Timestamp.valueOf("2026-03-06 00:00:00"));
+		save(olCand);
+
+		final TaxLocation result = new C_OLCand_Handler().getTaxLocation(createIC(olCand)).orElseThrow(AssertionError::new);
+
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-05 00:00:00"));
 	}
 
 	private I_C_OLCand createOLCand()
