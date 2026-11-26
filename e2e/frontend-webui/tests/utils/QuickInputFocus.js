@@ -234,13 +234,19 @@ export async function pickCustomerByKeyboard({ bpartnerCode }) {
   return await waitForOrderSaved(page);
 }
 
-/** Customer picked by mouse from the lookup list. No Tab. Returns the record id. */
-export async function pickCustomerByMouse({ searchText, bpartnerCode }) {
+/** Customer picked by mouse from the lookup list (minOptions: options that must be shown first). No Tab. Returns the record id. */
+export async function pickCustomerByMouse({ searchText, bpartnerCode, minOptions = 1 }) {
   const page = global.currentPage;
   const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
   await partnerInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await partnerInput.click();
   await partnerInput.fill(searchText);
+  await expect
+    .poll(() => page.locator('.input-dropdown-list-option').count(), {
+      timeout: SLOW_ACTION_TIMEOUT,
+      message: `at least ${minOptions} partner option(s) shown for "${searchText}"`,
+    })
+    .toBeGreaterThanOrEqual(minOptions);
   const option = page.locator('.input-dropdown-list-option').filter({ hasText: bpartnerCode }).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await option.click();
@@ -248,28 +254,25 @@ export async function pickCustomerByMouse({ searchText, bpartnerCode }) {
 }
 
 /**
- * Wait for the observable end of the customer pick's walk through the header: the saved location and
- * the caret resting in the contact field (Lookup walks partner -> location -> contact and waits there),
- * then two animation frames. A header reload that follows the contact step is not waited for: it is not
- * emitted in every run, so no deterministic signal exists. Used before the quick entry is opened by
- * the button, so the walk cannot land after the open and take the cursor away.
+ * Run the customer pick and wait for the observable end of the header's walk after it: the response of the
+ * contact list request (GET .../AD_User_ID/dropdown), which the walk partner -> address -> contact sends last,
+ * then two animation frames. The response wait is armed before the pick, because the request can be sent
+ * while the pick is still returning. A header reload that follows the contact step is not waited for: it is
+ * not emitted in every run. Used before the quick entry is opened by the button, so the walk cannot land
+ * after the open and take the cursor away. Assumes a customer with one address (the walk stops at an open
+ * address list otherwise and sends no contact request). Returns what the pick returns (the record id).
  */
-export async function awaitPartnerAdvanceSettled({ windowId, recordId }) {
+export async function pickCustomerAndSettle(pick) {
   const page = global.currentPage;
-  await expect
-    .poll(
-      async () => {
-        const f = (await getRecordData(windowId, recordId)).fieldsByName;
-        const key = f?.C_BPartner_Location_ID?.value?.key;
-        return key === undefined || key === null ? 'unset' : 'set';
-      },
-      { timeout: SLOW_ACTION_TIMEOUT, message: 'partner advance: C_BPartner_Location_ID saved' }
-    )
-    .toBe('set');
-  await expect(page.locator('#lookup_AD_User_ID :focus'), 'partner advance: caret moved on to the contact field').toHaveCount(1, {
-    timeout: SLOW_ACTION_TIMEOUT,
-  });
+  const contactList = page.waitForResponse(
+    (r) => r.request().method() === 'GET' && /\/AD_User_ID\/dropdown\/?$/.test(new URL(r.url()).pathname),
+    { timeout: SLOW_ACTION_TIMEOUT * 3 }
+  );
+  contactList.catch(() => {}); // a failing pick must not leave this wait as an unhandled rejection
+  const result = await pick();
+  await contactList;
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  return result;
 }
 
 /**

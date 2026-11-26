@@ -12,7 +12,7 @@ import {
   installDocumentEventRecorder,
   pickCustomerByKeyboard,
   pickCustomerByMouse,
-  awaitPartnerAdvanceSettled,
+  pickCustomerAndSettle,
   enterLinesKeyboardOnly,
   closeQuickInputAndComplete,
   expectFocusOn,
@@ -85,14 +85,16 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   test.setTimeout(240000);
 
   const recorder = installDocumentEventRecorder(page);
-  const runId = Date.now().toString(36).toUpperCase();
-  const codeA = `QIM${runId}A`;
-  const codeB = `QIM${runId}B`;
+  // mouseOfSeveral: two customers whose code and name share this run-unique prefix
+  const severalPrefix = `QIM${Date.now().toString(36).toUpperCase()}`;
   const masterdata = await createMasterdata(language, {
     packingInstructionsField,
     customers:
       pickCustomer === 'mouseOfSeveral'
-        ? { CUSTOMER1: { bpartnerCode: codeA, name: codeA }, CUSTOMER2: { bpartnerCode: codeB, name: codeB } }
+        ? {
+            CUSTOMER1: { bpartnerCode: `${severalPrefix}A`, name: `${severalPrefix}A` },
+            CUSTOMER2: { bpartnerCode: `${severalPrefix}B`, name: `${severalPrefix}B` },
+          }
         : { CUSTOMER1: {} },
   });
   allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
@@ -105,26 +107,13 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   await SalesOrderPage.goto();
   await SalesOrderPage.clickNew();
   const bpartnerCode = masterdata.bpartners.CUSTOMER1.bpartnerCode;
-  let recordId;
-  if (pickCustomer === 'keyboard') {
-    recordId = await pickCustomerByKeyboard({ bpartnerCode });
-  } else if (pickCustomer === 'mouseOfSeveral') {
-    const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
-    await partnerInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await partnerInput.click();
-    await partnerInput.fill(`QIM${runId}`);
-    await expect
-      .poll(() => page.locator('.input-dropdown-list-option').count(), {
-        timeout: SLOW_ACTION_TIMEOUT,
-        message: 'several partners shown for the typed prefix',
-      })
-      .toBeGreaterThanOrEqual(2);
-    // Reset the lookup, so the shared mouse pick types the text again and gets a fresh option list.
-    await partnerInput.fill('');
-    recordId = await pickCustomerByMouse({ searchText: `QIM${runId}`, bpartnerCode });
-  } else {
-    recordId = await pickCustomerByMouse({ searchText: bpartnerCode, bpartnerCode });
-  }
+  const pick = () => {
+    if (pickCustomer === 'keyboard') return pickCustomerByKeyboard({ bpartnerCode });
+    if (pickCustomer === 'mouseOfSeveral') return pickCustomerByMouse({ searchText: severalPrefix, bpartnerCode, minOptions: 2 });
+    return pickCustomerByMouse({ searchText: bpartnerCode, bpartnerCode });
+  };
+  // The button must not be clicked while the header still walks partner -> address -> contact.
+  const recordId = openBy === 'button' ? await pickCustomerAndSettle(pick) : await pick();
   const windowId = SALES_ORDER_WINDOW_ID;
 
   const toggle = page.getByTestId('batch-entry-toggle');
@@ -132,7 +121,6 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   if (openBy === 'altQ') {
     await page.keyboard.press('Alt+Q');
   } else {
-    await awaitPartnerAdvanceSettled({ windowId, recordId });
     await toggle.click();
   }
   const quickInput = page.locator('.quick-input-container');
