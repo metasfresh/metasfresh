@@ -132,7 +132,7 @@ async function serveOrderLinesWithDateColumn(page, { field, caption, initialValu
   return state;
 }
 
-/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the customer's time zone */
+/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the user's time zone */
 function patchedDay(patchValue) {
   const date = new Date(patchValue);
   const parts = new Intl.DateTimeFormat('de-DE', {

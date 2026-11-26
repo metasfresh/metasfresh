@@ -17,10 +17,10 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
  * a documented proxy: it exercises the shared grid Date cell editor (TableCell -> DatePicker), which
  * is the code the fix changes. True DB persistence of the real MHD column is verified at live UAT.
  *
- * Scenarios (REQUIREMENTS.md section 5):
- * - TC1: Tab into an EMPTY Date cell, type DD.MM.YYYY -> accepted, PATCHed, shown after blur
- * - TC2: Tab into a cell holding 20.11.2026, type a new date -> REPLACES (not appended), PATCHed
- * - TC5: Escape (after typing) and, separately, Enter (without typing) keep the stored value
+ * Scenarios:
+ * - Tab into an EMPTY Date cell, type DD.MM.YYYY -> accepted, PATCHed, shown after blur
+ * - Tab into a cell holding 20.11.2026, type a new date -> REPLACES (not appended), PATCHed
+ * - Escape (after typing) and, separately, Enter (without typing) keep the stored value
  *
  * Features tested:
  * - F5010: Order Lines Grid
@@ -136,7 +136,7 @@ async function serveOrderLinesWithDateColumn(page, { field, caption, initialValu
   return state;
 }
 
-/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the customer's time zone */
+/** the calendar-day a posted PATCH value denotes, as DD.MM.YYYY in the user's time zone */
 function patchedDay(patchValue) {
   const date = new Date(patchValue);
   const parts = new Intl.DateTimeFormat('de-DE', {
@@ -198,7 +198,7 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
     allure.severity('critical');
   });
 
-  test('TC1: Tab into an empty Date cell, type a date -> accepted, PATCHed, shown after blur', async ({ page }) => {
+  test('Tab into an empty Date cell, type a date -> accepted, PATCHed, shown after blur', async ({ page }) => {
     test.setTimeout(300000);
     await page.setViewportSize({ width: 1920, height: 1080 });
     const state = await serveOrderLinesWithDateColumn(page, {
@@ -218,7 +218,7 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
     await expect(dateCellText(dateCell), 'the cell shows the date after blur').toHaveText('05.11.2026');
   });
 
-  test('TC2: Tab into a cell holding 20.11.2026, type a new date -> replaces (not appends), PATCHed', async ({
+  test('Tab into a cell holding 20.11.2026, type a new date -> replaces (not appends), PATCHed', async ({
     page,
   }) => {
     test.setTimeout(300000);
@@ -244,7 +244,7 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
     await expect(dateCellText(dateCell), 'the cell shows the new date after blur').toHaveText('03.12.2026');
   });
 
-  test('TC5a: Escape after typing keeps the stored value', async ({ page }) => {
+  test('Escape after typing keeps the stored value', async ({ page }) => {
     test.setTimeout(300000);
     await page.setViewportSize({ width: 1920, height: 1080 });
     const state = await serveOrderLinesWithDateColumn(page, {
@@ -264,7 +264,7 @@ test.describe('Grid Date cell - keyboard entry (de_DE)', () => {
     expect(state.patches, 'Escape sends no change').toHaveLength(0);
   });
 
-  test('TC5b: Enter without typing keeps the stored value', async ({ page }) => {
+  test('Enter without typing keeps the stored value', async ({ page }) => {
     test.setTimeout(300000);
     await page.setViewportSize({ width: 1920, height: 1080 });
     const state = await serveOrderLinesWithDateColumn(page, {
