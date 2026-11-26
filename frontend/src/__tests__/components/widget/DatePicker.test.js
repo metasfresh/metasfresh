@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import MomentTZ from 'moment-timezone';
@@ -627,6 +628,35 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     picker().handleBlur();
     expect(notifications()).toHaveLength(0);
     expect(patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('typing replaced in the input by a new value (e.g. from the server) is not saved on leave', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, '5.1.27');
+    // react-datetime rewrites the input when the field gets a new value
+    picker().picker.setSelectedDateAndInputValue({
+      selectedDate: MomentTZ('2026-11-21', 'YYYY-MM-DD'),
+      inputValue: '21.11.2026',
+    });
+    picker().handleBlur();
+    expect(patch).not.toHaveBeenCalled();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: after a short form is saved on leave, the input shows the saved date (blur batched as in react-datetime)', () => {
+    const patch = jest.fn();
+    const { wrapper, picker } = mountWithStore({ value: stored(), patch });
+    typeInto(wrapper, '4.12.27');
+    act(() => {
+      picker().handleBlur();
+    });
+    expect(patch).toHaveBeenCalledTimes(1);
+    wrapper.update();
+    expect(wrapper.find('input').prop('value')).toBe('04.12.2027');
   });
 });
 

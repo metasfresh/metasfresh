@@ -166,8 +166,14 @@ class DatePicker extends PureComponent {
     } else if (isTypedClearPending) {
       this.callPatchIfNeeded(null);
       return true;
-    } else if (typedText && typedText.trim() && this.props.dateFormat) {
-      // (a time-only field keeps react-datetime's own handling of the typed time)
+    } else if (
+      typedText &&
+      typedText.trim() &&
+      this.props.dateFormat &&
+      (!this.inputElement || this.inputElement.value === typedText)
+    ) {
+      // (only while the input still shows what was typed: a new value may have replaced it;
+      // a time-only field keeps react-datetime's own handling of the typed time)
       this.commitTypedText(typedText);
       return true;
     }
@@ -593,8 +599,11 @@ class DatePicker extends PureComponent {
   };
 
   closeCalendarAndResetToLastPatchedDate = () => {
-    this.setIsCalendarOpen(false);
-    this.resetPickerSelectedDateAndInputValueToLastPatchedDate();
+    // reset once the state is applied, so that a date just patched (datePatched) is what the input shows
+    this.setState(
+      { isCalendarOpen: false },
+      this.resetPickerSelectedDateAndInputValueToLastPatchedDate
+    );
   };
 
   isReadonly = () => !!this.props?.inputProps?.disabled;
