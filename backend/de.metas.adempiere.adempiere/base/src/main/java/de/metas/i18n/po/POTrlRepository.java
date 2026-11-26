@@ -295,6 +295,7 @@ public class POTrlRepository
 		final String sql = "UPDATE " + baseTableName + " base SET " + sqlSet
 				+ " FROM " + trlTableName + " trl "
 				+ " WHERE trl." + keyColumnName + "=base." + keyColumnName
+				+ " AND trl." + keyColumnName + "=" + trlRecord.get_ValueAsInt(keyColumnName) // only the saved record, not every base row of the table
 				+ " AND trl.AD_Language=" + DB.TO_STRING(adLanguage)
 				+ " AND trl.AD_Language=getBaseLanguage()"; // IMPORTANT: since this script will be logged, make sure the base language is checked on the database where this command will be executed
 		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
