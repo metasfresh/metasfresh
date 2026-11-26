@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 /**
  * Covers the export applicability gate {@link InvoiceExportClientImpl#applies(InvoiceToExport)}.
  *
- * <p>Context (me03#30585 / bc107#763): municipality ("Gemeinde", doc subtype GM) invoices have no
+ * <p>Context: municipality ("Gemeinde", doc subtype GM) invoices have no
  * GLN and must NOT be exported electronically, exactly like patient ("Eigenanteil", EA) invoices.
  * Before the fix, a GM invoice carrying a convertible forum-datenaustausch XML attachment but no
  * recipient GLN raised {@link InvoiceNotExportableException} ("receiver needs a GLN") and its export
