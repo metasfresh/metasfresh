@@ -193,7 +193,8 @@ class PickingJobCUQtyEntryPick_ScanOnceTest extends CUQtyEntryPickFixture
 
 		assertThatThrownBy(() -> pick(job, source, "5", null, false, null))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("A CU label is required");
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PickingCULabelService.MSG_CU_LABEL_REQUIRED.toAD_Message()))
+				.satisfies(ex -> assertThat(ex.getMessage()).as("no English technical text for the picker").doesNotContain("A CU label is required"));
 
 		assertThat(helper.pickingJobService.getById(job.getId()).getLines().get(0).getPickedHUIds()).isEmpty();
 		assertThat(qtyOf(handlingUnitsBL.getById(source.getId()))).isEqualByComparingTo("8");

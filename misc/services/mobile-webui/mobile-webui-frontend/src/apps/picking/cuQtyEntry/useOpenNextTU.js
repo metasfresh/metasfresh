@@ -37,6 +37,9 @@ const withTimeout = (promise, millis) => {
 /** Not at the bottom, where the toast would cover OK of the quantity pop-up that stays open right after "Weiteres TU" / a GRAI scan */
 const NEXT_TU_TOAST_POSITION = 'top-center';
 
+/** One "New TU opened" message at a time: opening several TUs in a row replaces it, so they never pile up over the pop-up */
+const NEXT_TU_TOAST_KEY = 'picking.nextTUOpened';
+
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
 /** Closes the open TU target (if any), then opens a new TU of the line's TU packing, or goes to the target selection when the line has no TU packing. */
@@ -198,7 +201,11 @@ export const useOpenNextTU = ({
           ),
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
-        toastNotification({ plainMessage: trl('picking.nextTUOpened'), position: NEXT_TU_TOAST_POSITION });
+        toastNotification({
+          plainMessage: trl('picking.nextTUOpened'),
+          position: NEXT_TU_TOAST_POSITION,
+          replaceKey: NEXT_TU_TOAST_KEY,
+        });
       }
     });
 
@@ -206,7 +213,11 @@ export const useOpenNextTU = ({
     runExclusive(
       async () => {
         await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
-        toastNotification({ plainMessage: trl('picking.nextTUOpened'), position: NEXT_TU_TOAST_POSITION });
+        toastNotification({
+          plainMessage: trl('picking.nextTUOpened'),
+          position: NEXT_TU_TOAST_POSITION,
+          replaceKey: NEXT_TU_TOAST_KEY,
+        });
       },
       { isRethrow: true }
     );

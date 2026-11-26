@@ -81,4 +81,16 @@ describe('toastError', () => {
 
     expect(toastSuccessSpy).toHaveBeenCalledWith('New TU opened', expect.objectContaining({ position: 'top-center' }));
   });
+
+  it('a notification with a replaceKey dismisses the one on screen instead of stacking another', () => {
+    const toastSuccessSpy = jest.spyOn(toast, 'success').mockReturnValueOnce('id-1').mockReturnValueOnce('id-2');
+    const toastDismissSpy = jest.spyOn(toast, 'dismiss').mockImplementation(() => undefined);
+
+    toastNotification({ plainMessage: 'New TU opened', replaceKey: 'tu' });
+    expect(toastDismissSpy).not.toHaveBeenCalled();
+
+    toastNotification({ plainMessage: 'New TU opened', replaceKey: 'tu' });
+    expect(toastDismissSpy).toHaveBeenCalledWith('id-1');
+    expect(toastSuccessSpy).toHaveBeenCalledTimes(2);
+  });
 });

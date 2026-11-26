@@ -12,9 +12,11 @@ public class CULabelPackId
 	@NonNull String value;
 
 	@Nullable
+	/** A pack ID with surrounding blanks (e.g. a scanner's trailing blank) is the same pack: it is trimmed, so the duplicate check sees it; a blank one is no pack ID */
 	public static CULabelPackId ofNullable(@Nullable final String value)
 	{
-		return value != null ? new CULabelPackId(value) : null;
+		final String trimmed = value != null ? value.trim() : "";
+		return trimmed.isEmpty() ? null : new CULabelPackId(trimmed);
 	}
 
 	public static CULabelPackId ofString(@NonNull final String value)

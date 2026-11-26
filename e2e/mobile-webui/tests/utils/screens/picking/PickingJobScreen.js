@@ -208,6 +208,8 @@ export const PickingJobScreen = {
         if (isScanDirectly) {
             await BarcodeScannerComponent.type(qrCode);
         } else {
+            // "Scan" sits below the LU/TU buttons; once an LU was closed, the late has-closed-lu answer adds "Reopen LU" above them
+            await waitForJobScreenToSettle();
             await page.locator('#scanQRCode-button').tap(); // click the Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
             await PickingJobScanHUScreen.typeQRCode(qrCode);
@@ -354,7 +356,7 @@ export const PickingJobScreen = {
 const QTY_AVAILABLE_QUERY = /\/picking\/job\/[^/]+\/qtyAvailable(\?|$)/;
 const HAS_CLOSED_LU_QUERY = /\/picking\/job\/[^/]+\/has-closed-lu(\?|$)/;
 
-// Tapping "Complete" while that answer is still on its way loses the tap: the answer pushes the button
+// Tapping "Complete" (or "Scan") while that answer is still on its way loses the tap: the answer pushes the button
 // down between the tap's point and the click that follows the touch, so the click hits whatever moved
 // under the old point and the confirmation dialog never opens (flaky cases 58 / 95 / 103 / 175). An
 // operator sees the screen settle before reaching for the button; wait for the same.

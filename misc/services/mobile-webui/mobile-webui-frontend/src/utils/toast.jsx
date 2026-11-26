@@ -111,7 +111,14 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   return trl('error.PleaseTryAgain');
 };
 
-export const toastNotification = ({ messageKey, plainMessage, position = 'bottom-center' }) => {
+/** the toast currently shown for each `replaceKey` */
+const toastIdByReplaceKey = {};
+
+/**
+ * @param {{messageKey?: string, plainMessage?: string, position?: string, replaceKey?: string}} options
+ * `replaceKey`: only one toast of this key is shown at a time; a new call dismisses the one on screen and shows a fresh one (with its full time) instead of stacking another
+ */
+export const toastNotification = ({ messageKey, plainMessage, position = 'bottom-center', replaceKey }) => {
   let message;
   if (messageKey) {
     message = trl(messageKey);
@@ -122,10 +129,17 @@ export const toastNotification = ({ messageKey, plainMessage, position = 'bottom
     return;
   }
 
-  toast.success(message, {
+  if (replaceKey && toastIdByReplaceKey[replaceKey] != null) {
+    toast.dismiss(toastIdByReplaceKey[replaceKey]);
+  }
+
+  const toastId = toast.success(message, {
     position,
     transition: Bounce,
   });
+  if (replaceKey) {
+    toastIdByReplaceKey[replaceKey] = toastId;
+  }
 };
 
 export const extractErrorResponseFromAxiosError = (axiosError) => {

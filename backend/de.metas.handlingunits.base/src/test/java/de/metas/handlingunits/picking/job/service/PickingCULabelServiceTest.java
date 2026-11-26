@@ -369,6 +369,16 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
+	void packIdWithTrailingBlank_isTheSamePackId_blankPackIdIsNoPackId()
+	{
+		assertThat(CULabelPackId.ofNullable("12 ")).isEqualTo(CULabelPackId.ofString("12"));
+		assertThat(CULabelPackId.ofNullable(" 12\r")).isEqualTo(CULabelPackId.ofString("12"));
+		assertThat(CULabelPackId.ofNullable("   ")).isNull();
+		assertThat(CULabelPackId.ofNullable("")).isNull();
+		assertThat(CULabelPackId.ofNullable(null)).isNull();
+	}
+
+	@Test
 	void formatWithoutPackIdPart_labelEndingBeforeOrInsideAConstant_isAFormatMismatch()
 	{
 		final ScannableCodeFormat gapFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()

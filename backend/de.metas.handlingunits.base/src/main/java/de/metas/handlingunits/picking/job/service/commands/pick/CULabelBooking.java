@@ -20,6 +20,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
+
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -33,6 +36,8 @@ import java.util.function.Supplier;
  */
 final class CULabelBooking
 {
+	private static final Logger logger = LogManager.getLogger(CULabelBooking.class);
+
 	@NonNull private final CUQtyEntryPolicy policy;
 	@NonNull private final PickingCULabelService cuLabelService;
 	@NonNull private final PickingJobHUService huService;
@@ -129,7 +134,9 @@ final class CULabelBooking
 			if (cuLabel == null)
 			{
 				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
-				throw new AdempiereException("A CU label is required for a pick in the CU quantity entry mode " + modeName);
+				// (reachable with a cached app version after the profile was switched to such a mode): the picker gets the German message, the technical reason goes to the log
+				logger.warn("Pick refused: a CU label is required for a pick in the CU quantity entry mode {}, but the pick came without one", modeName);
+				throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_REQUIRED);
 			}
 			_resolvedCULabel = cuLabelService.resolve(lineSupplier.get(), cuLabel, policy, cuLabelFormatId);
 		}

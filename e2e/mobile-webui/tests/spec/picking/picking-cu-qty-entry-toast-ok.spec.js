@@ -51,6 +51,15 @@ const expectNothingCoveredWhileMessageShown = async (page, name) => {
     await expect(toast).toBeVisible();
 };
 
+/** Several TUs opened in a row: still ONE green message, and it covers nothing of the pop-up: the first row (target quantity, its row label), the count field, OK, Weiteres TU */
+const expectOneMessageCoveringNothing = async (page, name) => {
+    await expect(page.locator('.Toastify__toast--success')).toHaveCount(1);
+    const firstRow = page.locator('tr').filter({ has: page.getByTestId('qty-target') }).first();
+    await expect(firstRow, 'first row of the pop-up is shown').toBeVisible();
+    expect.soft(await isCoveredByToast(firstRow.locator('td').first()), 'label of the first row is not covered by the green message').toBe(false);
+    await expectNothingCoveredWhileMessageShown(page, name);
+};
+
 for (const viewport of VIEWPORTS) {
     test.describe(`green "TU opened" message does not block OK, ${viewport.width}x${viewport.height}`, () => {
         test.use({ viewport });
@@ -91,6 +100,44 @@ for (const viewport of VIEWPORTS) {
             await GetQuantityDialog.typeQtyEntered(5);
             await expectNothingCoveredWhileMessageShown(page, `${testName}-${viewport.width}x${viewport.height}`);
             await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 10 });
+        });
+
+        // noinspection JSUnusedLocalSymbols
+        test('"Weiteres TU" three times in a row: one message, nothing covered', async ({ page }) => {
+            allureMeta('TU opened message');
+
+            const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 20 }] });
+            await startJob(masterdata, { qtyToDeliver: 20 });
+            await openLine({ index: 1 });
+            await scanLabel(labelOf({ masterdata }));
+            for (let i = 0; i < 3; i++) {
+                await PickLineScanScreen.openTU();
+            }
+            await GetQuantityDialog.typeQtyEntered(5);
+            await expectOneMessageCoveringNothing(page, `weiteres-tu-x3-${viewport.width}x${viewport.height}`);
+            await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 15 });
+        });
+
+        // noinspection JSUnusedLocalSymbols
+        test('three GRAI scans in a row: one message, nothing covered', async ({ page }) => {
+            allureMeta('TU opened message');
+
+            const masterdata = await createMasterdata({
+                formatName: uniqueFormatName(),
+                orders: [{ key: 'A', qty: 20, graiRequired: 'N' }],
+                packingInstructions: { ...graiTuType('G1'), ...graiTuType('G2'), ...graiTuType('G3') },
+            });
+            await startJob(masterdata, { qtyToDeliver: 20 });
+            await openLine({ index: 1 });
+            await scanLabel(labelOf({ masterdata }));
+            await PickLineScanScreen.openTU();
+            for (const key of ['G1', 'G2', 'G3']) {
+                await PickLineScanScreen.rescanGrai(masterdata.packingInstructions[key].grai);
+                await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions[key].tuName);
+            }
+            await GetQuantityDialog.typeQtyEntered(5);
+            await expectOneMessageCoveringNothing(page, `grai-x3-${viewport.width}x${viewport.height}`);
+            await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 15 });
         });
     });
 }
