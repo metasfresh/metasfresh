@@ -8,7 +8,7 @@ restoreSysconfigsAfterEach(test);
 
 /**
  * The green message "Neues TU geöffnet" / "New TU opened" (shown after "Weiteres TU" and after a GRAI scan) stays visible,
- * but the picker must be able to tap OK of the quantity pop-up at once: the message must not sit on OK, the count field, the target quantity or the header.
+ * but the picker must be able to tap OK of the quantity pop-up at once: the message must not sit on OK, the count field, the target quantity or Weiteres TU.
  */
 const VIEWPORTS = [{ width: 393, height: 727 }, { width: 360, height: 640 }];
 
@@ -21,7 +21,7 @@ const isCoveredByToast = (locator) => locator.evaluate((el) => {
 });
 
 /**
- * While the green message is shown, it covers no interactive or key element of the screen: OK, the count field, the target quantity, the app header;
+ * While the green message is shown, it covers no interactive or key element of the screen: OK, the count field, the target quantity, Weiteres TU, the footer Back button (when shown);
  * a real tap on OK and on the count field succeeds (a trial click fails when another element is on top).
  * `name`: also saves a screenshot (when TOAST_SHOTS_DIR is set).
  */
@@ -36,11 +36,15 @@ const expectNothingCoveredWhileMessageShown = async (page, name) => {
         'count field': page.locator('#qty-input'),
         'target quantity': page.getByTestId('qty-target'),
         'Weiteres TU': page.getByTestId('next-tu-button'),
-        'app header': page.locator('#Back-button'),
     };
     for (const [label, locator] of Object.entries(keyElements)) {
-        if (await locator.count() === 0 || !(await locator.first().isVisible())) continue; // the header sits behind the full-screen pop-up
+        await expect(locator, `${label} is shown`).toBeVisible();
         expect.soft(await isCoveredByToast(locator.first()), `${label} is not covered by the green message`).toBe(false);
+    }
+    // the footer "Back" button, only when it is on screen (the pop-up may stand over it)
+    const back = page.locator('#Back-button');
+    if (await back.count() > 0 && await back.first().isVisible()) {
+        expect.soft(await isCoveredByToast(back.first()), 'footer Back button is not covered by the green message').toBe(false);
     }
     await page.getByTestId('done-button').click({ trial: true, timeout: 1000 });
     await page.locator('#qty-input').click({ trial: true, timeout: 1000 });
