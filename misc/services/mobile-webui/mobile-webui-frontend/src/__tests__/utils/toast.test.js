@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import { trl } from '../../utils/translations';
-import { toastError, toastErrorFromObj } from '../../utils/toast';
+import { toastError, toastErrorFromObj, toastNotification } from '../../utils/toast';
 import { UserMessageError } from '../../utils/UserMessageError';
 import * as uiTrace from '../../utils/ui_trace';
 import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from '../../utils/toastLayout';
@@ -64,5 +64,13 @@ describe('toastError', () => {
     toastErrorFromObj(new UserMessageError('picking.cuLabel.formatMismatch', undefined, { scannedLabel: 'L123' }));
 
     expect(uiTrace.trace).toHaveBeenCalledWith(expect.objectContaining({ context: { scannedLabel: 'L123' } }));
+  });
+
+  it('shows the green notification at the top, so it never covers the bottom buttons of a pop-up (OK after "Weiteres TU")', () => {
+    const toastSuccessSpy = jest.spyOn(toast, 'success').mockImplementation(() => undefined);
+
+    toastNotification({ plainMessage: 'New TU opened' });
+
+    expect(toastSuccessSpy).toHaveBeenCalledWith('New TU opened', expect.objectContaining({ position: 'top-center' }));
   });
 });

@@ -122,8 +122,9 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
     return;
   }
 
+  // At the top: the message stays readable, but never covers the buttons at the bottom of a pop-up (e.g. OK after "Weiteres TU")
   toast.success(message, {
-    position: 'bottom-center',
+    position: 'top-center',
     transition: Bounce,
   });
 };
