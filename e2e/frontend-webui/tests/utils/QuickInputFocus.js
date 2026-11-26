@@ -248,10 +248,11 @@ export async function pickCustomerByMouse({ searchText, bpartnerCode }) {
 }
 
 /**
- * Wait until the customer pick has finished its walk: the customer lookup confirms the customer's
- * location on its own (saved C_BPartner_Location_ID), then moves the caret on to the contact field.
- * Poll both, then let two animation frames pass. Used before the quick entry is opened by the button,
- * so the walk cannot land after the open and take the cursor away.
+ * Wait for the observable end of the customer pick's walk through the header: the saved location and
+ * the caret resting in the contact field (Lookup walks partner -> location -> contact and waits there),
+ * then two animation frames. A header reload that follows the contact step is not waited for: it is not
+ * emitted in every run, so no deterministic signal exists. Used before the quick entry is opened by
+ * the button, so the walk cannot land after the open and take the cursor away.
  */
 export async function awaitPartnerAdvanceSettled({ windowId, recordId }) {
   const page = global.currentPage;
