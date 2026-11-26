@@ -289,19 +289,49 @@ class TaxDAOTest
 			assertThat(find(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES)).isEqualTo(taxDeToGr);
 		}
 
+		@Test
+		void salesDropShip_warehouseOnlyQuery_registered_usesDestinationAsShipFrom()
+		{
+			// no fromCountryId: the ship-from country is derived from the warehouse location (DE), then the rule applies
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(WarehouseId.ofRepoId(DS_WAREHOUSE_ID), I_M_Warehouse.class);
+			final BPartnerLocationAndCaptureId deLocation = createBPartnerData(DE_ID, "DE", true);
+			warehouse.setC_BPartner_ID(deLocation.getBpartnerId().getRepoId());
+			warehouse.setC_BPartner_Location_ID(deLocation.getBpartnerLocationId().getRepoId());
+			save(warehouse);
+
+			final Tax tax = taxDAO.getBy(queryBuilder(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES).fromCountryId(null).build());
+			assertThat(tax).isNotNull();
+			assertThat(tax.getTaxId()).isEqualTo(taxGrToGr);
+		}
+
+		@Test
+		void salesDropShip_registered_noShipFromDestinationTaxRow_noTaxFound()
+		{
+			// accepted precondition: without a GR->GR row the line gets no tax (callers raise the normal tax-not-found error)
+			final I_C_Tax grToGr = InterfaceWrapperHelper.load(taxGrToGr, I_C_Tax.class);
+			grToGr.setIsActive(false);
+			save(grToGr);
+
+			assertThat(taxDAO.getBy(queryBuilder(DS_WAREHOUSE_ID, grBuyer, "2026-04-12", SOTrx.SALES).build())).isNull();
+		}
+
 		private TaxId find(final int warehouseId, final BPartnerLocationAndCaptureId buyer, final String date, final SOTrx soTrx)
 		{
-			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+			final Tax tax = taxDAO.getBy(queryBuilder(warehouseId, buyer, date, soTrx).build());
+			assertThat(tax).isNotNull();
+			return tax.getTaxId();
+		}
+
+		private TaxQuery.TaxQueryBuilder queryBuilder(final int warehouseId, final BPartnerLocationAndCaptureId buyer, final String date, final SOTrx soTrx)
+		{
+			return TaxQuery.builder()
 					.orgId(ORG_ID)
 					.warehouseId(WarehouseId.ofRepoId(warehouseId))
 					.fromCountryId(CountryId.ofRepoId(DE_ID))
 					.bPartnerLocationId(buyer)
 					.taxCategoryId(TaxCategoryId.ofRepoId(DS_TAX_CATEGORY_ID))
 					.dateOfInterest(TimeUtil.parseTimestamp(date))
-					.soTrx(soTrx)
-					.build());
-			assertThat(tax).isNotNull();
-			return tax.getTaxId();
+					.soTrx(soTrx);
 		}
 
 		private void setOrgFlag(final boolean value)
