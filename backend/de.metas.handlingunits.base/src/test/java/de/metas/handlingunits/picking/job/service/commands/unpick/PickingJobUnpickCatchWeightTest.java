@@ -1,16 +1,20 @@
 package de.metas.handlingunits.picking.job.service.commands.unpick;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.inout.QtyPickedRecords;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -26,31 +30,29 @@ import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
-import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.PickingSlotIdAndCaption;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.shipmentschedule.api.CreateCandidatesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.model.I_M_InOutLine;
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,12 +113,15 @@ class PickingJobUnpickCatchWeightTest
 		InterfaceWrapperHelper.saveRecord(shipmentDocType);
 	}
 
-	/** A finite-capacity TU PI for the product, so it can be used as a (new-TU) picking target the CU is packed into. */
-	private HuPackingInstructionsId createTuPI(@NonNull final I_M_Product product, final int capacity)
+	/**
+	 * A finite-capacity TU PI for the product, so it can be used as a (new-TU) picking target the CU is packed into.
+	 */
+	@SuppressWarnings("SameParameterValue")
+	private HuPackingInstructionsId createTuPI(@NonNull final ProductId productId, final int capacity)
 	{
 		final I_M_HU_PI tuPI = huTestHelper.createHUDefinition("UNPICK-TU-PI", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		final I_M_HU_PI_Item miItem = huTestHelper.createHU_PI_Item_Material(tuPI);
-		final I_M_HU_PI_Item_Product piip = huTestHelper.assignProduct(miItem, product, new BigDecimal(capacity), helper.uomEach);
+		final I_M_HU_PI_Item_Product piip = huTestHelper.assignProduct(miItem, productId, new BigDecimal(capacity), helper.uomEach);
 		piip.setIsDefaultForProduct(true);
 		InterfaceWrapperHelper.save(piip);
 		return HuPackingInstructionsId.ofRepoId(tuPI.getM_HU_PI_ID());
@@ -126,11 +131,14 @@ class PickingJobUnpickCatchWeightTest
 	void unpickCuFromTU_toFloor_mustNotFailQRAssignment()
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P-CW-UNPICK", helper.uomEach);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("P-CW-UNPICK-Cat", null).getRepoId());
-		InterfaceWrapperHelper.save(product);
 
-		final HuPackingInstructionsId tuPIId = createTuPI(product, 100);
+		{
+			final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+			product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("P-CW-UNPICK-Cat", null).getRepoId());
+			InterfaceWrapperHelper.save(product);
+		}
+
+		final HuPackingInstructionsId tuPIId = createTuPI(productId, 100);
 
 		final HUInfo pickFromVHU = helper.createVHUInfo(productId, "10", "QR-VHU-CW-UNPICK");
 
@@ -187,7 +195,7 @@ class PickingJobUnpickCatchWeightTest
 		// OLD whole-step UNPICK: identified by (pickingStepId, pickFromKey), not by product/qty.
 		// With the picked-to HU recorded as the container TU + its QR, un-pick operates on the TU rather than
 		// extracting the leaf CU, so the CU stays Picked/nested instead of being dropped Active on the floor.
-		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+		helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
@@ -214,6 +222,7 @@ class PickingJobUnpickCatchWeightTest
 	/**
 	 * Product with a catch UOM (kg): UOM conversion each -> kg flagged as the catch UOM of the product.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private ProductId createCatchWeightProductId(@NonNull final String value)
 	{
 		final ProductId productId = BusinessTestHelper.createProductId(value, helper.uomEach);
@@ -242,8 +251,7 @@ class PickingJobUnpickCatchWeightTest
 	void unpickOneOfTwoBareTUPicks_keepsOtherPicksWeight()
 	{
 		final ProductId productId = createCatchWeightProductId("P-CW-UNPICK-2TU");
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		final HuPackingInstructionsId tuPIId = createTuPI(product, 100);
+		final HuPackingInstructionsId tuPIId = createTuPI(productId, 100);
 
 		helper.createVHUInfo(productId, "10", "QR-VHU-CW-2TU-1");
 		helper.createVHUInfo(productId, "10", "QR-VHU-CW-2TU-2");
@@ -286,7 +294,7 @@ class PickingJobUnpickCatchWeightTest
 				.catchWeight(new BigDecimal("4.100"))
 				.build());
 
-		final HuId tuId = pickingJob.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AdempiereException("no TU target")).getTuIdNotNull();
+		assertThat(pickingJob.getTuPickingTargetEffective(line.getId())).as("TU picking target of the line").isPresent();
 
 		// second pick: 2 pcs, 3.900 kg
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
@@ -311,7 +319,7 @@ class PickingJobUnpickCatchWeightTest
 		assertThat(recordsBeforeUnpick.get(1).getQtyDeliveredCatch()).as("second pick record QtyDeliveredCatch").isEqualByComparingTo("3.900");
 
 		// unpick 2 pcs of the product (LIFO => the second pick)
-		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+		helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
 				.pickingLineId(line.getId())
 				.eventType(PickingJobStepEventType.UNPICK)
 				.qrCode(steps.get(1).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getQrCode().toScannedCode())
@@ -340,7 +348,11 @@ class PickingJobUnpickCatchWeightTest
 		InterfaceWrapperHelper.save(shipmentScheduleRecord);
 		final IHUContext huContext = huTestHelper.createMutableHUContext();
 		final List<ShipmentScheduleWithHU> candidates = Services.get(IHUShipmentScheduleBL.class)
-				.createCandidatesForQtyPicked(remainingRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+				.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
+						.qtyPickedRecords(QtyPickedRecords.of(ImmutableList.of(remainingRecord)))
+						.huContext(huContext)
+						.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.build());
 		assertThat(candidates).as("candidates").isNotEmpty();
 
 		final InOutGenerateResult result = Services.get(ITrxItemProcessorExecutorService.class)

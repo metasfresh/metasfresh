@@ -176,9 +176,7 @@ public class ShipmentService implements IShipmentService
 		if (request.getQuantityTypeToUse().isOnlyUsePicked())
 		{
 			final ImmutableSet<ShipmentScheduleId> selectedShipmentScheduleIds = shipmentScheduleWithHUService.retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds())
-					.stream()
-					.map(record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
-					.collect(ImmutableSet.toImmutableSet());
+					.extractScheduleIds();
 
 			if (selectedShipmentScheduleIds.isEmpty())
 			{

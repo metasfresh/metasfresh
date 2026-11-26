@@ -39,13 +39,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.job.model.PickedHUsBySchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -144,7 +146,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(helper.pTomato, uomEach, new BigDecimal("4"), BigDecimal.ZERO);
 		final I_M_ShipmentSchedule_QtyPicked record = createPickRecord(schedule, tu, pTomatoId, "4", "3.535");
 
-		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForQtyPicked(record, helper.getHUContext(), M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(record, helper.getHUContext());
 
 		assertThat(candidates).hasSize(1);
 		assertThat(candidates.get(0).getCatchQty()).as("catch qty of the single candidate").isPresent();
@@ -160,13 +162,14 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		assertPrecondition(tu, new String[] { "1", "1", "1" }, 3);
 		final I_M_ShipmentSchedule_QtyPicked record = createPickRecord(schedule, tu, pTomatoId, "3", "10.000");
 
-		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForQtyPicked(record, helper.getHUContext(), M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(record, helper.getHUContext());
 
 		assertThat(candidates).hasSize(3);
-		assertCatchQtys(candidates, "3.333", "3.333", "3.334");
+		// 10 kg over 3 pieces, rounded up cumulatively (UOMPrecision#getRoundingMode): the first part takes the indivisible gram
+		assertCatchQtys(candidates, "3.334", "3.333", "3.333");
 		final List<I_M_ShipmentSchedule_QtyPicked> records = retrieveAllRecords(schedule);
 		assertThat(records).hasSize(3);
-		assertRecordCatch(records, "3.333", "3.333", "3.334");
+		assertRecordCatch(records, "3.334", "3.333", "3.333");
 		assertThat(sumCatch(records)).isEqualByComparingTo("10.000");
 	}
 
@@ -180,7 +183,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		assertPrecondition(tu, new String[] { "2", "2" }, 1);
 		final I_M_ShipmentSchedule_QtyPicked record = createPickRecord(schedule, tu, pTomatoId, "4", "8.000");
 
-		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForQtyPicked(record, helper.getHUContext(), M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(record, helper.getHUContext());
 
 		assertThat(candidates).hasSize(1);
 		assertCatchQtys(candidates, "8.000");
@@ -199,7 +202,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		final IHUContext huContext = helper.getHUContext();
 
 		// first run splits the pick
-		huShipmentScheduleBL.createCandidatesForQtyPicked(record, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		createCandidates(record, huContext);
 
 		// re-run on every record of the schedule (as a second shipment generation would)
 		final List<I_M_ShipmentSchedule_QtyPicked> recordsAfterFirstRun = retrieveAllRecords(schedule);
@@ -207,14 +210,14 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		final List<ShipmentScheduleWithHU> rerunCandidates = new ArrayList<>();
 		for (final I_M_ShipmentSchedule_QtyPicked r : recordsAfterFirstRun)
 		{
-			rerunCandidates.addAll(huShipmentScheduleBL.createCandidatesForQtyPicked(r, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+			rerunCandidates.addAll(createCandidates(r, huContext));
 		}
 
 		final List<I_M_ShipmentSchedule_QtyPicked> records = retrieveAllRecords(schedule);
 		assertThat(records).hasSize(3);
-		assertRecordCatch(records, "3.333", "3.333", "3.334");
+		assertRecordCatch(records, "3.334", "3.333", "3.333");
 		assertThat(rerunCandidates).hasSize(3);
-		assertCatchQtys(rerunCandidates, "3.333", "3.333", "3.334");
+		assertCatchQtys(rerunCandidates, "3.334", "3.333", "3.333");
 		assertThat(sumCatch(records)).isEqualByComparingTo("10.000");
 	}
 
@@ -231,7 +234,7 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		record.setM_TU_HU_ID(tu.getM_HU_ID());
 		saveRecord(record);
 
-		final List<ShipmentScheduleWithHU> candidates = huShipmentScheduleBL.createCandidatesForQtyPicked(record, helper.getHUContext(), M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+		final List<ShipmentScheduleWithHU> candidates = createCandidates(record, helper.getHUContext());
 
 		assertThat(candidates).hasSize(3);
 		candidates.forEach(c -> assertThat(c.getCatchQty()).as("catch qty of a non catch weight product").isEmpty());
@@ -376,5 +379,14 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 		return records.stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyDeliveredCatch)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	/**
+	 * Candidates of the row on its own, without the other rows of its TU.
+	 */
+	private List<ShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule_QtyPicked row, final IHUContext huContext)
+	{
+		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, PickedHUsBySchedule.EMPTY)
+				.createCandidatesOfRowAlone(row);
 	}
 }

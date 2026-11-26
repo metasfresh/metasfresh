@@ -10,11 +10,14 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.function.ThrowingConsumer;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -138,6 +141,36 @@ public class DataTableRows
 						LinkedHashMap::new,
 						GuavaCollectors.collectUsingListAccumulator(DataTableRows::ofRows)
 				));
+	}
+
+	/**
+	 * Matches the rows against actual objects, ignoring order: each row consumes the first actual object that matches it.
+	 *
+	 * @param unconsumedActuals the actual objects; a mutable list from which every matched object is removed, so what is left over
+	 *                          is what no row consumed
+	 * @param onMatched         called for every row with the actual object it consumed
+	 * @return the description of every row that no actual object matched
+	 */
+	public <T> List<String> consumeMatching(
+			@NonNull final List<T> unconsumedActuals,
+			@NonNull final BiPredicate<T, DataTableRow> matcher,
+			@NonNull final BiConsumer<T, DataTableRow> onMatched)
+	{
+		final List<String> unmatchedRows = new ArrayList<>();
+		for (final DataTableRow row : list)
+		{
+			final T matched = unconsumedActuals.stream().filter(actual -> matcher.test(actual, row)).findFirst().orElse(null);
+			if (matched == null)
+			{
+				unmatchedRows.add(row.describe());
+			}
+			else
+			{
+				unconsumedActuals.remove(matched);
+				onMatched.accept(matched, row);
+			}
+		}
+		return unmatchedRows;
 	}
 
 	public List<String> getColumnNames()

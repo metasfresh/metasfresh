@@ -1,0 +1,298 @@
+package de.metas.handlingunits.shipmentschedule.picked_tu;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Hands out the content of a TU (its CUs grouped by attribute combination) to the picked rows of that TU, in the order the
+ * rows are given: every overlap of a row and a group is one {@link Part}.
+ * <p>
+ * Rows are given to the groups in order, so when the picks of one lot are interleaved with picks of another
+ * (lot A, lot B, lot A) a row can land on the other lot's group. The catch weight of a part therefore comes from the
+ * CUs of the group it lands on, never from the row: the weight follows the physical CU, not the pick order.
+ * <p>
+ * An instance is one walk over the groups: give it the rows one after the other.
+ */
+public final class TUPickedRowsAllocator
+{
+	@NonNull private final TUContentGroupList groups;
+	@NonNull private final IHUContext huContext;
+	@NonNull private final ProductId productId;
+	private final Quantity[] consumedByGroup;
+	private final Map<TUContentCU, Quantity> weightCache = new IdentityHashMap<>();
+	private int groupIndex = 0;
+
+	/**
+	 * @param huContext the context the weights of the CUs are read with; they are read only for the CUs that a row with a
+	 *                  catch weight covers
+	 * @param productId the product of the CUs
+	 */
+	public TUPickedRowsAllocator(
+			@NonNull final TUContentGroupList groups,
+			@NonNull final IHUContext huContext,
+			@NonNull final ProductId productId)
+	{
+		this.groups = groups;
+		this.huContext = huContext;
+		this.productId = productId;
+		this.consumedByGroup = new Quantity[this.groups.size()];
+		for (int i = 0; i < consumedByGroup.length; i++)
+		{
+			consumedByGroup[i] = this.groups.get(i).totalQty().toZero();
+		}
+	}
+
+	/**
+	 * A picked row: its quantity in the stock UOM and its catch weight.
+	 */
+	@Value
+	public static class Row
+	{
+		@NonNull Quantity qty;
+		/** {@code null} if the row has no catch weight UOM */
+		@Nullable Quantity catchWeight;
+	}
+
+	/**
+	 * The part of a row's quantity that becomes one candidate.
+	 */
+	@Value
+	public static class Part
+	{
+		/** the CUs the part is taken from: the first of them gives the candidate (and so the shipment line) its attributes */
+		@NonNull TUContentGroup group;
+		@NonNull Quantity qty;
+		/** the CU the quantity is exactly; {@code null} if it cannot be attributed to one CU */
+		@Nullable TUContentCU wholeCU;
+		/** the part's share of the row's catch weight; {@code null} if the row's weight stays as it is */
+		@Nullable Quantity catchWeight;
+
+		public I_M_HU getAttributeSourceCU()
+		{
+			return group.firstCU();
+		}
+	}
+
+	/**
+	 * @param row the quantity of all rows given to one allocator must not exceed the content of the groups
+	 * @return the parts of the row, empty for a row without quantity
+	 */
+	public List<Part> allocate(@NonNull final Row row)
+	{
+		final List<Part> partsWithoutWeight = new ArrayList<>();
+		final List<Quantity> cuWeights = new ArrayList<>();
+		Quantity rowRemaining = row.getQty();
+		while (rowRemaining.signum() > 0)
+		{
+			final TUContentGroup group = groups.get(groupIndex);
+			final Quantity groupRemaining = group.totalQty().subtract(consumedByGroup[groupIndex]);
+			final Quantity partQty = rowRemaining.min(groupRemaining);
+			final TUContentCU wholeCU = wholeCUOrNull(partQty);
+			final boolean isGroupUsedUp = groupRemaining.compareTo(partQty) == 0;
+			cuWeights.add(consume(partQty, row.getCatchWeight() != null));
+			partsWithoutWeight.add(new Part(group, partQty, wholeCU, null));
+			rowRemaining = rowRemaining.subtract(partQty);
+			if (isGroupUsedUp)
+			{
+				groupIndex++;
+			}
+		}
+
+		final List<Quantity> catchWeights = catchWeightsOfParts(row, partsWithoutWeight, cuWeights);
+		final ImmutableList.Builder<Part> parts = ImmutableList.builder();
+		for (int i = 0; i < partsWithoutWeight.size(); i++)
+		{
+			final Part part = partsWithoutWeight.get(i);
+			parts.add(new Part(part.getGroup(), part.getQty(), part.getWholeCU(), catchWeights.get(i)));
+		}
+		return parts.build();
+	}
+
+	/**
+	 * @return the CU only if the current group has exactly one CU and the {@code partQty} are all of it, else null
+	 */
+	@Nullable
+	private TUContentCU wholeCUOrNull(@NonNull final Quantity partQty)
+	{
+		final TUContentGroup group = groups.get(groupIndex);
+		if (group.getCus().size() != 1 || !consumedByGroup[groupIndex].isZero())
+		{
+			return null;
+		}
+		final TUContentCU cu = group.getCus().get(0);
+		return cu.getQty().compareTo(partQty) == 0 ? cu : null;
+	}
+
+	/**
+	 * Hands out the next {@code qty} of the current group.
+	 *
+	 * @param isWeightNeeded false if nobody uses the weight (the row has none): the CUs' weights are not read then
+	 * @return the weight of that part of the group: the weights of the CUs it covers, a CU that is covered in part counted
+	 * pro rata; null if one of the covered CUs has no weight, or if {@code isWeightNeeded} is false
+	 */
+	@Nullable
+	private Quantity consume(@NonNull final Quantity qty, final boolean isWeightNeeded)
+	{
+		final Quantity before = consumedByGroup[groupIndex];
+		final Quantity now = before.add(qty);
+		consumedByGroup[groupIndex] = now;
+		if (!isWeightNeeded)
+		{
+			return null;
+		}
+		final Quantity weightUpToBefore = weightOfFirst(before);
+		final Quantity weightUpToNow = weightOfFirst(now);
+		return weightUpToBefore != null && weightUpToNow != null ? weightUpToNow.subtract(weightUpToBefore) : null;
+	}
+
+	/**
+	 * @return the weight of the first {@code qty} of the current group, going through its CUs in order; null if a CU has no weight
+	 */
+	@Nullable
+	private Quantity weightOfFirst(@NonNull final Quantity qty)
+	{
+		final TUContentGroup group = groups.get(groupIndex);
+		Quantity cuStart = qty.toZero();
+		Quantity weight = null;
+		for (final TUContentCU cu : group.getCus())
+		{
+			final Quantity cuEnd = cuStart.add(cu.getQty());
+			final Quantity taken = qty.min(cuEnd).subtract(cuStart);
+			if (taken.signum() > 0)
+			{
+				final Quantity cuWeight = weightOf(cu);
+				if (cuWeight == null)
+				{
+					return null;
+				}
+				final Quantity cuWeightTaken = taken.compareTo(cu.getQty()) == 0
+						? cuWeight
+						: weightShareOfFirst(cuWeight, taken, cu.getQty());
+				weight = weight == null ? cuWeightTaken : weight.add(cuWeightTaken);
+			}
+			cuStart = cuEnd;
+		}
+		if (weight == null) // nothing taken: a zero weight in the UOM of the group's weights
+		{
+			final Quantity firstCUWeight = weightOf(group.getCus().get(0));
+			return firstCUWeight == null ? null : firstCUWeight.toZero();
+		}
+		return weight;
+	}
+
+	@Nullable
+	private Quantity weightOf(@NonNull final TUContentCU cu)
+	{
+		if (!weightCache.containsKey(cu))
+		{
+			weightCache.put(cu, TUContentLoader.extractCatchWeightOrNull(huContext, productId, cu));
+		}
+		return weightCache.get(cu);
+	}
+
+	/**
+	 * @return per part the weight of the CUs it stands for, if every part has it in the row's catch UOM; else the row's own weight
+	 * split by quantity (or null, if the row stays one part).
+	 * The choice is made per row: a lot's line can mix both sources if only some of its CUs have a net weight. The CU's net weight
+	 * is the weight of the pick that made the CU; it is assumed that no pick is merged into an existing CU of the same lot.
+	 */
+	private static List<Quantity> catchWeightsOfParts(
+			@NonNull final Row row,
+			@NonNull final List<Part> parts,
+			@NonNull final List<Quantity> cuWeights)
+	{
+		final Quantity rowWeight = row.getCatchWeight();
+		if (rowWeight == null)
+		{
+			return new ArrayList<>(Collections.<Quantity>nCopies(parts.size(), null));
+		}
+		final boolean isWeightOfEveryPartKnown = cuWeights.stream()
+				.allMatch(weight -> weight != null && weight.getUomId().equals(rowWeight.getUomId()));
+		if (isWeightOfEveryPartKnown)
+		{
+			return cuWeights;
+		}
+		return parts.size() > 1
+				? splitByQty(rowWeight, parts.stream().map(Part::getQty).collect(ImmutableList.toImmutableList()))
+				: new ArrayList<>(Collections.<Quantity>nCopies(parts.size(), null));
+	}
+
+	/**
+	 * Splits a weight across the given quantities proportionally to them.
+	 * Each share is the rounded weight of all quantities up to and including its own minus that of the ones before it, so no share
+	 * is negative and the shares always sum up to the weight, also when a share is below the precision of the weight's UOM.
+	 * Example: 0.003 kg over 5 pieces gives 0.001, 0.001, 0, 0.001, 0 kg.
+	 *
+	 * @return one share per quantity
+	 */
+	public static List<Quantity> splitByQty(@NonNull final Quantity totalWeight, @NonNull final List<Quantity> qtys)
+	{
+		Check.assumeNotEmpty(qtys, "qtys is not empty");
+		final Quantity totalQty = qtys.stream().reduce(Quantity::add).get(); // fails if the quantities are not in one UOM
+
+		final List<Quantity> shares = new ArrayList<>(qtys.size());
+		Quantity qtyUpToNow = totalQty.toZero();
+		Quantity weightUpToBefore = totalWeight.toZero();
+		for (final Quantity qty : qtys)
+		{
+			qtyUpToNow = qtyUpToNow.add(qty);
+			final Quantity weightUpToNow = weightShareOfFirst(totalWeight, qtyUpToNow, totalQty);
+			shares.add(weightUpToNow.subtract(weightUpToBefore));
+			weightUpToBefore = weightUpToNow;
+		}
+		return shares;
+	}
+
+	/**
+	 * @return the part of {@code weight} that the first {@code qty} of {@code totalQty} stand for, rounded in the rounding mode of the
+	 * weight's UOM (one unit below its precision cannot be split, so it is taken whole); all of {@code weight} when {@code qty} is all of it.
+	 * The value never decreases as {@code qty} grows and never exceeds {@code weight}.
+	 */
+	static Quantity weightShareOfFirst(@NonNull final Quantity weight, @NonNull final Quantity qty, @NonNull final Quantity totalQty)
+	{
+		if (qty.compareTo(totalQty) >= 0)
+		{
+			return weight; // exact, also if the weight has more decimals than its UOM's precision
+		}
+		final UOMPrecision precision = weight.getUOMPrecision();
+		final Quantity share = weight.multiply(qty.toBigDecimal()).divide(totalQty.toBigDecimal(), precision.toInt(), precision.getRoundingMode());
+		// a weight with more decimals than its UOM's precision (e.g. 0.0035 kg) could be rounded past itself (0.004 kg)
+		return share.abs().compareTo(weight.abs()) > 0 ? weight : share;
+	}
+}
