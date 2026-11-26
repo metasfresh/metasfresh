@@ -26,28 +26,29 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -57,6 +58,7 @@ import org.mockito.invocation.Invocation;
 
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -196,12 +198,26 @@ class ShipmentScheduleEnqueuerTest
 	class RunWithOwnAsyncBatch
 	{
 		private M_ShipmentSchedule interceptor;
+		private IShipmentScheduleBL shipmentScheduleBL;
+
+		/**
+		 * The run stamps its async batch on its schedules (own committed trx in production), as ShipmentService.groupSchedulesByAsyncBatch does.
+		 */
+		private AsyncBatchId stampRunBatch(final I_M_ShipmentSchedule... schedules)
+		{
+			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
+			InterfaceWrapperHelper.save(asyncBatch);
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+			shipmentScheduleBL.setAsyncBatchAndSave(ImmutableList.copyOf(schedules), asyncBatchId);
+			return asyncBatchId;
+		}
 
 		@BeforeEach
 		void beforeEach()
 		{
 			SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of(sched -> false)));
 			InOutCandidateValidator.registerSSAggregationKeyDependencies();
+			shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 			interceptor = new M_ShipmentSchedule();
 			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(interceptor);
 		}
@@ -221,11 +237,7 @@ class ShipmentScheduleEnqueuerTest
 			// the recompute loads schedule 2 before the run stamps the batch
 			final I_M_ShipmentSchedule staleSchedule2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class);
 
-			// the run stamps its async batch (own committed trx in production)
-			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
-			InterfaceWrapperHelper.save(asyncBatch);
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-			Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+			final AsyncBatchId asyncBatchId = stampRunBatch(schedule1, schedule2);
 			final String stampedKey2 = InterfaceWrapperHelper.load(842, I_M_ShipmentSchedule.class).getHeaderAggregationKey();
 			assertThat(stampedKey2).as("the stamp puts the batch into the stored key").isEqualTo(InterfaceWrapperHelper.load(841, I_M_ShipmentSchedule.class).getHeaderAggregationKey());
 			assertThat(staleSchedule2.getC_Async_Batch_ID()).as("the recompute's copy is stale").isZero();
@@ -237,14 +249,7 @@ class ShipmentScheduleEnqueuerTest
 			assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the recompute keeps the run's batch").isEqualTo(asyncBatchId.getRepoId());
 			assertThat(storedSchedule2.getHeaderAggregationKey()).as("a save that changes no key column keeps the stored key, which includes the run's batch").isEqualTo(stampedKey2);
 
-			final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
-					.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
-							.adPInstanceId(PInstanceId.ofRepoId(1))
-							.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(841), ShipmentScheduleId.ofRepoId(842))))
-							.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-							.asyncBatchId(asyncBatchId)
-							.completeShipments(true)
-							.build());
+			final ShipmentScheduleEnqueuer.Result result = enqueueRun(asyncBatchId, schedule1, schedule2);
 
 			assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
 		}
@@ -263,11 +268,7 @@ class ShipmentScheduleEnqueuerTest
 			final I_M_ShipmentSchedule schedule1 = createScheduleOfOneOrder(851);
 			final I_M_ShipmentSchedule schedule2 = createScheduleOfOneOrder(852);
 
-			// the run stamps its async batch (own committed trx in production)
-			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.newInstance(I_C_Async_Batch.class);
-			InterfaceWrapperHelper.save(asyncBatch);
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-			Services.get(IShipmentScheduleBL.class).setAsyncBatchAndSave(ImmutableList.of(schedule1, schedule2), asyncBatchId);
+			final AsyncBatchId asyncBatchId = stampRunBatch(schedule1, schedule2);
 
 			// the recompute loads schedule 2 after the stamp and copies the order's empty batch (same guard as OrderLineShipmentScheduleHandler.updateShipmentScheduleFromOrder)
 			final I_M_ShipmentSchedule freshSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
@@ -281,14 +282,7 @@ class ShipmentScheduleEnqueuerTest
 			final I_M_ShipmentSchedule storedSchedule2 = InterfaceWrapperHelper.load(852, I_M_ShipmentSchedule.class);
 			assertThat(storedSchedule2.getC_Async_Batch_ID()).as("the fresh recompute cleared the run's batch").isZero();
 
-			final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
-					.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
-							.adPInstanceId(PInstanceId.ofRepoId(1))
-							.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(851), ShipmentScheduleId.ofRepoId(852))))
-							.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-							.asyncBatchId(asyncBatchId)
-							.completeShipments(true)
-							.build());
+			final ShipmentScheduleEnqueuer.Result result = enqueueRun(asyncBatchId, schedule1, schedule2);
 
 			assertThat(result.getEnqueuedPackagesCount()).as("one run, one workpackage; stored key of schedule 2 = %s", storedSchedule2.getHeaderAggregationKey()).isEqualTo(1);
 		}
@@ -337,11 +331,28 @@ class ShipmentScheduleEnqueuerTest
 
 	private ShipmentScheduleEnqueuer.Result enqueue(final I_M_ShipmentSchedule schedule, final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
+		return enqueue(null, quantityType, schedule);
+	}
+
+	private ShipmentScheduleEnqueuer.Result enqueueRun(@Nullable final AsyncBatchId asyncBatchId, final I_M_ShipmentSchedule... schedules)
+	{
+		return enqueue(asyncBatchId, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, schedules);
+	}
+
+	private ShipmentScheduleEnqueuer.Result enqueue(
+			@Nullable final AsyncBatchId asyncBatchId,
+			final M_ShipmentSchedule_QuantityTypeToUse quantityType,
+			final I_M_ShipmentSchedule... schedules)
+	{
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = Arrays.stream(schedules)
+				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 		return ShipmentScheduleEnqueuer.newInstance(Env.getCtx(), ITrx.TRXNAME_None)
 				.createWorkpackages(ShipmentScheduleWorkPackageParameters.builder()
 						.adPInstanceId(PInstanceId.ofRepoId(1))
-						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))))
+						.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(scheduleIds))
 						.quantityType(quantityType)
+						.asyncBatchId(asyncBatchId)
 						.completeShipments(true)
 						.build());
 	}
