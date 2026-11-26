@@ -511,6 +511,32 @@ export const getMasterDocumentDisabledStandardActions = ({
  * @param {object} [tabInfo] - one entry of the `includedTabsInfo` payload
  * @return {{reason: string, reasonKey: string}|null} `null` when nothing shall be rendered
  */
+/**
+ * @summary merges an `includedTabsInfo` delta (e.g. from a PATCH response) into the known tabs' info. The backend
+ *          leaves out what it did not set (saving the order's contact sends only `stale: true` for the lines tab),
+ *          so a left-out property keeps its value. A permission it does send comes with its own reasons, which
+ *          replace the previous ones.
+ * @param {object} [known] - the `includedTabsInfo` in the state, by tab id
+ * @param {object} [delta] - the `includedTabsInfo` of the response, by tab id
+ * @return {object} the merged `includedTabsInfo`
+ */
+export const mergeIncludedTabsInfo = (known = {}, delta = {}) => {
+  const merged = { ...known };
+  Object.keys(delta).forEach((tabId) => {
+    const tabDelta = delta[tabId];
+    const tabInfo = { ...known[tabId] };
+    if ('allowCreateNew' in tabDelta) {
+      delete tabInfo.allowCreateNewReason;
+      delete tabInfo.allowCreateNewReasonKey;
+    }
+    if ('allowDelete' in tabDelta) {
+      delete tabInfo.allowDeleteReason;
+    }
+    merged[tabId] = { ...tabInfo, ...tabDelta };
+  });
+  return merged;
+};
+
 export const getIncludedTabCreateNewDisabledReason = (tabInfo) => {
   if (!tabInfo || tabInfo.allowCreateNew || !tabInfo.allowCreateNewReasonKey) {
     return null;
@@ -845,10 +871,10 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         master: {
           ...state.master,
-          includedTabsInfo: {
-            ...state.master.includedTabsInfo,
-            ...action.includedTabsInfo,
-          },
+          includedTabsInfo: mergeIncludedTabsInfo(
+            state.master.includedTabsInfo,
+            action.includedTabsInfo
+          ),
         },
       };
     case MARK_MASTER_DATA_DISCARDED:

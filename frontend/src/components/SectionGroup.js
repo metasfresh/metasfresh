@@ -364,6 +364,22 @@ class SectionGroup extends PureComponent {
       });
 
       if (currentWidgetIndex >= 0) {
+        // Called once the widget's value is saved, which can be after the user moved the cursor elsewhere
+        // (e.g. Alt+Q put it in the quick entry): then leave it there.
+        // eslint-disable-next-line react/no-find-dom-node
+        const currentElement = ReactDOM.findDOMNode(
+          this.widgets[currentWidgetIndex]
+        );
+        const active = document.activeElement;
+        if (
+          active &&
+          active !== document.body &&
+          currentElement &&
+          !currentElement.contains(active)
+        ) {
+          return;
+        }
+
         let nextWidgetIndex = Math.min(
           this.widgets.length - 1,
           currentWidgetIndex + 1

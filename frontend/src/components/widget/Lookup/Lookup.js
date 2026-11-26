@@ -150,8 +150,12 @@ export class Lookup extends Component {
           this.setState(
             { property: '' }, //
             () => {
+              // This runs once the pick is saved. If the user moved the cursor out of the lookup in the
+              // meantime (e.g. Alt+Q put it in the quick entry), leave it there. Read before onBlurWidget,
+              // which itself moves the cursor to the next field.
+              const isCursorInLookup = this.isCursorInLookup();
               onBlurWidget && onBlurWidget();
-              this.focusNextFormField();
+              isCursorInLookup && this.focusNextFormField();
             }
           );
         }
@@ -159,6 +163,16 @@ export class Lookup extends Component {
     }
 
     return hasNextSubField;
+  };
+
+  isCursorInLookup = () => {
+    const active = document.activeElement;
+    return (
+      !active ||
+      active === document.body ||
+      !this.wrapperElement ||
+      this.wrapperElement.contains(active)
+    );
   };
 
   focusNextFormField = () => {
