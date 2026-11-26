@@ -23,6 +23,7 @@
 package de.metas.bpartner.effective;
 
 import de.metas.shipping.ShipperId;
+import de.metas.tax.api.VATIdentifier;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,5 +34,6 @@ import javax.annotation.Nullable;
 public class BPartnerAddressEffective
 {
 	@Nullable ShipperId shipperId;
+	@Nullable VATIdentifier vatTaxId;
 	boolean isPreAdviceRequired;
 }

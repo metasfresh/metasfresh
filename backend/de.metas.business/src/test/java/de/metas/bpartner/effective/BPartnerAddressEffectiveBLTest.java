@@ -24,6 +24,13 @@ package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.VATIdentifier;
+import org.adempiere.service.ClientId;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_BPartner_Location;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
@@ -131,5 +138,53 @@ public class BPartnerAddressEffectiveBLTest
 		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
 
 		assertThat(bpartnerAddressEffectiveBL.getEffectiveBillBPartner(createLocation(memberBP))).isNull();
+	}
+
+	@Test
+	public void vatTaxId_locationVAT_wins()
+	{
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE369391233");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+		setLocationVATaxID(locationId, "NL827764364B01");
+
+		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
+
+		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL827764364B01"));
+	}
+
+	@Test
+	public void vatTaxId_noLocationVAT_fallsBackToHeader()
+	{
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE369391233");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+
+		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
+
+		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("DE369391233"));
+	}
+
+	@Test
+	public void vatTaxId_ignorePartnerVATID_noLocationVAT_isNull()
+	{
+		Services.get(ISysConfigBL.class).setValue(IBPartnerBL.SYS_CONFIG_IgnorePartnerVATID, true, ClientId.SYSTEM, OrgId.ANY);
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE369391233");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+
+		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
+
+		assertThat(result.getVatTaxId()).isNull();
+	}
+
+	private static void setLocationVATaxID(final BPartnerLocationId locationId, final String vatTaxId)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.load(locationId.getRepoId(), I_C_BPartner_Location.class);
+		location.setVATaxID(vatTaxId);
+		saveRecord(location);
 	}
 }
