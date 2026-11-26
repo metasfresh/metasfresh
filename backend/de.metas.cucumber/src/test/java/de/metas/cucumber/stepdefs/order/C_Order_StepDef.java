@@ -993,10 +993,14 @@ public class C_Order_StepDef
 	 * sees the doc-action's side effects together with the old {@code DocStatus}. E.g. on reactivate, the invoice candidate recompute
 	 * consumes the {@code C_Invoice_Candidate_Recompute} markers while still reading the order as completed,
 	 * and the candidate keeps its pre-reactivation values.
+	 * <p>
+	 * Inside the enclosing transaction the engine does not own the transaction, so its deadlock retry does not apply.
+	 * That is why {@code completeOrder} stays on {@code documentBL.processEx} directly: the simulated-deadlock scenarios
+	 * ({@code C_Order_SimulatedDeadlockOnCompletion}) need that retry.
 	 */
-	private void processExInTrx(@NonNull final Object document, @NonNull final String docAction, @Nullable final String expectedDocStatus)
+	private void processExInTrx(@NonNull final I_C_Order order, @NonNull final String docAction, @Nullable final String expectedDocStatus)
 	{
-		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(document, docAction, expectedDocStatus));
+		trxManager.runInThreadInheritedTrx(() -> documentBL.processEx(order, docAction, expectedDocStatus));
 	}
 
 	private void validateLinkedOrderIsCreated(@NonNull final DataTableRow row)
