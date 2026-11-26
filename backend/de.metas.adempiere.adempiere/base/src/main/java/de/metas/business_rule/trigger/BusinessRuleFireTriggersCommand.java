@@ -19,7 +19,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +38,7 @@ public class BusinessRuleFireTriggersCommand
 	@NonNull private final BusinessRuleEventRepository eventRepository;
 	@NonNull private final BusinessRuleLogger logger;
 	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
+	@NonNull private final IUserDAO userDAO;
 
 	@NonNull final BusinessRulesCollection rules;
 	@NonNull private final Object sourceModel;
@@ -53,6 +53,7 @@ public class BusinessRuleFireTriggersCommand
 			@NonNull final BusinessRuleEventRepository eventRepository,
 			@NonNull final BusinessRuleLogger logger,
 			@NonNull final BusinessRuleRecordMatcher recordMatcher,
+			@NonNull final IUserDAO userDAO,
 			//
 			@NonNull final BusinessRulesCollection rules,
 			@NonNull final Object sourceModel,
@@ -61,6 +62,7 @@ public class BusinessRuleFireTriggersCommand
 		this.eventRepository = eventRepository;
 		this.logger = logger;
 		this.recordMatcher = recordMatcher;
+		this.userDAO = userDAO;
 
 		this.rules = rules;
 		this.sourceModel = sourceModel;
@@ -68,7 +70,7 @@ public class BusinessRuleFireTriggersCommand
 
 		this.sourceModelRef = TableRecordReference.of(sourceModel);
 		this.clientAndOrgId = InterfaceWrapperHelper.getClientAndOrgId(sourceModel);
-		this.triggeringUserId = extractTriggeringUserId(sourceModel);
+		this.triggeringUserId = extractTriggeringUserId(userDAO, sourceModel);
 	}
 
 	/**
@@ -76,7 +78,7 @@ public class BusinessRuleFireTriggersCommand
 	 * (-1, NULL or a user which no longer exists): those become {@link UserId#SYSTEM}.
 	 */
 	@VisibleForTesting
-	static UserId extractTriggeringUserId(@NonNull final Object sourceModel)
+	static UserId extractTriggeringUserId(@NonNull final IUserDAO userDAO, @NonNull final Object sourceModel)
 	{
 		final Object updatedByObj = InterfaceWrapperHelper.getValueOrNull(sourceModel, "UpdatedBy");
 		final UserId updatedBy = UserId.ofRepoIdOrSystem(NumberUtils.asInt(updatedByObj, -1));
@@ -85,7 +87,7 @@ public class BusinessRuleFireTriggersCommand
 			return UserId.SYSTEM;
 		}
 
-		final boolean userExists = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
+		final boolean userExists = userDAO.retrieveUserOrNull(Env.getCtx(), updatedBy.getRepoId()) != null;
 		return userExists ? updatedBy : UserId.SYSTEM;
 	}
 
