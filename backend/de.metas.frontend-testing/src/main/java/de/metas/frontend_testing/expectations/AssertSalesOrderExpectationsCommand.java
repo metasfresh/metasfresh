@@ -20,6 +20,7 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
@@ -424,6 +425,13 @@ class AssertSalesOrderExpectationsCommand
 				assertThat(actual.getQtyDeliveredCatch())
 						.as("QtyDeliveredCatch of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
 						.isEqualByComparingTo(expectation.getQtyDeliveredCatch());
+			}
+
+			if (expectation.getAttributes() != null)
+			{
+				HUAttributeAssertions.assertAttributes(
+						expectation.getAttributes(),
+						services.getAsiAttributes(AttributeSetInstanceId.ofRepoIdOrNone(actual.getM_AttributeSetInstance_ID())));
 			}
 		});
 	}

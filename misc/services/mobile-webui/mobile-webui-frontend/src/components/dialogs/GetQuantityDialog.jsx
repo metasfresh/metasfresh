@@ -254,8 +254,9 @@ const GetQuantityDialog = ({
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
         catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
-        bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
-        lotNo: isLotNoEditable ? lotNo : null,
+        // undefined = field not shown or not editable, value stays as it is; a shown field sends its value ('' when cleared)
+        bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : undefined,
+        lotNo: isLotNoEditable ? lotNo : undefined,
         serialNos: isShowSerialNo ? serialNos : null,
         attributeValues: hasEditableAttributes ? attributeValues : null,
         isCloseTarget: !!isCloseTarget,

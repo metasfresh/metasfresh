@@ -1,0 +1,41 @@
+package de.metas.frontend_testing.masterdata.shipment_schedule;
+
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_AttributeConfig;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+/**
+ * Access to {@code M_ShipmentSchedule_AttributeConfig} for the e2e masterdata commands.
+ * <p>
+ * Repository Tables: M_ShipmentSchedule_AttributeConfig
+ * <p>
+ * Repository Cluster: ShipmentScheduleAttributeConfigRepository
+ */
+class ShipmentScheduleAttributeConfigRepository
+{
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	boolean hasActiveRow(final int handlerId, @NonNull final AttributeId attributeId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_AttributeConfig.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_IolCandHandler_ID, handlerId)
+				.addEqualsFilter(I_M_ShipmentSchedule_AttributeConfig.COLUMNNAME_M_Attribute_ID, attributeId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	/** Inserts an active row with {@code OnlyIfInReferencedASI = N}. */
+	void insertActive(final int handlerId, @NonNull final AttributeId attributeId)
+	{
+		final I_M_ShipmentSchedule_AttributeConfig record = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
+		record.setM_IolCandHandler_ID(handlerId);
+		record.setM_Attribute_ID(attributeId.getRepoId());
+		record.setOnlyIfInReferencedASI(false);
+		record.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(record);
+	}
+}
