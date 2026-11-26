@@ -8,6 +8,11 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { waitForTabAllowsNew, getRecordData, getTabRows } from '../utils/WebAPIValidation';
+import {
+  installDocumentEventRecorder,
+  pickCustomerByKeyboard,
+  enterLinesKeyboardOnly,
+} from '../utils/QuickInputFocus';
 
 /**
  * Sales Order window (143) — a Menge (quantity) edited from 4 to 5 purely by keyboard in the
@@ -404,6 +409,119 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
       // recording aid: hold the final frame so the video shows the completed order
       // with the persisted grid, not the header alone
       await page.waitForTimeout(1500);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC11: the same edit, with the customer typed and the batch entry driven by keyboard only
+// ---------------------------------------------------------------------------
+
+async function createMasterdataPackingInstructionsOn(language) {
+  const products = {};
+  PRODUCT_KEYS.forEach((key) => {
+    products[key] = {
+      name: `QtyEdit${key}`,
+      valuePrefix: 'QTYEDITK',
+      type: 'Item',
+      prices: [{ price: 10.0, currencyCode: 'EUR' }],
+    };
+  });
+  return await Backend.createMasterdata({
+    request: {
+      login: { user: { language, firstname: 'QtyEdit', lastname: 'Test' } },
+      bpartners: {
+        CUSTOMER1: {
+          isVendor: false,
+          isCustomer: true,
+          isSoPriceList: true,
+          name: 'Customer',
+        },
+      },
+      products,
+      sysconfigs: {
+        'webui.quickinput.EnablePackingInstructionsField': 'Y',
+      },
+    },
+  });
+}
+
+test.describe('Sales order — keyboard-only order entry and Menge edit', () => {
+  [
+    { language: 'de_DE', label: 'German' },
+    { language: 'en_US', label: 'English' },
+  ].forEach(({ language, label }) => {
+    test(`TC11 keyboard only: partner typed, Alt+Q, Enter on Packvorschrift, grid edit, Alt+U (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Keyboard-only order entry and Menge edit survive completion');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(300000);
+
+      const recorder = installDocumentEventRecorder(page);
+      const masterdata = await createMasterdataPackingInstructionsOn(language);
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      await Backend.resetWebApiCaches();
+
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await pickCustomerByKeyboard({
+        bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode,
+      });
+      console.log(`[keyboard-only TC11] order ${recordId}`);
+
+      await test.step('Alt+Q, 3 lines with Menge 4 by keyboard only (Enter on Packvorschrift)', async () => {
+        await page.keyboard.press('Alt+Q'); // TOGGLE_QUICK_INPUT
+        await page
+          .locator('.quick-input-container')
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await enterLinesKeyboardOnly({
+          recorder,
+          windowId: SALES_ORDER_WINDOW_ID,
+          recordId,
+          products: PRODUCT_KEYS.map((key) => masterdata.products[key].productCode),
+          qtys: PRODUCT_KEYS.map(() => Number(INITIAL_QTY)),
+          packingInstructionsField: 'Y',
+        });
+        expect(await gridQtys(page)).toEqual([4, 4, 4]);
+        expect(await savedQtys(recordId)).toEqual([4, 4, 4]);
+      });
+
+      await test.step('close batch entry, focus leaves the order lines', async () => {
+        await closeBatchEntryAndAssertFocusOutsideLines(page);
+      });
+
+      await test.step('grid edit by keyboard: each Menge to 5, leave by Tab', async () => {
+        await editQtysKeyboardOnly(page, EDITED_QTY);
+      });
+
+      await test.step('complete the order by keyboard (Alt+U)', async () => {
+        await completeOrderKeyboardOnly(page, recordId);
+      });
+
+      await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
+        await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+        expect(await gridQtys(page)).toEqual([5, 5, 5]);
+        await page.reload();
+        await page
+          .getByTestId('status-button')
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+        expect(await gridQtys(page)).toEqual([5, 5, 5]);
+        expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
+        const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
+        expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+        await page.waitForTimeout(1500);
+      });
     });
   });
 });
