@@ -282,6 +282,49 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
 });
 
 // noinspection JSUnusedLocalSymbols
+test('Last GRAI crate scanned → Scan (GRAI) button vanishes, Fertigstellen / Abbrechen do not move', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - the buttons below Scan (GRAI) stay put when it vanishes');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await pickGraiTUsToPickingSlot({ masterdata });
+
+    await test.step('HU Consolidation — open the job, set the pallet', async () => {
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+    });
+
+    let completeTopBefore;
+    await test.step('Scan (GRAI) button is shown; remember where Fertigstellen is', async () => {
+        await HUConsolidationJobScreen.expectScanGRAIButton({ visible: true, disabled: false });
+        completeTopBefore = await HUConsolidationJobScreen.getCompleteButtonTop();
+    });
+
+    await test.step('Scan both crates on the slot screen, back on the job screen', async () => {
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: masterdata.packingInstructions.PI_P1.grai });
+        await PickingSlotScreen.scanGRAIAndWaitConsolidated({ graiString: masterdata.packingInstructions.PI_P2.grai });
+        await PickingSlotScreen.goBack();
+    });
+
+    await test.step('Scan (GRAI) button is gone, Fertigstellen did not move', async () => {
+        await HUConsolidationJobScreen.expectScanGRAIButton({ visible: false });
+        const completeTopAfter = await HUConsolidationJobScreen.getCompleteButtonTop();
+        expect(completeTopAfter, 'Fertigstellen top edge (px) after the Scan (GRAI) button vanished').toBe(completeTopBefore);
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('Scan unknown GRAI on PickingSlotScreen → HuNotFound error toast', async ({ page }) => {
     // === ALLURE METADATA ===
     await allure.epic('E0105: Picking');
