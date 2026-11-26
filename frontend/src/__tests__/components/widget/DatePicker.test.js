@@ -479,4 +479,74 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     expect(patch).toHaveBeenCalledTimes(1);
     expect(notifications()).toHaveLength(0);
   });
+
+  it('time-only field: a typed valid time raises no error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      dateFormat: false,
+      timeFormat: 'HH:mm',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '12:30');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  [
+    ['04.01.2027', '2027-01-04'],
+    ['4.1.27', '2027-01-04'],
+  ].forEach(([typed, expected]) => {
+    it(`date+time field: the date "${typed}" without a time is saved once as the end of ${expected}, no error`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker, notifications } = mountWithStore({
+        timeFormat: 'HH:mm',
+        value: null,
+        patch,
+      });
+      typeInto(wrapper, typed);
+      picker().handleBlur();
+      expect(notifications()).toHaveLength(0);
+      expect(patch).toHaveBeenCalledTimes(1);
+      expect(patch.mock.calls[0][0].format('YYYY-MM-DD HH:mm')).toBe(`${expected} 23:59`);
+    });
+  });
+
+  it('date+time field: a short form with a time is saved with that time', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      timeFormat: 'HH:mm',
+      value: null,
+      patch,
+    });
+    typeInto(wrapper, '4.1.27 10:30');
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(
+      patch.mock.calls[0][0].clone().tz('Europe/Berlin').format('YYYY-MM-DD HH:mm')
+    ).toBe('2027-01-04 10:30');
+  });
+
+  it('non-grid: Escape cancels the typing, no error when the field is left', () => {
+    const { wrapper, picker, notifications } = mountWithStore({ value: stored() });
+    typeInto(wrapper, 'abc');
+    picker().handleKeydown(keyEvent('Escape'));
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+  });
+
+  it('non-grid: a calendar pick after typing an invalid text raises no error', () => {
+    const patch = jest.fn();
+    const { wrapper, picker, notifications } = mountWithStore({
+      value: stored(),
+      patch,
+    });
+    typeInto(wrapper, 'abc');
+    picker().handleDateChange(MomentTZ('2026-12-05', 'YYYY-MM-DD'));
+    picker().handleBlur();
+    expect(notifications()).toHaveLength(0);
+    expect(patch).toHaveBeenCalledTimes(1);
+  });
 });
+

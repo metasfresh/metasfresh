@@ -24,6 +24,12 @@ import {
  * year (`DD.MM.YYYY` gives `DD.MM.YYYY`, `D.MM.YYYY`, ..., `D.M.YY`).
  */
 const getShortFormsOfDateFormat = (format) => {
+  // only a plain numeric format (day, month, year and separators) has these short forms
+  const tokens = format.split(/[^A-Za-z]+/).sort();
+  if (tokens.join(',') !== 'DD,MM,YYYY') {
+    return [format];
+  }
+
   const formats = [];
   ['DD', 'D'].forEach((day) =>
     ['MM', 'M'].forEach((month) =>
@@ -156,11 +162,16 @@ class DatePicker extends PureComponent {
     this.discardTypedDate();
     if (pendingTypedDate) {
       this.callPatchIfNeeded(pendingTypedDate);
+      return true;
     } else if (isTypedClearPending) {
       this.callPatchIfNeeded(null);
-    } else if (typedText) {
+      return true;
+    } else if (typedText && this.props.dateFormat) {
+      // (a time-only field keeps react-datetime's own handling of the typed time)
       this.commitTypedText(typedText);
+      return true;
     }
+    return false;
   };
 
   discardTypedDate = () => {
@@ -211,8 +222,13 @@ class DatePicker extends PureComponent {
       if (dateTime.isValid()) {
         return this.setTimezone(dateTime);
       }
-      const dateOnly = MomentTZ(text, dateFormats, true);
-      return dateOnly.isValid() ? setMomentToEndOfDay(dateOnly) : null;
+      // same conversion as convertInputStringToMomentOnBlur, with the short forms
+      const dateOnly = MomentTZ(text, dateFormats, true, this.props.timeZone);
+      if (!dateOnly.isValid()) {
+        return null;
+      }
+      setMomentToEndOfDay(dateOnly);
+      return dateOnly;
     }
 
     const date = MomentTZ(text, dateFormats, true);
@@ -292,11 +308,15 @@ class DatePicker extends PureComponent {
     // A date typed into the input is saved (grid date cell: only) when the input is left; a short form
     // is saved now, and a text that is no date is reported (grid date cell: Escape discards the typing,
     // see handleKeydown).
-    this.commitTypedDate();
+    const isTypingCommitted = this.commitTypedDate();
 
     //
     // Cover some corner cases when user is writing something into date/time field and then is TABing out
-    const moment = this.convertInputStringToMomentOnBlur();
+    // (not after the typing was committed above: that already covers it, and a second patch would be
+    // compared with a datePatched state not yet updated)
+    const moment = isTypingCommitted
+      ? undefined
+      : this.convertInputStringToMomentOnBlur();
     if (moment !== undefined && moment?.isValid()) {
       this.callPatchIfNeeded(moment);
     }
@@ -509,6 +529,11 @@ class DatePicker extends PureComponent {
   };
 
   handleKeydown = (event) => {
+    if (event.key === 'Escape') {
+      // Escape cancels the typing: it is neither saved nor reported when the input is left
+      this.typedText = undefined;
+    }
+
     // Grid date cell: Escape (discard the typing, restore the stored value) and Enter (save the typed
     // date) belong to the grid's cell editing, so they must reach it.
     if (this.props.isGridCell) {
