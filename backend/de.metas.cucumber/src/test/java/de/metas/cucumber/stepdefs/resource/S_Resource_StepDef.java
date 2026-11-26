@@ -96,7 +96,7 @@ public class S_Resource_StepDef
 	 * Required columns: {@code Identifier} and {@code S_ResourceType_ID}; the value/name pair is derived via
 	 * {@code row.suggestValueAndName()}. {@code S_ResourceType_ID} is the identifier of an {@code S_ResourceType}
 	 * created by {@code metasfresh contains S_ResourceType:}, or the numeric {@code S_ResourceType_ID} of an
-	 * existing record (e.g. {@code 1000000}, which exists in the core DB only).
+	 * existing record (e.g. {@code 1000000}, which exists in the core DB but need not exist in a customer DB).
 	 * <p>
 	 * Optional columns:
 	 * <ul>
