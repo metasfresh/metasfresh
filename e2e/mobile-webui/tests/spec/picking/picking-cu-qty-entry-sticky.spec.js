@@ -175,7 +175,7 @@ test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the coun
     await PickingJobScreen.clickLineButton({ index: 1 });
     await PickingJobLineScreen.waitForScreen();
 
-    await PickingJobLineScreen.clickPickHUButton();           // "HU verpacken": a new round, nothing is remembered
+    await PickingJobLineScreen.tapPickHUButton();             // "HU verpacken": a new round, nothing is remembered
     await PickLineScanScreen.waitForScreen();
     await GetQuantityDialog.expectNotShown();                 // no quantity block before a label is scanned
     await scanLabel(labelOf({ masterdata, lot }));

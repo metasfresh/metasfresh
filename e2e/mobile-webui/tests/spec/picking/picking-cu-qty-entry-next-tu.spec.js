@@ -700,7 +700,9 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
         await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.clickPickHUButton();   // the remembered label opens the quantity block again
+        await PickingJobLineScreen.tapPickHUButton();   // a new round: nothing is remembered, the label is scanned again
+        await PickLineScanScreen.waitForScreen();
+        await scanLabel(labelOf({ masterdata }));
         await book({ qty: 4, expectedQtyTarget: 4 });
         await PickGraiScreen.expectNotShown();
     });

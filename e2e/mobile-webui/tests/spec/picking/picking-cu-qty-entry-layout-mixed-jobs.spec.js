@@ -44,15 +44,18 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await book({ qty: 5, expectedQtyTarget: 4 });
                 await layout('Once quantity block after a count of 5 from two source TUs', DIALOG_SCOPE);
 
-                // line screen, "HU verpacken" reopens the block with the remembered count
+                // line screen, "HU verpacken" starts a new round: nothing is remembered, the picker scans a label
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
                 await layout('Once line screen with booked TUs, before closing');
-                await PickingJobLineScreen.clickPickHUButton();
-                await GetQuantityDialog.waitForDialog();
-                await layout('Once quantity block reopened by "HU verpacken" (remembered count)', DIALOG_SCOPE);
+                await PickingJobLineScreen.tapPickHUButton();
+                await PickLineScanScreen.waitForScreen();
+                await GetQuantityDialog.expectNotShown(); // no quantity block before a label is scanned
+                await scanLabel(labelOf({ masterdata }));
+                await GetQuantityDialog.expectQtyEntered(''); // the count starts empty
+                await layout('Once quantity block after "HU verpacken" and a label scan (nothing remembered)', DIALOG_SCOPE);
                 await GetQuantityDialog.clickCancel();
                 await GetQuantityDialog.waitToClose();
                 await PickingJobLineScreen.waitForScreen(); // cancel leads back to the line screen the block was opened from
