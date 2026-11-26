@@ -8,7 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getRecordData } from '../utils/WebAPIValidation';
-import { pickCustomerByMouse, expectFocusOn, expectFocusHeld } from '../utils/QuickInputFocus';
+import { pickCustomerByMouse, pickCustomerAndSettle, expectFocusOn, expectFocusHeld } from '../utils/QuickInputFocus';
 
 /**
  * Pins (must pass on today's code): in the sales order header a mouse click on a list field opens its
@@ -99,7 +99,10 @@ testCases.forEach(({ language, label }) => {
       await SalesOrderPage.goto();
       await SalesOrderPage.clickNew();
       const bp = masterdata.bpartners.CUST;
-      const recordId = await pickCustomerByMouse({ searchText: bp.bpartnerCode, bpartnerCode: bp.bpartnerCode });
+      // the header walks the cursor partner -> address -> contact after the pick; wait until that walk has settled
+      const recordId = await pickCustomerAndSettle(() =>
+        pickCustomerByMouse({ searchText: bp.bpartnerCode, bpartnerCode: bp.bpartnerCode })
+      );
       await expect(page.locator(PAYMENT_RULE)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       return recordId;
     };
