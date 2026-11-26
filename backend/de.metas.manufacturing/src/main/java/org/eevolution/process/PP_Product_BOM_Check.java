@@ -1,5 +1,6 @@
 package org.eevolution.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -13,12 +14,14 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -28,6 +31,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -81,11 +85,16 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 					.addColumn(I_M_Product.COLUMNNAME_Name)
 					.endOrderBy();
 
-			final List<I_M_Product> products = queryBuilder.create().list();
+			final Iterator<I_M_Product> products = queryBuilder.create()
+					.setOption(IQuery.OPTION_IteratorBufferSize, 50)
+					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+					.iterate(I_M_Product.class);
+			int totalCount = 0;
 			final List<String> failedValues = new ArrayList<>();
 
-			for (final I_M_Product product : products)
+			for (final I_M_Product product : IteratorUtils.asIterable(products))
 			{
+				totalCount++;
 				// the process log gets exactly one line per failed product (below); without this, e.g. the TrxManager adds its own log line for the same exception
 				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(Loggables.nop()))
 				{
@@ -106,11 +115,12 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 				}
 			}
 
+			// a category without BOM products also ends here: "All 0 products ... verified, none failed" is truthful
 			if (failedValues.isEmpty())
 			{
-				return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_OK, new Object[] { products.size() });
+				return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_OK, new Object[] { totalCount });
 			}
-			return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_FAILED, new Object[] { failedValues.size(), products.size(), cappedList(failedValues) });
+			return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_FAILED, failedMessageParams(failedValues, totalCount));
 		}
 		else
 		{
@@ -121,9 +131,20 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 	}
 
 	/**
-	 * @return the values joined by ", ", as many as fit in {@link #MAX_FAILED_LIST_LENGTH} characters, then ", …" if more follow
+	 * @return the parameters of {@link #MSG_CATEGORY_RUN_FAILED}: failed count, total count, capped value list
 	 */
-	private static String cappedList(@NonNull final List<String> values)
+	@VisibleForTesting
+	static Object[] failedMessageParams(@NonNull final List<String> failedValues, final int totalCount)
+	{
+		return new Object[] { failedValues.size(), totalCount, cappedList(failedValues) };
+	}
+
+	/**
+	 * @return the values joined by ", ": always the first value (even if longer than {@link #MAX_FAILED_LIST_LENGTH} characters),
+	 * then as many further values as fit in {@link #MAX_FAILED_LIST_LENGTH} characters in total, then ", …" if more follow
+	 */
+	@VisibleForTesting
+	static String cappedList(@NonNull final List<String> values)
 	{
 		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < values.size(); i++)
