@@ -658,5 +658,22 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
     wrapper.update();
     expect(wrapper.find('input').prop('value')).toBe('04.12.2027');
   });
+
+  ['21.11.2026', ''].forEach((typed) => {
+    it(`grid: the calendar icon resets the input, so the typed "${typed}" is not saved on leave`, () => {
+      const patch = jest.fn();
+      const { wrapper, picker } = mountWithStore({
+        isGridCell: true,
+        isPointerEdit: true,
+        value: stored(),
+        patch,
+      });
+      picker().handleFocus(); // pointer entry opens the calendar
+      typeInto(wrapper, typed);
+      picker().toggleCalendarOpenClosed(); // closes it and resets the input to the stored date
+      picker().handleBlur();
+      expect(patch).not.toHaveBeenCalled();
+    });
+  });
 });
 

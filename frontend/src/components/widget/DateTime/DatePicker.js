@@ -268,7 +268,7 @@ class DatePicker extends PureComponent {
 
   resetPickerSelectedDateAndInputValueToLastPatchedDate = () => {
     // the input shows the stored value again: what was typed before is gone (handleBlur commits it first)
-    this.typedText = undefined;
+    this.discardTypedDate();
 
     if (this.picker) {
       const { datePatched } = this.state;
