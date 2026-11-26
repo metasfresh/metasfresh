@@ -120,6 +120,25 @@ export const HUConsolidationJobScreen = {
         }
     }),
 
+    /** Expect the first picking slot row to follow the pallet button directly: less than one button height between them, i.e. no gap where the Scan (GRAI) button would be. */
+    expectFirstPickingSlotDirectlyBelowPalletButton: async () => await test.step(`${NAME} - Expect the first picking slot directly below the pallet button (no gap)`, async () => {
+        const palletButton = page.getByTestId('targetLU-button');
+        const firstSlot = page.locator('[data-pickingslotid]').first();
+        await expect(palletButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(firstSlot).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        const palletBox = await palletButton.boundingBox();
+        const slotBox = await firstSlot.boundingBox();
+        const gap = slotBox.y - (palletBox.y + palletBox.height);
+        expect(gap, 'gap (px) between the pallet button and the first picking slot').toBeLessThan(palletBox.height);
+    }),
+
+    /** @returns {Promise<number>} top edge (px) of the Fertigstellen / Complete button; it must not move when the Scan (GRAI) button vanishes */
+    getCompleteButtonTop: async () => await step(`${NAME} - Get the Complete button's top edge`, async () => {
+        const button = page.locator('#last-confirm-button');
+        await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        return (await button.boundingBox()).y;
+    }),
+
     /** Expect the "Scan (GRAI)" button to sit below the pallet button and above the picking slot rows. */
     expectScanGRAIButtonBetweenPalletButtonAndSlots: async () => await test.step(`${NAME} - Expect Scan (GRAI) button below the pallet button and above the picking slots`, async () => {
         const topOf = async (locator) => (await locator.boundingBox())?.y;

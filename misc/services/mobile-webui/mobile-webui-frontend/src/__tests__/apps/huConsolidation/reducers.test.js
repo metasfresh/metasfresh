@@ -1,4 +1,9 @@
-import { isGRAIScanEnabled, isHUConsolidationJobLoaded } from '../../../apps/huConsolidation/reducers';
+import {
+  isGRAIScanEnabled,
+  isHUConsolidationJobLoaded,
+  mergeJobIntoActivityDataStored,
+  wasGRAIScanButtonShown,
+} from '../../../apps/huConsolidation/reducers';
 
 describe('huConsolidation selectors', () => {
   describe('isHUConsolidationJobLoaded', () => {
@@ -23,6 +28,28 @@ describe('huConsolidation selectors', () => {
     it('reads the flag the backend sent', () => {
       expect(isGRAIScanEnabled({ activity: { dataStored: { job: { graiScanEnabled: true } } } })).toBe(true);
       expect(isGRAIScanEnabled({ activity: { dataStored: { job: { graiScanEnabled: false } } } })).toBe(false);
+    });
+  });
+
+  describe('GRAI scan button latch', () => {
+    it('is not latched while the backend never enabled the GRAI scan', () => {
+      const dataStored = {};
+      mergeJobIntoActivityDataStored({ draftActivityDataStored: dataStored, job: { graiScanEnabled: false } });
+      expect(wasGRAIScanButtonShown({ activity: { dataStored } })).toBe(false);
+      expect(dataStored.job).toEqual({ graiScanEnabled: false });
+    });
+
+    it('latches once the backend enabled the GRAI scan and stays latched after it is disabled', () => {
+      const dataStored = {};
+      mergeJobIntoActivityDataStored({ draftActivityDataStored: dataStored, job: { graiScanEnabled: true } });
+      expect(wasGRAIScanButtonShown({ activity: { dataStored } })).toBe(true);
+      mergeJobIntoActivityDataStored({ draftActivityDataStored: dataStored, job: { graiScanEnabled: false } });
+      expect(wasGRAIScanButtonShown({ activity: { dataStored } })).toBe(true);
+      expect(isGRAIScanEnabled({ activity: { dataStored } })).toBe(false);
+    });
+
+    it('is false without an activity', () => {
+      expect(wasGRAIScanButtonShown({ activity: undefined })).toBe(false);
     });
   });
 });
