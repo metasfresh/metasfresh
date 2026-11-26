@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.masterdata.shipment;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -11,7 +10,6 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedul
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -36,7 +34,6 @@ public class ShipmentCreateCommand
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(ShipmentCreateCommand.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
@@ -55,19 +52,15 @@ public class ShipmentCreateCommand
 	{
 		final OrderId orderId = context.getId(request.getSalesOrder(), OrderId.class);
 
-		// 1. Poll for shipment schedules (they are created asynchronously after order completion)
-		final List<I_M_ShipmentSchedule> shipmentSchedules = pollForShipmentSchedules(orderId);
-		if (shipmentSchedules.isEmpty())
-		{
-			throw new AdempiereException("No shipment schedules found for order " + orderId);
-		}
-
-		// 2. Prepare candidates and generate the shipment
-		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
-
 		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = request.getQuantityType() != null
 				? M_ShipmentSchedule_QuantityTypeToUse.ofCode(request.getQuantityType())
 				: M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER;
+
+		// 1. Wait for the shipment schedules (they are created and recomputed asynchronously after order completion)
+		final List<I_M_ShipmentSchedule> shipmentSchedules = awaitShipmentSchedules(orderId, quantityTypeToUse);
+
+		// 2. Prepare candidates and generate the shipment
+		final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 		final List<ShipmentScheduleWithHU> candidates = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
@@ -107,7 +100,9 @@ public class ShipmentCreateCommand
 				.build();
 	}
 
-	private List<I_M_ShipmentSchedule> pollForShipmentSchedules(final OrderId orderId)
+	private List<I_M_ShipmentSchedule> awaitShipmentSchedules(
+			@NonNull final OrderId orderId,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
 	{
 		// Get order line IDs for this order
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(orderId);
@@ -120,25 +115,16 @@ public class ShipmentCreateCommand
 			throw new AdempiereException("No order lines found for order " + orderId);
 		}
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-
-		while (true)
-		{
-			final List<I_M_ShipmentSchedule> schedules = shipmentSchedulePA.getByOrderLineIds(orderLineIds);
-			if (!schedules.isEmpty())
-			{
-				logger.info("Found {} shipment schedules for order {} after {}", schedules.size(), orderId, stopwatch);
-				return schedules;
-			}
-
-			if (stopwatch.elapsed().compareTo(SHIPMENT_SCHEDULE_POLL_TIMEOUT) > 0)
-			{
-				throw new AdempiereException("Timeout waiting for shipment schedules for order " + orderId + ". Waited " + stopwatch.elapsed());
-			}
-
-			logger.info("No shipment schedules yet for order {}. Sleeping... (elapsed: {})", orderId, stopwatch);
-			sleep(SHIPMENT_SCHEDULE_POLL_SLEEP);
-		}
+		return ShipmentSchedulesAwaiter.builder()
+				.orderId(orderId)
+				.orderLineIds(orderLineIds)
+				// shipping the QtyToDeliver needs the recomputed QtyToDeliver
+				.requirePositiveQtyToDeliver(quantityTypeToUse == M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.timeout(SHIPMENT_SCHEDULE_POLL_TIMEOUT)
+				.pollInterval(SHIPMENT_SCHEDULE_POLL_SLEEP)
+				.sleeper(ShipmentCreateCommand::sleep)
+				.build()
+				.await();
 	}
 
 	private static void sleep(@NonNull final Duration duration)

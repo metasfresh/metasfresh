@@ -27,7 +27,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLowLevelInterceptors;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
-import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.distribution.ddordercandidate.material_dispo.PPOrderBOMLineDistributionSupplyMover;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
@@ -35,6 +35,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.SpringContextHolder;
@@ -52,6 +53,7 @@ import org.eevolution.api.impl.ProductBOMVersionsDAO;
  * <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
  * @author Teo Sarca, www.arhipac.ro
  */
+@RequiredArgsConstructor
 public final class LiberoValidator extends AbstractModuleInterceptor
 {
 	/**
@@ -59,17 +61,17 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	 */
 	public static final String CTX_IsLiberoEnabled = "#IsLiberoEnabled";
 
-	private final PPOrderPojoConverter ppOrderConverter;
-	private final PostMaterialEventService materialEventService;
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final DDOrderLowLevelService ddOrderLowLevelService;
-	private final ProductBOMVersionsDAO bomVersionsDAO;
-	private final ProductBOMService productBOMService;
-	private final DDOrderCandidateRepository ddOrderCandidateRepository;
-	private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
-	private final DistributionNetworkRepository distributionNetworkRepository;
-	private final ReplenishInfoRepository replenishInfoRepository;
+	@NonNull private final PPOrderPojoConverter ppOrderConverter;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
+	@NonNull private final ProductBOMVersionsDAO bomVersionsDAO;
+	@NonNull private final ProductBOMService productBOMService;
+	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
+	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+	@NonNull private final PPOrderBOMLineDistributionSupplyMover ppOrderBOMLineDistributionSupplyMover;
 
 	public LiberoValidator()
 	{
@@ -80,36 +82,10 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			 SpringContextHolder.instance.getBean(DDOrderLowLevelService.class),
 			 SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class),
 			 SpringContextHolder.instance.getBean(ProductBOMService.class),
-			 SpringContextHolder.instance.getBean(DDOrderCandidateRepository.class),
 			 SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class),
 			 SpringContextHolder.instance.getBean(DistributionNetworkRepository.class),
-			 SpringContextHolder.instance.getBean(ReplenishInfoRepository.class));
-	}
-
-	public LiberoValidator(
-			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
-			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
-			@NonNull final ProductBOMService productBOMService,
-			@NonNull final DDOrderCandidateRepository ddOrderCandidateRepository,
-			@NonNull final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository,
-			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
-			@NonNull final ReplenishInfoRepository replenishInfoRepository)
-	{
-		this.ppOrderConverter = ppOrderConverter;
-		this.materialEventService = materialEventService;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.ppOrderBOMBL = ppOrderBOMBL;
-		this.ddOrderLowLevelService = ddOrderLowLevelService;
-		this.bomVersionsDAO = bomVersionsDAO;
-		this.productBOMService = productBOMService;
-		this.ddOrderCandidateRepository = ddOrderCandidateRepository;
-		this.ddOrderCandidateAllocRepository = ddOrderCandidateAllocRepository;
-		this.distributionNetworkRepository = distributionNetworkRepository;
-		this.replenishInfoRepository = replenishInfoRepository;
+			 SpringContextHolder.instance.getBean(ReplenishInfoRepository.class),
+			 SpringContextHolder.instance.getBean(PPOrderBOMLineDistributionSupplyMover.class));
 	}
 
 	@Override
@@ -127,10 +103,11 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 				materialEventService,
 				documentNoBuilderFactory,
 				ppOrderBOMBL,
-				bomVersionsDAO));
+				bomVersionsDAO,
+				ppOrderBOMLineDistributionSupplyMover));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ddOrderCandidateRepository));
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(ppOrderBOMLineDistributionSupplyMover));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector());
 

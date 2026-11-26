@@ -77,4 +77,13 @@ public class InvoiceCandidateListeners implements IInvoiceCandidateListeners
 		}
 	}
 
+	@Override
+	public void onAfterUpdated(@NonNull final I_C_Invoice_Candidate candidate)
+	{
+		for (final IInvoiceCandidateListener listener : listeners)
+		{
+			listener.onAfterUpdated(candidate);
+		}
+	}
+
 }

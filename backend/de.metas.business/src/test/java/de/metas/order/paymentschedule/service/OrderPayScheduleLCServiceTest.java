@@ -49,6 +49,7 @@ import java.time.LocalDate;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Property-based JUnit for {@link OrderPayScheduleLCStepService}.
@@ -333,6 +334,126 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	// -----------------------------------------------------------------------
+	// No-LC payment terms (no Letter-of-Credit break)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * A payment term with a single {@code OD} advance break + a {@code BL} break (no LC break
+	 * at all). Once the proforma is allocated and its payment completes, the OD (advance) line must
+	 * reach {@code Paid} with {@code DueAmt_Actual == proforma GrandTotal}; {@code C_Order.LC_Date}
+	 * must stay null (no LC break to stamp); the BL line must be untouched.
+	 * <p>
+	 * Verifies that the recompute step correctly handles no-LC advance breaks.
+	 */
+	@Test
+	void noLc_advanceLine_completedPayment_yields_Paid()
+	{
+		final OrderId orderId = createOrder();
+		createAdvancePayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Pending_Ref);
+		createMaterialReceiptPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Pending_Ref);
+
+		final Timestamp invoiceDate = TimeUtil.asTimestamp(LocalDate.of(2026, 7, 1));
+		final int proformaInvoiceId = createProformaInvoice(invoiceDate);
+		createAlloc(orderId, proformaInvoiceId);
+		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Completed);
+
+		service.recomputeLCStep(orderId);
+
+		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
+		assertThat(odLine.getStatus())
+				.as("no-LC advance (OD) line must reach Paid once the proforma payment completes")
+				.isEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
+		assertThat(odLine.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+
+		final I_C_Order order = findOrder(orderId);
+		assertThat(order.getLC_Date())
+				.as("no LC break in this payment term — LC_Date must stay null")
+				.isNull();
+
+		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
+		assertThat(blLine.getStatus())
+				.as("BL line is untouched by the recompute step")
+				.isEqualTo(X_C_OrderPaySchedule.STATUS_Pending_Ref);
+	}
+
+	/**
+	 * A payment term with only a {@code BL} (material-receipt) break — no advance line, no LC
+	 * line at all. Paying the proforma must not mark any line {@code Paid} and must not throw.
+	 */
+	@Test
+	void noLc_noAdvanceLine_paysNothing()
+	{
+		final OrderId orderId = createOrder();
+		createMaterialReceiptPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Pending_Ref);
+
+		final int proformaInvoiceId = createProformaInvoice(TimeUtil.asTimestamp(LocalDate.of(2026, 7, 2)));
+		createAlloc(orderId, proformaInvoiceId);
+		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Completed);
+
+		assertThatCode(() -> service.recomputeLCStep(orderId))
+				.as("no exception even though there is no advance/LC line to pay")
+				.doesNotThrowAnyException();
+
+		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
+		assertThat(blLine.getStatus())
+				.as("no advance/LC line present — nothing should be marked Paid")
+				.isNotEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
+	}
+
+	/**
+	 * Order completion on a no-LC payment term whose first break is an {@code OD} advance, with NO
+	 * proforma allocation at all: {@code recomputeLCStepAfterOrderCompleted} must leave the schedule
+	 * that {@code OrderPayScheduleService.createOrderPaySchedules} just built completely alone.
+	 * <p>
+	 * Guards the regression where the unconditional {@code recomputeLCStep} took its
+	 * {@code proforma == null} branch on every ordinary completion and reset the advance line to
+	 * {@code Pending} / {@code 9999-12-01} with a null {@code ReferenceDate}.
+	 */
+	@Test
+	void afterOrderCompleted_noProformaAllocation_leavesAdvanceLineUntouched()
+	{
+		final OrderId orderId = createOrder();
+		createAdvancePayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		createMaterialReceiptPayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Pending_Ref);
+
+		service.recomputeLCStepAfterOrderCompleted(orderId);
+
+		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
+		assertThat(odLine.getStatus())
+				.as("no proforma allocation — the freshly built advance (OD) line must keep its status")
+				.isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(TimeUtil.asLocalDate(odLine.getDueDate()))
+				.as("no proforma allocation — the advance line's DueDate must not be reset")
+				.isEqualTo(LocalDate.of(2026, 6, 1));
+
+		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
+		assertThat(blLine.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Pending_Ref);
+	}
+
+	/**
+	 * The same order completion, but WITH an allocated (unpaid) proforma: then there IS something to
+	 * re-derive, so the advance line must pick the proforma up and reach {@code Awaiting_Pay} with
+	 * {@code DueAmt_Actual == proforma GrandTotal}. Proves the guard above narrows the call to the
+	 * no-proforma case only, rather than disabling the re-derivation altogether.
+	 */
+	@Test
+	void afterOrderCompleted_proformaAllocated_rederivesAdvanceLine()
+	{
+		final OrderId orderId = createOrder();
+		createAdvancePayScheduleLine(orderId, X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+
+		final int proformaInvoiceId = createProformaInvoice(TimeUtil.asTimestamp(LocalDate.of(2026, 7, 3)));
+		createAlloc(orderId, proformaInvoiceId);
+
+		service.recomputeLCStepAfterOrderCompleted(orderId);
+
+		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
+		assertThat(odLine.getStatus()).isEqualTo(X_C_OrderPaySchedule.STATUS_Awaiting_Pay);
+		assertThat(odLine.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
+		assertThat(TimeUtil.asLocalDate(odLine.getDueDate())).isEqualTo(LocalDate.of(2026, 7, 3));
+	}
+
+	// -----------------------------------------------------------------------
 	// Fixture helpers
 	// -----------------------------------------------------------------------
 
@@ -359,6 +480,36 @@ class OrderPayScheduleLCServiceTest
 	 */
 	private void createLCPayScheduleLine(final OrderId orderId, final String initialStatus)
 	{
+		createPayScheduleLine(orderId, ReferenceDateType.LetterOfCreditDate, 100, initialStatus);
+	}
+
+	/**
+	 * OrderDate/no-LC variant: the {@code OD} advance break of a no-LC payment term.
+	 */
+	private void createAdvancePayScheduleLine(final OrderId orderId, final String initialStatus)
+	{
+		createPayScheduleLine(orderId, ReferenceDateType.OrderDate, 10, initialStatus);
+	}
+
+	/**
+	 * The {@code BL} (bill-of-lading) material-receipt break of a no-LC payment term.
+	 */
+	private void createMaterialReceiptPayScheduleLine(final OrderId orderId, final String initialStatus)
+	{
+		createPayScheduleLine(orderId, ReferenceDateType.BillOfLadingDate, 90, initialStatus);
+	}
+
+	/**
+	 * Creates one pay-schedule line of the given {@link ReferenceDateType} for the given order.
+	 * Uses a synthetic {@code C_PaymentTerm_ID} and {@code C_PaymentTerm_Break_ID} (just non-zero ints —
+	 * the service does not validate them, only uses {@code ReferenceDateType}).
+	 */
+	private void createPayScheduleLine(
+			final OrderId orderId,
+			final ReferenceDateType referenceDateType,
+			final int percent,
+			final String initialStatus)
+	{
 		final int payTermId = PAYMENT_TERM_ID_COUNTER++;
 		final int payTermBreakId = PAYMENT_TERM_ID_COUNTER++;
 		final int currencyId = 318; // EUR
@@ -367,11 +518,11 @@ class OrderPayScheduleLCServiceTest
 		schedule.setC_Order_ID(orderId.getRepoId());
 		schedule.setC_PaymentTerm_ID(payTermId);
 		schedule.setC_PaymentTerm_Break_ID(payTermBreakId);
-		schedule.setReferenceDateType(ReferenceDateType.LetterOfCreditDate.getCode());
+		schedule.setReferenceDateType(referenceDateType.getCode());
 		schedule.setDueAmt(PROFORMA_GRAND_TOTAL);
 		schedule.setC_Currency_ID(currencyId);
 		schedule.setDueDate(TimeUtil.asTimestamp(LocalDate.of(2026, 6, 1)));
-		schedule.setPercent(100);
+		schedule.setPercent(percent);
 		schedule.setOffsetDays(0);
 		schedule.setSeqNo(10);
 		schedule.setStatus(initialStatus);
@@ -429,11 +580,19 @@ class OrderPayScheduleLCServiceTest
 
 	private I_C_OrderPaySchedule findLCLine(final OrderId orderId)
 	{
-		// reload all pay-schedule lines for the order and find the LC one
+		return findLineByReferenceDateType(orderId, ReferenceDateType.LetterOfCreditDate);
+	}
+
+	/**
+	 * Reloads all pay-schedule lines for the order and returns the one matching the given
+	 * {@link ReferenceDateType} (e.g. the OD advance line or the BL material-receipt line).
+	 */
+	private I_C_OrderPaySchedule findLineByReferenceDateType(final OrderId orderId, final ReferenceDateType referenceDateType)
+	{
 		return de.metas.util.Services.get(org.adempiere.ad.dao.IQueryBL.class)
 				.createQueryBuilder(I_C_OrderPaySchedule.class)
 				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, ReferenceDateType.LetterOfCreditDate.getCode())
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, referenceDateType)
 				.create()
 				.firstOnlyNotNull(I_C_OrderPaySchedule.class);
 	}

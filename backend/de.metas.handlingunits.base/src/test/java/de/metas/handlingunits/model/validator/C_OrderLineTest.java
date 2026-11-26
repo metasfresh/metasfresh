@@ -40,11 +40,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.adempiere.gui.search.impl.HUPackingAwareBL;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -268,5 +270,70 @@ public class C_OrderLineTest
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("QtyEntered")
 				.hasMessageContaining("QtyDelivered");
+	}
+
+	/**
+	 * A TU quantity is always a whole number: editing QtyEnteredTU to 1.5 must be refused
+	 * instead of silently recomputing QtyEntered from 1 TU (1.5 truncated).
+	 */
+	@Test
+	public void qtyEnteredTU_edit_fractional_isRefused()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		saveRecord(order);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order(order);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product(pip);
+		orderLine.setQtyEntered(new BigDecimal("16"));
+		orderLine.setQtyEnteredTU(new BigDecimal("2"));
+		orderLine.setQtyDelivered(BigDecimal.ZERO);
+		saveRecord(orderLine);  // BEFORE registering the validator
+
+		POJOLookupMap.get().addModelValidator(new C_OrderLine());
+
+		orderLine.setQtyEnteredTU(new BigDecimal("1.5"));
+		assertThatThrownBy(() -> saveRecord(orderLine))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue())
+				.hasMessageContaining(HUPackingAwareBL.MSG_QtyTU_MustBeWholeNumber.toAD_Message());
+	}
+
+	/**
+	 * When QtyEntered (CU) drives the change, the TU-to-CU recomputation stays silent: QtyEnteredTU is derived
+	 * from QtyEntered (rounded up to whole TUs) and QtyEntered is not overwritten from the TU quantity.
+	 */
+	@Test
+	public void qtyEntered_edit_drivesQtyEnteredTU_withoutRecomputingQtyEntered()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		saveRecord(order);
+
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order(order);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product(pip);
+		orderLine.setQtyEntered(new BigDecimal("16"));
+		orderLine.setQtyEnteredTU(new BigDecimal("2"));
+		orderLine.setQtyDelivered(BigDecimal.ZERO);
+		saveRecord(orderLine);  // BEFORE registering the validator
+
+		// HUOrderBL needs a Spring context; updating the packing instruction from the partner is not under test here
+		Services.registerService(IHUOrderBL.class, Mockito.mock(IHUOrderBL.class));
+		POJOLookupMap.get().addModelValidator(new C_OrderLine());
+
+		orderLine.setQtyEntered(new BigDecimal("20")); // 20 CU / 8 CU per TU = 2.5 => 3 TU
+		saveRecord(orderLine);
+
+		final I_C_OrderLine reloaded = load(orderLine.getC_OrderLine_ID(), I_C_OrderLine.class);
+		assertThat(reloaded.getQtyEnteredTU()).isEqualByComparingTo("3");
+		assertThat(reloaded.getQtyEntered())
+				.as("QtyEntered drove the change and must not be recomputed from 3 TU (= 24 CU)")
+				.isEqualByComparingTo("20");
 	}
 }

@@ -45,6 +45,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -227,6 +228,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 	{
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
 				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.productId(productId)

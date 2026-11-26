@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -50,6 +51,7 @@ import java.util.function.Consumer;
 public class ShipmentScheduleService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
@@ -145,6 +147,7 @@ public class ShipmentScheduleService
 
 		boolean isAuto;
 		boolean isIncludeCarrierAdviseManual;
+		boolean usePickingStartedGate;
 
 		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 		{
@@ -183,6 +186,22 @@ public class ShipmentScheduleService
 		return !isEligibleForCarrierAdvise(request.toBuilder().isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual).build());
 	}
 
+	/**
+	 * Used by the {@code M_ShipmentSchedule_Advise_Manual} process only.
+	 * Ineligible once picking is actively started (an active, un-shipped picked qty exists).
+	 * This is a <em>more lenient</em> gate than the picking-job-exists check used by the other
+	 * manual paths: the manual-set window stays open even after a picking job schedule exists,
+	 * closing only once actual qty has been picked.
+	 */
+	public boolean isNotEligibleForManualCarrierSet(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	{
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
+		return !isEligibleForCarrierAdvise(request.toBuilder()
+				.isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual)
+				.usePickingStartedGate(true)
+				.build());
+	}
+
 	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request)
 	{
 		// NOTE: no QtyToDeliver gate — the advise request is per-unit (numberOfItems=1), so it is independent of
@@ -210,7 +229,24 @@ public class ShipmentScheduleService
 		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 		if (shipmentScheduleId == null) {return true;}
 
+		if (request.isAuto)
+		{
+			// AUTO: ineligible the moment a picking-job-schedule merely exists.
+			return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+		}
+
+		// MANUAL: when usePickingStartedGate is true, stay eligible until picking is actively
+		// started (qty picked > 0); otherwise use the stricter "any picking-job-schedule exists" gate.
+		if (request.isUsePickingStartedGate())
+		{
+			return !isPickingActivelyStarted(shipmentScheduleId);
+		}
 		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+	}
+
+	private boolean isPickingActivelyStarted(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentScheduleId).signum() > 0;
 	}
 
 }

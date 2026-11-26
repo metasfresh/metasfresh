@@ -1,5 +1,6 @@
 import { test } from '../../../../playwright.config';
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { expect } from '@playwright/test';
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { GetQuantityDialog } from '../picking/GetQuantityDialog';
 import { DistributionUtils } from './DistributionUtils';
@@ -29,6 +30,29 @@ export const DistributionLinePickFromScreen = {
         expectHeaderProperty: async ({ caption, value, exact = true }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
             await DistributionLinePickFromScreen.waitForScreen();
             await DistributionUtils.expectHeaderProperty({ caption, value, exact });
+        }),
+
+        // The screen renders EXACTLY ONE of "Scan HU" / "Scan product" (a switch, not overlapping
+        // panels — see ScanHUAndGetQtyComponent's progressStatus), so asserting the product-scan
+        // input is `visible` also proves the HU-scan input is NOT the one showing. Used to guard
+        // the auto-advance-from-the-same-staging-LU scenario: after auto-advancing to the next
+        // order, the screen must be ready for the product scan directly — not sit in "Scan HU"
+        // state (which would misroute the operator's next scan, the product GTIN, into the HU slot).
+        expectProductScanReady: async () => await test.step(`${NAME} - Expect ready for PRODUCT scan (HU carried forward, no re-scan needed)`, async () => {
+            await DistributionLinePickFromScreen.waitForScreen();
+            await expect(page.getByTestId('scanProductCode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        }),
+
+        // Mirror image of expectProductScanReady: the operator is asked to (re-)scan the source HU
+        // because the app has no HU to work from yet. The product-scan input must be gone; that is
+        // asserted here rather than in a separate method because the check is only meaningful AFTER
+        // the HU input is visible — while the component is still uninitialised it renders neither
+        // input, so an isolated toHaveCount(0) would pass vacuously. FAST timeout: at that point the
+        // product input can only be absent, so a slow one would just burn budget on a real failure.
+        expectHUScanReady: async () => await test.step(`${NAME} - Expect ready for HU scan (operator must scan the source HU)`, async () => {
+            await DistributionLinePickFromScreen.waitForScreen();
+            await expect(page.getByTestId('scanHUBarcode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.getByTestId('scanProductCode-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
         }),
 
         scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {

@@ -8,6 +8,7 @@ import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.error.IssueCategory;
 import de.metas.error.IssueCountersByCategory;
 import de.metas.error.IssueCreateRequest;
+import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
@@ -24,6 +25,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.IssueReportableExceptions;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.DB;
@@ -95,7 +97,11 @@ public class ErrorManager implements IErrorManager
 	@Override
 	public AdIssueId createIssue(@NonNull final IssueCreateRequest request)
 	{
-		return trxManager.callInNewTrx(() -> createIssueInTrx(request));
+		// Bounds the recursion when this save fails and the trx manager logs the failure through the ambient loggable.
+		try (final IAutoCloseable ignored = LoggableWithThrowableUtil.suppressAdIssueCreation())
+		{
+			return trxManager.callInNewTrx(() -> createIssueInTrx(request));
+		}
 	}
 
 	private AdIssueId createIssueInTrx(@NonNull final IssueCreateRequest request)
@@ -130,14 +136,13 @@ public class ErrorManager implements IErrorManager
 				int count = 0;
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
-					final String s = element.toString();
-					if (s.contains("adempiere"))
+					if (isMetasfreshFrame(element))
 					{
-						errorTrace.append(s).append("\n");
+						errorTrace.append(element).append("\n");
 						if (count == 0)
 						{
 							issue.setSourceClassName(element.getClassName());
-							issue.setSourceClassName(element.getMethodName());
+							issue.setSourceMethodName(element.getMethodName());
 							issue.setLineNo(element.getLineNumber());
 						}
 						count++;
@@ -196,6 +201,22 @@ public class ErrorManager implements IErrorManager
 		return adIssueId;
 	}
 
+	/**
+	 * Tells whether the frame belongs to a metasfresh package root, and is therefore worth reporting as the origin of
+	 * the error. The other production roots are third-party namespaces, c3p0's included — a few metasfresh helpers
+	 * live there, but matching that root would pull in every c3p0 frame.
+	 */
+	private static boolean isMetasfreshFrame(@NonNull final StackTraceElement element)
+	{
+		final String className = element.getClassName();
+		return className.startsWith("de.metas.")
+				|| className.startsWith("de.adempiere.")
+				|| className.startsWith("de.schaeffer.")
+				|| className.startsWith("org.adempiere.")
+				|| className.startsWith("org.compiere.")
+				|| className.startsWith("org.eevolution.");
+	}
+
 	private static String buildIssueSummary(final IssueCreateRequest request)
 	{
 		String summary = request.getSummary();
@@ -205,7 +226,9 @@ public class ErrorManager implements IErrorManager
 		{
 			final String throwableMessage = AdempiereException.extractMessage(throwable);
 
-			summary = Check.isNotBlank(summary)
+			// A caller that logged the throwable's own message (every REST error does) must not get it stored twice;
+			// that message can be large, e.g. when it embeds the rejected request payload.
+			summary = Check.isNotBlank(summary) && !summary.equals(throwableMessage)
 					? throwableMessage + " " + summary
 					: throwableMessage;
 		}

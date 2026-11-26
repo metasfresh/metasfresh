@@ -51,6 +51,8 @@ FROM M_HU tu
              left join m_inout io on io.m_inout_id = iol.m_inout_id
              LEFT JOIN C_BPartner bp on coalesce(rs.C_BPartner_ID, io.c_bpartner_id) = bp.C_BPartner_ID
              LEFT JOIN C_Order o on coalesce(rs.C_Order_ID, io.c_order_id) = o.C_Order_ID
+    -- only the printed HU: lets PostgreSQL build the receipt info for one HU instead of all HUs
+    where tu.M_HU_ID = $1
     order by tu.M_HU_ID, bp.name nulls last, o.DocumentNo nulls last
 ) ri ON ri.M_HU_ID = tu.M_HU_ID
 

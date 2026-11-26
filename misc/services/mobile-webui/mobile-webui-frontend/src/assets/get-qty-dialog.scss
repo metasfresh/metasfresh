@@ -5,7 +5,15 @@ $serialno-extra-orange: #e67e22;
 .get-qty-dialog {
 
   .table-container {
-    height: 70vh;
+    // Cap-and-scroll, do NOT force the height: a fixed `height: 70vh` reserved 70vh even when the
+    // content is short (just Qty / Qty-to-Receive), leaving a large empty band and pushing the
+    // buttons to the bottom of the dialog (the "huge gap" defect). It also inflated the dialog past
+    // the viewport so the flex-centered card clipped its own top ("Qty to Receive" cut off).
+    // `max-height` lets the container shrink to its content (no gap, card fits and centers) while
+    // still scrolling a genuinely tall grid. In the mfg-receipt case this container holds BOTH the
+    // qty table AND the EditableAttributesSection table; both are plain `.table`s (no `view-header`),
+    // so they render with the SAME base rules below as picking's qty table — identical typography.
+    max-height: 70vh;
     overflow-x: auto;
     overflow-y: auto;
 

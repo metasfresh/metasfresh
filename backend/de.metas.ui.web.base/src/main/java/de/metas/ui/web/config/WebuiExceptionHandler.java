@@ -3,13 +3,18 @@ package de.metas.ui.web.config;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
+import org.compiere.util.Env;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,9 +85,20 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final String ATTR_Stacktrace = "trace";
 	private static final String ATTR_Path = "path";
 	private static final String ATTR_UserFriendlyError = "userFriendlyError";
+	private static final String ATTR_UserMessagePresentation = "userMessagePresentation";
+	private static final String ATTR_UserMessageTitle = "userMessageTitle";
+
+	/**
+	 * Shared title for every {@link UserMessagePresentation#ACKNOWLEDGE_DIALOG}. See the
+	 * {@code @implNote} on {@link UserMessagePresentation} for why this is a single presentation-mode-level
+	 * title rather than something each throw site sets individually.
+	 */
+	private static final AdMessageKey MSG_ACKNOWLEDGE_DIALOG_TITLE_INFORMATION = AdMessageKey.of("ACKNOWLEDGE_DIALOG_TITLE_INFORMATION");
 
 	@Value("${de.metas.ui.web.config.WebuiExceptionHandler.logExceptions:true}")
 	private boolean logExceptions;
+
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final ImmutableSet<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
@@ -224,6 +240,10 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			errorAttributes.put(ATTR_Message, AdempiereException.extractMessage(rootError));
 			errorAttributes.put(ATTR_UserFriendlyError, AdempiereException.isUserValidationError(rootError));
 
+			final UserMessagePresentation userMessagePresentation = AdempiereException.getUserMessagePresentation(rootError);
+			errorAttributes.put(ATTR_UserMessagePresentation, userMessagePresentation);
+			addUserMessageTitleIfNeeded(errorAttributes, userMessagePresentation);
+
 			if (errorAttributeOptions.isIncluded(ErrorAttributeOptions.Include.STACK_TRACE) && !isExcludeFromLogging(rootError))
 			{
 				addStackTrace(errorAttributes, rootError);
@@ -239,6 +259,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			{
 				errorAttributes.put(ATTR_Message, message);
 				errorAttributes.put(ATTR_UserFriendlyError, false);
+				errorAttributes.put(ATTR_UserMessagePresentation, UserMessagePresentation.TOAST);
 			}
 		}
 
@@ -257,6 +278,21 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 				errorAttributes.put(ATTR_ExceptionAttributes, jsonExceptionAttributes);
 			}
+		}
+	}
+
+	/**
+	 * Emits {@link #ATTR_UserMessageTitle} only for {@link UserMessagePresentation#ACKNOWLEDGE_DIALOG}
+	 * (a {@code TOAST} never shows a title). The frontend falls back to an empty title when this key is
+	 * absent, so an older/other error path that never reaches this method degrades gracefully.
+	 */
+	private void addUserMessageTitleIfNeeded(
+			@NonNull final Map<String, Object> errorAttributes,
+			@NonNull final UserMessagePresentation userMessagePresentation)
+	{
+		if (userMessagePresentation == UserMessagePresentation.ACKNOWLEDGE_DIALOG)
+		{
+			errorAttributes.put(ATTR_UserMessageTitle, msgBL.getMsg(Env.getCtx(), MSG_ACKNOWLEDGE_DIALOG_TITLE_INFORMATION));
 		}
 	}
 

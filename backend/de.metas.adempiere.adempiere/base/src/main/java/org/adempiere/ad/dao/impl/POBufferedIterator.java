@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +20,11 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
+package org.adempiere.ad.dao.impl;
 
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.IQuery;
@@ -34,9 +32,9 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -54,7 +52,7 @@ import lombok.NonNull;
 	private final String rowNumberColumn;
 
 	private int bufferSize = 50;
-	private int offset = 0; // in the DB, line is set via the row_number() window function wich starts at 1
+	private int offset = 0; // in the DB, line is set via the row_number() window function which starts at 1
 
 	private Iterator<ET> bufferIterator;
 

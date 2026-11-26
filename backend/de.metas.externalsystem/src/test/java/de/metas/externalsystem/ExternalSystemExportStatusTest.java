@@ -219,6 +219,25 @@ class ExternalSystemExportStatusTest
 		assertThat(ExternalSystemExportStatus.DontSend.isInProgressOrSend()).isFalse();
 	}
 
+	/**
+	 * isResendable() is status-only: Error/Invalid/DontSend qualify. Pending is NOT resendable on status
+	 * alone — an operator-parked Pending becomes resendable only via the per-row PInstance gate in
+	 * ExternalSystemExportStatusService#getResendableConfigsBySourceRecord (see its test), never here.
+	 * The in-flight Enqueued/SendingStarted and already-Sent are never resendable.
+	 */
+	@Test
+	void testIsResendable()
+	{
+		assertThat(ExternalSystemExportStatus.Error.isResendable()).isTrue();
+		assertThat(ExternalSystemExportStatus.Invalid.isResendable()).isTrue();
+		assertThat(ExternalSystemExportStatus.DontSend.isResendable()).isTrue();
+
+		assertThat(ExternalSystemExportStatus.Pending.isResendable()).isFalse();
+		assertThat(ExternalSystemExportStatus.Enqueued.isResendable()).isFalse();
+		assertThat(ExternalSystemExportStatus.SendingStarted.isResendable()).isFalse();
+		assertThat(ExternalSystemExportStatus.Sent.isResendable()).isFalse();
+	}
+
 	/** AD_Reference_ID binding is 542104 */
 	@Test
 	void testAdReferenceId()

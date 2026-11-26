@@ -210,6 +210,63 @@ public class HierarchyCommissionConfigFactoryTest
 		expect.serializer("orderedJson").toMatchSnapshot(config);
 	}
 
+	@Test
+	void createFor_customerSpecificLine_winsOverGeneralLine()
+	{
+		final HierarchyContract contract = createSingleLevelContractWithLines(
+				TestCommissionConfigLine.builder().name("customerLine").seqNo(10).customerId(endCustomerId).percentOfBasePoints("5").build(),
+				TestCommissionConfigLine.builder().name("generalLine").seqNo(20).percentOfBasePoints("3").build());
+
+		assertThat(contract.getCommissionPercent().toBigDecimal()).isEqualTo("5");
+	}
+
+	@Test
+	void createFor_customerSpecificLineForOtherCustomer_generalLineApplies()
+	{
+		final I_C_BPartner otherCustomerRecord = newInstance(I_C_BPartner.class);
+		otherCustomerRecord.setName("otherCustomer");
+		saveRecord(otherCustomerRecord);
+		final BPartnerId otherCustomerId = BPartnerId.ofRepoId(otherCustomerRecord.getC_BPartner_ID());
+
+		final HierarchyContract contract = createSingleLevelContractWithLines(
+				TestCommissionConfigLine.builder().name("otherCustomerLine").seqNo(10).customerId(otherCustomerId).percentOfBasePoints("5").build(),
+				TestCommissionConfigLine.builder().name("generalLine").seqNo(20).percentOfBasePoints("3").build());
+
+		assertThat(contract.getCommissionPercent().toBigDecimal()).isEqualTo("3");
+	}
+
+	private HierarchyContract createSingleLevelContractWithLines(
+			@NonNull final TestCommissionConfigLine line1,
+			@NonNull final TestCommissionConfigLine line2)
+	{
+		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(2)
+				.subtractLowerLevelCommissionFromBase(false)
+				.configLineTestRecord(line1)
+				.configLineTestRecord(line2)
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.build()
+				.createConfigData();
+
+		final BPartnerId salesRepId = configData.getName2BPartnerId().get("salesRep");
+		setSalesRepOfEndCustomerTo(salesRepId);
+
+		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
+				.orgId(configData.getOrgId())
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepId))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepId)
+				.commissionTriggerType(commissionTriggerType)
+				.salesProductId(salesProductId)
+				.commissionDate(date).build();
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		assertThat(configs).hasSize(1);
+		return HierarchyContract.cast(HierarchyConfig.cast(configs.get(0)).getContractFor(salesRepId));
+	}
+
 	private void setSalesRepOfEndCustomerTo(final BPartnerId salesRepLvl0Id)
 	{
 		final I_C_BPartner endcustomerRecord = load(endCustomerId, I_C_BPartner.class);

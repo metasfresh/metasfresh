@@ -12,6 +12,7 @@ import {
   disableShortcut,
 } from '../actions/WindowActions';
 import { setTableNavigation } from '../actions/TableActions';
+import { addNotification } from '../actions/AppActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
@@ -213,6 +214,7 @@ WidgetWrapper.propTypes = {
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   setTableNavigation: PropTypes.func.isRequired,
+  addNotification: PropTypes.func.isRequired,
 };
 
 export default connect(
@@ -225,6 +227,7 @@ export default connect(
     patch,
     updatePropertyValue,
     setTableNavigation,
+    addNotification,
   },
   null,
   { forwardRef: true }

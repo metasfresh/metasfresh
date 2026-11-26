@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	We received this file as camt.054-ESR-ASR_P_CH0309000000250090342_38000000_0_2016052723010603.xml
+	but renamed it for convenience
+ -->
+<ns:Document xmlns:ns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.06" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.06 camt.054.001.06.xsd">
+	<ns:BkToCstmrDbtCdtNtfctn>
+		<ns:GrpHdr>
+			<ns:MsgId>20160527375204000015681</ns:MsgId>
+			<ns:CreDtTm>2016-05-27T23:00:57</ns:CreDtTm>
+			<ns:MsgPgntn>
+				<ns:PgNb>1</ns:PgNb>
+				<ns:LastPgInd>true</ns:LastPgInd>
+			</ns:MsgPgntn>
+			<ns:AddtlInf>Productive</ns:AddtlInf>
+		</ns:GrpHdr>
+		<ns:Ntfctn>
+			<ns:Id>20160527375204000015680</ns:Id>
+			<ns:CreDtTm>2016-05-27T23:00:57</ns:CreDtTm>
+			<ns:FrToDt>
+				<ns:FrDtTm>2016-05-27T00:00:00</ns:FrDtTm>
+				<ns:ToDtTm>2016-05-27T23:59:59</ns:ToDtTm>
+			</ns:FrToDt>
+			<ns:Acct>
+				<ns:Id>
+					<ns:IBAN>CH0309000000250090342</ns:IBAN>
+				</ns:Id>
+				<ns:Ownr>
+					<ns:Nm>Robert Schneider SA Grands magasins Biel/Bienne</ns:Nm>
+				</ns:Ownr>
+			</ns:Acct>
+			<ns:Ntry>
+				<ns:NtryRef>010000004</ns:NtryRef>
+				<ns:Amt Ccy="CHF">1000.00</ns:Amt>
+				<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+				<ns:RvslInd>false</ns:RvslInd>
+				<ns:Sts>BOOK</ns:Sts>
+				<ns:BookgDt>
+					<ns:Dt>2016-05-27</ns:Dt>
+				</ns:BookgDt>
+				<ns:ValDt>
+					<ns:Dt>2016-05-30</ns:Dt>
+				</ns:ValDt>
+				<ns:AcctSvcrRef>20160530007602769939022000000012</ns:AcctSvcrRef>
+				<ns:BkTxCd>
+					<ns:Domn>
+						<ns:Cd>PMNT</ns:Cd>
+						<ns:Fmly>
+							<ns:Cd>RCDT</ns:Cd>
+							<ns:SubFmlyCd>VCOM</ns:SubFmlyCd>
+						</ns:Fmly>
+					</ns:Domn>
+				</ns:BkTxCd>
+				<ns:Chrgs>
+					<ns:TtlChrgsAndTaxAmt Ccy="CHF">5.60</ns:TtlChrgsAndTaxAmt>
+					<ns:Rcrd>
+						<ns:Amt Ccy="CHF">5.40</ns:Amt>
+						<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+						<ns:ChrgInclInd>false</ns:ChrgInclInd>
+						<ns:Tp>
+							<ns:Prtry>
+								<ns:Id>2</ns:Id>
+							</ns:Prtry>
+						</ns:Tp>
+					</ns:Rcrd>
+					<ns:Rcrd>
+						<ns:Amt Ccy="CHF">0.20</ns:Amt>
+						<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+						<ns:ChrgInclInd>false</ns:ChrgInclInd>
+						<ns:Tp>
+							<ns:Prtry>
+								<ns:Id>4</ns:Id>
+							</ns:Prtry>
+						</ns:Tp>
+					</ns:Rcrd>
+				</ns:Chrgs>
+				<ns:NtryDtls>
+					<ns:Btch>
+						<ns:NbOfTxs>10</ns:NbOfTxs>
+					</ns:Btch>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3L0GE</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>04</ns:Tp>
+								<ns:Ref>20160526531801000100274</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">100.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>CNTR</ns:Cd>
+									<ns:SubFmlyCd>CDPT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:Chrgs>
+							<ns:TtlChrgsAndTaxAmt Ccy="CHF">1.24</ns:TtlChrgsAndTaxAmt>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">1.20</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>2</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.04</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>4</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+						</ns:Chrgs>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002015110002913192</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-26T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3KWWA</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>01</ns:Tp>
+								<ns:Ref>160527CH00T3KWWA</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">50.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>RCDT</ns:Cd>
+									<ns:SubFmlyCd>AUTT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:RltdPties>
+							<ns:Dbtr>
+								<ns:Nm>Rutschmann Pia</ns:Nm>
+								<ns:PstlAdr>
+									<ns:StrtNm>Marktgasse</ns:StrtNm>
+									<ns:BldgNb>28</ns:BldgNb>
+									<ns:PstCd>9400</ns:PstCd>
+									<ns:TwnNm>Rorschach</ns:TwnNm>
+									<ns:Ctry>CH</ns:Ctry>
+								</ns:PstlAdr>
+							</ns:Dbtr>
+						</ns:RltdPties>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030002820804</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-27T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T2H28C</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>01</ns:Tp>
+								<ns:Ref>160527CH00T2H28C</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">200.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>RCDT</ns:Cd>
+									<ns:SubFmlyCd>ATXN</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:ClrSysMmbId>
+										<ns:MmbId>000048358</ns:MmbId>
+									</ns:ClrSysMmbId>
+									<ns:Nm>Credit Suisse AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>Paradeplatz 8</ns:AdrLine>
+										<ns:AdrLine>8070 Zürich</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030001581632</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-27T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3L0W5</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>04</ns:Tp>
+								<ns:Ref>20160526838805000100263</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">50.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>CNTR</ns:Cd>
+									<ns:SubFmlyCd>CDPT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:Chrgs>
+							<ns:TtlChrgsAndTaxAmt Ccy="CHF">0.94</ns:TtlChrgsAndTaxAmt>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.90</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>2</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.04</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>4</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+						</ns:Chrgs>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002015110003015939</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-26T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3L0NC</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>04</ns:Tp>
+								<ns:Ref>20160526017105000100040</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">100.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>CNTR</ns:Cd>
+									<ns:SubFmlyCd>CDPT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:Chrgs>
+							<ns:TtlChrgsAndTaxAmt Ccy="CHF">1.24</ns:TtlChrgsAndTaxAmt>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">1.20</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>2</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.04</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>4</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+						</ns:Chrgs>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030000535990</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-26T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3KXDV</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>01</ns:Tp>
+								<ns:Ref>160527CH00T3KXDV</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">200.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>RCDT</ns:Cd>
+									<ns:SubFmlyCd>AUTT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:RltdPties>
+							<ns:Dbtr>
+								<ns:Nm>Bernasconi Maria</ns:Nm>
+								<ns:PstlAdr>
+									<ns:StrtNm>Place de la Gare</ns:StrtNm>
+									<ns:BldgNb>12</ns:BldgNb>
+									<ns:PstCd>2502</ns:PstCd>
+									<ns:TwnNm>Biel/Bienne</ns:TwnNm>
+									<ns:Ctry>CH</ns:Ctry>
+								</ns:PstlAdr>
+							</ns:Dbtr>
+							<ns:DbtrAcct>
+								<ns:Id>
+									<ns:IBAN>CH4444444444444444444</ns:IBAN>
+								</ns:Id>
+							</ns:DbtrAcct>
+						</ns:RltdPties>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030002463591</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-27T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3KZO9</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>04</ns:Tp>
+								<ns:Ref>20160526252501000100033</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">50.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>CNTR</ns:Cd>
+									<ns:SubFmlyCd>CDPT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:Chrgs>
+							<ns:TtlChrgsAndTaxAmt Ccy="CHF">0.94</ns:TtlChrgsAndTaxAmt>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.90</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>2</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.04</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>4</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+						</ns:Chrgs>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030002780613</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-26T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T3L0V2</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>04</ns:Tp>
+								<ns:Ref>20160526832003000100047</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">100.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>CNTR</ns:Cd>
+									<ns:SubFmlyCd>CDPT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:Chrgs>
+							<ns:TtlChrgsAndTaxAmt Ccy="CHF">1.24</ns:TtlChrgsAndTaxAmt>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">1.20</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>2</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+							<ns:Rcrd>
+								<ns:Amt Ccy="CHF">0.04</ns:Amt>
+								<ns:CdtDbtInd>DBIT</ns:CdtDbtInd>
+								<ns:ChrgInclInd>false</ns:ChrgInclInd>
+								<ns:Tp>
+									<ns:Prtry>
+										<ns:Id>4</ns:Id>
+									</ns:Prtry>
+								</ns:Tp>
+							</ns:Rcrd>
+						</ns:Chrgs>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030001554373</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-26T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T99DU7</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>01</ns:Tp>
+								<ns:Ref>160527CH00T99DU7</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">50.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>RCDT</ns:Cd>
+									<ns:SubFmlyCd>AUTT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:RltdPties>
+							<ns:Dbtr>
+								<ns:Nm>Zürcher Kantonalbank</ns:Nm>
+								<ns:PstlAdr>
+									<ns:StrtNm>Bahnhofstrasse</ns:StrtNm>
+									<ns:BldgNb>9</ns:BldgNb>
+									<ns:PstCd>8001</ns:PstCd>
+									<ns:TwnNm>Zürich</ns:TwnNm>
+									<ns:Ctry>CH</ns:Ctry>
+								</ns:PstlAdr>
+							</ns:Dbtr>
+							<ns:DbtrAcct>
+								<ns:Id>
+									<ns:IBAN>CH0000000000000000000</ns:IBAN>
+								</ns:Id>
+							</ns:DbtrAcct>
+						</ns:RltdPties>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030000985620</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-27T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+					<ns:TxDtls>
+						<ns:Refs>
+							<ns:AcctSvcrRef>160527CH00T99EBW</ns:AcctSvcrRef>
+							<ns:Prtry>
+								<ns:Tp>01</ns:Tp>
+								<ns:Ref>160527CH00T99EBW</ns:Ref>
+							</ns:Prtry>
+						</ns:Refs>
+						<ns:Amt Ccy="CHF">100.00</ns:Amt>
+						<ns:CdtDbtInd>CRDT</ns:CdtDbtInd>
+						<ns:BkTxCd>
+							<ns:Domn>
+								<ns:Cd>PMNT</ns:Cd>
+								<ns:Fmly>
+									<ns:Cd>RCDT</ns:Cd>
+									<ns:SubFmlyCd>AUTT</ns:SubFmlyCd>
+								</ns:Fmly>
+							</ns:Domn>
+						</ns:BkTxCd>
+						<ns:RltdPties>
+							<ns:Dbtr>
+								<ns:Nm>UBS Switzerland AG</ns:Nm>
+								<ns:PstlAdr>
+									<ns:StrtNm>Bahnhofstrasse</ns:StrtNm>
+									<ns:BldgNb>45</ns:BldgNb>
+									<ns:PstCd>8001</ns:PstCd>
+									<ns:TwnNm>Zürich</ns:TwnNm>
+									<ns:Ctry>CH</ns:Ctry>
+								</ns:PstlAdr>
+							</ns:Dbtr>
+							<ns:DbtrAcct>
+								<ns:Id>
+									<ns:IBAN>CH0000000000000000000</ns:IBAN>
+								</ns:Id>
+							</ns:DbtrAcct>
+						</ns:RltdPties>
+						<ns:RltdAgts>
+							<ns:DbtrAgt>
+								<ns:FinInstnId>
+									<ns:BICFI>POFICHBEXXX</ns:BICFI>
+									<ns:Nm>POSTFINANCE AG</ns:Nm>
+									<ns:PstlAdr>
+										<ns:AdrLine>MINGERSTRASSE 20</ns:AdrLine>
+										<ns:AdrLine>3030 BERNE</ns:AdrLine>
+									</ns:PstlAdr>
+								</ns:FinInstnId>
+							</ns:DbtrAgt>
+						</ns:RltdAgts>
+						<ns:RmtInf>
+							<ns:Strd>
+								<ns:CdtrRefInf>
+									<ns:Tp>
+										<ns:CdOrPrtry>
+											<ns:Prtry>ISR Reference</ns:Prtry>
+										</ns:CdOrPrtry>
+									</ns:Tp>
+									<ns:Ref>000000000002016030001593614</ns:Ref>
+								</ns:CdtrRefInf>
+								<ns:AddtlRmtInf>?REJECT?0</ns:AddtlRmtInf>
+							</ns:Strd>
+						</ns:RmtInf>
+						<ns:RltdDts>
+							<ns:AccptncDtTm>2016-05-27T20:00:00</ns:AccptncDtTm>
+						</ns:RltdDts>
+					</ns:TxDtls>
+				</ns:NtryDtls>
+				<ns:AddtlNtryInf>SAMMELGUTSCHRIFT ESR VERARBEITUNG VOM 27.05.2016 KUNDENNUMMER 01-000000-4 PAKET ID: 160527CH000000RU</ns:AddtlNtryInf>
+			</ns:Ntry>
+		</ns:Ntfctn>
+	</ns:BkToCstmrDbtCdtNtfctn>
+</ns:Document>

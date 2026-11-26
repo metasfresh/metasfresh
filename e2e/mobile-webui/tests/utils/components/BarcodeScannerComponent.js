@@ -4,6 +4,26 @@ import { expect } from '@playwright/test';
 
 const NAME = 'BarcodeScannerComponent';
 
+// Sends the keystrokes a hardware/wedge scanner sends: keydown/keyup per character, dispatched on
+// document. Shared by type() (which first waits for the app to arm a scan target) and
+// typeWithoutWaitingForScanTarget() (which does not), so both send exactly the same keystrokes.
+const dispatchScanKeystrokes = async (chunk) => {
+    await page.evaluate((code) => {
+        for (const char of code) {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+            document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+        }
+    }, chunk);
+};
+
+// Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') as one keydown/keyup on document.
+const dispatchScanTerminator = async (key) => {
+    await page.evaluate((k) => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+        document.dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true }));
+    }, key);
+};
+
 export const BarcodeScannerComponent = {
     waitToAttach: async ({ testId }) => await test.step(`${NAME} - Wait for input element to attach  (${testId})`, async () => {
         let selector = '#input-text';
@@ -80,33 +100,34 @@ export const BarcodeScannerComponent = {
         // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly,
         // Now a QR code is typed in 30ms instead of 5 seconds.
         // await page.keyboard.type(`${scannedCode}`, { delay: delay != null ? delay : TYPE_DELAY_MILLIS });
-        const dispatchChunk = async (chunk) => {
-            await page.evaluate((code) => {
-                for (const char of code) {
-                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
-                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
-                }
-            }, chunk);
-        };
-
         const hasMidScanGap =
             Number.isInteger(gapAtIndex) && gapAtIndex > 0 && gapAtIndex < scannedCode.length && gapMs > 0;
         if (!hasMidScanGap) {
-            await dispatchChunk(scannedCode);
+            await dispatchScanKeystrokes(scannedCode);
         } else {
-            await dispatchChunk(scannedCode.substring(0, gapAtIndex));
+            await dispatchScanKeystrokes(scannedCode.substring(0, gapAtIndex));
             await page.waitForTimeout(gapMs);
-            await dispatchChunk(scannedCode.substring(gapAtIndex));
+            await dispatchScanKeystrokes(scannedCode.substring(gapAtIndex));
         }
 
         // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
         // hook recognises as "scan finished", force-completing the buffer immediately.
         if (terminator) {
-            await page.evaluate((key) => {
-                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
-                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
-            }, terminator);
+            await dispatchScanTerminator(terminator);
         }
+    }),
+
+    // The operator pulls the scanner trigger without the app having offered a scan target - a hardware
+    // scanner fires its keystrokes whatever the screen is showing. Unlike type() this does NOT wait for a
+    // scan target to be armed, because whether the app takes the scan up at all is the thing being asserted.
+    typeWithoutWaitingForScanTarget: async (scannedCode) => await test.step(`${NAME} - Type scanned code without waiting for a scan target`, async () => {
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+
+        console.log('Scanning scanned code without waiting for a scan target:\n' + scannedCode);
+
+        await dispatchScanKeystrokes(scannedCode);
     }),
 
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
@@ -182,6 +203,9 @@ export const BarcodeScannerComponent = {
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
+        // A keyboard (hardware) scan never writes into #input-text; the reader's explicit state is the
+        // signal that the scan was consumed.
+        await expect(page.locator('.scan-prompt.scan-in-progress')).toHaveCount(0);
     }),
 
     // Fills the visible editable input and presses Enter — exercises the manual-typing path
@@ -267,6 +291,38 @@ export const BarcodeScannerComponent = {
         await expect(page.getByTestId('manual-entry-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
+    // Sends only the first part of a scan, without waiting for a scan target and without completing it,
+    // so a test can observe the screen while the scan is still being read.
+    typePartial: async (chunk) => await test.step(`${NAME} - Type partial scan`, async () => {
+        await dispatchScanKeystrokes(chunk);
+    }),
+
+    // Sends a scanner's end-of-scan suffix key ('Enter' / 'Tab') on its own, e.g. after typePartial().
+    typeTerminator: async (key) => await test.step(`${NAME} - Type end-of-scan key ${key}`, async () => {
+        await dispatchScanTerminator(key);
+    }),
+
+    // The visible scan prompt shows "scanning…" (and hides its idle caption) while a hardware scan is
+    // being read. Asserts what the user sees (CSS display), not only the state class.
+    expectScanInProgressShown: async (isShown) => await test.step(`${NAME} - Expect scan in progress ${isShown ? 'shown' : 'not shown'}`, async () => {
+        const progressCaption = page.locator('.hardware-mode-panel .scan-prompt-text-progress');
+        const idleCaption = page.locator('.hardware-mode-panel .scan-prompt-text-idle');
+        if (isShown) {
+            await expect(progressCaption).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+            await expect(idleCaption).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(idleCaption).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+            await expect(progressCaption).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    // Guards handheld scan speed: a keyboard scan must never be written into the off-screen input (each
+    // write costs a style recalc + layout per character on the handheld); the scan lives in the reader's
+    // buffer only.
+    expectHardwareInputEmpty: async () => await test.step(`${NAME} - Expect hardware input empty`, async () => {
+        await expect(page.locator('#input-text')).toHaveValue('', { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
     // Asserts the manual-entry input does NOT have the readOnly attribute — the user must be able
     // to type into it (keyboard-enabled). Only meaningful when expectManualEntryInputPresent() passes.
     expectManualEntryInputNotReadOnly: async () => await test.step(`${NAME} - Expect manual-entry input not readOnly`, async () => {
@@ -284,6 +340,60 @@ export const BarcodeScannerComponent = {
     // physical camera hardware and cannot be deterministic in CI.
     expectCameraModeActive: async () => await test.step(`${NAME} - Expect camera mode active`, async () => {
         await expect(page.locator('.camera-mode-panel')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Injects a deterministic blank-canvas camera double so the camera-mode toggle test is stable.
+    // WHY: CameraModePanel.startCamera() calls getUserMedia()/codeReader.decodeFromVideoDevice(); when
+    // that rejects, onCancel fires → setActiveMode(defaultMode=hardware) → the `.camera-mode-panel`
+    // wrapper unmounts, so expectCameraModeActive() times out. Chromium's synthetic fake-media feed
+    // (--use-fake-device-for-media-stream) is decodable + flicker-prone, so ZXing intermittently
+    // false-positives a barcode (or a transient NotReadableError surfaces) → reject → mode reverts →
+    // 20s flake. This stub replaces getUserMedia with a constant grey 640x480 canvas stream: it never
+    // rejects (panel stays mounted) and, being a flat single colour, gives ZXing nothing to decode
+    // (no false-positive teardown). enumerateDevices is stubbed too so the camera enumerates cleanly.
+    // MUST be called BEFORE the app loads (before LoginScreen.login) — page.addInitScript runs on every
+    // document creation, so it is in place when the frontend first requests the camera.
+    // Keeps BOTH hardware and camera modes enabled — it makes the real camera path deterministic
+    // rather than disabling it, so the hw↔camera toggle under test is still exercised end to end.
+    stubCameraStream: async () => await test.step(`${NAME} - Stub getUserMedia (blank deterministic stream)`, async () => {
+        await page.addInitScript(() => {
+            const makeBlankStream = () => {
+                const c = document.createElement('canvas');
+                c.width = 640;
+                c.height = 480;
+                const ctx = c.getContext('2d');
+                const paint = () => {
+                    ctx.fillStyle = '#808080';
+                    ctx.fillRect(0, 0, c.width, c.height);
+                };
+                paint();
+                const intervalId = setInterval(paint, 100);
+                const stream = c.captureStream(10);
+                // Stop the repaint loop when the video track is stopped (CameraModePanel's cleanup
+                // calls track.stop()), so a test that toggles the camera on/off repeatedly does not
+                // leak one live setInterval per toggle. captureStream tracks don't auto-clear it.
+                stream.getVideoTracks().forEach((track) => {
+                    const originalStop = track.stop.bind(track);
+                    track.stop = () => {
+                        clearInterval(intervalId);
+                        originalStop();
+                    };
+                });
+                return stream;
+            };
+            // navigator.mediaDevices is a secure-context-only API: it is undefined when the page is
+            // served over an insecure origin (e.g. http://mobile in the E2E stack, unless the origin
+            // is whitelisted as secure). Production is always HTTPS, so it is always present there.
+            // Belt-and-suspenders: if it is absent, create it first (it is a read-only accessor on
+            // Navigator, so plain assignment is ignored — use Object.defineProperty), then attach the
+            // stubs unconditionally so the fake camera works even without the secure-context whitelist.
+            if (!navigator.mediaDevices) {
+                Object.defineProperty(navigator, 'mediaDevices', { value: {}, configurable: true, writable: true });
+            }
+            navigator.mediaDevices.getUserMedia = () => Promise.resolve(makeBlankStream());
+            navigator.mediaDevices.enumerateDevices = () => Promise.resolve(
+                [{ kind: 'videoinput', deviceId: 'fake-cam', label: 'Fake Camera', groupId: 'g', toJSON() { return this; } }]);
+        });
     }),
 
     // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',

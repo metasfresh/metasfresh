@@ -103,7 +103,7 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | jobSchedule               | shipmentSchedule      | workplace      | 5         |
 
     # Exactly one Completed DD_Order, qty 5, source stockWH, target locator = the workstation's pick-from locator,
-    # with both DD_Order.M_Picking_Job_Schedule_ID and DD_OrderLine.M_Picking_Job_Schedule_ID referencing the assignment.
+    # with the line's contributor set being exactly that assignment.
     Then after not more than 120s, the DD_Order linked to picking job schedule is found:
       | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
       | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |

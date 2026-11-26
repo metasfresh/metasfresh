@@ -969,6 +969,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -978,6 +979,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1013,7 +1015,7 @@ public interface I_C_Payment
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1023,7 +1025,7 @@ public interface I_C_Payment
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -1485,6 +1487,56 @@ public interface I_C_Payment
 
 	ModelColumn<I_C_Payment, Object> COLUMN_PayAmt = new ModelColumn<>(I_C_Payment.class, "PayAmt", null);
 	String COLUMNNAME_PayAmt = "PayAmt";
+
+	/**
+	 * Set Payment bonus.
+	 * Bonus incl. VAT that the customer deducts when paying. It is booked with a payment bonus credit memo.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentBonusAmt (BigDecimal PaymentBonusAmt);
+
+	/**
+	 * Get Payment bonus.
+	 * Bonus incl. VAT that the customer deducts when paying. It is booked with a payment bonus credit memo.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPaymentBonusAmt();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_PaymentBonusAmt = new ModelColumn<>(I_C_Payment.class, "PaymentBonusAmt", null);
+	String COLUMNNAME_PaymentBonusAmt = "PaymentBonusAmt";
+
+	/**
+	 * Set Payment bonus credit memo.
+	 * Credit memo that booked the payment bonus of this payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentBonus_CreditMemo_ID (int PaymentBonus_CreditMemo_ID);
+
+	/**
+	 * Get Payment bonus credit memo.
+	 * Credit memo that booked the payment bonus of this payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPaymentBonus_CreditMemo_ID();
+
+	@Nullable org.compiere.model.I_C_Invoice getPaymentBonus_CreditMemo();
+
+	void setPaymentBonus_CreditMemo(@Nullable org.compiere.model.I_C_Invoice PaymentBonus_CreditMemo);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_C_Invoice> COLUMN_PaymentBonus_CreditMemo_ID = new ModelColumn<>(I_C_Payment.class, "PaymentBonus_CreditMemo_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_PaymentBonus_CreditMemo_ID = "PaymentBonus_CreditMemo_ID";
 
 	/**
 	 * Set PO Number.

@@ -33,6 +33,12 @@ const createMasterdata = async ({ packedGtin }) => {
                     // Bare TU target (no LU): the CU is packed directly into a top-level TU.
                     pickTo: ['TU'],
                     allowCompletingPartialPickingJob: true,
+                    // Both scenarios below pick PARTIALLY (2 of 4), which leaves a rejected qty. The
+                    // rejected-reason prompt is a sticky header-row field shared by the whole suite, so
+                    // inheriting it makes these specs depend on whatever ran before them (and on the DB
+                    // flavour). Set it explicitly: no reason is required, so the qty dialog can be
+                    // confirmed and the scenario is about the unpick, not about the reason prompt.
+                    allowSkippingRejectedReason: true,
                 }
             },
             bpartners: { "BP1": {} },

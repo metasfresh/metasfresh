@@ -49,6 +49,8 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <!-- java.version>=14 is compiled with JDK 17; the parent's lombok-1.18.18 annotation processor crashes on JDK 16+ (IllegalAccessError on jdk.compiler internals) -->
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

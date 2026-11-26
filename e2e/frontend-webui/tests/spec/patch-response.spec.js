@@ -422,11 +422,14 @@ test.describe('PATCH Response Handling', () => {
       'Verify record B still shows its own Name (not corrupted)',
       async () => {
         const nameInput = getNameInput(page);
-        const nameValue = await nameInput.inputValue();
-        console.log(
-          `Record B Name after stale PATCH release: "${nameValue}"`
-        );
-        expect(nameValue).toBe('Record B');
+        // Retrying assertion: wait for record B's Name to paint after the
+        // navigation, then verify the stale PATCH for A did not corrupt it.
+        // A one-shot inputValue() here could read the field before its
+        // async-loaded value rendered -> transient empty read (CI flake).
+        await expect(nameInput).toHaveValue('Record B', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        console.log('Record B Name after stale PATCH release: "Record B" (verified)');
       }
     );
 
@@ -441,12 +444,15 @@ test.describe('PATCH Response Handling', () => {
         await gotoRecord(page, recordIdA);
 
         const descInput = getDescriptionInput(page);
-        const descValue = await descInput.inputValue();
-        console.log(
-          `Record A Description after navigation back: "${descValue}"`
-        );
-        // The PATCH was sent to the server and fulfilled, so the value should persist
-        expect(descValue).toBe('Edited on A while delayed');
+        // The PATCH was forwarded to the server (route.fetch) before being
+        // held, so the value is persisted server-side. Use a retrying
+        // assertion to wait for A's Description to paint after navigating
+        // back — a one-shot inputValue() could read it before the
+        // async-loaded value rendered -> transient empty read (CI flake).
+        await expect(descInput).toHaveValue('Edited on A while delayed', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        console.log('Record A Description after navigation back: verified');
       }
     );
   });
@@ -821,11 +827,16 @@ test.describe('PATCH Response Handling', () => {
     await test.step(
       'Verify record B still shows T_Integer=77 (not corrupted)',
       async () => {
-        const intValue = await getNumericValue(page, 'T_Integer');
-        console.log(
-          `Record B T_Integer after stale PATCH release: ${intValue}`
-        );
-        expect(intValue).toBe(77);
+        // Retrying assertion: wait for record B's T_Integer to paint after
+        // the navigation, then verify the stale PATCH for A did not corrupt
+        // it. A one-shot getNumericValue() here could read the field before
+        // its async-loaded value rendered -> transient null read (CI flake).
+        // 77 renders as "77" in both en_US and de_DE (integer < 1000).
+        const intInput = getNumericInput(page, 'T_Integer');
+        await expect(intInput).toHaveValue('77', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        console.log('Record B T_Integer after stale PATCH release: 77 (verified)');
       }
     );
 
@@ -839,11 +850,14 @@ test.describe('PATCH Response Handling', () => {
       async () => {
         await gotoRecord(page, recordIdA);
 
-        const intValue = await getNumericValue(page, 'T_Integer');
-        console.log(
-          `Record A T_Integer after navigation back: ${intValue}`
-        );
-        expect(intValue).toBe(999);
+        // Retrying assertion (see the text variant): wait for A's T_Integer
+        // to paint after navigating back rather than reading once after a
+        // fixed sleep. 999 renders as "999" in both en_US and de_DE.
+        const intInput = getNumericInput(page, 'T_Integer');
+        await expect(intInput).toHaveValue('999', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        console.log('Record A T_Integer after navigation back: 999 (verified)');
       }
     );
   });

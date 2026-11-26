@@ -16,11 +16,13 @@ describe('getCurrentPickingTargetInfoFromActivity', () => {
       carrierProductCaption: null,
       carrierAdviseAvailable: true,
       carrierAdviseReadOnly: false,
+      carrierAdviseDisabledReason: 'Carrier already advised',
       lines: {
         L1: {
           carrierProductCaption: 'GLS Germany ShipIT - Parcel',
           carrierAdviseAvailable: true,
           carrierAdviseReadOnly: false,
+          carrierAdviseDisabledReason: 'Line carrier already advised',
         },
       },
     },
@@ -38,6 +40,39 @@ describe('getCurrentPickingTargetInfoFromActivity', () => {
       expect(info.luPickingTarget).toBeNull();
       expect(info.tuPickingTarget).toBeNull();
     });
+
+    it('exposes lineCarrierAdviseDisabledReason from the line', () => {
+      const info = getCurrentPickingTargetInfoFromActivity({ activity, lineId: 'L1' });
+      expect(info.lineCarrierAdviseDisabledReason).toBe('Line carrier already advised');
+    });
+
+    it('exposes jobCarrierAdviseDisabledReason from the job header', () => {
+      const info = getCurrentPickingTargetInfoFromActivity({ activity, lineId: 'L1' });
+      expect(info.jobCarrierAdviseDisabledReason).toBe('Carrier already advised');
+    });
+  });
+
+  describe('header-level job, line view — line has no disabled reason (fallback to job)', () => {
+    const activityLineNoReason = {
+      dataStored: {
+        ...activity.dataStored,
+        carrierAdviseDisabledReason: 'Job-level reason',
+        lines: {
+          L1: {
+            carrierProductCaption: 'GLS Germany ShipIT - Parcel',
+            carrierAdviseAvailable: true,
+            carrierAdviseReadOnly: false,
+            carrierAdviseDisabledReason: null,
+          },
+        },
+      },
+    };
+
+    it('returns null lineCarrierAdviseDisabledReason and the job reason when line has none', () => {
+      const info = getCurrentPickingTargetInfoFromActivity({ activity: activityLineNoReason, lineId: 'L1' });
+      expect(info.lineCarrierAdviseDisabledReason).toBeNull();
+      expect(info.jobCarrierAdviseDisabledReason).toBe('Job-level reason');
+    });
   });
 
   describe('header view (no line in scope)', () => {
@@ -45,6 +80,12 @@ describe('getCurrentPickingTargetInfoFromActivity', () => {
       const info = getCurrentPickingTargetInfoFromActivity({ activity, lineId: null });
       expect(info.lineCarrierProductCaption).toBeNull();
       expect(info.jobCarrierAdviseAvailable).toBe(true);
+    });
+
+    it('exposes jobCarrierAdviseDisabledReason and null lineCarrierAdviseDisabledReason', () => {
+      const info = getCurrentPickingTargetInfoFromActivity({ activity, lineId: null });
+      expect(info.lineCarrierAdviseDisabledReason).toBeNull();
+      expect(info.jobCarrierAdviseDisabledReason).toBe('Carrier already advised');
     });
   });
 });

@@ -60,9 +60,10 @@ public class BankAccount
 
 	public boolean isAccountNoMatching(@NonNull final String accountNo)
 	{
-		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
-		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
-		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
+		// the stored values may contain blanks (e.g. "CH76 3570 ..."), the same way the given accountNo is cleaned below
+		final String QR_IBAN = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getQR_IBAN()));
+		final String IBAN = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getIBAN()));
+		final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier()));
 
 		final int indexOfSlash = StringUtils.findIndexOf(accountNo, "/");
 

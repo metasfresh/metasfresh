@@ -546,7 +546,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return receiptSchedule.isIsClosed();
+		return receiptSchedule.isClosed();
 	}
 
 	@Override
@@ -691,7 +691,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 			logger.debug("reopenReceiptSchedulesForOrder: saving M_ReceiptSchedule_ID={} | IsClosed={}, Processed={}, QtyOrdered={}, ASI_ID={}",
 					receiptSchedule.getM_ReceiptSchedule_ID(),
-					receiptSchedule.isIsClosed(), receiptSchedule.isProcessed(), receiptSchedule.getQtyOrdered(),
+					receiptSchedule.isClosed(), receiptSchedule.isProcessed(), receiptSchedule.getQtyOrdered(),
 					receiptSchedule.getM_AttributeSetInstance_ID());
 
 			InterfaceWrapperHelper.save(receiptSchedule);
@@ -723,6 +723,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			// itself must stay open for editing. Undo the closeLine side-effect.
 			InterfaceWrapperHelper.refresh(orderLine);
 			orderBL.reopenLine(orderLine);
+
+			// Undo the close's IsDeliveryClosed=Y on the candidates too: with nothing received, it would make them processed
+			// (see InvoiceCandBL.updateProcessedFlag), but the reactivated order's candidates must stay invoiceable.
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 

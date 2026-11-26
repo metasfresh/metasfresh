@@ -25,12 +25,13 @@ import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
-import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
+import de.metas.lang.SOTrx;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -388,7 +389,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
-				.isSOTrx(SOTrx.SALES)
+				// an M_InOut is a shipment or a receipt, never a dropship, so the two-valued mapping is complete here
+				.transportDirection(TransportDirection.ofSOTrx(SOTrx.ofBooleanNotNull(shipment.isSOTrx())))
 				.build();
 
 		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
@@ -425,18 +427,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		if (Check.isEmpty(request.getPackageInfos()))
 		{
-			return huInOutDAO.retrieveShippedHandlingUnits(request.getShipment())
-					.stream()
-					.map(hu -> CreatePackagesRequest.builder()
-							.inOutId(request.getShipmentId())
-							.shipperId(shipperId)
-							.processed(request.isProcessed())
-							.weightInKg(weightCalculator.calculateWeightInKg(hu)
-									.map(weight -> weight.toBigDecimal())
-									.orElse(null))
-							.packageDimensions(extractPackageDimensions(hu))
-							.build())
-					.collect(Collectors.toList());
+			final List<I_M_HU> shippedHUs = huInOutDAO.retrieveShippedHandlingUnits(request.getShipment());
+
+			return shippedHUs.isEmpty()
+					? buildWholeShipmentPackageRequest(shipperId, request, weightCalculator)
+					: buildPerShippedHUPackageRequests(shippedHUs, shipperId, request, weightCalculator);
 		}
 		else
 		{
@@ -455,6 +450,47 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 					)
 					.collect(ImmutableList.toImmutableList());
 		}
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildWholeShipmentPackageRequest(
+			@NonNull final ShipperId shipperId,
+			@NonNull final CreatePackagesForInOutRequest request,
+			@NonNull final ShippingWeightCalculator weightCalculator)
+	{
+		// shipment without shipped HUs (e.g. generated without picking): create one package for the whole
+		// shipment, so adding such a shipment to a transport order still yields a package line.
+		final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+				.inOutId(request.getShipmentId())
+				.shipperId(shipperId)
+				.processed(request.isProcessed())
+				.weightInKg(weightCalculator.calculateWeightInKilograms(request.getShipment())
+						.map(weight -> weight.toBigDecimal())
+						.orElse(null))
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
+				.build();
+		return ImmutableList.of(createPackagesRequest);
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildPerShippedHUPackageRequests(
+			@NonNull final List<I_M_HU> shippedHUs,
+			@NonNull final ShipperId shipperId,
+			@NonNull final CreatePackagesForInOutRequest request,
+			@NonNull final ShippingWeightCalculator weightCalculator)
+	{
+		return shippedHUs
+				.stream()
+				.map(hu -> CreatePackagesRequest.builder()
+						.inOutId(request.getShipmentId())
+						.shipperId(shipperId)
+						.processed(request.isProcessed())
+						.weightInKg(weightCalculator.calculateWeightInKg(hu)
+								.map(weight -> weight.toBigDecimal())
+								.orElse(null))
+						.packageDimensions(extractPackageDimensions(hu))
+						.build())
+				.collect(Collectors.toList());
 	}
 
 	private PackageDimensions extractPackageDimensions(final I_M_HU hu)

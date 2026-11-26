@@ -23,10 +23,13 @@ export class DashboardPage {
           timeout: SLOW_ACTION_TIMEOUT,
         });
 
-      // Wait for network to settle
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+      // Best-effort grace period only: the dashboard's STOMP and KPI polling keep the network
+      // permanently active, so networkidle never settles. The visibility wait above is the real signal.
+      await page
+        .waitForLoadState('networkidle', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {});
     });
   }
 

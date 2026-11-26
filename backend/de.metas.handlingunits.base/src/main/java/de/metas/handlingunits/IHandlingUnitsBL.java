@@ -305,8 +305,20 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(HuPackingInstructionsId, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(packingInstructionsId, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
 
@@ -314,8 +326,20 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull I_M_HU_PI huPI,
-			@Nullable String huUnitType,
+			@Nullable HuUnitType huUnitType,
 			@Nullable BPartnerId bpartnerId);
+
+	/**
+	 * @deprecated use {@link #retrieveParentPIItemsForParentPI(I_M_HU_PI, HuUnitType, BPartnerId)}
+	 */
+	@Deprecated
+	default List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return retrieveParentPIItemsForParentPI(huPI, HuUnitType.ofNullableCode(huUnitType), bpartnerId);
+	}
 
 	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
 
@@ -356,6 +380,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Delegates to {@link IHandlingUnitsDAO#retrievePIItems(I_M_HU_PI_Version, BPartnerId)}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(I_M_HU_PI_Version piVersion, @Nullable BPartnerId bpartnerId);
+
+	/** Id-based twin of {@link #retrieveIncludedHUs(I_M_HU)}, for callers that hold only the {@link HuId}. */
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
+	/**
+	 * The product of the FIRST packing material carried by the given HU (e.g. the crate/pallet product an
+	 * {@code M_HU_PackingMaterial} attaches to a packing-instruction-produced TU), or empty if the HU carries
+	 * no packing material or that packing material has no product.
+	 */
+	Optional<ProductId> getFirstPackingMaterialProductId(@NonNull HuId huId);
 
 	@Builder
 	@Value

@@ -58,6 +58,9 @@ public interface PickingJobLoaderSupportingServices
 
 	int getSalesOrderLineSeqNo(@NonNull OrderAndLineId orderAndLineId);
 
+	/** Batch-load the sales-order-line SeqNos (C_OrderLine.Line) for these lines in ONE query, so later per-line reads are cache hits. */
+	void warmUpSalesOrderLineSeqNosCache(@NonNull Set<OrderAndLineId> orderAndLineIds);
+
 	ProductValueAndName getProductValueAndName(@NonNull ProductId productId);
 
 	HUPIItemProduct getPackingInfo(@NonNull HUPIItemProductId huPIItemProductId);

@@ -34,6 +34,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
@@ -46,6 +48,7 @@ import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
+import de.metas.util.StreamUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,6 +61,7 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -587,6 +591,32 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		}
 
 		return productValueAndName;
+	}
+
+	/**
+	 * Un-joined product names, in sales-order line order (see the sort below). The caller decides the
+	 * separator — see {@link #getProductNamesJoined(String)}.
+	 */
+	@NonNull
+	public ImmutableList<ITranslatableString> getProductNameParts()
+	{
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear).
+		// Order by the sales-order line (C_OrderLine.Line, carried on each line as orderLineSeqNo — already loaded,
+		// no query here), tie-broken by the picking-job-line id: a stable, meaningful caption order that matches the
+		// order the picker reads off the sales document. Sorting happens HERE (caption-only) so PickingJob.lines'
+		// own order is left untouched for the workflow logic that iterates it.
+		return lines.stream()
+				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.sorted(Comparator.comparingInt(PickingJobLine::getOrderLineSeqNo)
+						.thenComparingInt(line -> line.getId().getRepoId()))
+				.map(line -> line.getProductValueAndName().getName())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined(@NonNull final String separator)
+	{
+		return getProductNameParts().stream().collect(TranslatableStrings.joining(separator));
 	}
 
 	@Nullable

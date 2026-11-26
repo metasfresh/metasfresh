@@ -409,7 +409,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		final POJOLookupMap db = POJOLookupMap.get();
 
-		return db.getRecords(modelClass, filters).size();
+		// NOTE: a query created from a plain tableName has a generic modelClass, so the tableName aware overload is required.
+		return db.getRecords(getTableNameToUse(modelClass), modelClass, filters, null).size();
 	}
 
 	@Override

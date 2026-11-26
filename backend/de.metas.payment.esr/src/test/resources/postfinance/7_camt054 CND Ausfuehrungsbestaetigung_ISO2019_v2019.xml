@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 camt.054.001.08.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>3454158ACFX/081500/330566</MsgId>
+			<CreDtTm>2022-05-23T08:15:00</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>SPS/2.0/TEST</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>3454158ACFX/081500/330566</Id>
+			<CreDtTm>2022-05-23T08:15:00</CreDtTm>
+			<Acct>
+				<Id>
+					<IBAN>CH0309000000250090342</IBAN>
+				</Id>
+				<Ccy>CHF</Ccy>
+				<Ownr>
+					<Nm>Robert Schneider SA</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<Amt Ccy="CHF">241.50</Amt>
+				<CdtDbtInd>DBIT</CdtDbtInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2023-02-20</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2023-02-18</Dt>
+				</ValDt>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>ICDT</Cd>
+							<SubFmlyCd>AUTT</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<Chrgs>
+					<TtlChrgsAndTaxAmt Ccy="CHF">5.00</TtlChrgsAndTaxAmt>
+					<Rcrd>
+						<Amt Ccy="CHF">5.00</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>20</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+				</Chrgs>
+				<NtryDtls>
+					<TxDtls>
+						<Refs>
+							<MsgId>MSG-02-QRR-SCOR</MsgId>
+							<PmtInfId>PMTINF-02</PmtInfId>
+						</Refs>
+						<Amt Ccy="CHF">241.50</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>ICDT</Cd>
+									<SubFmlyCd>AUTT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+					</TxDtls>
+				</NtryDtls>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>

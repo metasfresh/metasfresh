@@ -94,6 +94,7 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -371,6 +372,8 @@ public class CarrierAdviseCommand
 			{
 				builder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
 			}
+
+			builder.preAdviceRequired(StringUtils.ofBoolean(order.isPreAdviceRequired()));
 		}
 
 		final ShipperConfigRequest shipperConfigRequest = ShipperConfigRequest.builder()

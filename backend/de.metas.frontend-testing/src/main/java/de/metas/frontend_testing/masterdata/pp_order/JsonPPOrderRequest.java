@@ -37,5 +37,8 @@ public class JsonPPOrderRequest
 	{
 		@NonNull Identifier product;
 		@Nullable String expectedPickingInstruction;
+
+		/** Set raw (not trimmed) on the matched PP_Order_BOMLine before {@link #expectedPickingInstruction} is checked. */
+		@Nullable String pickingInstruction;
 	}
 }

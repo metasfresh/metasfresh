@@ -45,6 +45,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  *     <li>{@code IsInheritPackingInstruction} (optional, default N) — if Y, sub-article order lines
  *         inherit the packing instruction from the main article. Each sub-article must have a compatible
  *         M_HU_PI_Item_Product for the same TU type, otherwise inheritance is skipped for that article.</li>
+ *     <li>{@code OPT.IsAdditive} (optional, default N) — if Y, the schema's compensation lines are added on
+ *         top of the group instead of replacing/discounting it (e.g. a surcharge schema).</li>
  * </ul>
  */
 @RequiredArgsConstructor
@@ -62,6 +64,8 @@ public class C_CompensationGroup_Schema_StepDef
 
 			row.getAsOptionalBoolean(I_C_CompensationGroup_Schema.COLUMNNAME_IsInheritPackingInstruction)
 					.ifPresent(record::setIsInheritPackingInstruction);
+			row.getAsOptionalBoolean(I_C_CompensationGroup_Schema.COLUMNNAME_IsAdditive)
+					.ifPresent(record::setIsAdditive);
 
 			saveRecord(record);
 

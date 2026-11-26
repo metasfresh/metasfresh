@@ -30,7 +30,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -47,6 +47,7 @@ import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -103,7 +104,7 @@ public class ExternalSystemScriptedExportConversionService
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 	@NonNull private final ExternalSystemExportAuditRepo exportAuditRepo;
-	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull private final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -295,28 +296,42 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs) and, only on
-	 * success, creates a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y}.
+	 * Re-sends the scripted export for one config + record, but ONLY if the config's WhereClause still
+	 * matches the record — i.e. there is still something to export. For the EPCIS config the WhereClause
+	 * is {@code epcis_has_events(m_inout_id)}, which is false once every SSCC of the shipment is already
+	 * in the transmission ledger. When nothing is left to export the re-send records a terminal
+	 * {@link ExternalSystemExportStatus#DontSend} and does NOT invoke the adapter, so an empty EPCIS event
+	 * is never sent (mirroring the relevance gate the auto-complete path applies in
+	 * {@link #recordEligibilityAndInvoke}).
 	 *
-	 * <p>The getById-before-recordPendingAsResend ordering is intentional: if the config is
-	 * inactive or missing, getById throws <em>before</em> any Pending row is created, preventing
-	 * an orphan log row with no subsequent invocation.
+	 * <p>The config is resolved (getById, fail-fast — throws for inactive/missing) <em>before</em> any
+	 * status-row write, so a bad config throws before a Pending/DontSend row is created (no orphan row).
 	 *
-	 * @return the resolved config, ready for the follow-up
-	 *         {@link #executeInvokeScriptedExportConversionActionAndGetResult} call
+	 * @return {@code true} if the conversion was invoked (something to send), {@code false} if suppressed
+	 *         because nothing was left to export.
 	 */
-	@NonNull
-	public ExternalSystemScriptedExportConversionConfig resolveConfigAndRecordPendingAsResend(
+	public boolean resendConfigIfRelevant(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
-			@NonNull final TableRecordReference sourceRecord)
+			@NonNull final TableRecordReference sourceRecord,
+			final int recordId)
 	{
-		// Resolve config first — throws for inactive/missing configs (fail-fast, no orphan Pending row)
+		// Resolve config first — throws for inactive/missing configs (fail-fast, before any status-row write)
 		final ExternalSystemScriptedExportConversionConfig config =
 				externalSystemScriptedExportConversionRepository.getById(configId);
 
-		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+		if (!isConfigMatchingRecord(config, recordId))
+		{
+			// nothing left to export (e.g. every SSCC already in the EPCIS ledger) — record DontSend and
+			// do NOT invoke the adapter, so a re-send with nothing new never fires an empty EPCIS event
+			exportStatusService.recordDontSend(configId, sourceRecord);
+			Loggables.addLog("Re-send: config {} record {} → skipped (nothing to export / WhereClause no longer matches)", configId, sourceRecord);
+			return false;
+		}
 
-		return config;
+		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+		executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.RESEND);
+		Loggables.addLog("Re-send: config {} record {} → invoked", configId, sourceRecord);
+		return true;
 	}
 
 	@NonNull
@@ -327,10 +342,12 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
-	 * Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even when previously
-	 * successful); excludes {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and in-flight
-	 * states (Pending, Enqueued, SendingStarted) to avoid duplicate concurrent sends.
+	 * Returns all config IDs in a re-triggerable state for the given source record, judged on each config's
+	 * LATEST attempt. Includes {@link de.metas.externalsystem.ExternalSystemExportStatus#Sent} (re-send even
+	 * when previously successful) and an operator-parked
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}; excludes
+	 * {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend} and the actively-in-flight states
+	 * (Enqueued, SendingStarted, and a transient auto-flow Pending) to avoid duplicate concurrent sends.
 	 *
 	 * @see ExternalSystemExportStatusService#getMatchingConfigIdsBySourceRecord(TableRecordReference)
 	 */
@@ -529,7 +546,7 @@ public class ExternalSystemScriptedExportConversionService
 		try
 		{
 			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(
-					externalSystemConfigRepo.getParentTypeById(config.getParentId()));
+					externalSystemConfigRepository.getParentTypeById(config.getParentId()));
 
 			final UserId exportUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 			final RoleId exportRoleId = Env.getLoggedRoleIdIfExists(getCtx()).orElse(RoleId.SYSTEM);

@@ -147,6 +147,38 @@ public class ShipmentScheduleQtysHelperTest
 			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
 			assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("10");
 		}
+
+		/**
+		 * explicit qtyToDeliver_Override=0 with DeliveryRule=F: qtyToDeliver is 0 (not the qtyOrdered)
+		 */
+		@Test
+		public void withExplicitZeroQtyToDeliverOverride()
+		{
+			final I_M_ShipmentSchedule sched = shipmentSchedule()
+					.qty("14")
+					.qtyToDeliverOverride("0")
+					.deliveryRule(DeliveryRule.FORCE)
+					.build();
+
+			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
+			assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("0");
+		}
+
+		/**
+		 * negative qtyToDeliver_Override with DeliveryRule=F: ignored, qtyToDeliver falls back to the base qty (14)
+		 */
+		@Test
+		public void withNegativeQtyToDeliverOverride()
+		{
+			final I_M_ShipmentSchedule sched = shipmentSchedule()
+					.qty("14")
+					.qtyToDeliverOverride("-5")
+					.deliveryRule(DeliveryRule.FORCE)
+					.build();
+
+			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
+			assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("14");
+		}
 	}
 
 	@Nested

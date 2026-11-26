@@ -6,6 +6,7 @@ import {
   mergeGraiArrays,
   getAssignedGrais,
   getExtraGrais,
+  mergeGraisAfterSend,
 } from '../../utils/grai';
 
 describe('grai list helpers', () => {
@@ -247,6 +248,53 @@ describe('grai parsing', () => {
       expect(parseGraiFromRawInput(undefined)).toBeNull();
       expect(parseGraiFromRawInput(123)).toBeNull();
     });
+
+    // A canonical GRAI whose company prefix starts with "8003" is also accepted by the GS1 parser as
+    // AI 8003 (data "214.95365.1999803101"). Canonical form must win, exactly as in the backend's
+    // de.metas.handlingunits.grai.GRAI.parse; otherwise it is misread as "14.9536.5.199.803101" and
+    // the backend answers 422 GRAINoMatchingTUType. Seen in CI on a random test GRAI (~1 in 10,000):
+    // https://github.com/metasfresh/metasfresh/actions/runs/38117422768
+    it('passes a canonical GRAI whose company prefix starts with 8003 through unchanged', () => {
+      expect(parseGraiFromRawInput('8003214.95365.1999803101')).toBe('8003214.95365.1999803101');
+    });
+
+    it('still parses a genuine GS1 AI 8003 barcode to its exact canonical form', () => {
+      expect(parseGraiFromRawInput(GS1_AI8003_BARCODE)).toBe('7613264.00309.100691412000');
+    });
+
+    describe('randomized: canonical and GS1 inputs never cross over', () => {
+      // Deterministic PRNG (mulberry32) so a failure is reproducible.
+      const mulberry32 = (seed) => () => {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      const random = mulberry32(31020);
+      const digits = (n) => Array.from({ length: n }, () => Math.floor(random() * 10)).join('');
+      const ITERATIONS = 5000;
+
+      it('every canonical GRAI in the test-data format (7.5.10 digits) passes through unchanged', () => {
+        // Same shape as the frontend-testing generator (CreatePackingInstructionsCommand.generateUniqueGRAI);
+        // every second one is forced to the risky "8003" company-prefix start.
+        for (let i = 0; i < ITERATIONS; i++) {
+          const companyPrefix = i % 2 === 0 ? '8003' + digits(3) : digits(7);
+          const canonical = `${companyPrefix}.${digits(5)}.${digits(10)}`;
+          expect(parseGraiFromRawInput(canonical)).toBe(canonical);
+        }
+      });
+
+      it('every numeric GS1 AI 8003 barcode is never taken as canonical and parses to its canonical form', () => {
+        for (let i = 0; i < ITERATIONS; i++) {
+          const companyPrefix = digits(7);
+          const assetType = digits(5);
+          const serial = digits(1 + Math.floor(random() * 16));
+          const barcode = `8003${digits(1)}${companyPrefix}${assetType}${digits(1)}${serial}`;
+          expect(isValidGrai(barcode)).toBe(false);
+          expect(parseGraiFromRawInput(barcode)).toBe(`${companyPrefix}.${assetType}.${serial}`);
+        }
+      });
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -284,9 +332,68 @@ describe('grai parsing', () => {
       expect(parseGraiArrayFromRawInput(raw)).toEqual(['7613204.00307.1', '7613204.00307.2', '7613204.00307.3']);
     });
 
+    it('keeps a canonical GRAI whose company prefix starts with 8003 unchanged in a batch', () => {
+      const raw = '8003214.95365.1999803101\n' + GS1_AI8003_BARCODE;
+      expect(parseGraiArrayFromRawInput(raw)).toEqual(['8003214.95365.1999803101', '7613264.00309.100691412000']);
+    });
+
     it('returns an empty array for empty / null input', () => {
       expect(parseGraiArrayFromRawInput('')).toEqual([]);
       expect(parseGraiArrayFromRawInput(null)).toEqual([]);
     });
+  });
+});
+
+describe('mergeGraisAfterSend', () => {
+  it('nothing changed since the baseline: backend answer plus the baseline extras', () => {
+    expect(
+      mergeGraisAfterSend({
+        baselineGrais: ['A', 'B', 'X'],
+        currentGrais: ['A', 'B', 'X'],
+        backendGrais: ['A', 'B'],
+        tuCount: 2,
+      })
+    ).toEqual(['A', 'B', 'X']);
+  });
+
+  it('the backend lowers the TU count: GRAIs beyond it stay in the list (shown as extras)', () => {
+    const merged = mergeGraisAfterSend({
+      baselineGrais: ['A', 'B'],
+      currentGrais: ['A', 'B'],
+      backendGrais: ['A'],
+      tuCount: 1,
+    });
+    expect(merged).toEqual(['A', 'B']);
+    expect(getAssignedGrais(merged, 1)).toEqual(['A']);
+    expect(getExtraGrais(merged, 1)).toEqual(['B']);
+  });
+
+  it('a code in both the backend answer and the extras appears only once', () => {
+    expect(
+      mergeGraisAfterSend({
+        baselineGrais: ['A', 'B', 'C'],
+        currentGrais: ['A', 'B', 'C'],
+        backendGrais: ['A', 'C'],
+        tuCount: 2,
+      })
+    ).toEqual(['A', 'C']);
+  });
+
+  it('a code added since the baseline that the backend also reports appears only once', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A'], currentGrais: ['A', 'B'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['A', 'B']);
+  });
+
+  it('a code removed and scanned again since the baseline is kept, once', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A', 'B'], currentGrais: ['B', 'A'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['A', 'B']);
+  });
+
+  it('a code removed since the baseline stays removed; a code added is appended', () => {
+    expect(
+      mergeGraisAfterSend({ baselineGrais: ['A', 'B'], currentGrais: ['B', 'C'], backendGrais: ['A', 'B'], tuCount: 0 })
+    ).toEqual(['B', 'C']);
   });
 });

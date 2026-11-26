@@ -54,8 +54,15 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
 };
 
 /**
- * Try to parse a GRAI from raw input. First tries GS1 barcode parsing,
- * then checks if it's already in dot-separated format.
+ * Try to parse a GRAI from raw input. First checks if it's already in dot-separated
+ * (canonical) format, then tries GS1 barcode parsing — the same order as the backend
+ * `de.metas.handlingunits.grai.GRAI.parse`.
+ *
+ * Canonical MUST win: a canonical GRAI whose company prefix starts with "8003"
+ * (e.g. `8003214.95365.1999803101`) is also accepted by the GS1 parser as AI 8003
+ * and would otherwise be misread (`14.9536.5.199.803101`).
+ * The other way round, only a GS1 string containing exactly two non-adjacent inner dots
+ * (possible in an alphanumeric serial) is taken as canonical — the backend does the same.
  *
  * @param {string} inputString - Raw input (barcode or manual entry)
  * @returns {string|null} Dot-separated GRAI or null
@@ -65,14 +72,9 @@ export const parseGraiFromRawInput = (inputString) => {
 
   const trimmed = inputString.trim();
 
-  // Try GS1 barcode first
-  const gs1Result = parseGraiFromGs1Barcode(trimmed);
-  if (gs1Result) return gs1Result;
-
-  // Check if already in dot-separated format
   if (isValidGrai(trimmed)) return trimmed;
 
-  return null;
+  return parseGraiFromGs1Barcode(trimmed);
 };
 
 /**
@@ -188,4 +190,36 @@ export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipp
   }
   const merged = toAdd.length === 0 ? prev : [...prev, ...toAdd];
   return { merged, skipped };
+};
+
+/**
+ * Build the list to show once the backend has answered a Send, keeping what the user changed while
+ * the request was in flight. Scanning, removing and Clear All all stay possible while sending, so
+ * the list on screen may already differ from the baseline (the list that was sent, or the list an
+ * Undo showed while the request was in flight):
+ * - the backend's answer is taken as the saved state (the assigned GRAIs it persisted), followed by
+ *   the baseline's extras (beyond `tuCount`), as before;
+ * - a GRAI of the baseline that has been removed since stays removed;
+ * - a GRAI added since the baseline is kept, appended at the end.
+ * When nothing changed since the baseline, the result is the backend answer plus the extras.
+ *
+ * @param {Object} params
+ * @param {string[]} params.baselineGrais - the full list on screen when Send was tapped, or the list
+ *   shown by an Undo made while the request was in flight
+ * @param {string[]} params.currentGrais - the list on screen now, when the answer arrives
+ * @param {string[]} params.backendGrais - the GRAIs the backend reports as saved
+ * @param {number} params.tuCount - the TU count from the backend answer (0 = unlimited)
+ * @returns {string[]}
+ */
+export const mergeGraisAfterSend = ({ baselineGrais, currentGrais, backendGrais, tuCount }) => {
+  const baseline = new Set(baselineGrais);
+  const current = new Set(currentGrais);
+  const removedSinceBaseline = (grai) => baseline.has(grai) && !current.has(grai);
+
+  const saved = [...backendGrais, ...getExtraGrais(baselineGrais, tuCount)].filter(
+    (grai) => !removedSinceBaseline(grai)
+  );
+  const addedSinceBaseline = currentGrais.filter((grai) => !baseline.has(grai));
+
+  return mergeGraiArrays(mergeGraiArrays([], saved).merged, addedSinceBaseline).merged;
 };

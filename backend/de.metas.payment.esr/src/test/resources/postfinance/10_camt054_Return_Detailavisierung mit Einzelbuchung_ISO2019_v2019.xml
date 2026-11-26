@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08 file:///C:/camt.054.001.08.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>20201124375204228763929</MsgId>
+			<CreDtTm>2022-05-25T00:29:29</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>SPS/1.7/PROD</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>20201124375204228763930</Id>
+			<CreDtTm>2022-05-25T00:29:29</CreDtTm>
+			<FrToDt>
+				<FrDtTm>2022-05-24T00:00:00</FrDtTm>
+				<ToDtTm>2022-05-24T23:59:59</ToDtTm>
+			</FrToDt>
+			<RptgSrc>
+				<Prtry>OTHR</Prtry>
+			</RptgSrc>
+			<Acct>
+				<Id>
+					<IBAN>CH5109000000250092291</IBAN>
+				</Id>
+				<Ownr>
+					<Nm>Bernasconi Maria Biel/Bienne</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<Amt Ccy="CHF">500.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>true</RvslInd>
+				<Sts>
+					<Cd>BOOK</Cd>
+				</Sts>
+				<BookgDt>
+					<Dt>2020-11-24</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2020-11-24</Dt>
+				</ValDt>
+				<AcctSvcrRef>075820002ZZTJR1K</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>ICDT</Cd>
+							<SubFmlyCd>RRTN</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>1</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>190520CH02ZZTJR1</AcctSvcrRef>
+							<PmtInfId>PmtInfId-001-03</PmtInfId>
+							<InstrId>InstrId-001-03-04</InstrId>
+							<EndToEndId>EndToEndId-001-03-04</EndToEndId>
+						</Refs>
+						<Amt Ccy="CHF">500.00</Amt>
+						<CdtDbtInd>CRDT</CdtDbtInd>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>ICDT</Cd>
+									<SubFmlyCd>RRTN</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RltdPties>
+							<Dbtr>
+								<Pty>
+									<Nm>Robert Schneider SA</Nm>
+									<PstlAdr>
+										<AdrLine>Rue du Lac 177</AdrLine>
+										<AdrLine>2503 Biel/Bienne</AdrLine>
+									</PstlAdr>
+								</Pty>
+							</Dbtr>
+							<DbtrAcct>
+								<Id>
+									<IBAN>CH8709000000929471495</IBAN>
+								</Id>
+							</DbtrAcct>
+						</RltdPties>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<ClrSysMmbId>
+										<MmbId>9000</MmbId>
+									</ClrSysMmbId>
+									<Nm>PostFinance AG</Nm>
+									<PstlAdr>
+										<AdrLine>Mingerstrasse 20</AdrLine>
+										<AdrLine>3030 Bern</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Ustrd>Kontouebertrag</Ustrd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2022-05-24T20:00:00</AccptncDtTm>
+						</RltdDts>
+						<RtrInf>
+							<Rsn>
+								<Cd>AC01</Cd>
+							</Rsn>
+							<AddtlInf>Kontonummer falsch</AddtlInf>
+						</RtrInf>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>EndToEndId-001-03-04 RETOUR TRANSAKTION NICHT AUSFÜHRBAR Kontouebertrag</AddtlNtryInf>
+			</Ntry>
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>

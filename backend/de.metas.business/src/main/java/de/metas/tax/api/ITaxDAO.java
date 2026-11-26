@@ -17,6 +17,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_TaxCategory;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -64,6 +65,16 @@ public interface ITaxDAO extends ISingletonService
 
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
+	/**
+	 * @return the id of the single active {@code C_TaxCategory} with that internal name, or empty if there is none.
+	 */
+	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull String internalName);
+
+	/**
+	 * @return the given tax category id, or empty if there is no {@code C_TaxCategory} record with that id, or if that record is inactive.
+	 */
+	Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull TaxCategoryId taxCategoryId);
+
 	Percent getRateById(@NonNull TaxId taxId);
 
 	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
@@ -71,6 +82,36 @@ public interface ITaxDAO extends ISingletonService
 	Tax getBy(final TaxQuery taxQuery);
 
 	Optional<TaxId> getIdByName(String name, ClientId clientId);
+
+	@NonNull
+	TaxCategoryId createTaxCategory(@NonNull CreateTaxCategoryRequest request);
+
+	@NonNull
+	TaxId createTax(@NonNull CreateTaxRequest request);
+
+	@Builder
+	@Value
+	class CreateTaxCategoryRequest
+	{
+		@NonNull String internalName;
+		@NonNull String name;
+	}
+
+	@Builder
+	@Value
+	class CreateTaxRequest
+	{
+		@NonNull TaxCategoryId taxCategoryId;
+		@NonNull String name;
+		@NonNull Percent rate;
+		boolean documentLevel;
+		@NonNull Instant validFrom;
+
+		/** Same-country (domestic) tax: used for both {@code C_Country_ID} and {@code To_Country_ID}. */
+		@NonNull CountryId countryId;
+		@NonNull TypeOfDestCountry typeOfDestCountry;
+		@NonNull SOPOType sopoType;
+	}
 
 	@Builder
 	@Value

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Sequence
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequence, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 989560965L;
+	private static final long serialVersionUID = -202978079L;
 
     /** Standard Constructor */
     public X_AD_Sequence (final Properties ctx, final int AD_Sequence_ID, @Nullable final String trxName)
@@ -98,6 +98,18 @@ public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequenc
 	public java.lang.String getDateColumn() 
 	{
 		return get_ValueAsString(COLUMNNAME_DateColumn);
+	}
+
+	@Override
+	public void setDateFormat (final @Nullable java.lang.String DateFormat)
+	{
+		set_Value (COLUMNNAME_DateFormat, DateFormat);
+	}
+
+	@Override
+	public java.lang.String getDateFormat() 
+	{
+		return get_ValueAsString(COLUMNNAME_DateFormat);
 	}
 
 	@Override

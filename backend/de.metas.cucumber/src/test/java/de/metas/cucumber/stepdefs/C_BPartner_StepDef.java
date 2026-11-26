@@ -113,6 +113,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Lookup_Label;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
@@ -167,8 +168,13 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsFactoring} — {@code Y}/{@code N}; marks the partner's invoices as silently factored (payment owed to the org's factorer)</li>
+	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
 	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
+	 * {@code M_DiscountSchema_ID} (optional, identifier-ref) — the sales-side discount schema (resolved via
+	 * {@link M_DiscountSchema_StepDefData}); mirrors the already-supported {@code PO_DiscountSchema_ID} column but on
+	 * the sales side, so a customer partner's discount schema can be exercised end-to-end via the pricing engine.
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
@@ -254,6 +260,7 @@ public class C_BPartner_StepDef
 	 *                   <b>C_Dunning_ID</b> — (optional) step-def identifier of the dunning schema<br>
 	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
 	 *                   <b>Name</b> — (optional) new partner name<br>
+	 *                   <b>IsActive</b> — (optional) {@code Y}/{@code N}; activates or deactivates the partner<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_BPartner:
@@ -335,6 +342,12 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setValue(valueAndName.getValue());
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		// no generated accessor for this column
+		final Boolean isReplicationLookupDefault = row.getAsOptionalBoolean("IsReplicationLookupDefault").toBooleanOrNull();
+		if (isReplicationLookupDefault != null)
+		{
+			InterfaceWrapperHelper.setValue(bPartnerRecord, "IsReplicationLookupDefault", isReplicationLookupDefault);
+		}
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
@@ -354,6 +367,15 @@ public class C_BPartner_StepDef
 		{
 			final I_M_DiscountSchema discountSchemaRecord = discountSchemaTable.get(discountSchemaIdentifier);
 			bPartnerRecord.setPO_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
+		}
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation).ifPresent(bPartnerRecord::setIsAllowPriceMutation);
+
+		final StepDefDataIdentifier soDiscountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_DiscountSchema_ID).orElse(null);
+		if (soDiscountSchemaIdentifier != null)
+		{
+			final I_M_DiscountSchema soDiscountSchemaRecord = discountSchemaTable.get(soDiscountSchemaIdentifier);
+			bPartnerRecord.setM_DiscountSchema_ID(soDiscountSchemaRecord.getM_DiscountSchema_ID());
 		}
 
 		row.getAsOptionalEnum(COLUMNNAME_InvoiceRule, InvoiceRule.class)
@@ -411,6 +433,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoiceType).ifPresent(bPartnerRecord::setEInvoiceType);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoice_BuyerReference).ifPresent(bPartnerRecord::setEInvoice_BuyerReference);
+
+		// silent factoring (stille Zession): see de.metas.einvoice.cii.CiiMapper#buildPaymentMeans
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactoring).ifPresent(bPartnerRecord::setIsFactoring);
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactorer).ifPresent(bPartnerRecord::setIsFactorer);
 
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
@@ -624,6 +650,9 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name)
 				.filter(EmptyUtil::isNotBlank)
 				.ifPresent(bPartner::setName);
+
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsActive)
+				.ifPresent(bPartner::setIsActive);
 
 		InterfaceWrapperHelper.save(bPartner);
 

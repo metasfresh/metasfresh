@@ -1,24 +1,31 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonInOutLineExpectation;
+import de.metas.frontend_testing.expectations.request.JsonOrderCompensationGroupExpectation;
+import de.metas.frontend_testing.expectations.request.JsonOrderLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.calibration.CalibrationRuleId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Comparator;
@@ -32,7 +39,7 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
 /**
- * Asserts M_InOut (shipment) state per sales order.
+ * Asserts M_InOut (shipment) state and the compensation groups per sales order.
  *
  * <p>Consumer-side JSON shape:
  * <pre>
@@ -41,7 +48,13 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
  *     // assert exactly one completed shipment
  *     'SO1': { shipments: [{ docStatus: 'CO' }] },
  *     // assert NO shipments (DO_NOT_CREATE policy)
- *     'SO2': { shipments: [] }
+ *     'SO2': { shipments: [] },
+ *     // assert the order's compensation groups (by record id, e.g. an order created in the UI)
+ *     '1000123': { compensationGroups: [{ flatrateTermId: 1000456, compensationGroupSchemaId: 1000789 }] },
+ *     // assert order lines by product (masterdata keys), incl. the calibration data
+ *     'SO3': { lines: [{ product: 'P1', qtyEntered: 15, calibrationFactor: 150, calibrationRule: 'R1', qtyEnteredUncalibrated: 10 }] },
+ *     // assert an order line without calibration, e.g. no rule matched (no factor, no rule, no uncalibrated qty)
+ *     'SO4': { lines: [{ product: 'P1', qtyEntered: 10, calibrated: false }] }
  *   }
  * });
  * </pre>
@@ -80,6 +93,16 @@ class AssertSalesOrderExpectationsCommand
 		if (expectation.getShippedQty() != null)
 		{
 			assertShippedQty(orderId, expectation.getShippedQty());
+		}
+
+		if (expectation.getCompensationGroups() != null)
+		{
+			assertCompensationGroups(services.getOrderCompensationGroups(orderId), orderId, expectation.getCompensationGroups());
+		}
+
+		if (expectation.getLines() != null)
+		{
+			assertOrderLines(services.getOrderLines(orderId), orderId, expectation.getLines(), context);
 		}
 
 		if (expectation.getShipments() == null)
@@ -124,6 +147,164 @@ class AssertSalesOrderExpectationsCommand
 		final Identifier identifier = Identifier.ofString(orderIdentifierStr);
 		return context.getOptionalId(identifier, OrderId.class)
 				.orElseGet(() -> identifier.toId(OrderId.class));
+	}
+
+	/**
+	 * Asserts the order's compensation groups, in id order, 1:1 against the expected ones (same count, then per group
+	 * the contract term and the schema, each only when expected).
+	 */
+	@VisibleForTesting
+	static void assertCompensationGroups(
+			@NonNull final List<I_C_Order_CompensationGroup> actualGroups,
+			@NonNull final OrderId orderId,
+			@NonNull final List<JsonOrderCompensationGroupExpectation> expectations)
+	{
+		softly(() -> {
+			softlyPutContext("orderId", orderId);
+			softlyPutContext("compensationGroupExpectations", expectations);
+
+			assertThat(actualGroups)
+					.as("compensation groups of order " + orderId)
+					.hasSameSize(expectations);
+
+			final int size = Math.min(expectations.size(), actualGroups.size());
+			for (int i = 0; i < size; i++)
+			{
+				final JsonOrderCompensationGroupExpectation expectation = expectations.get(i);
+				final I_C_Order_CompensationGroup actual = actualGroups.get(i);
+				final String groupDescription = "compensationGroup[" + i + "] C_Order_CompensationGroup_ID=" + actual.getC_Order_CompensationGroup_ID();
+				if (expectation.getFlatrateTermId() != null)
+				{
+					assertThat(actual.getC_Flatrate_Term_ID())
+							.as("C_Flatrate_Term_ID of " + groupDescription)
+							.isEqualTo(expectation.getFlatrateTermId());
+				}
+				if (expectation.getCompensationGroupSchemaId() != null)
+				{
+					assertThat(actual.getC_CompensationGroup_Schema_ID())
+							.as("C_CompensationGroup_Schema_ID of " + groupDescription)
+							.isEqualTo(expectation.getCompensationGroupSchemaId());
+				}
+			}
+		});
+	}
+
+	/**
+	 * Asserts the order lines: per expectation, exactly one actual line carries the expected product (lines of other
+	 * products are ignored); then each expected field, only when set, is compared by value.
+	 */
+	@VisibleForTesting
+	static void assertOrderLines(
+			@NonNull final List<I_C_OrderLine> actualLines,
+			@NonNull final OrderId orderId,
+			@NonNull final List<JsonOrderLineExpectation> expectations,
+			@NonNull final MasterdataContext context)
+	{
+		softly(() -> {
+			softlyPutContext("orderId", orderId);
+			softlyPutContext("orderLineExpectations", expectations);
+
+			for (final JsonOrderLineExpectation expectation : expectations)
+			{
+				final ProductId productId = context.getId(expectation.getProduct(), ProductId.class);
+				final List<I_C_OrderLine> candidates = actualLines.stream()
+						.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+						.collect(Collectors.toList());
+
+				assertThat(candidates.size())
+						.as("number of order lines of product " + expectation.getProduct() + " (" + productId + ") of order " + orderId)
+						.isEqualTo(1);
+				if (candidates.size() != 1)
+				{
+					continue;
+				}
+
+				assertOrderLine(expectation, candidates.get(0), context);
+			}
+		});
+	}
+
+	private static void assertOrderLine(
+			@NonNull final JsonOrderLineExpectation expectation,
+			@NonNull final I_C_OrderLine actual,
+			@NonNull final MasterdataContext context)
+	{
+		final String lineDescription = "order line of product " + expectation.getProduct() + " C_OrderLine_ID=" + actual.getC_OrderLine_ID();
+		final boolean expectNotCalibrated = Boolean.FALSE.equals(expectation.getCalibrated());
+		if (expectNotCalibrated
+				&& (expectation.getCalibrationFactor() != null || expectation.getCalibrationRule() != null || expectation.getQtyEnteredUncalibrated() != null))
+		{
+			throw new AdempiereException("Expectation calibrated=false cannot be combined with an expected calibration factor, rule or uncalibrated qty: " + expectation);
+		}
+		if (expectNotCalibrated && Boolean.TRUE.equals(expectation.getHasCalibrationRule()))
+		{
+			throw new AdempiereException("Expectation calibrated=false cannot be combined with hasCalibrationRule=true: " + expectation);
+		}
+		if (Boolean.FALSE.equals(expectation.getHasCalibrationRule()) && expectation.getCalibrationRule() != null)
+		{
+			throw new AdempiereException("Expectation hasCalibrationRule=false cannot be combined with an expected calibration rule: " + expectation);
+		}
+
+		// the generated getters map a NULL decimal to zero, so the nullable calibration columns are read as stored
+		final BigDecimal actualFactor = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationCalibrationFactor);
+		final BigDecimal actualQtyUncalibrated = InterfaceWrapperHelper.getValueAsBigDecimalOrNull(actual, I_C_OrderLine.COLUMNNAME_GroupCompensationQtyEnteredUncalibrated);
+
+		assertDecimal("QtyEntered of " + lineDescription, actual.getQtyEntered(), expectation.getQtyEntered());
+		assertDecimal("GroupCompensationCalibrationFactor of " + lineDescription, actualFactor, expectation.getCalibrationFactor());
+		assertDecimal("GroupCompensationQtyEnteredUncalibrated of " + lineDescription, actualQtyUncalibrated, expectation.getQtyEnteredUncalibrated());
+
+		if (expectation.getCalibrationRule() != null)
+		{
+			final CalibrationRuleId expectedRuleId = context.getId(expectation.getCalibrationRule(), CalibrationRuleId.class);
+			assertThat(actual.getC_CompensationGroup_CalibrationRule_ID())
+					.as("C_CompensationGroup_CalibrationRule_ID of " + lineDescription)
+					.isEqualTo(expectedRuleId.getRepoId());
+		}
+
+		if (expectation.getCalibrated() != null)
+		{
+			assertCalibrated(expectation.getCalibrated(), actual, actualFactor, actualQtyUncalibrated, lineDescription);
+		}
+
+		if (expectation.getHasCalibrationRule() != null)
+		{
+			assertThat(CalibrationRuleId.ofRepoIdOrNull(actual.getC_CompensationGroup_CalibrationRule_ID()) != null)
+					.as("a C_CompensationGroup_CalibrationRule_ID is set on " + lineDescription)
+					.isEqualTo(expectation.getHasCalibrationRule());
+		}
+	}
+
+	private static void assertCalibrated(
+			final boolean expectCalibrated,
+			@NonNull final I_C_OrderLine actual,
+			@Nullable final BigDecimal factor,
+			@Nullable final BigDecimal qtyUncalibrated,
+			@NonNull final String lineDescription)
+	{
+		if (expectCalibrated)
+		{
+			assertThat(factor).as("GroupCompensationCalibrationFactor of calibrated " + lineDescription).isNotNull();
+			assertThat(qtyUncalibrated).as("GroupCompensationQtyEnteredUncalibrated of calibrated " + lineDescription).isNotNull();
+		}
+		else
+		{
+			assertThat(factor).as("GroupCompensationCalibrationFactor of not calibrated " + lineDescription).isNull();
+			assertThat(CalibrationRuleId.ofRepoIdOrNull(actual.getC_CompensationGroup_CalibrationRule_ID())).as("C_CompensationGroup_CalibrationRule_ID of not calibrated " + lineDescription).isNull();
+			assertThat(qtyUncalibrated).as("GroupCompensationQtyEnteredUncalibrated of not calibrated " + lineDescription).isNull();
+		}
+	}
+
+	private static void assertDecimal(@NonNull final String description, @Nullable final BigDecimal actual, @Nullable final BigDecimal expected)
+	{
+		if (expected == null)
+		{
+			return; // not expected - nothing to assert
+		}
+
+		// Compare by value (stripTrailingZeros: 15 == 15.0); a missing actual value never matches an expected one.
+		assertThat(actual == null ? null : actual.stripTrailingZeros())
+				.as(description)
+				.isEqualTo(expected.stripTrailingZeros());
 	}
 
 	/**
@@ -234,6 +415,13 @@ class AssertSalesOrderExpectationsCommand
 				assertThat(actual.getMovementQty().stripTrailingZeros())
 						.as("MovementQty of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
 						.isEqualTo(expectation.getMovementQty().stripTrailingZeros());
+			}
+
+			if (expectation.getQtyDeliveredCatch() != null)
+			{
+				assertThat(actual.getQtyDeliveredCatch())
+						.as("QtyDeliveredCatch of shipment[" + shipmentIndex + "].line[" + lineIndex + "] M_InOutLine_ID=" + actual.getM_InOutLine_ID())
+						.isEqualByComparingTo(expectation.getQtyDeliveredCatch());
 			}
 		});
 	}
