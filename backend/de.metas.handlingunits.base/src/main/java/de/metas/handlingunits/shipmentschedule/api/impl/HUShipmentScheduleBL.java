@@ -45,7 +45,6 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
-import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedRecords;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.i18n.AdMessageKey;
@@ -1199,14 +1198,18 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				throw new HUException("HU " + hu + " shall be top level");
 			}
-			final List<I_M_ShipmentSchedule_QtyPicked> activeQtyPickedRecords = huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu).stream()
-					.filter(I_M_ShipmentSchedule_QtyPicked::isActive)
-					.collect(ImmutableList.toImmutableList());
-			final List<ShipmentScheduleWithHU> candidatesForHU = createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
-					.qtyPickedRecords(QtyPickedRecords.of(activeQtyPickedRecords))
-					.huContext(huContext)
-					.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-					.build());
+			// Each row alone, not the list based creator: the caller (HUShippingFacade) only needs the schedules, and the work package that
+			// generates the shipments (another thread) creates the candidates of the whole TU itself. The list based creator saves the rows
+			// it splits, which would keep them locked in the caller's open transaction while the caller waits for that work package.
+			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
+			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu))
+			{
+				if (!qtyPicked.isActive())
+				{
+					continue;
+				}
+				candidatesForHU.addAll(createCandidatesOfRowAlone(qtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+			}
 			result.addAll(candidatesForHU);
 			if (candidatesForHU.isEmpty())
 			{
