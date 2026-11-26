@@ -976,7 +976,7 @@ public class ShipmentScheduleWithHUService
 		final ShipmentScheduleAndJobScheduleIdSet scheduleIds = schedule.toScheduleIds();
 		// final I_M_ShipmentSchedule shipmentSchedule = request.getShipmentSchedule();
 		// final ShipmentScheduleId shipmentScheduleId = schedule.getShipmentScheduleId();
-		QtyPickedRecords qtyPickedRecords = QtyPickedRecords.of(retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds()));
+		QtyPickedRecords qtyPickedRecords = retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds());
 		if (qtyPickedRecords.isEmpty())
 		{
 			return Collections.emptyList();
@@ -988,7 +988,7 @@ public class ShipmentScheduleWithHUService
 		createTUsLUsIfNeeded(schedule, request.getOnlyLUIds(), quantityType);
 
 		// do retrieve the qty picked entries again, some new ones might have been created on LU creation
-		qtyPickedRecords = QtyPickedRecords.of(retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds()));
+		qtyPickedRecords = retrieveNotShippedRecords(scheduleIds, request.getOnlyLUIds());
 
 		//
 		// Iterate all QtyPicked records and create candidates from them
@@ -1016,7 +1016,7 @@ public class ShipmentScheduleWithHUService
 	 * <p>
 	 * Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
 	 */
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveNotShippedRecords(
+	public QtyPickedRecords retrieveNotShippedRecords(
 			@Nullable final ShipmentScheduleAndJobScheduleIdSet scheduleIds,
 			@Nullable final Set<HuId> onlyLUIds)
 	{
@@ -1044,7 +1044,7 @@ public class ShipmentScheduleWithHUService
 			result.addAll(notShippedHUs);
 		});
 
-		return result;
+		return QtyPickedRecords.of(result);
 	}
 
 	@NotNull
