@@ -13,8 +13,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Pins the capped list of failed product values and the counts of the category-run summary message.
- * Plain unit test: the 100-character boundaries are pure string logic that a Cucumber scenario would need many products to reach
- * (the Cucumber scenarios cover the end-to-end category run with one failing product).
+ * <p>
+ * Why JUnit and not only Cucumber: the Cucumber scenarios (bomCheck_categoryReport.feature, bomCheck_invalidUpdatedBy.feature)
+ * cover the end-to-end category run with one failing product out of two (names the failed product) and an all-OK run.
+ * No scenario covers the capped-list edge cases (exactly 100 characters, first value over 100 characters, the ", …" marker)
+ * or the case that every product fails; reaching them in Cucumber would need many products with long values.
+ * These tests pin that pure string / count logic without the Cucumber stack.
  */
 class PP_Product_BOM_CheckTest
 {
@@ -60,6 +64,7 @@ class PP_Product_BOM_CheckTest
 		}
 	}
 
+	/** Every product fails (3 of 3): no Cucumber scenario covers it, the category-report scenario has 1 of 2 failing. */
 	@Test
 	void failedMessageParams_everyProductFails()
 	{
