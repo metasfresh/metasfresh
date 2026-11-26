@@ -42,6 +42,9 @@ public class TUContentGroup
 	public TUContentGroup(@NonNull final ImmutableList<TUContentCU> cus)
 	{
 		Check.assume(!cus.isEmpty(), "A TU content group has at least one CU");
+		// the CUs are added up (totalQty) and their UOM stands for the whole group (stockingUOM), so they must count in one UOM
+		Check.assume(cus.stream().map(cu -> cu.getQty().getUomId()).distinct().count() == 1,
+				"All CUs of a TU content group are in the same UOM: {}", cus);
 		this.cus = cus;
 	}
 

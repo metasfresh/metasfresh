@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.quantity.Quantity;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -43,6 +45,13 @@ class TUContentGroupListTest
 {
 	private final I_C_UOM each = uom(1);
 	private final I_C_UOM kg = uom(2);
+
+	@BeforeEach
+	void init()
+	{
+		// makes Check.assume throw AdempiereException, also when this class runs alone
+		AdempiereTestHelper.get().init();
+	}
 
 	private static I_C_UOM uom(final int id)
 	{
@@ -85,6 +94,18 @@ class TUContentGroupListTest
 	void ofGroupsInDifferentUOMs_isRejected()
 	{
 		assertThatThrownBy(() -> TUContentGroupList.of(ImmutableList.of(group(each, 2), group(kg, 2))))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("same UOM");
+	}
+
+	@Test
+	void groupOfCUsInDifferentUOMs_isRejected()
+	{
+		final ImmutableList<TUContentCU> cus = ImmutableList.of(
+				new TUContentCU(mock(I_M_HU.class), Quantity.of(BigDecimal.valueOf(2), each)),
+				new TUContentCU(mock(I_M_HU.class), Quantity.of(BigDecimal.valueOf(2), kg)));
+
+		assertThatThrownBy(() -> new TUContentGroup(cus))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("same UOM");
 	}
