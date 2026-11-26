@@ -34,7 +34,10 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
@@ -51,6 +54,10 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
@@ -78,6 +85,9 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_ShipmentSchedule_QtyPicked_StepDefData shipmentScheduleQtyPickedTable;
@@ -386,6 +396,65 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		assertThat(actualSum)
 				.as("sum of QtyPicked of the %s rows of %s:%s", openOrAll, shipmentScheduleIdentifier, rowsInfo)
 				.isEqualByComparingTo(expectedSum);
+	}
+
+	/**
+	 * Registers the box the active picked rows of a schedule point to, and its CUs, under identifiers.
+	 * The box is the one distinct {@code M_TU_HU_ID} of those rows. A row with an empty {@code Lot-Nummer} cell registers the box itself,
+	 * a row with a value registers the one CU of the box that carries that lot number. The picking steps register no picked box,
+	 * and {@code validate M_HUs:} with {@code M_HU_Parent} loads only one child.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_HU_ID</b> — (required, identifier) the identifier to register<br>
+	 * <b>Lot-Nummer</b> — (optional) the lot number of the CU to register; empty: the box
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_HU_StepDefData
+	 * @cucumber.example <pre>
+	 * And register the picked box and its CUs of M_ShipmentSchedule identified by ss:
+	 *   | M_HU_ID | Lot-Nummer |
+	 *   | box_tu  |            |
+	 *   | cu_l2   | L2         |
+	 * </pre>
+	 */
+	@And("^register the picked box and its CUs of M_ShipmentSchedule identified by (.*):$")
+	public void registerPickedBoxAndCUs(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
+		final ImmutableSet<HuId> boxIds = retrieveRecordsOrdered(shipmentScheduleId).stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getM_TU_HU_ID)
+				.filter(tuId -> tuId > 0)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (boxIds.size() != 1)
+		{
+			throw new AdempiereException("Expected exactly one distinct M_TU_HU_ID on the active M_ShipmentSchedule_QtyPicked rows of " + shipmentScheduleIdentifier + " but found " + boxIds);
+		}
+		final I_M_HU box = handlingUnitsBL.getById(boxIds.iterator().next());
+
+		final AttributeId lotAttributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString("Lot-Nummer"));
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String lot = row.getAsOptionalString("Lot-Nummer").orElse(null);
+			final I_M_HU hu;
+			if (lot == null || lot.trim().isEmpty())
+			{
+				hu = box;
+			}
+			else
+			{
+				final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(box).stream()
+						.filter(handlingUnitsBL::isVirtual)
+						.filter(cu -> {
+							final I_M_HU_Attribute lotAttribute = huAttributesDAO.retrieveAttribute(cu, lotAttributeId);
+							return lotAttribute != null && lot.equals(lotAttribute.getValue());
+						})
+						.collect(ImmutableList.toImmutableList());
+				if (matchingCUs.size() != 1)
+				{
+					throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the box " + box.getM_HU_ID() + " but found " + matchingCUs.size());
+				}
+				hu = matchingCUs.get(0);
+			}
+			huTable.putOrReplace(row.getAsIdentifier("M_HU_ID"), hu);
+		});
 	}
 
 	@And("^M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule (.*) can be located in specified order$")

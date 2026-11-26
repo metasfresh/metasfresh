@@ -121,6 +121,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -1426,6 +1428,66 @@ public class M_InOut_StepDef
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(actualRows).as("packing section of the shipment report of " + shipmentIdentifier).containsExactlyInAnyOrderElementsOf(expectedRows);
+	}
+
+	/**
+	 * Asserts the lines the shipment report prints (function {@code Docs_Sales_InOut_Details}, text lines excluded): quantity and lot number per line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>QtyEntered</b> — (required) the printed quantity<br>
+	 * <b>LotNo</b> — (required, may be empty) the printed lot number<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * And the shipment report details of shipment_1 in language de_DE have exactly:
+	 *   | QtyEntered | LotNo |
+	 *   | 2          | L1    |
+	 * </pre>
+	 */
+	@And("^the shipment report details of (.*) in language (.*) have exactly:$")
+	public void shipmentReportDetailsHaveExactly(
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String adLanguage,
+			@NonNull final DataTable dataTable)
+	{
+		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
+
+		final ImmutableList<String> actualRows = DB.retrieveRowsOutOfTrx(
+				"SELECT qtyEntered, lotno FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(?, ?) WHERE IsTextLine = 'N'",
+				ImmutableList.of(shipment.getM_InOut_ID(), adLanguage),
+				rs -> toDetailsRowString(rs.getBigDecimal("qtyEntered"), rs.getString("lotno")));
+		final ImmutableList<String> expectedRows = DataTableRows.of(dataTable).stream()
+				.map(row -> toDetailsRowString(row.getAsBigDecimal("QtyEntered"), row.getAsOptionalString("LotNo").orElse(null)))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actualRows).as("details of the shipment report of " + shipmentIdentifier).containsExactlyInAnyOrderElementsOf(expectedRows);
+	}
+
+	private static String toDetailsRowString(@NonNull final BigDecimal qty, @Nullable final String lotNo)
+	{
+		return qty.stripTrailingZeros().toPlainString() + " | " + (lotNo == null ? "" : lotNo);
+	}
+
+	/**
+	 * Ships a box through the HU shipping process (the desktop action "Shipment" on a HU), completing the shipment, without invoicing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text)
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * And ship HU identified by box_tu via the HU shipping process as shipment_1
+	 * </pre>
+	 */
+	@And("^ship HU identified by (.*) via the HU shipping process as (.*)$")
+	public void shipHUViaHUShippingProcess(@NonNull final String huIdentifier, @NonNull final String shipmentIdentifier)
+	{
+		final HUShippingFacade facade = HUShippingFacade.builder()
+				.hu(huTable.get(huIdentifier))
+				.completeShipments(true)
+				.invoiceMode(GenerateInOutFromHU.BillAssociatedInvoiceCandidates.NO)
+				.failIfNoShipmentCandidatesFound(true)
+				.build();
+		final I_M_InOut shipment = facade.generateShippingDocuments().getInOuts().get(0);
+		inoutTable.putOrReplace(shipmentIdentifier, shipment);
 	}
 
 	private static String toReportRowString(@NonNull final String productName, @NonNull final BigDecimal qty)
