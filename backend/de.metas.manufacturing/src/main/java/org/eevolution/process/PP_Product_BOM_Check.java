@@ -1,5 +1,6 @@
 package org.eevolution.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -9,14 +10,18 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -25,7 +30,9 @@ import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Title: Check BOM Structure (free of cycles) Description: Tree cannot contain BOMs which are already referenced
@@ -36,6 +43,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecondition
 {
 	public static final AdMessageKey NO_DEFAULT_PP_PRODUCT_BOM_FOR_PRODUCT_MESSAGE_KEY = AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product");
+	private static final AdMessageKey MSG_CATEGORY_RUN_OK = AdMessageKey.of("org.eevolution.process.PP_Product_BOM_Check.CategoryRunOK");
+	private static final AdMessageKey MSG_CATEGORY_RUN_FAILED = AdMessageKey.of("org.eevolution.process.PP_Product_BOM_Check.CategoryRunFailed");
+	private static final int MAX_FAILED_LIST_LENGTH = 100;
+
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
@@ -74,24 +85,49 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 					.addColumn(I_M_Product.COLUMNNAME_Name)
 					.endOrderBy();
 
-			final AtomicInteger counter = new AtomicInteger(0);
+			final Iterator<I_M_Product> products = queryBuilder.create()
+					.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+					.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
+					.iterate(I_M_Product.class);
+			int totalCount = 0;
+			final List<String> failedValues = new ArrayList<>();
 
-			queryBuilder.create()
-					.stream()
-					.forEach(product -> {
-
-						try
-						{
-							validateProduct(product);
-							counter.incrementAndGet();
-						}
-						catch (final Exception ex)
+			try
+			{
+				for (final I_M_Product product : IteratorUtils.asIterable(products))
+				{
+					totalCount++;
+					// the process log gets exactly one line per failed product (below); without this, e.g. the TrxManager adds its own log line for the same exception
+					try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(Loggables.nop()))
+					{
+						validateProduct(product);
+					}
+					catch (final Exception ex)
+					{
+						failedValues.add(product.getValue());
+						addLog("{}_{}: {}", product.getValue(), product.getName(), AdempiereException.extractMessage(ex));
+						if (AdempiereException.isUserValidationError(ex))
 						{
 							log.warn("Product is not valid: {}", product, ex);
 						}
-					});
+						else
+						{
+							log.error("Product is not valid: {}", product, ex);
+						}
+					}
+				}
+			}
+			finally
+			{
+				IteratorUtils.close(products);
+			}
 
-			return "#" + counter.get();
+			// a category without BOM products also ends here: "All 0 products ... verified, none failed" is truthful
+			if (failedValues.isEmpty())
+			{
+				return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_OK, new Object[] { totalCount });
+			}
+			return msgBL.getMsg(getCtx(), MSG_CATEGORY_RUN_FAILED, failedMessageParams(failedValues, totalCount));
 		}
 		else
 		{
@@ -99,6 +135,41 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			validateProduct(product);
 			return MSG_OK;
 		}
+	}
+
+	/**
+	 * @return the parameters of {@link #MSG_CATEGORY_RUN_FAILED}: failed count, total count, capped value list
+	 */
+	@VisibleForTesting
+	static Object[] failedMessageParams(@NonNull final List<String> failedValues, final int totalCount)
+	{
+		return new Object[] { failedValues.size(), totalCount, cappedList(failedValues) };
+	}
+
+	/**
+	 * @return the values joined by ", ": always the first value (even if longer than {@link #MAX_FAILED_LIST_LENGTH} characters),
+	 * then as many further values as fit in {@link #MAX_FAILED_LIST_LENGTH} characters in total, then ", …" if more follow
+	 */
+	@VisibleForTesting
+	static String cappedList(@NonNull final List<String> values)
+	{
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < values.size(); i++)
+		{
+			final String value = values.get(i);
+			final int newLength = sb.length() + (i > 0 ? 2 : 0) + value.length();
+			if (i > 0 && newLength > MAX_FAILED_LIST_LENGTH)
+			{
+				sb.append(", …");
+				break;
+			}
+			if (i > 0)
+			{
+				sb.append(", ");
+			}
+			sb.append(value);
+		}
+		return sb.toString();
 	}
 
 	private int getM_Product_ID()
