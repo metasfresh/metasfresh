@@ -374,6 +374,8 @@ export async function enterLinesKeyboardOnly({
       await expectFocusHeld(qtyInput, 1000, `late article reload, line ${n}: cursor stays in Menge`);
       await expect(qtyInput, `late article reload, line ${n}: typed quantity still in Menge`).toHaveValue(String(qtys[i]));
     }
+    await expectFocusOn(qtyInput, `before line-save Enter, line ${n}: cursor in Menge`);
+    await expect(qtyInput, `before line-save Enter, line ${n}: typed quantity in Menge`).toHaveValue(String(qtys[i]));
     // Own mark right before the quantity Enter: only the line-save reload (it carries includedTabsInfo) counts.
     mark = armHeaderReload(recorder);
     await page.keyboard.press('Enter');
