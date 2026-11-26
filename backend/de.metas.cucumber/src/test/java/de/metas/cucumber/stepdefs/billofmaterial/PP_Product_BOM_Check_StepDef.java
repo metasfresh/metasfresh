@@ -147,7 +147,7 @@ public class PP_Product_BOM_Check_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>Param</b> — (required) one value per row, in the order of the message parameters {0}, {1}, ...<br>
+	 *   <b>Param</b> — (required) one value per row, in the order of the message parameters {0}, {1}, ...; the identifier of a product stands for its Value<br>
 	 * @cucumber.example
 	 * <pre>
 	 * Then the PP_Product_BOM_Check result is OK with message key PP_Product_BOM_Check.CategoryRunOK and parameters:
@@ -159,9 +159,16 @@ public class PP_Product_BOM_Check_StepDef
 	public void result_is_OK_with_message_key_and_parameters(@NonNull final String messageKey, @NonNull final DataTable dataTable)
 	{
 		final Object[] params = DataTableRows.of(dataTable).stream()
-				.map(row -> row.getAsString("Param"))
+				.map(row -> resolveParam(row.getAsString("Param")))
 				.toArray();
 		assertResultIsOK(messageKey, params);
+	}
+
+	/** a Param that is the identifier of a product of the scenario stands for that product's Value */
+	@NonNull
+	private String resolveParam(@NonNull final String param)
+	{
+		return productTable.getOptional(param).map(I_M_Product::getValue).orElse(param);
 	}
 
 	private void assertResultIsOK(@NonNull final String messageKey, @NonNull final Object[] params)
