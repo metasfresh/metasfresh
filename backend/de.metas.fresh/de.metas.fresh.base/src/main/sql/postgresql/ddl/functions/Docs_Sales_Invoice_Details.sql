@@ -247,7 +247,7 @@ FROM C_InvoiceLine il
 
     -- Get Attributes
          LEFT OUTER JOIN
-     (SELECT STRING_AGG(ai_value, ', '
+     (SELECT STRING_AGG(att.at_value || ': ' || att.ai_value, ', '
                         ORDER BY LENGTH(ai_value)) AS Attributes,
              att.M_AttributeSetInstance_ID,
              il.C_InvoiceLine_ID
