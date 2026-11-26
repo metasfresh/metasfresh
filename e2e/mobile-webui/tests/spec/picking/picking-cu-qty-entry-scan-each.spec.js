@@ -10,8 +10,8 @@ import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
 
 restoreSysconfigsAfterEach(test);
-// the English parser reason of a refused label (server ScannableCodeFormat.parse); the toast must never show it
-const PARSER_REASON_EN = "Invalid constant marker";
+// the English reason of the front-end label parser (parseCustomQRCode.js: "Expected constant '01' but got ..."); the toast must never show it
+const PARSER_REASON_EN = "Expected constant";
 
 /** CU quantity entry, Scan each CU ("scan every CU label") */
 

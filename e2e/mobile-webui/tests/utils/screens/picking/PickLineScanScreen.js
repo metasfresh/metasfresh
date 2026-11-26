@@ -106,6 +106,7 @@ export const PickLineScanScreen = {
             async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label, testId: 'rescanCULabel-input' }),
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
+                if (unexpectedText) expect(textContent).not.toContain(unexpectedText);
                 await expectToastCloseButtonOnScreen();
                 await whileToastShown?.();
             }

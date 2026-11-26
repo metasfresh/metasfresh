@@ -54,6 +54,7 @@ describe('toastError', () => {
 
     const message = toastErrorSpy.mock.calls[0][0].props.message;
     expect(message).not.toContain('part 3 does not fit');
+    expect(message).toBe(trl('picking.cuLabel.formatMismatch'));
     expect(toastErrorSpy.mock.calls[0][0].props.code).toBe('picking.cuLabel.formatMismatch');
   });
 
