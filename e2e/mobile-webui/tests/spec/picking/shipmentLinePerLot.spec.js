@@ -60,17 +60,24 @@ const createMasterdata = async ({ lots, orderLines }) => {
     });
 };
 
+const permutations = (items) => items.length <= 1
+    ? [items]
+    : items.flatMap((item, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]));
+
 /**
  * The shipment lines are compared in any order: the order of M_InOutLine.Line is not stable when picks of different lots go into one shipment.
  * Each line keeps its own qty + lot pairing and the line count stays exact.
+ *
+ * @param lines expected shipment lines
+ * @param canBeOneShipmentPerLine true when the lines belong to different order lines: they normally share one shipment, but completing
+ *     the job can also end in one shipment per order line (seen in 1 of 90 local runs: two shipments of one line each)
  */
-const expectShipmentLinesInAnyOrder = async (lines) => {
-    const permutations = (items) => items.length <= 1
-        ? [items]
-        : items.flatMap((item, i) => permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]));
-    await Backend.expectAnyOf(
-        permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: [{ lines: orderedLines }] } } })),
-        'shipment lines (any order)');
+const expectShipmentLinesInAnyOrder = async (lines, { canBeOneShipmentPerLine = false } = {}) => {
+    const expectations = permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: [{ lines: orderedLines }] } } }));
+    if (canBeOneShipmentPerLine) {
+        expectations.push(...permutations(lines).map((orderedLines) => ({ salesOrders: { SO1: { shipments: orderedLines.map((line) => ({ lines: [line] })) } } })));
+    }
+    await Backend.expectAnyOf(expectations, 'shipment lines (any order)');
 };
 
 const allureMeta = (story) => {
@@ -123,9 +130,9 @@ test('mixed-lot box: one shipment line per lot', async ({ page }) => {
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-            { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-            { product: 'P1', movementQty: 1, attributes: { [LOT_ATTRIBUTE]: 'L3' } },
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+        { product: 'P1', movementQty: 1, attributes: { [LOT_ATTRIBUTE]: 'L3' } },
     ]);
 });
 
@@ -145,9 +152,9 @@ test('box shared by two order lines: each order line gets its own lot', async ({
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-            { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-    ]);
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 3, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+    ], { canBeOneShipmentPerLine: true });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -166,9 +173,9 @@ test('box shared by two order lines, equal quantities: each order line gets its 
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
-    ]);
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+    ], { canBeOneShipmentPerLine: true });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -187,8 +194,8 @@ test('equal quantities of two lots: two shipment lines', async ({ page }) => {
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L2' } },
     ]);
 });
 
@@ -208,7 +215,7 @@ test('same lot twice: one shipment line', async ({ page }) => {
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 5, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 5, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
     ]);
 });
 
@@ -235,6 +242,6 @@ test('unpick before completion: only the picked lot is shipped', async ({ page }
 
     await PickingJobScreen.complete();
     await expectShipmentLinesInAnyOrder([
-            { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
+        { product: 'P1', movementQty: 2, attributes: { [LOT_ATTRIBUTE]: 'L1' } },
     ]);
 });
