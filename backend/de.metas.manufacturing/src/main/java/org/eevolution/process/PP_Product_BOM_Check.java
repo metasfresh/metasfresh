@@ -13,6 +13,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -20,7 +21,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
@@ -92,27 +92,34 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			int totalCount = 0;
 			final List<String> failedValues = new ArrayList<>();
 
-			for (final I_M_Product product : IteratorUtils.asIterable(products))
+			try
 			{
-				totalCount++;
-				// the process log gets exactly one line per failed product (below); without this, e.g. the TrxManager adds its own log line for the same exception
-				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(Loggables.nop()))
+				for (final I_M_Product product : IteratorUtils.asIterable(products))
 				{
-					validateProduct(product);
-				}
-				catch (final Exception ex)
-				{
-					failedValues.add(product.getValue());
-					addLog("{}_{}: {}", product.getValue(), product.getName(), AdempiereException.extractMessage(ex));
-					if (AdempiereException.isUserValidationError(ex))
+					totalCount++;
+					// the process log gets exactly one line per failed product (below); without this, e.g. the TrxManager adds its own log line for the same exception
+					try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(Loggables.nop()))
 					{
-						log.warn("Product is not valid: {}: {}", product, AdempiereException.extractMessage(ex));
+						validateProduct(product);
 					}
-					else
+					catch (final Exception ex)
 					{
-						log.error("Product is not valid: {}", product, ex);
+						failedValues.add(product.getValue());
+						addLog("{}_{}: {}", product.getValue(), product.getName(), AdempiereException.extractMessage(ex));
+						if (AdempiereException.isUserValidationError(ex))
+						{
+							log.warn("Product is not valid: {}: {}", product, AdempiereException.extractMessage(ex));
+						}
+						else
+						{
+							log.error("Product is not valid: {}", product, ex);
+						}
 					}
 				}
+			}
+			finally
+			{
+				IteratorUtils.close(products);
 			}
 
 			// a category without BOM products also ends here: "All 0 products ... verified, none failed" is truthful
