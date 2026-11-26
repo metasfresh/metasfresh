@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.i18n;
 
-import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.i18n.ILanguageDAO;
@@ -34,6 +33,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,20 +53,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Steps for the translation tables ({@code M_Product_Trl}) and the writers that fill them.
+ *
+ * @see M_Product_StepDefData
  */
 @RequiredArgsConstructor
 public class Translation_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
 
 	/** the language picked by the step "delete M_Product_Trl ... for the first active non-base system language" */
 	private I_AD_Language thatLanguage;
-	/** M_Product.Updated / UpdatedBy as remembered by {@link #set_M_Product_Trl_audit_of_base_language_by_SQL} */
-	private final Map<String, String> productUpdatedByIdentifier = new HashMap<>();
-	private final Map<String, Integer> productUpdatedByByIdentifier = new HashMap<>();
+	/** M_Product.Updated / UpdatedBy per product identifier, as remembered by {@link #set_M_Product_Trl_of_base_language_by_SQL} */
+	private final Map<String, ProductAudit> rememberedProductAuditByIdentifier = new HashMap<>();
+
+	@Value
+	private static class ProductAudit
+	{
+		@NonNull Timestamp updated;
+		int updatedBy;
+	}
 
 	/**
 	 * Picks the first AD_Language with IsActive=Y, IsSystemLanguage=Y, IsBaseLanguage=N (lowest AD_Language_ID) and deletes
@@ -91,11 +99,9 @@ public class Translation_StepDef
 				.first(I_AD_Language.class);
 		assertThat(thatLanguage).as("an active non-base system AD_Language").isNotNull();
 
-		final int deleted = DB.executeUpdateAndThrowExceptionOnFail(
-				"DELETE FROM M_Product_Trl WHERE M_Product_ID=? AND AD_Language=?",
-				new Object[] { productId(productIdentifier), thatLanguage.getAD_Language() },
-				ITrx.TRXNAME_None);
-		assertThat(deleted).as("deleted M_Product_Trl rows of " + productIdentifier + " for " + thatLanguage.getAD_Language()).isEqualTo(1);
+		final PO trl = loadProductTrl(productIdentifier, thatLanguage.getAD_Language());
+		assertThat(trl).as("M_Product_Trl of " + productIdentifier + " for " + thatLanguage.getAD_Language()).isNotNull();
+		trl.deleteEx(true);
 	}
 
 	/**
@@ -129,7 +135,10 @@ public class Translation_StepDef
 	}
 
 	/**
+	 * Checks {@code CreatedBy} and {@code UpdatedBy} of the M_Product_Trl row of the product for "that language"; the row must exist.
+	 *
 	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then M_Product_Trl of product_1 for that language has CreatedBy 0 and UpdatedBy 0
@@ -143,42 +152,46 @@ public class Translation_StepDef
 	{
 		assertThat(thatLanguage).as("that language (set by the delete step)").isNotNull();
 
-		final Object[] params = { productId(productIdentifier), thatLanguage.getAD_Language() };
-		final String where = " FROM M_Product_Trl WHERE M_Product_ID=? AND AD_Language=?";
-		assertThat(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT count(1)" + where, params)).as("M_Product_Trl rows of " + productIdentifier + " for " + thatLanguage.getAD_Language()).isEqualTo(1);
-		assertThat(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT CreatedBy" + where, params)).as("M_Product_Trl.CreatedBy").isEqualTo(expectedCreatedBy);
-		assertThat(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT UpdatedBy" + where, params)).as("M_Product_Trl.UpdatedBy").isEqualTo(expectedUpdatedBy);
+		final PO trl = loadProductTrl(productIdentifier, thatLanguage.getAD_Language());
+		assertThat(trl).as("M_Product_Trl of " + productIdentifier + " for " + thatLanguage.getAD_Language()).isNotNull();
+		assertThat(trl.getCreatedBy()).as("M_Product_Trl.CreatedBy").isEqualTo(expectedCreatedBy);
+		assertThat(trl.getUpdatedBy()).as("M_Product_Trl.UpdatedBy").isEqualTo(expectedUpdatedBy);
 	}
 
 	/**
-	 * Remembers {@code M_Product.Updated} / {@code M_Product.UpdatedBy} of the product, then writes {@code Updated} = 2020-01-01
-	 * and {@code UpdatedBy} = 99 into the base-language M_Product_Trl row of the product with plain SQL (a trl row whose audit
-	 * columns differ from the product's).
+	 * Remembers {@code M_Product.Updated} / {@code M_Product.UpdatedBy} of the product (for the step "keeps Updated and UpdatedBy"),
+	 * then writes the given columns into the base-language M_Product_Trl row of the product with plain SQL (a trl row whose audit
+	 * columns and Name differ from the product's; a model save would overwrite the audit columns).
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Updated</b> — (required) date to store in M_Product_Trl.Updated<br>
+	 *   <b>UpdatedBy</b> — (required) AD_User_ID to store in M_Product_Trl.UpdatedBy<br>
+	 *   <b>Name</b> — (optional) text to store in M_Product_Trl.Name<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * And set M_Product_Trl audit of product_b for the base language by SQL:
-	 *   | Updated    | UpdatedBy |
-	 *   | 2020-01-01 | 99        |
+	 * And set M_Product_Trl of product_b for the base language by SQL:
+	 *   | Updated    | UpdatedBy | Name        |
+	 *   | 2020-01-01 | 99        | Translation |
 	 * </pre>
 	 */
-	@And("set M_Product_Trl audit of {word} for the base language by SQL:")
-	public void set_M_Product_Trl_audit_of_base_language_by_SQL(
+	@And("set M_Product_Trl of {word} for the base language by SQL:")
+	public void set_M_Product_Trl_of_base_language_by_SQL(
 			@NonNull final String productIdentifier,
 			@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 		final Timestamp updated = Timestamp.valueOf(row.getAsLocalDate("Updated").atStartOfDay());
 		final int updatedBy = row.getAsInt("UpdatedBy");
-		final int productId = productId(productIdentifier);
+		final String name = row.getAsOptionalString("Name").orElse(null);
 
-		productUpdatedByIdentifier.put(productIdentifier, DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT Updated::text FROM M_Product WHERE M_Product_ID=?", productId));
-		productUpdatedByByIdentifier.put(productIdentifier, DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT UpdatedBy FROM M_Product WHERE M_Product_ID=?", productId));
+		final I_M_Product product = loadProduct(productIdentifier);
+		rememberedProductAuditByIdentifier.put(productIdentifier, new ProductAudit(product.getUpdated(), product.getUpdatedBy()));
 
 		final int updatedRows = DB.executeUpdateAndThrowExceptionOnFail(
-				"UPDATE M_Product_Trl SET Updated=?, UpdatedBy=? WHERE M_Product_ID=? AND AD_Language=?",
-				new Object[] { updated, updatedBy, productId, languageDAO.retrieveBaseLanguage() },
+				"UPDATE M_Product_Trl SET Updated=?, UpdatedBy=?, Name=COALESCE(?, Name) WHERE M_Product_ID=? AND AD_Language=?",
+				new Object[] { updated, updatedBy, name, product.getM_Product_ID(), languageDAO.retrieveBaseLanguage() },
 				ITrx.TRXNAME_None);
 		assertThat(updatedRows).as("updated base-language M_Product_Trl rows of " + productIdentifier).isEqualTo(1);
 	}
@@ -188,6 +201,7 @@ public class Translation_StepDef
 	 * translation save in the application ({@code PO.saveEx} -> {@code POTrlRepository.onTrlRecordChanged}).
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * When change Name of the base-language M_Product_Trl of product_a to "New name A" and save
@@ -198,31 +212,10 @@ public class Translation_StepDef
 			@NonNull final String productIdentifier,
 			@NonNull final String newName)
 	{
-		final PO trl = TableModelLoader.instance.getPO(
-				Env.getCtx(),
-				"M_Product_Trl",
-				"M_Product_ID=? AND AD_Language=?",
-				new Object[] { productId(productIdentifier), languageDAO.retrieveBaseLanguage() },
-				ITrx.TRXNAME_None);
+		final PO trl = loadProductTrl(productIdentifier, languageDAO.retrieveBaseLanguage());
 		assertThat(trl).as("base-language M_Product_Trl of " + productIdentifier).isNotNull();
 		trl.set_ValueOfColumn("Name", newName);
 		trl.saveEx();
-	}
-
-	/**
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * Then M_Product product_a has Name "New name A"
-	 * </pre>
-	 */
-	@Then("M_Product {word} has Name {string}")
-	public void M_Product_has_Name(@NonNull final String productIdentifier, @NonNull final String expectedName)
-	{
-		final int productId = productId(productIdentifier);
-		CacheMgt.get().reset(I_M_Product.Table_Name, productId);
-		final String name = DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT Name FROM M_Product WHERE M_Product_ID=?", productId);
-		assertThat(name).as("M_Product.Name of " + productIdentifier).isEqualTo(expectedName);
 	}
 
 	/**
@@ -230,6 +223,7 @@ public class Translation_StepDef
 	 * M_Product_Trl audit.
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then M_Product product_b keeps Updated and UpdatedBy
@@ -238,19 +232,31 @@ public class Translation_StepDef
 	@Then("M_Product {word} keeps Updated and UpdatedBy")
 	public void M_Product_keeps_Updated_and_UpdatedBy(@NonNull final String productIdentifier)
 	{
-		final String expectedUpdated = productUpdatedByIdentifier.get(productIdentifier);
-		final Integer expectedUpdatedBy = productUpdatedByByIdentifier.get(productIdentifier);
-		assertThat(expectedUpdated).as("remembered M_Product.Updated of " + productIdentifier).isNotNull();
+		final ProductAudit expected = rememberedProductAuditByIdentifier.get(productIdentifier);
+		assertThat(expected).as("remembered M_Product.Updated / UpdatedBy of " + productIdentifier).isNotNull();
 
-		final int productId = productId(productIdentifier);
-		assertThat(DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT Updated::text FROM M_Product WHERE M_Product_ID=?", productId)).as("M_Product.Updated of " + productIdentifier).isEqualTo(expectedUpdated);
-		assertThat(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT UpdatedBy FROM M_Product WHERE M_Product_ID=?", productId)).as("M_Product.UpdatedBy of " + productIdentifier).isEqualTo(expectedUpdatedBy);
+		final I_M_Product product = loadProduct(productIdentifier);
+		assertThat(product.getUpdated()).as("M_Product.Updated of " + productIdentifier).isEqualTo(expected.getUpdated());
+		assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy of " + productIdentifier).isEqualTo(expected.getUpdatedBy());
 	}
 
-	private int productId(@NonNull final String productIdentifier)
+	/** the product freshly loaded from the DB (not the instance held by the scenario) */
+	@NonNull
+	private I_M_Product loadProduct(@NonNull final String productIdentifier)
 	{
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).as("M_Product " + productIdentifier).isNotNull();
-		return InterfaceWrapperHelper.getId(product);
+		return InterfaceWrapperHelper.loadOutOfTrx(InterfaceWrapperHelper.getId(product), I_M_Product.class);
+	}
+
+	/** the M_Product_Trl row of the product for the language, freshly loaded; null if there is none. */
+	private PO loadProductTrl(@NonNull final String productIdentifier, @NonNull final String adLanguage)
+	{
+		return TableModelLoader.instance.getPO(
+				Env.getCtx(),
+				"M_Product_Trl",
+				"M_Product_ID=? AND AD_Language=?",
+				new Object[] { loadProduct(productIdentifier).getM_Product_ID(), adLanguage },
+				ITrx.TRXNAME_None);
 	}
 }

@@ -37,6 +37,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.apache.commons.lang3.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
@@ -60,7 +61,7 @@ import static org.assertj.core.api.Assertions.fail;
 @RequiredArgsConstructor
 public class PP_Product_BOM_Check_StepDef
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final PP_Product_BOM_StepDefData productBOMTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -250,18 +251,22 @@ public class PP_Product_BOM_Check_StepDef
 	}
 
 	/**
-	 * Checks the number of lines in the process log (AD_PInstance_Log).
+	 * Checks the number of entries (AD_PInstance_Log rows) of the process log; an entry whose text has several lines counts once.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Then the PP_Product_BOM_Check process log has 1 lines
+	 * Then the PP_Product_BOM_Check process log has 1 entries
 	 * </pre>
 	 */
-	@Then("the PP_Product_BOM_Check process log has {int} lines")
-	public void process_log_has_lines(final int expectedCount)
+	@Then("the PP_Product_BOM_Check process log has {int} entries")
+	public void process_log_has_entries(final int expectedCount)
 	{
-		assertThat(getLogLines()).as("lines of the process log of PP_Product_BOM_Check").hasSize(expectedCount);
+		final ProcessExecutionResult processResult = getResult();
+		processResult.syncLogsToDB();
+		// the HTML form has exactly one table row per log entry
+		final int entries = StringUtils.countMatches(processResult.getLogInfo(true), "<tr>");
+		assertThat(entries).as("entries of the process log of PP_Product_BOM_Check").isEqualTo(expectedCount);
 	}
 
 	@NonNull

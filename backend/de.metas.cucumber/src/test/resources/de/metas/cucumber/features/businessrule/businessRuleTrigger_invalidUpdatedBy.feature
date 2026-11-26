@@ -17,7 +17,7 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
   # ##########################################################################################################
   # ##########################################################################################################
   # ##########################################################################################################
-  @Id:S33498_TC4_valid_user
+  @Id:S33498_TC4a
   Scenario: valid user - the stored user, not the logged-in user, stays the triggering user
     Given metasfresh contains AD_Users:
       | Identifier |
@@ -45,7 +45,7 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
   # ##########################################################################################################
   # ##########################################################################################################
   # ##########################################################################################################
-  @Id:S33498_TC4_minus_one
+  @Id:S33498_TC4b
   Scenario: minus one - stored UpdatedBy -1 does not block the save, System user is the triggering user
     Given metasfresh contains M_Products:
       | Identifier | Description |
@@ -73,7 +73,7 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
   # ##########################################################################################################
   # ##########################################################################################################
   # ##########################################################################################################
-  @Id:S33498_TC4_notice
+  @Id:S33498_TC4c
   Scenario: notice - stored UpdatedBy -1, the warning of a violated rule reaches the System user as a notice
     Given AD_Note table is reset
     And set notification type of AD_User 0 to N
@@ -107,7 +107,7 @@ Feature: Business rule on M_Product when the stored UpdatedBy is not a valid use
   # ##########################################################################################################
   # ##########################################################################################################
   # ##########################################################################################################
-  @Id:S33498_TC4_missing_user
+  @Id:S33498_TC4d
   Scenario: missing user - stored UpdatedBy without AD_User row does not block the save, System user is the triggering user
     Given metasfresh contains M_Products:
       | Identifier | Description |

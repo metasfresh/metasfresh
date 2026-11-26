@@ -18,7 +18,7 @@ Feature: Verify BOMs when a component was last changed by an invalid user
   # ##########################################################################################################
   @Id:S33498_TC1
   @Id:S33498_TC5
-  Scenario: TC1 and TC5 - verify the BOM without category, a component with UpdatedBy -1 does not break it; the production order is refused before and created after
+  Scenario: verify the BOM without category, a component with UpdatedBy -1 does not break it; the production order is refused before and created after
     Given metasfresh contains M_Products:
       | Identifier  | Description  |
       | bom_product | bomcheck_tc1 |
@@ -83,7 +83,7 @@ Feature: Verify BOMs when a component was last changed by an invalid user
   # ##########################################################################################################
   # ##########################################################################################################
   @Id:S33498_TC2
-  Scenario: TC2 - verify with the product category of the BOM product, all products are verified
+  Scenario: verify with the product category of the BOM product, all products are verified
     Given metasfresh contains M_Product_Categories:
       | M_Product_Category_ID |
       | category_1            |

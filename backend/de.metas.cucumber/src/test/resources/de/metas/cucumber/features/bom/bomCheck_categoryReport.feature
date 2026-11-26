@@ -17,7 +17,7 @@ Feature: Verify BOMs with a product category, report the products that failed
   # ##########################################################################################################
   # ##########################################################################################################
   @Id:S33498_TC3
-  Scenario: TC3 - verify with a product category, one of two products has no default BOM: the run ends normally and names the failed product
+  Scenario: verify with a product category, one of two products has no default BOM: the run ends normally and names the failed product
     Given metasfresh contains M_Product_Categories:
       | M_Product_Category_ID |
       | category_1            |
@@ -56,7 +56,7 @@ Feature: Verify BOMs with a product category, report the products that failed
       | M_Product_ID    | ReasonMessageKey                      |
       | failing_product | NO_Default_PP_Product_BOM_For_Product |
     # one line only: none for the valid product
-    And the PP_Product_BOM_Check process log has 1 lines
+    And the PP_Product_BOM_Check process log has 1 entries
     And M_Product is verified:
       | M_Product_ID    | IsVerified |
       | valid_product   | Y          |
@@ -69,7 +69,7 @@ Feature: Verify BOMs with a product category, report the products that failed
   # ##########################################################################################################
   # ##########################################################################################################
   @Id:S33498_TC7
-  Scenario: TC7 - verify a single product without a default BOM: the user validation error stays
+  Scenario: verify a single product without a default BOM: the user validation error stays
     Given metasfresh contains M_Product_Categories:
       | M_Product_Category_ID |
       | category_1            |

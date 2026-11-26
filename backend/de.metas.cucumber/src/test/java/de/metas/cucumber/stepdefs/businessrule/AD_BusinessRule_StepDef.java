@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.business_rule.BusinessRuleService;
-import de.metas.cache.CacheMgt;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -44,7 +43,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_BusinessRule;
@@ -73,11 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class AD_BusinessRule_StepDef
 {
-	/** Value of the {@code UpdatedBy} column of {@code set M_Product.UpdatedBy by SQL:} that stands for an id without any AD_User row. */
-	private static final String UPDATED_BY_NO_SUCH_USER = "NO_SUCH_USER";
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	@NonNull private final AD_BusinessRule_StepDefData ruleTable;
 	@NonNull private final AD_Message_StepDefData messageTable;
@@ -226,45 +221,6 @@ public class AD_BusinessRule_StepDef
 	public void deactivate_AD_BusinessRule(@NonNull final String ruleIdentifier)
 	{
 		deactivateRule(ruleTable.get(ruleIdentifier));
-	}
-
-	/**
-	 * Writes {@code M_Product.UpdatedBy} with plain SQL, i.e. a value the model would never write, resets the cached
-	 * M_Product record (so that code reading the product through the cache sees the stored value too) and reloads the product
-	 * in the scenario so that its next save starts from that stored value.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product<br>
-	 *   <b>UpdatedBy</b> — (required) the AD_User_ID to store, or the identifier of an AD_User of the scenario, or {@code NO_SUCH_USER} for an id (highest AD_User_ID + 1000) that has no AD_User row<br>
-	 * @cucumber.depends StepDefData: M_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And set M_Product.UpdatedBy by SQL:
-	 *   | M_Product_ID | UpdatedBy |
-	 *   | product_1    | -1        |
-	 * </pre>
-	 */
-	@And("set M_Product.UpdatedBy by SQL:")
-	public void set_M_Product_UpdatedBy_by_SQL(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_M_Product product = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
-			final String updatedByStr = row.getAsString("UpdatedBy");
-			final int updatedBy = UPDATED_BY_NO_SUCH_USER.equals(updatedByStr)
-					? DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT COALESCE(MAX(AD_User_ID), 0) + 1000 FROM AD_User")
-					: resolveUserId(updatedByStr);
-
-			DB.executeUpdateAndThrowExceptionOnFail(
-					"UPDATE M_Product SET UpdatedBy=? WHERE M_Product_ID=?",
-					new Object[] { updatedBy, product.getM_Product_ID() },
-					ITrx.TRXNAME_None);
-
-			// reset the cached M_Product, so that code reading it through the cache (e.g. IProductBL.getById) sees the stored value, as on a real instance where the value was written long before
-			CacheMgt.get().reset(I_M_Product.Table_Name, product.getM_Product_ID());
-			InterfaceWrapperHelper.refresh(product);
-			assertThat(product.getUpdatedBy()).as("M_Product.UpdatedBy").isEqualTo(updatedBy);
-		});
 	}
 
 	/**
