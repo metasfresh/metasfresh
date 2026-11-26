@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ public final class TUPickedRowsAllocator
 	}
 
 	/**
+	 * @param row the quantity of all rows given to one allocator must not exceed the content of the groups
 	 * @return the parts of the row, empty for a row without quantity
 	 */
 	public List<Part> allocate(@NonNull final Row row)
@@ -222,7 +224,7 @@ public final class TUPickedRowsAllocator
 		final Quantity rowWeight = row.getCatchWeight();
 		if (rowWeight == null)
 		{
-			return nulls(parts.size());
+			return new ArrayList<>(Collections.<Quantity>nCopies(parts.size(), null));
 		}
 		final boolean isWeightOfEveryPartKnown = cuWeights.stream()
 				.allMatch(weight -> weight != null && weight.getUomId().equals(rowWeight.getUomId()));
@@ -232,17 +234,7 @@ public final class TUPickedRowsAllocator
 		}
 		return parts.size() > 1
 				? splitByQty(rowWeight, parts.stream().map(Part::getQty).collect(ImmutableList.toImmutableList()))
-				: nulls(parts.size());
-	}
-
-	private static List<Quantity> nulls(final int size)
-	{
-		final List<Quantity> list = new ArrayList<>(size);
-		for (int i = 0; i < size; i++)
-		{
-			list.add(null);
-		}
-		return list;
+				: new ArrayList<>(Collections.<Quantity>nCopies(parts.size(), null));
 	}
 
 	/**

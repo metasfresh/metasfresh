@@ -127,6 +127,34 @@ class TUPickedRowsAllocatorTest
 			assertThat(allocator.allocate(row(2, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
 			assertThat(allocator(ImmutableMap.of(), group(cu(2), cu(3))).allocate(row(5, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU()).isNull());
 		}
+
+		@Test
+		void afterAPartWasHandedOut_nextPartTakesWhatIsLeftOfTheGroup()
+		{
+			final TUPickedRowsAllocator allocator = allocator(ImmutableMap.of(), group(cu(4)), group(cu(1)));
+			allocator.allocate(row(2, null));
+
+			assertThat(allocator.allocate(row(3, null))).extracting(part -> part.getQty().toBigDecimal())
+					.as("2 left of the first group, then the second group")
+					.containsExactly(new BigDecimal("2"), new BigDecimal("1"));
+		}
+
+		@Test
+		void cuKeptInAnotherUOM_groupCountsInStockUOM()
+		{
+			// the rows' QtyPicked is in the stock UOM; a storage kept in another UOM must not be compared in that UOM
+			final I_C_UOM storageUOM = uom(3, 0);
+			final IHUProductStorage storage = mock(IHUProductStorage.class);
+			final I_M_HU cu = mock(I_M_HU.class);
+			when(storage.getM_HU()).thenReturn(cu);
+			when(storage.getQty()).thenReturn(Quantity.of(BigDecimal.ONE, storageUOM));
+			when(storage.getQtyInStockingUOM()).thenReturn(qty(10));
+			final TUContentGroup group = new TUContentGroup(ImmutableList.of(TUContentCU.ofStorage(storage)));
+
+			assertThat(group.uom()).isSameAs(each);
+			assertThat(group.totalQty().toBigDecimal()).isEqualByComparingTo("10");
+			assertThat(allocator(ImmutableMap.of(), group).allocate(row(10, null))).singleElement().satisfies(part -> assertThat(part.getWholeCU().getCu()).isSameAs(cu));
+		}
 	}
 
 	@Nested

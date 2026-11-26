@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -1027,14 +1026,6 @@ public class PickingJobService implements PickingSlotListener
 				.map(this::getById)
 				.flatMap(pickingJob -> pickingJob.getAllPickedHuIds().stream())
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	/**
-	 * @return per shipment schedule the HUs that its picking job steps recorded as picked
-	 */
-	public ImmutableSetMultimap<ShipmentScheduleId, HuId> getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		return pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(shipmentScheduleIds);
 	}
 
 	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)

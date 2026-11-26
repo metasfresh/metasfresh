@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.picked_tu;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
@@ -40,10 +41,7 @@ public class TUContentGroup
 
 	public TUContentGroup(@NonNull final ImmutableList<TUContentCU> cus)
 	{
-		if (cus.isEmpty())
-		{
-			throw new IllegalArgumentException("A TU content group has at least one CU");
-		}
+		Check.assume(!cus.isEmpty(), "A TU content group has at least one CU");
 		this.cus = cus;
 	}
 

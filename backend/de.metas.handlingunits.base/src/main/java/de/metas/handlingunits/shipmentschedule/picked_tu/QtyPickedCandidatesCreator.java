@@ -150,7 +150,7 @@ public class QtyPickedCandidatesCreator
 
 	private boolean isTU(@NonNull final HuId huId)
 	{
-		return isTUByHuId.computeIfAbsent(huId, id -> !handlingUnitsBL.isVirtual(handlingUnitsBL.getById(id)));
+		return isTUByHuId.computeIfAbsent(huId, tuCandidateId -> !handlingUnitsBL.isVirtual(handlingUnitsBL.getById(tuCandidateId)));
 	}
 
 	private I_M_ShipmentSchedule getSchedule(@NonNull final ShipmentScheduleId scheduleId)

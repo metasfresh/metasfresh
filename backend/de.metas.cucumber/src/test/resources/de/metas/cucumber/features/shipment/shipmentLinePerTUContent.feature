@@ -652,7 +652,7 @@ Feature: Shipment line per TU content
       | p_coo        | 6           |                 |
 
   @Id:S34165_40
-  Scenario: CUs taken out of a picked TU by hand keep today's per-row handling
+  Scenario: CUs taken out of a picked TU by hand keep per-row handling
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_AND_COMPLETE  | Y                                  |

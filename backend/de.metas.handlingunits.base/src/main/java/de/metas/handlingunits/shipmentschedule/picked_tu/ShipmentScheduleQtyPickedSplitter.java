@@ -31,6 +31,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -126,7 +127,7 @@ class ShipmentScheduleQtyPickedSplitter
 			@NonNull final Quantity partQty,
 			@Nullable final Quantity catchWeightShare)
 	{
-		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(source.getM_ShipmentSchedule_ID()));
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(source.getM_ShipmentSchedule_ID()));
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 		final StockQtyAndUOMQty partStockAndCatchQty = catchWeightShare != null
 				? StockQtyAndUOMQtys.create(partQty.toBigDecimal(), productId, catchWeightShare.toBigDecimal(), UomId.ofRepoIdOrNull(source.getCatch_UOM_ID()))

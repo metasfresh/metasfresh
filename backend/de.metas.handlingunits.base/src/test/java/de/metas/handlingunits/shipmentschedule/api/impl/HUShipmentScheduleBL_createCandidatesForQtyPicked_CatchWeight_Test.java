@@ -24,7 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -43,7 +43,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.shipmentschedule.api.CreateCandidatesRequest;
+import de.metas.handlingunits.shipmentschedule.picked_tu.QtyPickedCandidatesCreator;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
@@ -380,12 +380,12 @@ class HUShipmentScheduleBL_createCandidatesForQtyPicked_CatchWeight_Test extends
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
+	/**
+	 * The row on its own: the path of the callers that know no other row of the TU.
+	 */
 	private List<ShipmentScheduleWithHU> createCandidates(final I_M_ShipmentSchedule_QtyPicked row, final IHUContext huContext)
 	{
-		return huShipmentScheduleBL.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
-				.qtyPickedRecords(ImmutableList.of(row))
-				.huContext(huContext)
-				.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
-				.build());
+		return new QtyPickedCandidatesCreator(huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER, ImmutableSetMultimap.of())
+				.createCandidatesOfRowAlone(row);
 	}
 }

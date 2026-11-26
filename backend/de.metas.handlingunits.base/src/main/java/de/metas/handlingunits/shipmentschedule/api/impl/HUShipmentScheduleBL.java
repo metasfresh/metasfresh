@@ -1181,7 +1181,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	/**
-	 * A row on its own: the callers know of no other row of its TU (a pick just recorded, or the open picks of one top-level HU).
+	 * Candidates of one row, without regard to other rows of its TU.
 	 */
 	private List<ShipmentScheduleWithHU> createCandidatesOfRowAlone(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked,
@@ -1202,15 +1202,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			{
 				throw new HUException("HU " + hu + " shall be top level");
 			}
-			final List<ShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
-			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu))
-			{
-				if (!qtyPicked.isActive())
-				{
-					continue;
-				}
-				candidatesForHU.addAll(createCandidatesOfRowAlone(qtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
-			}
+			final List<I_M_ShipmentSchedule_QtyPicked> activeQtyPickedRecords = huShipmentScheduleDAO.retrieveQtyPickedNotDeliveredForTopLevelHU(hu).stream()
+					.filter(I_M_ShipmentSchedule_QtyPicked::isActive)
+					.collect(ImmutableList.toImmutableList());
+			final List<ShipmentScheduleWithHU> candidatesForHU = createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
+					.qtyPickedRecords(activeQtyPickedRecords)
+					.huContext(huContext)
+					.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+					.build());
 			result.addAll(candidatesForHU);
 			if (candidatesForHU.isEmpty())
 			{
