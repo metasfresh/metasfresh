@@ -42,11 +42,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.picked_tu.ShipmentReversalPickRestoreService;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
@@ -69,11 +67,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -96,14 +90,14 @@ public class M_InOut
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
-	private final PickingJobService pickingJobService;
+	private final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService;
 
 	public M_InOut(
 			@NonNull final ReturnsServiceFacade returnsServiceFacade,
-			@NonNull final PickingJobService pickingJobService)
+			@NonNull final ShipmentReversalPickRestoreService shipmentReversalPickRestoreService)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
-		this.pickingJobService = pickingJobService;
+		this.shipmentReversalPickRestoreService = shipmentReversalPickRestoreService;
 	}
 
 	@Init
@@ -277,54 +271,7 @@ public class M_InOut
 		// Unassign shipment from M_Packages (if any)
 		huPackageBL.unassignShipmentFromPackages(shipment);
 
-		// A row stands for its VHU, or for the CUs of its box when it only references the box (several CUs of one attribute combination).
-		// One entry per HU: the reopen maps its requests by HU id and rejects a duplicate. An HU might be in multiple
-		// qtyPicked records if inouts are completed and reversed multiple times.
-		// The VHUs are read once per row and reused below; the reopen does not change them.
-		final Set<ShipmentScheduleId> allShipmentSchedulesInvolved = new LinkedHashSet<>();
-		final Map<HuId, HUWithPickOnTheFlyStatus> husInvolvedById = new LinkedHashMap<>();
-		final Map<Integer, Set<HuId>> pickedVhuIdsByRowId = new HashMap<>();
-		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : assignedQuantities)
-		{
-			final Set<HuId> pickedVhuIds = huShipmentScheduleBL.retrievePickedVhuIds(qtyPicked);
-			pickedVhuIdsByRowId.put(qtyPicked.getM_ShipmentSchedule_QtyPicked_ID(), pickedVhuIds);
-			if (!pickedVhuIds.isEmpty())
-			{
-				allShipmentSchedulesInvolved.add(ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID()));
-			}
-			for (final HuId vhuId : pickedVhuIds)
-			{
-				husInvolvedById.putIfAbsent(vhuId, HUWithPickOnTheFlyStatus.builder()
-						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
-						.huId(vhuId)
-						.build());
-			}
-		}
-		final List<HUWithPickOnTheFlyStatus> allHusInvolved = ImmutableList.copyOf(husInvolvedById.values());
-
-		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
-				.shipmentScheduleIds(allShipmentSchedulesInvolved)
-				.huInfoList(allHusInvolved)
-				.build();
-
-		pickingJobService.reopenPickingJobs(request);
-
-		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment
-		// was recreated via "Generate Shipments" the job is left Drafted, so a subsequent reverse restores nothing
-		// and the shipment can no longer be recreated (me03#29561). Re-create the picked rows directly from the
-		// just-reversed allocations for any (schedule, VHU) the reopen did not restore.
-		//
-		// Gate this to allocations whose VHU is covered by a picking job: a QtyToDeliver / on-the-fly shipment has
-		// NO picking job and its reverse must instead clear the HU's BPartner + return it to Active stock (so it
-		// can be shipped to a different customer) — that behaviour must stay untouched.
-		final ImmutableSet<HuId> huIdsCoveredByPickingJobs = pickingJobService.getHuIdsCoveredByPickingJobs(allShipmentSchedulesInvolved);
-		if (!huIdsCoveredByPickingJobs.isEmpty())
-		{
-			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
-					.filter(qtyPicked -> pickedVhuIdsByRowId.get(qtyPicked.getM_ShipmentSchedule_QtyPicked_ID()).stream().anyMatch(huIdsCoveredByPickingJobs::contains))
-					.collect(ImmutableList.toImmutableList());
-			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
-		}
+		shipmentReversalPickRestoreService.restorePickedQtys(assignedQuantities);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

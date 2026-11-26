@@ -1468,13 +1468,13 @@ public class M_InOut_StepDef
 	}
 
 	/**
-	 * Ships a box through the HU shipping process (the desktop action "Shipment" on a HU), completing the shipment, without invoicing.
+	 * Ships a TU through the HU shipping process (the desktop action "Shipment" on a HU), completing the shipment, without invoicing.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns (none — parameters are in the step text)
 	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example <pre>
-	 * And ship HU identified by box_tu via the HU shipping process as shipment_1
+	 * And ship HU identified by shipped_tu via the HU shipping process as shipment_1
 	 * </pre>
 	 */
 	@And("^ship HU identified by (.*) via the HU shipping process as (.*)$")

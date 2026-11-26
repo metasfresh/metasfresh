@@ -399,36 +399,36 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	}
 
 	/**
-	 * Registers the box the active picked rows of a schedule point to, and its CUs, under identifiers.
-	 * The box is the one distinct {@code M_TU_HU_ID} of those rows. A row with an empty {@code Lot-Nummer} cell registers the box itself,
-	 * a row with a value registers the one CU of the box that carries that lot number. The picking steps register no picked box,
+	 * Registers the TU the active picked rows of a schedule point to, and its CUs, under identifiers.
+	 * The TU is the one distinct {@code M_TU_HU_ID} of those rows. A row with an empty {@code Lot-Nummer} cell registers the TU itself,
+	 * a row with a value registers the one CU of the TU that carries that lot number. The picking steps register no picked TU,
 	 * and {@code validate M_HUs:} with {@code M_HU_Parent} loads only one child.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns <b>M_HU_ID</b> — (required, identifier) the identifier to register<br>
-	 * <b>Lot-Nummer</b> — (optional) the lot number of the CU to register; empty: the box
+	 * <b>Lot-Nummer</b> — (optional) the lot number of the CU to register; empty: the TU
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_HU_StepDefData
 	 * @cucumber.example <pre>
-	 * And register the picked box and its CUs of M_ShipmentSchedule identified by ss:
+	 * And register the picked TU and its CUs of M_ShipmentSchedule identified by ss:
 	 *   | M_HU_ID | Lot-Nummer |
-	 *   | box_tu  |            |
+	 *   | shipped_tu  |            |
 	 *   | cu_l2   | L2         |
 	 * </pre>
 	 */
-	@And("^register the picked box and its CUs of M_ShipmentSchedule identified by (.*):$")
-	public void registerPickedBoxAndCUs(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("^register the picked TU and its CUs of M_ShipmentSchedule identified by (.*):$")
+	public void registerPickedTUAndCUs(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
-		final ImmutableSet<HuId> boxIds = retrieveRecordsOrdered(shipmentScheduleId).stream()
+		final ImmutableSet<HuId> tuIds = retrieveRecordsOrdered(shipmentScheduleId).stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_TU_HU_ID)
 				.filter(tuId -> tuId > 0)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-		if (boxIds.size() != 1)
+		if (tuIds.size() != 1)
 		{
-			throw new AdempiereException("Expected exactly one distinct M_TU_HU_ID on the active M_ShipmentSchedule_QtyPicked rows of " + shipmentScheduleIdentifier + " but found " + boxIds);
+			throw new AdempiereException("Expected exactly one distinct M_TU_HU_ID on the active M_ShipmentSchedule_QtyPicked rows of " + shipmentScheduleIdentifier + " but found " + tuIds);
 		}
-		final I_M_HU box = handlingUnitsBL.getById(boxIds.iterator().next());
+		final I_M_HU tu = handlingUnitsBL.getById(tuIds.iterator().next());
 
 		final AttributeId lotAttributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString("Lot-Nummer"));
 		DataTableRows.of(dataTable).forEach(row -> {
@@ -436,11 +436,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final I_M_HU hu;
 			if (lot == null || lot.trim().isEmpty())
 			{
-				hu = box;
+				hu = tu;
 			}
 			else
 			{
-				final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(box).stream()
+				final List<I_M_HU> matchingCUs = handlingUnitsDAO.retrieveIncludedHUs(tu).stream()
 						.filter(handlingUnitsBL::isVirtual)
 						.filter(cu -> {
 							final I_M_HU_Attribute lotAttribute = huAttributesDAO.retrieveAttribute(cu, lotAttributeId);
@@ -449,7 +449,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 						.collect(ImmutableList.toImmutableList());
 				if (matchingCUs.size() != 1)
 				{
-					throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the box " + box.getM_HU_ID() + " but found " + matchingCUs.size());
+					throw new AdempiereException("Expected exactly one CU with Lot-Nummer=" + lot + " in the TU " + tu.getM_HU_ID() + " but found " + matchingCUs.size());
 				}
 				hu = matchingCUs.get(0);
 			}

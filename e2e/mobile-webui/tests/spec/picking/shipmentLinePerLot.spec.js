@@ -10,7 +10,7 @@ import { PickingJobStepScreen } from '../../utils/screens/picking/PickingJobStep
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/screens/picking/GetQuantityDialog';
 
-// Shipment lines of a picked box that holds units of several lots: one shipment line per lot
+// Shipment lines of a picked TU that holds CUs of several lots: one shipment line per lot
 // (shipment policy CL, the lot is a shipment-line aggregation key).
 
 const LOT_ATTRIBUTE = 'Lot-Nummer';
@@ -108,8 +108,8 @@ const pickFromLine = async ({ lineIndex, qrCode, qtyEntered }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('mixed-lot box: one shipment line per lot', async ({ page }) => {
-    allureMeta('Mixed-lot box ships one line per lot');
+test('mixed-lot TU: one shipment line per lot', async ({ page }) => {
+    allureMeta('Mixed-lot TU ships one line per lot');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }, { id: 'HU2', qty: 10, lotNo: 'L2' }, { id: 'HU3', qty: 10, lotNo: 'L3' }],
@@ -132,8 +132,8 @@ test('mixed-lot box: one shipment line per lot', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('box shared by two order lines: each order line gets its own lot', async ({ page }) => {
-    allureMeta('Box shared by two order lines ships one line per order line and lot');
+test('TU shared by two order lines: each order line gets its own lot', async ({ page }) => {
+    allureMeta('TU shared by two order lines ships one line per order line and lot');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }, { id: 'HU2', qty: 10, lotNo: 'L2' }],
@@ -153,8 +153,8 @@ test('box shared by two order lines: each order line gets its own lot', async ({
 });
 
 // noinspection JSUnusedLocalSymbols
-test('box shared by two order lines, equal quantities: each order line gets its own lot', async ({ page }) => {
-    allureMeta('Box shared by two order lines with equal quantities ships one line per order line and lot');
+test('TU shared by two order lines, equal quantities: each order line gets its own lot', async ({ page }) => {
+    allureMeta('TU shared by two order lines with equal quantities ships one line per order line and lot');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }, { id: 'HU2', qty: 10, lotNo: 'L2' }],
@@ -175,7 +175,7 @@ test('box shared by two order lines, equal quantities: each order line gets its 
 
 // noinspection JSUnusedLocalSymbols
 test('equal quantities of two lots: two shipment lines', async ({ page }) => {
-    allureMeta('Equal quantities of two lots in one box ship one line per lot');
+    allureMeta('Equal quantities of two lots in one TU ship one line per lot');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }, { id: 'HU2', qty: 10, lotNo: 'L2' }],
@@ -196,7 +196,7 @@ test('equal quantities of two lots: two shipment lines', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('same lot twice: one shipment line', async ({ page }) => {
-    allureMeta('Two picks of the same lot into one box ship one line');
+    allureMeta('Two picks of the same lot into one tu ship one line');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }],
@@ -216,7 +216,7 @@ test('same lot twice: one shipment line', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('unpick before completion: only the picked lot is shipped', async ({ page }) => {
-    allureMeta('A lot unpicked from a box before completion is not shipped');
+    allureMeta('A lot unpicked from a TU before completion is not shipped');
 
     const masterdata = await createMasterdata({
         lots: [{ id: 'HU1', qty: 10, lotNo: 'L1' }, { id: 'HU2', qty: 10, lotNo: 'L2' }],
@@ -228,7 +228,7 @@ test('unpick before completion: only the picked lot is shipped', async ({ page }
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 2, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, qtyEntered: 3, expectQtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
 
-    // the picker realizes the 3 units of L2 do not belong into the box: step 0 is the pick of L1, step 1 the pick of L2
+    // the picker realizes the 3 CUs of L2 do not belong into the TU: step 0 is the pick of L1, step 1 the pick of L2
     await PickingJobScreen.clickLineButton({ index: 1 });
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.clickStepButton({ index: 1 });

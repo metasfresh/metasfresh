@@ -63,6 +63,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -158,6 +159,7 @@ public class ShipmentScheduleWithHUService
 
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final QtyReservationRepository qtyReservationRepository;
+	@NonNull private final PickingJobRepository pickingJobRepository;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
@@ -168,7 +170,8 @@ public class ShipmentScheduleWithHUService
 				ShipmentScheduleWithHUService.class,
 				() -> new ShipmentScheduleWithHUService(
 						new HUReservationService(new HUReservationRepository()),
-						new QtyReservationRepository())
+						new QtyReservationRepository(),
+						PickingJobRepository.newInstanceForUnitTesting())
 		);
 	}
 
@@ -1006,7 +1009,7 @@ public class ShipmentScheduleWithHUService
 			}
 			activeQtyPickedRecords.add(qtyPickedRecordHU);
 		}
-		candidatesForPick.addAll(huShipmentScheduleBL.createCandidatesForBoxPicks(activeQtyPickedRecords, huContext, quantityType));
+		candidatesForPick.addAll(createCandidatesForQtyPicked(activeQtyPickedRecords, huContext, quantityType));
 
 		return candidatesForPick;
 	}
@@ -1293,7 +1296,27 @@ public class ShipmentScheduleWithHUService
 	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final IHUContext huContext)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> pickedLines = shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class);
-		return ImmutableList.copyOf(huShipmentScheduleBL.createCandidatesForBoxPicks(pickedLines, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+		return ImmutableList.copyOf(createCandidatesForQtyPicked(pickedLines, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER));
+	}
+
+	/**
+	 * The picking jobs of the schedules tell which CUs of a TU the schedule picked: a TU that several schedules picked into holds the CUs of all of them.
+	 */
+	@NonNull
+	private List<ShipmentScheduleWithHU> createCandidatesForQtyPicked(
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords,
+			@NonNull final IHUContext huContext,
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
+	{
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = qtyPickedRecords.stream()
+				.map(qtyPicked -> ShipmentScheduleId.ofRepoId(qtyPicked.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		return huShipmentScheduleBL.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
+				.qtyPickedRecords(qtyPickedRecords)
+				.huContext(huContext)
+				.qtyTypeToUse(quantityType)
+				.pickedHuIdsBySchedule(pickingJobRepository.getPickedHuIdsByShipmentScheduleIds(scheduleIds))
+				.build());
 	}
 
 	@NonNull

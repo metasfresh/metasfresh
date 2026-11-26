@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands.unpick;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
@@ -32,6 +33,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.shipmentschedule.api.CreateCandidatesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
@@ -340,7 +342,11 @@ class PickingJobUnpickCatchWeightTest
 		InterfaceWrapperHelper.save(shipmentScheduleRecord);
 		final IHUContext huContext = huTestHelper.createMutableHUContext();
 		final List<ShipmentScheduleWithHU> candidates = Services.get(IHUShipmentScheduleBL.class)
-				.createCandidatesForQtyPicked(remainingRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+				.createCandidatesForQtyPicked(CreateCandidatesRequest.builder()
+						.qtyPickedRecords(ImmutableList.of(remainingRecord))
+						.huContext(huContext)
+						.qtyTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.build());
 		assertThat(candidates).as("candidates").isNotEmpty();
 
 		final InOutGenerateResult result = Services.get(ITrxItemProcessorExecutorService.class)

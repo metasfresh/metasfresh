@@ -3,12 +3,15 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -311,6 +314,47 @@ public class PickingJobRepository
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
 						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
 								Collectors.toList())));
+	}
+
+	/**
+	 * @return per shipment schedule the HUs that the active picking job steps of the schedule recorded as picked
+	 * ({@code M_Picking_Job_Step_PickedHU.Picked_HU_ID}); a schedule without any has no entry
+	 */
+	@NonNull
+	public ImmutableSetMultimap<ShipmentScheduleId, HuId> getPickedHuIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final Map<PickingJobStepId, ShipmentScheduleId> scheduleIdByStepId = queryBL.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.stream()
+				.collect(Collectors.toMap(
+						step -> PickingJobStepId.ofRepoId(step.getM_Picking_Job_Step_ID()),
+						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID())));
+		if (scheduleIdByStepId.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final ImmutableSetMultimap.Builder<ShipmentScheduleId, HuId> result = ImmutableSetMultimap.builder();
+		queryBL.createQueryBuilder(I_M_Picking_Job_Step_PickedHU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Job_Step_PickedHU.COLUMNNAME_M_Picking_Job_Step_ID, scheduleIdByStepId.keySet())
+				.create()
+				.stream()
+				.forEach(pickedHU -> {
+					final HuId huId = HuId.ofRepoIdOrNull(pickedHU.getPicked_HU_ID());
+					if (huId != null)
+					{
+						result.put(scheduleIdByStepId.get(PickingJobStepId.ofRepoId(pickedHU.getM_Picking_Job_Step_ID())), huId);
+					}
+				});
+		return result.build();
 	}
 
 	/**
