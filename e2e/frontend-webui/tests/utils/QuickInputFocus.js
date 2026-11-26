@@ -248,6 +248,30 @@ export async function pickCustomerByMouse({ searchText, bpartnerCode }) {
 }
 
 /**
+ * Wait until the customer pick has finished its walk: the customer lookup confirms the customer's
+ * location on its own (saved C_BPartner_Location_ID), then moves the caret on to the contact field.
+ * Poll both, then let two animation frames pass. Used before the quick entry is opened by the button,
+ * so the walk cannot land after the open and take the cursor away.
+ */
+export async function awaitPartnerAdvanceSettled({ windowId, recordId }) {
+  const page = global.currentPage;
+  await expect
+    .poll(
+      async () => {
+        const f = (await getRecordData(windowId, recordId)).fieldsByName;
+        const key = f?.C_BPartner_Location_ID?.value?.key;
+        return key === undefined || key === null ? 'unset' : 'set';
+      },
+      { timeout: SLOW_ACTION_TIMEOUT, message: 'partner advance: C_BPartner_Location_ID saved' }
+    )
+    .toBe('set');
+  await expect(page.locator('#lookup_AD_User_ID :focus'), 'partner advance: caret moved on to the contact field').toHaveCount(1, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+}
+
+/**
  * Enter one order line per product by keyboard only; after every step the cursor is checked once
  * the header reload that the step triggers has happened.
  */
