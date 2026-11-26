@@ -782,5 +782,17 @@ describe('DatePicker — lenient typed dates and invalid-date feedback', () => {
       );
     });
   });
+
+  it('time-only field: a click outside with the calendar closed behaves as before (no blur)', () => {
+    const { wrapper, picker } = mountWithStore({
+      dateFormat: false,
+      timeFormat: 'HH:mm',
+      value: null,
+    });
+    const blur = jest.spyOn(picker(), 'handleBlur');
+    typeInto(wrapper, '12:3');
+    picker().handleClickOutside();
+    expect(blur).not.toHaveBeenCalled();
+  });
 });
 

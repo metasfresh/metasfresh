@@ -568,12 +568,13 @@ class DatePicker extends PureComponent {
     // For that reason we check the isCalendarOpen to see if it has the calendar open.
 
     // (a grid date cell exists only while it is edited, and may have no calendar open; typing into
-    // a field with its calendar closed, e.g. after Escape, is left by a click outside too)
+    // a date field with its calendar closed, e.g. after Escape, is left by a click outside too;
+    // a time-only field keeps its behaviour)
     const { isCalendarOpen } = this.state;
     if (
       isCalendarOpen ||
       this.props.isGridCell ||
-      this.typedText !== undefined
+      (this.typedText !== undefined && this.props.dateFormat)
     ) {
       this.handleBlur();
     }
