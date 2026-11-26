@@ -25,6 +25,8 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -32,10 +34,8 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.location.CountryId;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
-import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -173,10 +173,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 		// the org's default warehouse belongs to another org: that org is the one the tax lookup uses
 		final OrgId warehouseOrgId = createOrg();
 		final CountryId warehouseCountryId = createCountry();
-		final I_AD_OrgInfo orgInfo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_OrgInfo.class)
-				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, orgId)
-				.create()
-				.firstOnlyNotNull(I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo = loadOrgInfo();
 		orgInfo.setM_Warehouse_ID(createWarehouse(warehouseOrgId, warehouseCountryId).getRepoId());
 		save(orgInfo);
 
@@ -194,6 +191,58 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 	}
 
 	@Test
+	void manualHandler_purchase_usesPurchaseWarehouseOrg()
+	{
+		final OrgId poWarehouseOrgId = createOrg();
+		final CountryId poWarehouseCountryId = createCountry();
+		final I_AD_OrgInfo orgInfo = loadOrgInfo();
+		orgInfo.setM_Warehouse_ID(createWarehouse(createOrg(), createCountry()).getRepoId()); // the sales warehouse must be ignored
+		orgInfo.setM_WarehousePO_ID(createWarehouse(poWarehouseOrgId, poWarehouseCountryId).getRepoId());
+		save(orgInfo);
+
+		final I_C_Invoice_Candidate ic = createIC(handlerRecord(ManualCandidateHandler.class));
+		ic.setIsSOTrx(false);
+		save(ic);
+
+		final TaxLocation result = handlerBL.getTaxLocation(ic, null);
+
+		assertThat(result.getOrgId()).isEqualTo(poWarehouseOrgId);
+		assertThat(result.getFromCountryId()).isEqualTo(poWarehouseCountryId);
+	}
+
+	@Test
+	void manualHandler_noOrgWarehouse_usesCandidateOrgAndNoCountry()
+	{
+		final I_C_Invoice_Candidate ic = createIC(handlerRecord(ManualCandidateHandler.class));
+		ic.setIsSOTrx(true);
+		save(ic);
+
+		final TaxLocation result = handlerBL.getTaxLocation(ic, null);
+
+		assertThat(result.getOrgId()).isEqualTo(orgId);
+		assertThat(result.getFromCountryId()).isNull();
+	}
+
+	@Test
+	void withShipmentLine_noWarehouse_hasNoCountry()
+	{
+		final I_M_InOut inOut = newInstance(I_M_InOut.class);
+		inOut.setAD_Org_ID(orgId.getRepoId());
+		inOut.setC_BPartner_ID(partner.getC_BPartner_ID());
+		inOut.setC_BPartner_Location_ID(otherLocationId.getRepoId());
+		inOut.setMovementDate(Timestamp.valueOf("2026-03-04 00:00:00"));
+		save(inOut);
+		final I_M_InOutLine inOutLine = newInstance(I_M_InOutLine.class);
+		inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+		save(inOutLine);
+
+		final TaxLocation result = handlerBL.getTaxLocation(createIC(plainHandler), inOutLine);
+
+		assertThat(result.getBpartnerLocationId()).isEqualTo(otherLocationId);
+		assertThat(result.getFromCountryId()).isNull();
+	}
+
+	@Test
 	void otherHandler_fallsBackToBillLocationAndDateOrdered()
 	{
 		final I_C_Invoice_Candidate ic = createIC(plainHandler);
@@ -206,6 +255,14 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 		assertThat(result.getOrgId()).isEqualTo(orgId);
 		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-08 00:00:00"));
 		assertThat(result.getFromCountryId()).isNull(); // not known: a re-tax keeps its default
+	}
+
+	private I_AD_OrgInfo loadOrgInfo()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_OrgInfo.class)
+				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnlyNotNull(I_AD_OrgInfo.class);
 	}
 
 	private I_C_Invoice_Candidate createIC(final I_C_ILCandHandler handler)

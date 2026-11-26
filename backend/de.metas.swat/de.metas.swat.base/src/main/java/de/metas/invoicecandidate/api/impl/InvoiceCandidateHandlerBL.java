@@ -30,10 +30,7 @@ import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.vatid.TaxLocation;
-import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
-import de.metas.organization.OrgId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -41,6 +38,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
@@ -52,6 +50,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.organization.OrgId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -65,8 +64,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -584,12 +581,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		{
 			// the tax of a shipped line is determined from the shipment, as InvoiceLineBL.setTaxBasedOnShipment does
 			final I_M_InOut inOut = Services.get(IInOutBL.class).getById(InOutId.ofRepoId(shipmentLine.getM_InOut_ID()));
-			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inOut.getM_Warehouse_ID());
-			return new TaxLocation(
-					InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
-					OrgId.ofRepoId(inOut.getAD_Org_ID()),
-					inOut.getMovementDate(),
-					warehouseId != null ? Services.get(IWarehouseBL.class).getCountryId(warehouseId) : null);
+			return ShipmentTaxLocation.of(inOut, OrgId.ofRepoId(inOut.getAD_Org_ID()));
 		}
 
 		return createInvoiceCandidateHandler(ic)

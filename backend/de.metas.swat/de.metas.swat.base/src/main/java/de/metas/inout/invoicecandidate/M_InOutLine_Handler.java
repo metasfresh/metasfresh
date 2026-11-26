@@ -36,6 +36,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
+import de.metas.invoicecandidate.api.impl.ShipmentTaxLocation;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -77,7 +78,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_DocType;
@@ -940,11 +940,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 		final org.compiere.model.I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
 
-		return Optional.of(new TaxLocation(
-				InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
-				OrgId.ofRepoId(inOutLine.getAD_Org_ID()),
-				inOut.getMovementDate(),
-				Services.get(IWarehouseBL.class).getCountryId(WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()))));
+		return Optional.of(ShipmentTaxLocation.of(inOut, OrgId.ofRepoId(inOutLine.getAD_Org_ID())));
 	}
 
 	@Override
