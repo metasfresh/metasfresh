@@ -1,6 +1,7 @@
 import { test } from "../../../playwright.config";
 import { expect } from "@playwright/test";
-import { expectErrorToast } from "../../utils/common";
+import { expectErrorToast, SLOW_ACTION_TIMEOUT } from "../../utils/common";
+import { waitForNoInFlightXhr } from "../../utils/inFlightXhr";
 import { ErrorToast } from "../../utils/dialogs/ErrorToast";
 import { Backend } from "../../utils/screens/Backend";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -800,6 +801,8 @@ test('Scan each CU: GRAI scan with a slow request, a CU label scanned right afte
     await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: packLabelOf({ masterdata, lot, packId: 2 }) });
     await restoreTargetSpeed();
     await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
+    // the CU label scanned during the slow request is booked after the TU is open: wait for its pick (like PickLineScanScreen.scanCULabel does) before asking the backend
+    await waitForNoInFlightXhr(page, { urlPattern: /\/picking\//, timeout: SLOW_ACTION_TIMEOUT });
 
     await Backend.expect({
         pickings: {
