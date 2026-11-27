@@ -2,7 +2,7 @@ import { test } from "../../../../playwright.config";
 import { expectErrorToast, expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
-import { expectInsideScreen, saveScreenshot } from "../../layout";
+import { expectInsideScreen, measureButtonRow, removeNextTUIconForReference, saveScreenshot } from "../../layout";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -89,6 +89,37 @@ export const GetQuantityDialog = {
     expectLotNoValue: async (expected) => await test.step(`${NAME} - Expect LotNo to be '${expected}'`, async () => {
         await expect(page.getByTestId('lotNo')).toHaveValue(expected);
     }),
+
+    /** A control of the dialog by its data-testid (lotNo, bestBeforeDate, done-button, cancel-button, next-tu-button, ...) */
+    controlByTestId: (testId) => containerElement().getByTestId(testId),
+    /** The quantity input, looked up inside the dialog */
+    qtyInputInDialog: () => containerElement().locator('#qty-input'),
+    /** The message box: the whole pop-up as drawn */
+    messageBox: () => containerElement().locator('.message'),
+    /** The table area of the dialog (the part that shrinks and scrolls inside) */
+    tableArea: () => containerElement().locator('.table-container'),
+    packingName: () => containerElement().locator('#packing-name'),
+    firstLabel: () => containerElement().locator('th').first(),
+
+    /** Boxes (Playwright boundingBox) of the quantity field, OK, Cancel and the table area of the dialog */
+    measureBoxes: async () => ({
+        field: await GetQuantityDialog.qtyInputInDialog().boundingBox(),
+        ok: await GetQuantityDialog.controlByTestId('done-button').boundingBox(),
+        cancel: await GetQuantityDialog.controlByTestId('cancel-button').boundingBox(),
+        tableArea: await GetQuantityDialog.tableArea().boundingBox(),
+    }),
+    /** Sideways scroll of the table area, how much too wide its content is, and where each label starts relative to the area's left edge */
+    measureTableAreaSideways: async () => await GetQuantityDialog.tableArea().evaluate((area) => {
+        const areaBox = area.getBoundingClientRect();
+        const labelLefts = [...area.querySelectorAll('th')].map((th) => Math.round(th.getBoundingClientRect().left - areaBox.left));
+        return { scrollLeft: area.scrollLeft, tooWide: area.scrollWidth - area.clientWidth, labelLefts };
+    }),
+    /** True when the rows are taller than the table area: it scrolls inside */
+    isTableAreaScrolling: async () => await GetQuantityDialog.tableArea().evaluate((area) => area.scrollHeight > area.clientHeight),
+    /** Boxes and font size of the given buttons of the dialog (by data-testid) */
+    measureButtonRow: async (testIds) => await measureButtonRow(containerElement(), testIds),
+    /** Reference layout for a check: the barcode icon of the Next TU button of the dialog removed */
+    removeNextTUIconForReference: async () => await removeNextTUIconForReference(containerElement()),
 
     /** Box (Playwright boundingBox) and the styles that decide the look of the buttons OK, Cancel and Next TU of the dialog */
     measureButtons: async () => await test.step(`${NAME} - Measure OK, Cancel and Next TU buttons`, async () => {

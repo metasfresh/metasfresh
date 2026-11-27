@@ -23,14 +23,13 @@ restoreSysconfigsAfterEach(test);
  */
 const SHORT_SCREEN = { width: 360, height: 300, deviceScaleFactor: 3 };
 
-const expectDialogFitsScreen = async (dialog, where, { isTableAreaScrolling }) => {
-    const message = dialog.locator('.message');
-    await expectInsideScreen(message, `${where}: the whole pop-up`, SHORT_SCREEN);
-    await expectInsideScreen(dialog.getByTestId('done-button'), `${where}: OK button`, SHORT_SCREEN);
-    await expectInsideScreen(dialog.getByTestId('cancel-button'), `${where}: Cancel button`, SHORT_SCREEN);
+const expectDialogFitsScreen = async (where, { isTableAreaScrolling }) => {
+    await expectInsideScreen(GetQuantityDialog.messageBox(), `${where}: the whole pop-up`, SHORT_SCREEN);
+    await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), `${where}: OK button`, SHORT_SCREEN);
+    await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), `${where}: Cancel button`, SHORT_SCREEN);
     if (isTableAreaScrolling) {
         // the rows are taller than the table area that is left: it scrolls inside, the pop-up does not grow
-        const scrolls = await dialog.locator('.table-container').evaluate((area) => area.scrollHeight > area.clientHeight);
+        const scrolls = await GetQuantityDialog.isTableAreaScrolling();
         expect(scrolls, `${where}: the table area scrolls inside`).toBe(true);
     }
 };
@@ -51,7 +50,7 @@ test.describe(`quantity pop-up on a short screen ${SHORT_SCREEN.width}x${SHORT_S
         await scanLabel(labelOf({ masterdata }));
         await PickLineScanScreen.openTU();
 
-        await expectDialogFitsScreen(GetQuantityDialog.container(), 'picking Scan once', { isTableAreaScrolling: true });
+        await expectDialogFitsScreen('picking Scan once', { isTableAreaScrolling: true });
     });
 
     // noinspection JSUnusedLocalSymbols
@@ -81,7 +80,7 @@ test.describe(`quantity pop-up on a short screen ${SHORT_SCREEN.width}x${SHORT_S
         await DistributionLinePickFromScreen.typeProductCode(masterdata.products.P1.gtin);
         await GetQuantityDialog.waitForDialog();
 
-        await expectDialogFitsScreen(GetQuantityDialog.container(), 'distribution', { isTableAreaScrolling: false });
+        await expectDialogFitsScreen('distribution', { isTableAreaScrolling: false });
     });
 });
 

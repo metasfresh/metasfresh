@@ -6,6 +6,7 @@ import { PickingJobScreen } from './PickingJobScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { waitForNoInFlightXhr } from '../../inFlightXhr';
+import { measureButtonRow, removeNextTUIconForReference } from '../../layout';
 
 /** A refusal is read on the handheld */
 const expectToastCloseButtonOnScreen = async () => {
@@ -26,6 +27,10 @@ const tapNextTU = async () => {
 export const PickLineScanScreen = {
     /** The Next TU button; for layout checks (see utils/layout.js) */
     nextTUButtonLocator: () => nextTUButton(),
+    /** Boxes and font size of the given buttons of this screen (by data-testid) */
+    measureButtonRow: async (testIds) => await measureButtonRow(page.locator('body'), testIds),
+    /** Reference layout for a check: the barcode icon of the Next TU button removed */
+    removeNextTUIconForReference: async () => await removeNextTUIconForReference(page.locator('body')),
 
     /** The Close button of Scan each; for layout checks */
     scanEachCloseButton: () => page.getByTestId('scan-each-close-button'),

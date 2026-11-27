@@ -119,13 +119,37 @@ const measureLayout = ({ scope, minTapSize }) => {
 };
 
 /** Scope of a layout check: the whole app, or only the dialog (the dialog states say so: whether a dialog is open is the scenario's fact, not measured here) */
+export const ROOT_SCOPE = '#root';
+export const DIALOG_SCOPE = '.prompt-dialog';
+
 /** Resizes the browser window (e.g. to another phone width) */
 export const setViewport = async (viewport) => await test.step(`Layout - Set viewport ${viewport.width}x${viewport.height}`, async () => {
     await page.setViewportSize(viewport);
 });
 
-export const ROOT_SCOPE = '#root';
-export const DIALOG_SCOPE = '.prompt-dialog';
+/**
+ * Rows of the buttons (by data-testid) inside the given root: box of each (Playwright boundingBox), and the font size of its computed style.
+ * Each button must be visible.
+ */
+export const measureButtonRow = async (root, testIds) => {
+    const result = {};
+    for (const testId of testIds) {
+        const button = root.getByTestId(testId);
+        await expect(button).toBeVisible();
+        const box = await button.boundingBox();
+        const font = await button.evaluate((el) => getComputedStyle(el).fontSize);
+        result[testId] = { x: box.x, y: box.y, width: box.width, height: box.height, font };
+    }
+    return result;
+};
+
+/** Removes the barcode icon (span and button class) of the "Weiteres TU" button inside the root, to get the reference layout without it (for a layout check only) */
+export const removeNextTUIconForReference = async (root) => {
+    await root.getByTestId('next-tu-button').evaluate((el) => {
+        el.querySelector('.dialog-button-icon')?.remove();
+        el.classList.remove('has-dialog-icon');
+    });
+};
 
 export const expectLayoutSound = async (label, viewport, scope = ROOT_SCOPE) => {
     let issues = await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });

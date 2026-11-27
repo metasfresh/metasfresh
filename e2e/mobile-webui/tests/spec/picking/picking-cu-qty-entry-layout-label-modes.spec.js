@@ -33,13 +33,12 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await openLine({ index: 1 });
                 await scanLabel(labelOf({ masterdata }));
                 await PickLineScanScreen.openTU();
-                const dialog = GetQuantityDialog.container();
-                await expectInsideScreen(dialog.locator('#qty-input'), 'Scan once quantity field', viewport);
-                await expectInsideScreen(dialog.getByTestId('lotNo'), 'Scan once lot field', viewport);
-                await expectInsideScreen(dialog.getByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
-                await expectInsideScreen(dialog.getByTestId('done-button'), 'Scan once OK button', viewport);
-                await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Scan once Cancel button', viewport);
-                await expectInsideScreen(dialog.getByTestId('next-tu-button'), 'Scan once Next TU button', viewport);
+                await expectInsideScreen(GetQuantityDialog.qtyInputInDialog(), 'Scan once quantity field', viewport);
+                await expectInsideScreen(GetQuantityDialog.controlByTestId('lotNo'), 'Scan once lot field', viewport);
+                await expectInsideScreen(GetQuantityDialog.controlByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
+                await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), 'Scan once OK button', viewport);
+                await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), 'Scan once Cancel button', viewport);
+                await expectInsideScreen(GetQuantityDialog.controlByTestId('next-tu-button'), 'Scan once Next TU button', viewport);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
             });
@@ -58,17 +57,13 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
 
-            const dialog = GetQuantityDialog.container();
-            await expectInsideScreen(dialog.locator('#qty-input'), 'Manual quantity field', viewport);
-            await expectInsideScreen(dialog.getByTestId('done-button'), 'Manual OK button', viewport);
-            await expectInsideScreen(dialog.getByTestId('cancel-button'), 'Manual Cancel button', viewport);
-            const tableArea = await dialog.locator('.table-container').boundingBox();
+            await expectInsideScreen(GetQuantityDialog.qtyInputInDialog(), 'Manual quantity field', viewport);
+            await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), 'Manual OK button', viewport);
+            await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), 'Manual Cancel button', viewport);
+            const boxes = await GetQuantityDialog.measureBoxes();
             // positions are printed, to compare the layout before and after a change
-            console.log('MANUAL-DIALOG-TUS ' + viewport.name + ' ' + JSON.stringify({
-                field: await dialog.locator('#qty-input').boundingBox(), ok: await dialog.getByTestId('done-button').boundingBox(),
-                cancel: await dialog.getByTestId('cancel-button').boundingBox(), tableArea,
-            }));
-            expect(tableArea.height, 'Manual table area height is 70vh').toBeCloseTo(viewport.height * 0.7, 0);
+            console.log('MANUAL-DIALOG-TUS ' + viewport.name + ' ' + JSON.stringify(boxes));
+            expect(boxes.tableArea.height, 'Manual table area height is 70vh').toBeCloseTo(viewport.height * 0.7, 0);
         });
 
         // noinspection JSUnusedLocalSymbols
@@ -87,23 +82,17 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
 
-            const dialog = GetQuantityDialog.container();
-            const tableArea = dialog.locator('.table-container');
-            const packingName = dialog.locator('#packing-name');
+            const packingName = GetQuantityDialog.packingName();
             await expect(packingName, 'the dialog shows the packing instruction name').toBeVisible();
             await expect(packingName, 'the test needs a packing name with a long word without a space').toHaveText(/\S{40,}/);
 
             // the table area is scrolled sideways when its content is wider than it: the labels then sit off the left edge
-            const measured = await tableArea.evaluate((area) => {
-                const areaBox = area.getBoundingClientRect();
-                const labelLefts = [...area.querySelectorAll('th')].map((th) => Math.round(th.getBoundingClientRect().left - areaBox.left));
-                return { scrollLeft: area.scrollLeft, tooWide: area.scrollWidth - area.clientWidth, labelLefts };
-            });
+            const measured = await GetQuantityDialog.measureTableAreaSideways();
             console.log('MANUAL-DIALOG-SIDEWAYS ' + viewport.name + ' ' + JSON.stringify(measured));
             expect.soft(measured.scrollLeft, 'the table area is not scrolled sideways').toBe(0);
             expect.soft(measured.tooWide, 'the table content is not wider than the table area').toBeLessThanOrEqual(1);
             expect.soft(Math.min(...measured.labelLefts), 'every label starts inside the table area').toBeGreaterThanOrEqual(0);
-            await expectInsideScreen(dialog.locator('th').first(), 'Manual first label', viewport);
+            await expectInsideScreen(GetQuantityDialog.firstLabel(), 'Manual first label', viewport);
             await expectInsideScreen(packingName, 'Manual packing name', viewport);
         });
 
@@ -299,22 +288,6 @@ for (const viewport of PHONE_VIEWPORTS) {
 }
 
 
-/**
- * Rows of the given buttons: box of each (Playwright boundingBox), height and font of its computed style.
- * The barcode icon of "Weiteres TU" must not change which buttons share a row, so the rows are compared with and without the icon.
- */
-const measureRow = async (page, scope, testIds) => {
-    const result = {};
-    for (const testId of testIds) {
-        const button = scope(page).getByTestId(testId);
-        await expect(button).toBeVisible();
-        const box = await button.boundingBox();
-        const font = await button.evaluate((el) => getComputedStyle(el).fontSize);
-        result[testId] = { x: box.x, y: box.y, width: box.width, height: box.height, font };
-    }
-    return result;
-};
-
 /** Number of the row (0 = topmost) a button sits in: the buttons with the same y share a row. (The dialog is bottom-anchored, so absolute y shifts with the row count.) */
 const rowIndexOf = (boxes, id) => [...new Set(Object.values(boxes).map((b) => Math.round(b.y)))].sort((p, q) => p - q).indexOf(Math.round(boxes[id].y));
 
@@ -324,24 +297,21 @@ const ICON_LAYOUT_VIEWPORTS = [{ width: 360, height: 720 }, { width: 393, height
  * The barcode icon of "Weiteres TU" (next-tu-button) is a decoration: at every Zebra width the buttons are arranged in the same rows
  * as without it (same y per button), all buttons are equally high, and the font is not shrunk.
  */
-const expectIconKeepsTheRows = async (page, { scope, testIds, label }) => {
+const expectIconKeepsTheRows = async ({ screen, testIds, label }) => {
     const withIcon = {};
     for (const viewport of ICON_LAYOUT_VIEWPORTS) {
         await setViewport(viewport);
-        withIcon[viewport.width] = await measureRow(page, scope, testIds);
+        withIcon[viewport.width] = await screen.measureButtonRow(testIds);
         const heights = testIds.map((id) => withIcon[viewport.width][id].height);
         expect.soft(new Set(heights).size, `${label} ${viewport.width}: all buttons equally high ${JSON.stringify(heights)}`).toBe(1);
         const next = withIcon[viewport.width]['next-tu-button'];
         expect.soft(next.x + next.width, `${label} ${viewport.width}: Weiteres TU inside the screen`).toBeLessThanOrEqual(viewport.width);
     }
     // reference: the same buttons without the icon (icon span removed, icon class of the button removed for this check only)
-    await scope(page).getByTestId('next-tu-button').evaluate((el) => {
-        el.querySelector('.dialog-button-icon')?.remove();
-        el.classList.remove('has-dialog-icon');
-    });
+    await screen.removeNextTUIconForReference();
     for (const viewport of ICON_LAYOUT_VIEWPORTS) {
         await setViewport(viewport);
-        const without = await measureRow(page, scope, testIds);
+        const without = await screen.measureButtonRow(testIds);
         for (const id of testIds) {
             const a = withIcon[viewport.width][id];
             const b = without[id];
@@ -353,7 +323,7 @@ const expectIconKeepsTheRows = async (page, { scope, testIds, label }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('The barcode icon of "Weiteres TU" keeps the button rows of the pop-up (next to OK and Abbrechen) at 360 and 393 px', async ({ page }) => {
+test('The barcode icon of "Weiteres TU" keeps the button rows of the pop-up (next to OK and Abbrechen) at 360 and 393 px', async ({ page: _page }) => {
     allureMeta('Responsive quantity block');
     const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 12 }], language: 'de_DE' });
     await startJob(masterdata, { qtyToDeliver: 12 });
@@ -361,21 +331,21 @@ test('The barcode icon of "Weiteres TU" keeps the button rows of the pop-up (nex
     await scanLabel(labelOf({ masterdata }));
     await PickLineScanScreen.openTU();
     await GetQuantityDialog.waitForDialog();
-    await expectIconKeepsTheRows(page, {
-        scope: (p) => p.locator('.get-qty-dialog'),
+    await expectIconKeepsTheRows({
+        screen: GetQuantityDialog,
         testIds: ['done-button', 'cancel-button', 'next-tu-button'],
         label: 'pop-up',
     });
 });
 
 // noinspection JSUnusedLocalSymbols
-test('The barcode icon of "Weiteres TU" keeps the button rows of the first scan screen (next to Schließen) at 360 and 393 px', async ({ page }) => {
+test('The barcode icon of "Weiteres TU" keeps the button rows of the first scan screen (next to Schließen) at 360 and 393 px', async ({ page: _page }) => {
     allureMeta('Responsive quantity block');
     const masterdata = await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders: [{ key: 'A', qty: 3 }], language: 'de_DE' });
     await startJob(masterdata, { qtyToDeliver: 3 });
     await openScanEachLine({ index: 1, openTU: false });
-    await expectIconKeepsTheRows(page, {
-        scope: (p) => p.locator('body'),
+    await expectIconKeepsTheRows({
+        screen: PickLineScanScreen,
         testIds: ['next-tu-button', 'scan-each-close-button'],
         label: 'first-scan screen',
     });
