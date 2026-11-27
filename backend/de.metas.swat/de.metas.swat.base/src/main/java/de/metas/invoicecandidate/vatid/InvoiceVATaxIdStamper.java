@@ -25,8 +25,13 @@ package de.metas.invoicecandidate.vatid;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -35,14 +40,20 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.InvoiceLineReTaxInput;
 import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.impl.ShipmentTaxLocation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -77,11 +88,13 @@ import java.util.stream.Collectors;
  *     its lines are never resolved again (see {@link #getCopiedFromInvoiceId(I_C_Invoice)})</li>
  *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing;
  *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
- *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows)</li>
+ *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows).
+ *     If the invoice's doc type overwrites the invoice date on completion, the lines are re-taxed after this check
+ *     ({@code MInvoice.setDefiniteDocumentNo}, then the re-tax on the {@code DateInvoiced} change), so the tax that re-tax will give such a line is checked as well.</li>
  *     <li>a manual invoice gets the values its lines resolve to, and all lines must resolve to the same values -
  *     but only if at least one line resolves a VAT ID of an address or a fiscal representation; otherwise it stores none and completes as before</li>
  * </ol>
- * A line is resolved from the location that taxed it (its shipment's location, else the invoice's bill-to) and from its tax.
+ * A line is resolved from the location that taxed it and from its tax (see {@link LineResolver#getTaxLocation(I_C_InvoiceLine)}).
  */
 @Component
 @RequiredArgsConstructor
@@ -94,6 +107,9 @@ public class InvoiceVATaxIdStamper
 
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -163,7 +179,7 @@ public class InvoiceVATaxIdStamper
 
 	/**
 	 * A candidate invoice keeps its stored values; an invoice without stored buyer VAT ID was not stamped (e.g. prepared before the values were stored) and is not checked.
-	 * Lines with allocations were resolved at invoicing; only the lines added by hand are checked.
+	 * Lines with allocations were resolved at invoicing; only the lines added by hand are checked, with their tax and, if the completion re-taxes them, with the tax they will get.
 	 */
 	private void checkHandAddedExemptLines(
 			@NonNull final I_C_Invoice invoice,
@@ -177,6 +193,8 @@ public class InvoiceVATaxIdStamper
 			return;
 		}
 
+		final boolean isReTaxedOnCompletion = isDateOverwrittenOnCompletion(invoice);
+
 		for (final I_C_InvoiceLine line : lines)
 		{
 			if (line.isDescription() || allocatedLineIds.contains(line.getC_InvoiceLine_ID()))
@@ -185,15 +203,72 @@ public class InvoiceVATaxIdStamper
 			}
 
 			final TaxId lineTaxId = TaxId.ofRepoId(line.getC_Tax_ID());
-			if (!taxDAO.getTaxById(lineTaxId).isRequiresTaxCertificate())
+			if (isRequiresTaxCertificate(lineTaxId))
 			{
-				continue;
+				assertSameVATaxIds(line, lineResolver.resolve(line).getVatTaxIds(), stored);
 			}
 
-			final InvoiceVATaxIds lineVATaxIds = lineResolver.resolve(line).getVatTaxIds();
-			assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getBuyerVATaxId);
-			assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getSellerVATaxId);
+			if (isReTaxedOnCompletion)
+			{
+				final InvoiceLineReTaxInput reTaxInput = invoiceBL.getReTaxInput(invoice, line, SystemTime.asTimestamp());
+				final TaxId reTaxTaxId = predictReTaxTax(line, reTaxInput);
+				if (reTaxTaxId != null && !reTaxTaxId.equals(lineTaxId) && isRequiresTaxCertificate(reTaxTaxId))
+				{
+					assertSameVATaxIds(line, lineResolver.resolve(toTaxLocation(reTaxInput), reTaxTaxId), stored);
+				}
+			}
 		}
+	}
+
+	private boolean isRequiresTaxCertificate(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId).isRequiresTaxCertificate();
+	}
+
+	/**
+	 * @return {@code true} if completing the invoice sets {@code DateInvoiced} to now ({@code C_DocType.IsOverwriteDateOnComplete}), which re-taxes its lines after the completion checks.
+	 */
+	private boolean isDateOverwrittenOnCompletion(@NonNull final I_C_Invoice invoice)
+	{
+		final DocTypeId docTypeId = CoalesceUtil.coalesce(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()), DocTypeId.ofRepoIdOrNull(invoice.getC_DocTypeTarget_ID()));
+		return docTypeId != null && docTypeDAO.getById(docTypeId).isOverwriteDateOnComplete();
+	}
+
+	/**
+	 * The tax the re-tax ({@link IInvoiceBL#setInvoiceLineTaxes}) gives the given line with the given inputs; read-only.
+	 *
+	 * @return {@code null} if the re-tax leaves the line alone (no product) or finds no tax
+	 */
+	@Nullable
+	private TaxId predictReTaxTax(@NonNull final I_C_InvoiceLine line, @NonNull final InvoiceLineReTaxInput reTaxInput)
+	{
+		if (line.getM_Product_ID() <= 0)
+		{
+			return null;
+		}
+
+		final TaxCategoryId taxCategoryId = CoalesceUtil.coalesceSuppliers(
+				() -> TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()),
+				() -> invoiceLineBL.getTaxCategoryId(line));
+		final Tax tax = taxDAO.getBy(invoiceLineBL.createTaxQuery(reTaxInput, taxCategoryId));
+		return tax != null ? tax.getTaxId() : null;
+	}
+
+	@NonNull
+	private static TaxLocation toTaxLocation(@NonNull final InvoiceLineReTaxInput reTaxInput)
+	{
+		final BPartnerLocationAndCaptureId location = reTaxInput.getTaxLocation();
+		return new TaxLocation(location.getBpartnerLocationId(), reTaxInput.getOrgId(), reTaxInput.getTaxDate(), reTaxInput.getCountryFromId(), reTaxInput.getWarehouseId())
+				.withLocationCaptureId(location.getLocationCaptureId());
+	}
+
+	private static void assertSameVATaxIds(
+			@NonNull final I_C_InvoiceLine line,
+			@NonNull final InvoiceVATaxIds lineVATaxIds,
+			@NonNull final InvoiceVATaxIds stored)
+	{
+		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getBuyerVATaxId);
+		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getSellerVATaxId);
 	}
 
 	private static void assertSameVATaxId(
@@ -338,9 +413,7 @@ public class InvoiceVATaxIdStamper
 		private ResolvedLine resolve(@NonNull final I_C_InvoiceLine line)
 		{
 			final TaxLocation taxLocation = getTaxLocation(line);
-			final InvoiceVATaxIds vatTaxIds = resolvedVATaxIds.computeIfAbsent(
-					new ResolveKey(taxLocation, TaxId.ofRepoId(line.getC_Tax_ID())),
-					key -> invoiceVATaxIdService.resolve(key.getTaxLocation(), key.getTaxId()));
+			final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			final boolean byAddressOrFiscalRepresentation = vatTaxIds.getFiscalRepresentationId() != null
 					|| locationsWithVATaxId.computeIfAbsent(taxLocation.getBpartnerLocationId(), this::hasOwnVATaxId);
@@ -348,8 +421,22 @@ public class InvoiceVATaxIdStamper
 			return new ResolvedLine(vatTaxIds, byAddressOrFiscalRepresentation);
 		}
 
+		@NonNull
+		private InvoiceVATaxIds resolve(@NonNull final TaxLocation taxLocation, @NonNull final TaxId taxId)
+		{
+			return resolvedVATaxIds.computeIfAbsent(
+					new ResolveKey(taxLocation, taxId),
+					key -> invoiceVATaxIdService.resolve(key.getTaxLocation(), key.getTaxId()));
+		}
+
 		/**
-		 * The location that taxed a line without allocation (see {@code MInvoiceLine.setTax}): its shipment's location if it has a shipment line, else the invoice's bill-to.
+		 * The location that taxed a line without allocation:
+		 * <ul>
+		 *     <li>its shipment's location if it has a shipment line (see {@code MInvoiceLine.setTax});</li>
+		 *     <li>if it has an order line and the order line's tax (copied when the line is created from the order) or the tax the re-tax gives from the order line's location
+		 *     (i.e. it was re-taxed after a date or warehouse change): the order line's location with the re-tax inputs;</li>
+		 *     <li>else the invoice's bill-to ({@code MInvoiceLine.setTax} does not look at the order line).</li>
+		 * </ul>
 		 */
 		@NonNull
 		private TaxLocation getTaxLocation(@NonNull final I_C_InvoiceLine line)
@@ -364,6 +451,16 @@ public class InvoiceVATaxIdStamper
 				});
 			}
 
+			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID());
+			if (orderLineId != null)
+			{
+				final TaxLocation orderLineTaxLocation = getOrderLineTaxLocationIfItTaxedLine(line, orderLineId);
+				if (orderLineTaxLocation != null)
+				{
+					return orderLineTaxLocation;
+				}
+			}
+
 			if (billToTaxLocation == null)
 			{
 				billToTaxLocation = new TaxLocation(
@@ -373,6 +470,24 @@ public class InvoiceVATaxIdStamper
 						null);
 			}
 			return billToTaxLocation;
+		}
+
+		/**
+		 * @return the order line's tax location with the inputs of the re-tax (which uses the order line's location for such a line, see {@link IInvoiceBL#getReTaxInput}),
+		 * if the order line's location taxed the given line; {@code null} otherwise
+		 */
+		@Nullable
+		private TaxLocation getOrderLineTaxLocationIfItTaxedLine(@NonNull final I_C_InvoiceLine line, @NonNull final OrderLineId orderLineId)
+		{
+			final TaxId lineTaxId = TaxId.ofRepoId(line.getC_Tax_ID());
+			final InvoiceLineReTaxInput reTaxInput = invoiceBL.getReTaxInput(invoice, line, null);
+
+			final boolean isOrderLineTax = lineTaxId.equals(TaxId.ofRepoIdOrNull(orderDAO.getOrderLineById(orderLineId).getC_Tax_ID()));
+			if (isOrderLineTax || lineTaxId.equals(predictReTaxTax(line, reTaxInput)))
+			{
+				return toTaxLocation(reTaxInput);
+			}
+			return null;
 		}
 
 		private boolean hasOwnVATaxId(@NonNull final BPartnerLocationId locationId)
