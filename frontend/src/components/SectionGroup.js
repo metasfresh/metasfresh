@@ -11,6 +11,7 @@ import Tooltips from './tooltips/Tooltips';
 import Section from './window/Section';
 import Dropzone from './Dropzone';
 import { INITIALLY_CLOSED } from '../constants/Constants';
+import { isCursorHeldOutside } from '../utils/focusHelpers';
 
 const EMPTY_OBJECT = {};
 
@@ -370,13 +371,7 @@ class SectionGroup extends PureComponent {
         const currentElement = ReactDOM.findDOMNode(
           this.widgets[currentWidgetIndex]
         );
-        const active = document.activeElement;
-        if (
-          active &&
-          active !== document.body &&
-          currentElement &&
-          !currentElement.contains(active)
-        ) {
+        if (currentElement && isCursorHeldOutside(currentElement)) {
           return;
         }
 

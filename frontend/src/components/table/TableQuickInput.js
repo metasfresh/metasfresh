@@ -12,6 +12,7 @@ import {
 } from '../../actions/TableQuickInputActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
+import { isCursorHeldOutside } from '../../utils/focusHelpers';
 
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
@@ -281,10 +282,7 @@ class TableQuickInput extends PureComponent {
   /**
    * @returns {boolean} true if an element outside this quick input holds the cursor (not when nothing does)
    */
-  isCursorOutsideQuickInput = () => {
-    const active = document.activeElement;
-    return !!active && active !== document.body && !this.form?.contains(active);
-  };
+  isCursorOutsideQuickInput = () => isCursorHeldOutside(this.form);
 
   setRef = (refNode) => {
     this.form = refNode;

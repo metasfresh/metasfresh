@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 
 import { withForwardedRef } from '../../hoc/WithRouterAndRef';
 import { getItemsByProperty } from '../../../utils';
+import { isCursorHeldOutside } from '../../../utils/focusHelpers';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
@@ -165,15 +166,8 @@ export class Lookup extends Component {
     return hasNextSubField;
   };
 
-  isCursorInLookup = () => {
-    const active = document.activeElement;
-    return (
-      !active ||
-      active === document.body ||
-      !this.wrapperElement ||
-      this.wrapperElement.contains(active)
-    );
-  };
+  isCursorInLookup = () =>
+    !this.wrapperElement || !isCursorHeldOutside(this.wrapperElement);
 
   focusNextFormField = () => {
     const wrapperEl = this.wrapperElement;

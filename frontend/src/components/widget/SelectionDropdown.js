@@ -290,7 +290,7 @@ class SelectionDropdown extends Component {
   setRef = (ref) => (this.wrapper = ref);
 
   /** @returns {boolean} true if the given DOM node is inside the rendered dropdown list */
-  containsElement = (node) => !!this.wrapper && this.wrapper.contains(node);
+  contains = (node) => !!this.wrapper && this.wrapper.contains(node);
 
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;

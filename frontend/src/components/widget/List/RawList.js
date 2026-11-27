@@ -7,6 +7,10 @@ import { findIndex, isEqual, pullAt } from 'lodash';
 import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
+import {
+  isCursorHeldByNothing,
+  isCursorHeldOutside,
+} from '../../../utils/focusHelpers';
 
 /*
  * We want the selected option to be displayed first,
@@ -157,12 +161,10 @@ export class RawList0 extends PureComponent {
     // (document.body / null, e.g. mouse pick then keyboard continue). The first two cases may take the focus
     // from another element; on any other re-render it is never taken from another element.
     if (this.props.isFocused && !this.props.readonly) {
-      const active = document.activeElement;
       if (
         !prevProps.isFocused ||
         prevProps.readonly ||
-        !active ||
-        active === document.body
+        isCursorHeldByNothing()
       ) {
         this.focus();
       }
@@ -178,15 +180,11 @@ export class RawList0 extends PureComponent {
     clearTimeout(this.focusOutTimer);
     this.focusOutTimer = setTimeout(() => {
       if (this.wasUnmounted || !this.props.isFocused) return;
-      const activeElement = document.activeElement;
-      if (!activeElement || activeElement === document.body) return;
       if (
-        this.inputContainerElement?.contains(activeElement) ||
-        this.dropdownInstance?.containsElement(activeElement)
+        isCursorHeldOutside(this.inputContainerElement, this.dropdownInstance)
       ) {
-        return;
+        this.props.onBlur();
       }
-      this.props.onBlur();
     }, 0);
   };
 
