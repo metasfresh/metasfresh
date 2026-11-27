@@ -48,6 +48,8 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.picking.workflow.CarrierAdviseTargetInfo;
+import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -135,7 +137,11 @@ class JsonPickingJobConverterCommandLineOptionsTest
 		final DisplayValueProviderService displayValueProviderService = mock(DisplayValueProviderService.class);
 		when(displayValueProviderService.newDisplayValueProvider(any())).thenReturn(mock(DisplayValueProvider.class));
 
+		final PackedHUCarrierAdviseService packedHUCarrierAdviseService = mock(PackedHUCarrierAdviseService.class);
+		when(packedHUCarrierAdviseService.resolveInfo(any(), any(), any())).thenReturn(CarrierAdviseTargetInfo.NONE);
+
 		return JsonPickingJobConverterCommand.builder()
+				.packedHUCarrierAdviseService(packedHUCarrierAdviseService)
 				.productService(productService)
 				.huService(mock(PickingJobHUService.class))
 				.pickingJobRestService(pickingJobRestService)

@@ -41,8 +41,10 @@ describe('HardwareModePanel: Enter of the scanner input', () => {
     expect(keyDownOnScanner(getByTestId, 'Enter').defaultPrevented).toBe(true);
   });
 
+  // A printable key is not used here: on the release line the window-level scanner reader takes every printable key
+  // into its scan buffer and cancels it (useKeyboardBarcodeReader), which has nothing to do with the Enter guard.
   it('other keys are not touched', () => {
     const { getByTestId } = renderInForm();
-    expect(keyDownOnScanner(getByTestId, '1').defaultPrevented).toBe(false);
+    expect(keyDownOnScanner(getByTestId, 'Escape').defaultPrevented).toBe(false);
   });
 });

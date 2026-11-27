@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PickingJobCUQtyEntryPick_ManualAndLUTest extends CUQtyEntryPickFixture
 {
 	@Test
-	void manual_lotsAThenB_intoOneTU_lotOverwritten()
+	void manual_lotsAThenB_intoOneTU_eachCUKeepsItsLot()
 	{
 		setProfile(CUQtyEntryMode.MANUAL);
 		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-L");
@@ -33,13 +33,16 @@ class PickingJobCUQtyEntryPick_ManualAndLUTest extends CUQtyEntryPickFixture
 		job = openTUFromLinePacking(job);
 
 		job = pick(job, source, "2", null, false, LOT_A);
-		final HuId tuId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
-		assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(tuId))).as("the first booking's picked HU is the TU").isTrue();
+		final HuId tuId = openTUId(job);
+		assertThat(handlingUnitsBL.isTransportUnitOrAggregate(handlingUnitsBL.getById(tuId))).as("the open TU is a TU").isTrue();
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("the first booking's picked HU is the CU in the TU (leaf CU, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(tuId)).hasSize(1);
 		job = helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofExistingHU(tuId, helper.huService.getQRCodeByHuId(tuId)));
 		job = pick(job, source2, "3", null, false, LOT_B);
 
-		assertThat(lotOf(handlingUnitsBL.getById(tuId))).as("TU lot overwritten by the second booking").isEqualTo(LOT_B);
-		assertThat(cusOf(tuId)).extracting(this::lotOf).as("the second lot is written on the whole TU").containsOnly(LOT_B);
+		// On the release line the Manual pick records the leaf CU (unpick-to-floor), so the lot goes on the booked CU only:
+		// the overwrite of earlier CUs (caveat K5 on soft_panda_hotfix) does not happen here.
+		assertThat(cusOf(tuId)).extracting(this::lotOf).as("each CU keeps the lot of its own booking").containsExactlyInAnyOrder(LOT_A, LOT_B);
+		assertThat(lotOf(handlingUnitsBL.getById(tuId))).as("the TU is not stamped with the second booking's lot").isNull();
 	}
 
 	@Test

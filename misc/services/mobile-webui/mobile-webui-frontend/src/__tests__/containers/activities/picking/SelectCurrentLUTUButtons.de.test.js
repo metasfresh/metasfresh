@@ -2,6 +2,8 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import counterpart from 'counterpart';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
 
 import SelectCurrentLUTUButtons from '../../../../containers/activities/picking/SelectCurrentLUTUButtons';
 import translations_de from '../../../../utils/translations_de';
@@ -23,8 +25,13 @@ jest.mock('../../../../reducers/wfProcesses/picking/useCurrentPickTarget', () =>
   useCurrentPickingTargetInfo: () => mockInfo,
 }));
 
+// the component dispatches the carrier advise result (release line), so it needs a store
 const renderButtons = () =>
-  render(<SelectCurrentLUTUButtons applicationId="picking" wfProcessId="wf" activityId="a" lineId="l" />);
+  render(
+    <Provider store={createStore(() => ({}))}>
+      <SelectCurrentLUTUButtons applicationId="picking" wfProcessId="wf" activityId="a" lineId="l" />
+    </Provider>
+  );
 
 describe('SelectCurrentLUTUButtons: the open TU button caption', () => {
   beforeAll(() => {

@@ -12,6 +12,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
@@ -318,6 +319,11 @@ abstract class CUQtyEntryPickFixture
 	List<I_M_HU> cusOf(final HuId tuId)
 	{
 		return handlingUnitsBL.retrieveIncludedHUs(handlingUnitsBL.getById(tuId));
+	}
+
+	ImmutableSet<HuId> cuIdsOf(final HuId tuId)
+	{
+		return cusOf(tuId).stream().map(cu -> HuId.ofRepoId(cu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
 	}
 
 	BigDecimal qtyOf(final I_M_HU hu)

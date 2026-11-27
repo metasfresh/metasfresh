@@ -48,12 +48,13 @@ describe('GetQuantityDialog (Manual): submit and default buttons', () => {
     expect(payloads(onQtyChange)).toEqual([false]);
   });
 
-  it('with an LU target, the close-target button is a default (submit) button, first in the form: Enter clicks it', () => {
+  // On the release line DialogButton is a plain button unless it opts in to submit (#26569), so in Manual only Done
+  // submits the form: Enter books without closing the target.
+  it('with an LU target, only the Done button is a submit button: Enter books without closing the target', () => {
     renderManual({ onQtyChange: jest.fn(() => Promise.resolve()), isShowCloseTargetButton: true });
-    const closeTarget = screen.getByTestId('confirmDoneAndCloseTarget-button');
-    expect(closeTarget).not.toHaveAttribute('type', 'button');
-    expect(screen.getByTestId('done-button')).not.toHaveAttribute('type', 'button');
-    expect(screen.getByTestId('cancel-button')).not.toHaveAttribute('type', 'button');
+    expect(screen.getByTestId('confirmDoneAndCloseTarget-button')).toHaveAttribute('type', 'button');
+    expect(screen.getByTestId('done-button')).toHaveAttribute('type', 'submit');
+    expect(screen.getByTestId('cancel-button')).toHaveAttribute('type', 'button');
   });
 });
 

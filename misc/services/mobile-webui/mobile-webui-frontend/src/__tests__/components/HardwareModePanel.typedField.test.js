@@ -48,6 +48,9 @@ describe('the hidden scanner next to the quantity field', () => {
   const press = (target, key, advanceMs) => {
     now += advanceMs;
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    // A real KeyboardEvent carries the time it was created; the reader measures key gaps on it (as in
+    // hooks/__tests__/useKeyboardBarcodeReader.test.js), so stamp it with this suite's mocked clock.
+    Object.defineProperty(event, 'timeStamp', { value: now, configurable: true });
     target.dispatchEvent(event);
     return event;
   };

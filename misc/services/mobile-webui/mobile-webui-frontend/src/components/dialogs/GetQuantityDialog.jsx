@@ -562,7 +562,8 @@ const GetQuantityDialog = ({
           <form
             onSubmit={(event) => {
               event.preventDefault(); // never navigate; Done / Enter confirm exactly once, here
-              // isSubmitOnEnter=false: Enter does not book, only the explicit Done button (its onClick) does
+              // isSubmitOnEnter=false: the submit itself does not book; Done (its onClick) does. Done stays the form's
+              // default button, so Enter in a field still reaches it through the browser's implicit click on Done.
               return isSubmitOnEnter ? onConfirmDoneTraced() : undefined;
             }}
           >
@@ -786,7 +787,7 @@ const GetQuantityDialog = ({
                 className="is-success"
                 disabled={!allValid}
                 testId="done-button"
-                type={isSubmitOnEnter ? 'submit' : 'button'}
+                type="submit"
                 onClick={isSubmitOnEnter ? undefined : onConfirmDoneTraced}
               />
               <DialogButton

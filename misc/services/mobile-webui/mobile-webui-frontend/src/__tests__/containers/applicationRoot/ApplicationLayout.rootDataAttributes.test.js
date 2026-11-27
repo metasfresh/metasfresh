@@ -19,7 +19,12 @@ jest.mock('../../../hooks/useMobileLocation', () => ({ useMobileLocation: () => 
 jest.mock('../../../reducers/applications', () => ({
   useApplicationInfo: () => ({ caption: 'Picking', iconClassNames: 'fas fa-box' }),
 }));
-jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false }));
+jest.mock('../../../apps', () => ({
+  isApplicationFullScreen: () => false,
+  // ApplicationLayout also mounts apps/picking/ShelfLifeConfirmDialogHost, whose selector reads getApplicationState
+  // from this module: undefined state = no pending confirmation, the host renders nothing.
+  getApplicationState: () => undefined,
+}));
 jest.mock('../../../utils/ui_trace/useUITraceLocationChange', () => ({ useUITraceLocationChange: jest.fn() }));
 jest.mock('../../../utils/ui_trace', () => ({ traceFunction: (fn) => fn }));
 jest.mock('../../../containers/ViewHeader', () => ({ ViewHeader: () => null }));

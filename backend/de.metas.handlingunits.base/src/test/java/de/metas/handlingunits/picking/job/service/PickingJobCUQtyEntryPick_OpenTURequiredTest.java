@@ -88,7 +88,8 @@ class PickingJobCUQtyEntryPick_OpenTURequiredTest extends CUQtyEntryPickFixture
 
 		job = pick(job, source, "5", null, false, null);
 
-		final HuId pickedTUId = CollectionUtils.singleElement(CollectionUtils.singleElement(job.getLines()).getPickedHUIds());
+		final HuId pickedTUId = openTUId(job);
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HUs are the CUs in the open TU (leaf CUs, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(pickedTUId));
 		assertThat(cusOf(pickedTUId)).as("one CU per source piece").extracting(this::qtyOf).usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
 				.containsExactlyInAnyOrder(new BigDecimal("4"), new BigDecimal("1"));
 	}

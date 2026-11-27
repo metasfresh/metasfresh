@@ -35,6 +35,9 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
   const key = (target, k, advanceMs) => {
     now += advanceMs;
     const event = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true });
+    // A real KeyboardEvent carries the time it was created; the reader measures key gaps on it (as in
+    // hooks/__tests__/useKeyboardBarcodeReader.test.js), so stamp it with this suite's mocked clock.
+    Object.defineProperty(event, 'timeStamp', { value: now, configurable: true });
     target.dispatchEvent(event);
     return event;
   };
@@ -61,7 +64,7 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     key(count, 'Enter', 1);
 
     expect(onReadDone).toHaveBeenCalledTimes(1);
-    expect(onReadDone).toHaveBeenCalledWith('ABC');
+    expect(onReadDone).toHaveBeenCalledWith('ABC', expect.any(Object));
   });
 
   it('keeps the buffering for other targets (a slow pair is buffered)', () => {
@@ -73,7 +76,7 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     key(other, '2', 120);
     key(other, 'Enter', 120);
 
-    expect(onReadDone).toHaveBeenCalledWith('12');
+    expect(onReadDone).toHaveBeenCalledWith('12', expect.any(Object));
   });
 
   it('the scan speed of the instance (a scanner debounce of 20 ms) is the limit: keys 30 ms apart are typing', () => {
@@ -87,16 +90,20 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     expect(onReadDone).not.toHaveBeenCalled();
   });
 
-  it('a key typed after a scanner burst is not glued to the burst, also with a slow scan speed of the instance: the burst is read as AB, the later key starts its own read, delivered by Enter', () => {
+  // On the release line the reader closes the burst on the slow key and then treats that key like any first key typed
+  // into the field: it is left to the field, and the Enter after it is the field's (no read).
+  it('a key typed after a scanner burst is not glued to the burst, also with a slow scan speed of the instance: the burst is read as AB, the later key is left to the typed input', () => {
     const onReadDone = jest.fn();
     const { container } = render(<Harness onReadDone={onReadDone} rateMs={300} />);
     const count = container.querySelector('#count');
 
     key(count, 'A', 500);
     key(count, 'B', 1);
-    key(count, 'C', 120); // 120 ms later: typed, although the instance allows 300 ms between the keys of a scan
-    key(count, 'Enter', 1);
+    const typed = key(count, 'C', 120); // 120 ms later: typed, although the instance allows 300 ms between the keys of a scan
+    const enter = key(count, 'Enter', 1);
 
-    expect(onReadDone.mock.calls).toEqual([['AB'], ['C']]);
+    expect(onReadDone.mock.calls.map(([code]) => code)).toEqual(['AB']); // 2nd argument: the scan statistics
+    expect(typed.defaultPrevented).toBe(false);
+    expect(enter.defaultPrevented).toBe(false);
   });
 });
