@@ -203,7 +203,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id}, 
 				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgEmail} + " " +$F{email}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-taxrep" positionType="Float" x="89" y="52" width="417" height="9" uuid="3f6c2a1e-8b4d-4c7a-9e5f-1a2b3c4d5e6f">
+				<reportElement key="textField-taxrep" positionType="Float" x="89" y="52" width="417" height="9" uuid="fe6910d9-9ffb-4a59-8692-65effa5e3a3f">
 					<printWhenExpression><![CDATA[$F{taxrep_name} != null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">

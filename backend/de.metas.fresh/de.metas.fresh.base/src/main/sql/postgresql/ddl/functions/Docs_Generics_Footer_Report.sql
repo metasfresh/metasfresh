@@ -20,7 +20,8 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_
  * - the invoice's fiscal registration has no representative: vataxid = the stored SellerVATaxID, or the
  *   organisation's VAT ID when the invoice stores none;
  * - the invoice's fiscal registration has a representative: vataxid = the organisation's VAT ID, and the
- *   taxrep_* columns carry the representative's name, address and the stored SellerVATaxID.
+ *   taxrep_* columns carry the representative's name, address (the registration's location, else the
+ *   representative's bill-to address) and the stored SellerVATaxID.
  * The taxrep_* columns are NULL in every other case.
  */
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
@@ -158,7 +159,14 @@ FROM ad_org org
          LEFT OUTER JOIN c_fiscal_representation fr ON fr.c_fiscal_representation_id = inv.c_fiscal_representation_id
          LEFT OUTER JOIN c_bpartner rep ON rep.c_bpartner_id = fr.c_bpartner_representative_id
          LEFT OUTER JOIN c_bpartner_location rep_bpl ON rep_bpl.c_bpartner_location_id = fr.c_bpartner_location_id
-         LEFT OUTER JOIN c_location rep_loc ON rep_loc.c_location_id = rep_bpl.c_location_id
+    -- a registration without location: the representative's bill-to address, as the e-invoice (BG-12) takes it
+         LEFT OUTER JOIN LATERAL (SELECT rep_bpl_fallback.c_location_id
+                                  FROM c_bpartner_location rep_bpl_fallback
+                                  WHERE rep_bpl_fallback.c_bpartner_id = rep.c_bpartner_id
+                                    AND rep_bpl_fallback.isactive = 'Y'
+                                  ORDER BY rep_bpl_fallback.isbillto DESC, rep_bpl_fallback.c_bpartner_location_id
+                                  LIMIT 1) rep_fallback ON fr.c_bpartner_location_id IS NULL
+         LEFT OUTER JOIN c_location rep_loc ON rep_loc.c_location_id = COALESCE(rep_bpl.c_location_id, rep_fallback.c_location_id)
          LEFT OUTER JOIN c_country rep_country ON rep_country.c_country_id = rep_loc.c_country_id
          LEFT OUTER JOIN c_country_trl rep_country_trl ON rep_country_trl.c_country_id = rep_country.c_country_id AND rep_country_trl.ad_language = p_ad_language
 
