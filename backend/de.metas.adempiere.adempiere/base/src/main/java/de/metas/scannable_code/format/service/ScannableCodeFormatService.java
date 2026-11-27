@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -44,11 +43,6 @@ public class ScannableCodeFormatService
 	public ScannableCodeFormat create(@NonNull final ScannableCodeFormatCreateRequest request)
 	{
 		return repository.create(request);
-	}
-
-	public void activate(@NonNull final Set<ScannableCodeFormatId> formatIds)
-	{
-		repository.activate(formatIds);
 	}
 
 	public int delete(@NotNull final ScannableCodeFormatQuery query)

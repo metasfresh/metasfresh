@@ -13,13 +13,17 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
@@ -82,6 +86,7 @@ public class C_ScannableCode_Format_StepDef
 	private static final String DESCRIPTION_CUCUMBER_UNRELATED = "created by cucumber step C_ScannableCode_Format_StepDef (unrelated to the scenario)";
 
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ScannableCodeFormatService formatService = SpringContextHolder.instance.getBean(ScannableCodeFormatService.class);
 
 	/**
@@ -223,7 +228,23 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private void deactivateFormatsNotOfTheScenario()
 	{
-		deactivatedFormatIds = formatService.deactivateAllExcept(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
+		final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
+		// NULL-safe: a format without a description is not the scenario's either
+		final IQueryFilter<I_C_ScannableCode_Format> notOfTheScenario = queryBL.createCompositeQueryFilter(I_C_ScannableCode_Format.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, null)
+				.addNotEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, DESCRIPTION_CUCUMBER);
+		queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+				.addOnlyActiveRecordsFilter()
+				.addFilter(notOfTheScenario)
+				.create()
+				.stream()
+				.forEach(record -> {
+					record.setIsActive(false);
+					InterfaceWrapperHelper.saveRecord(record);
+					deactivatedIds.add(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID()));
+				});
+		deactivatedFormatIds = deactivatedIds.build();
 	}
 
 	/**
@@ -231,7 +252,17 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private void reactivateDeactivatedFormats()
 	{
-		formatService.activate(deactivatedFormatIds);
+		if (!deactivatedFormatIds.isEmpty())
+		{
+			queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+					.addInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, deactivatedFormatIds)
+					.create()
+					.stream()
+					.forEach(record -> {
+						record.setIsActive(true);
+						InterfaceWrapperHelper.saveRecord(record);
+					});
+		}
 		deactivatedFormatIds = ImmutableSet.of();
 	}
 
