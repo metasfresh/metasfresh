@@ -1249,19 +1249,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return false;
 		}
 
-		// a processed line whose tax changes (e.g. the completion re-taxes it after the invoice's tax rows were set processed)
-		// moves its amounts from one processed tax row to another
-		final boolean reTaxOfProcessedLine = isProcessed() && is_ValueChanged(COLUMNNAME_C_Tax_ID);
-
 		//
 		// If tax has invoice lines behind => fine, save it
 		if (tax.isActive())
 		{
-			if (reTaxOfProcessedLine)
-			{
-				// a row newly created by MInvoiceTax.get is not processed yet
-				tax.setProcessed(true);
-			}
 			InterfaceWrapperHelper.save(tax, trxName);
 		}
 		// Tax has no longer any invoice lines behind => deleted it if it's not new
@@ -1269,8 +1260,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			if (!InterfaceWrapperHelper.isNew(tax))
 			{
-				// the emptied row of a processed line's old tax is processed too; delete it anyway
-				InterfaceWrapperHelper.delete(tax, !reTaxOfProcessedLine);
+				InterfaceWrapperHelper.delete(tax);
 			}
 		}
 
@@ -1335,8 +1325,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private boolean updateHeaderTax()
 	{
 		// Update header only if the document is not processed - teo_sarca BF [ 2317305 ]
-		// ... unless the tax of a processed line changed, because then the tax rows and totals change too
-		if (isProcessed() && !is_ValueChanged(COLUMNNAME_Processed) && !is_ValueChanged(COLUMNNAME_C_Tax_ID))
+		if (isProcessed() && !is_ValueChanged(COLUMNNAME_Processed))
 		{
 			return true;
 		}
