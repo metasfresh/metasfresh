@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 
 import { withForwardedRef } from '../../hoc/WithRouterAndRef';
 import { getItemsByProperty } from '../../../utils';
+import { isCursorHeldOutside } from '../../../utils/focusHelpers';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
@@ -138,20 +139,38 @@ export class Lookup extends Component {
         ) {
           hasNextSubField = true;
           const nextProp = properties[nextIndex];
-          this.setState(
-            { property: nextProp.field }, //
-            () => {
-              onBlurWidget && onBlurWidget();
-            }
-          );
+          const handOverToNextSubField = () =>
+            this.setState(
+              { property: nextProp.field }, //
+              () => {
+                // The next sub-list takes the cursor from within this lookup (RawList, when its focus flag turns
+                // on). It does not take it from outside the lookup, so move the cursor on to the next form field
+                // only when that sub-list cannot take it.
+                if (!this.canSubFieldTakeFocus(nextProp)) {
+                  onBlurWidget && onBlurWidget();
+                }
+              }
+            );
+          // The sub-list is handed the cursor on the edge of its `autoFocus`. If the next sub-field is the current
+          // one already (e.g. the user went back from the address to the partner and picked another partner),
+          // clear it first, so that the edge fires again.
+          if (this.state.property === nextProp.field) {
+            this.setState({ property: '' }, handOverToNextSubField);
+          } else {
+            handOverToNextSubField();
+          }
         } else if (
           widgetData[widgetData.length - 1].field === currentFieldName
         ) {
           this.setState(
             { property: '' }, //
             () => {
+              // This runs once the pick is saved. If the user moved the cursor out of the lookup in the
+              // meantime (e.g. Alt+Q put it in the quick entry), leave it there. Read before onBlurWidget,
+              // which itself moves the cursor to the next field.
+              const isCursorInLookup = this.isCursorInLookup();
               onBlurWidget && onBlurWidget();
-              this.focusNextFormField();
+              isCursorInLookup && this.focusNextFormField();
             }
           );
         }
@@ -160,6 +179,26 @@ export class Lookup extends Component {
 
     return hasNextSubField;
   };
+
+  /**
+   * @param {?object} itemDescriptor the sub-field's entry of `properties`
+   * @returns {boolean} true if the sub-field, once it is the current property, gets `autoFocus` and is editable: it
+   *          is rendered as a List part ({@link renderSingleLookupPart_List}, the only kind of part that gets
+   *          `autoFocus` as the current property) and is neither read-only nor disabled
+   */
+  canSubFieldTakeFocus = (itemDescriptor) => {
+    const { isInputEmpty, autofocusDisabled } = this.state;
+    if (!itemDescriptor || this.getLookupPartKind(itemDescriptor) !== 'List') {
+      return false;
+    }
+    const itemData = this.getItemData(itemDescriptor.field);
+    return (
+      !!itemData && !itemData.readonly && !isInputEmpty && !autofocusDisabled
+    );
+  };
+
+  isCursorInLookup = () =>
+    !this.wrapperElement || !isCursorHeldOutside(this.wrapperElement);
 
   focusNextFormField = () => {
     const wrapperEl = this.wrapperElement;
@@ -351,25 +390,44 @@ export class Lookup extends Component {
     );
   };
 
-  renderSingleLookupPart = (item, index) => {
+  getItemData = (field) =>
+    getItemsByProperty(this.props.widgetData, 'field', field)[0];
+
+  /**
+   * @param {object} item the part's entry of `properties`
+   * @returns {?string} how the part is rendered: 'Tooltip', 'Lookup', 'List', or null (not rendered)
+   */
+  getLookupPartKind = (item) => {
     const { widgetData } = this.props;
-    const itemData = getItemsByProperty(widgetData, 'field', item.field)[0];
+    const itemData = this.getItemData(item.field);
 
     if (item.type === 'Tooltip') {
-      return this.renderSingleLookupPart_Tooltip(item);
+      return 'Tooltip';
     } else if (
       item.source === 'lookup' ||
       item.widgetType === 'Lookup' ||
       (itemData && itemData.widgetType === 'Lookup')
     ) {
-      return this.renderSingleLookupPart_Lookup(item, index);
+      return 'Lookup';
     } else if (
       widgetData &&
       (item.source === 'list' ||
         item.widgetType === 'List' ||
         (itemData && itemData.source === 'List'))
     ) {
-      return this.renderSingleLookupPart_List(item, index);
+      return 'List';
+    }
+    return null;
+  };
+
+  renderSingleLookupPart = (item, index) => {
+    switch (this.getLookupPartKind(item)) {
+      case 'Tooltip':
+        return this.renderSingleLookupPart_Tooltip(item);
+      case 'Lookup':
+        return this.renderSingleLookupPart_Lookup(item, index);
+      case 'List':
+        return this.renderSingleLookupPart_List(item, index);
     }
   };
 

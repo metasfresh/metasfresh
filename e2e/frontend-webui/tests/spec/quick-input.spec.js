@@ -981,53 +981,11 @@ must remain true — behavior must be identical to before the change.
     // ------------------------------------------------------------------
     // TESTS 10-11 (TC1/TC2): both flip webui.quickinput.EnablePackingInstructionsField
     // and/or webui.quickinput.ProductFieldWidgetSize at runtime via createMasterdata's
-    // `sysconfigs` option. Unlike the AD_SysConfig defaults SysconfigCommand resets on
-    // every call (barcode-scanner keys only — see SysconfigCommand.SCANNER_SYSCONFIG_DEFAULTS),
-    // these two quick-input keys are NOT in that reset set, so a value written by one
-    // test persists globally (it's a live DB row) until something else overwrites it.
-    // Left unrestored, that leaks into every later test in this file and other specs:
-    // EnablePackingInstructionsField='N' hides the Packvorschrift field (breaking the
-    // packing-instruction tests above, which expect it visible/enabled), and
-    // ProductFieldWidgetSize='L' makes an unrelated "default width" assertion see the L
-    // width instead. Nest these two tests in their own describe with an afterEach that
-    // restores both keys to their core migration defaults
-    // (EnablePackingInstructionsField='Y' — 5482620_sys_gh745webui_..., empty for
-    // ProductFieldWidgetSize — 5821510_sys_gh31653_...) and drops the webapi node's
-    // QuickInputDescriptors cache, so nothing survives past either test regardless of
-    // pass/fail.
+    // `sysconfigs` option. The page fixture restores both to their values from before the
+    // test and drops the webapi caches (incl. the QuickInputDescriptors cache), so nothing
+    // leaks into later tests, also when a test fails.
     // ------------------------------------------------------------------
     test.describe('Produkt field width (ProductFieldWidgetSize) - sysconfig isolation', () => {
-      test.afterEach(async () => {
-        // Restore to core migration defaults — see SysconfigCommand doc above for why
-        // this can't rely on the automatic per-test reset (that only covers scanner keys).
-        await Backend.setSysconfigs({
-          'webui.quickinput.EnablePackingInstructionsField': 'Y',
-          'webui.quickinput.ProductFieldWidgetSize': '',
-        });
-        // Drop the webapi-node QuickInputDescriptors cache too, so the restored value is
-        // observed immediately rather than serving the stale (test-set) descriptor to the
-        // next test that opens batch entry. Needs an authenticated webapi session
-        // (GET /cache/reset -> userSession.assertLoggedIn()); guard it so a test that
-        // failed BEFORE login (no session yet) still gets its sysconfigs restored above
-        // instead of throwing out of afterEach and masking the real failure.
-        try {
-          await Backend.resetWebApiCaches();
-        } catch (err) {
-          // Only the expected "test failed before login" case (GET /cache/reset -> HTTP 401,
-          // userSession.assertLoggedIn()) is safe to swallow — the sysconfig VALUES were
-          // already restored above. Any OTHER failure (500, network, a real cache-reset
-          // regression) must fail loudly here, not be reduced to a log line that leaves a
-          // stale QuickInputDescriptors cache leaking into the next describe block.
-          if (String(err && err.message).includes('HTTP 401')) {
-            console.log(
-              `[sysconfig cleanup] resetWebApiCaches skipped: not logged in yet (${err.message})`
-            );
-          } else {
-            throw err;
-          }
-        }
-      });
-
       // ------------------------------------------------------------------
       // TEST 10 (TC1): Produkt field keeps its default width when
       // webui.quickinput.ProductFieldWidgetSize is unset.

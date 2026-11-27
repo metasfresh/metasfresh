@@ -503,6 +503,31 @@ export const getMasterDocumentDisabledStandardActions = ({
 };
 
 /**
+ * @summary merges an `includedTabsInfo` delta into the known tabs' info. A property the delta leaves out keeps its
+ *          value; a permission (`allowCreateNew`, `allowDelete`) the delta sends comes with its own reasons, which
+ *          replace the previous ones.
+ * @param {object} [known] - the `includedTabsInfo` in the state, by tab id
+ * @param {object} [delta] - the `includedTabsInfo` delta, by tab id
+ * @return {object} the merged `includedTabsInfo`
+ */
+export const mergeIncludedTabsInfo = (known = {}, delta = {}) => {
+  const merged = { ...known };
+  Object.keys(delta).forEach((tabId) => {
+    const tabDelta = delta[tabId];
+    const tabInfo = { ...known[tabId] };
+    if ('allowCreateNew' in tabDelta) {
+      delete tabInfo.allowCreateNewReason;
+      delete tabInfo.allowCreateNewReasonKey;
+    }
+    if ('allowDelete' in tabDelta) {
+      delete tabInfo.allowDeleteReason;
+    }
+    merged[tabId] = { ...tabInfo, ...tabDelta };
+  });
+  return merged;
+};
+
+/**
  * @summary the reason why an included tab refuses creating a new record, but only where that reason
  *          is meant for the user. The backend sets `allowCreateNewReasonKey` (the stable AD_Message
  *          key, which tests assert on instead of the rendered wording) exactly then; without it
@@ -845,10 +870,10 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         master: {
           ...state.master,
-          includedTabsInfo: {
-            ...state.master.includedTabsInfo,
-            ...action.includedTabsInfo,
-          },
+          includedTabsInfo: mergeIncludedTabsInfo(
+            state.master.includedTabsInfo,
+            action.includedTabsInfo
+          ),
         },
       };
     case MARK_MASTER_DATA_DISCARDED:

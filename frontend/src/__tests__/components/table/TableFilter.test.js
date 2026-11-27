@@ -75,6 +75,28 @@ describe('TableFilter', () => {
     expect(quickInputOnly.find('[data-testid="add-new-record"]').hostNodes()).toHaveLength(0);
     expect(quickInputOnly.find('[data-testid="batch-entry-toggle"]').hostNodes()).toHaveLength(1);
   });
+
+  it('opens the batch entry of a quick-input-only tab by itself, flagged as automatic', () => {
+    const handleBatchEntryToggle = jest.fn();
+    mount(
+      <Provider store={store}>
+        <TableFilter
+          {...tableFilterProps}
+          newRecordInputMode="QUICK_INPUT_ONLY"
+          allowCreateNew={true}
+          quickInputSupport={{
+            openButtonCaption: 'Batch entry',
+            closeButtonCaption: 'Close batch entry',
+          }}
+          isBatchEntry={false}
+          handleBatchEntryToggle={handleBatchEntryToggle}
+        />
+      </Provider>
+    );
+
+    expect(handleBatchEntryToggle).toHaveBeenCalledTimes(1);
+    expect(handleBatchEntryToggle).toHaveBeenCalledWith({ isAutomatic: true });
+  });
 });
 
 // TODO: add more tests for this

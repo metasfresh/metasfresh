@@ -22,7 +22,7 @@ import { SALES_ORDER_WINDOW_ID, SHIPPER_WINDOW_ID } from '../utils/WindowIds';
  *     M_Shipper_ID / lead-time change.
  *  2. Forward calc sysconfig ON: the spec itself sets
  *     `de.metas.tourplanning.LeadTimeForwardCalc.Enabled = Y` through the masterdata request (which
- *     also resets webapi's AD_SysConfig cache) and restores it to 'N' in afterEach.
+ *     also resets webapi's AD_SysConfig cache); the page fixture restores it after each test.
  *  3. A lead-time route: the spec creates its own M_Shipper with LeadTimeDays = 7 through the Shipper
  *     window REST (no seed dependence).
  *  4. The Sales Order header must show the M_Shipper_ID lookup (`#lookup_M_Shipper_ID`) plus the
@@ -61,12 +61,6 @@ const expectNumbersMatch = (text, { year, month, day }, what) => {
 };
 
 test.describe('Sales order - lead-time DatePromised / PreparationDate', () => {
-  test.afterEach(async () => {
-    // Leave the system-level switch at its shipped default so other specs are unaffected.
-    // The legacy flat offset ships as 0 (= off); reset it too (only the LOW-1 test below sets it).
-    await Backend.setSysconfigs({ [SYSCONFIG_FORWARD_ENABLED]: 'N', [SYSCONFIG_LEGACY_OFFSET_DAYS]: '0' });
-  });
-
   test('lead-time route + order date compute promised/prep live; a manual promised edit sticks', async ({ page }) => {
     allure.epic('E0159: Manufacturing Planning');
     allure.tag('F8005: Order Checkup');

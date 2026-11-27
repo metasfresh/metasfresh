@@ -8,6 +8,11 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { waitForTabAllowsNew, getRecordData, getTabRows } from '../utils/WebAPIValidation';
+import {
+  installDocumentEventRecorder,
+  pickCustomerByKeyboard,
+  enterLinesKeyboardOnly,
+} from '../utils/QuickInputFocus';
 
 /**
  * Sales Order window (143) — a Menge (quantity) edited from 4 to 5 purely by keyboard in the
@@ -58,11 +63,14 @@ const MAX_TABS_TO_FIRST_ROW_QTY_CELL = 20;
 // Setup helpers
 // ---------------------------------------------------------------------------
 
-async function createMasterdata(language) {
+// The batch entry flow relies on the Packvorschrift field being shown (webui.quickinput.EnablePackingInstructionsField=Y,
+// the core default): pin it here instead of depending on the global value. valuePrefix: optional product code prefix.
+async function createMasterdata(language, { valuePrefix } = {}) {
   const products = {};
   PRODUCT_KEYS.forEach((key) => {
     products[key] = {
       name: `QtyEdit${key}`,
+      ...(valuePrefix ? { valuePrefix } : {}),
       type: 'Item',
       prices: [{ price: 10.0, currencyCode: 'EUR' }],
     };
@@ -79,6 +87,9 @@ async function createMasterdata(language) {
         },
       },
       products,
+      sysconfigs: {
+        'webui.quickinput.EnablePackingInstructionsField': 'Y',
+      },
     },
   });
 }
@@ -344,6 +355,34 @@ async function completeOrderKeyboardOnly(page, recordId) {
   );
 }
 
+/**
+ * Final check of both Menge edit tests: grid shows 5 after completion, and after a reload grid +
+ * persisted QtyEntered are 5 and DocStatus is CO.
+ */
+async function assertQtysPersistedAfterReload(page, recordId) {
+  // keep the Menge column in view for the recording before reading it
+  await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+  expect(await gridQtys(page)).toEqual([5, 5, 5]);
+  await page.reload();
+  await page
+    .getByTestId('status-button')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  // page.reload() resets the page and the grid to top-left; bring the Menge column back
+  // into view (vertically and horizontally) so the recording shows the persisted values
+  await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
+  expect(await gridQtys(page)).toEqual([5, 5, 5]);
+  expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
+  const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
+  expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+
+  // recording aid: hold the final frame so the video shows the completed order
+  // with the persisted grid, not the header alone
+  await page.waitForTimeout(1500);
+}
+
 // ---------------------------------------------------------------------------
 // Test
 // ---------------------------------------------------------------------------
@@ -360,6 +399,7 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
+    await Backend.resetWebApiCaches(); // the quick-input layout (Packvorschrift field) is cached in the webapi
 
     const recordId = await createOrderAndOpenLinesTab(page, masterdata);
     console.log(`[keyboard-only] order ${recordId}`);
@@ -383,27 +423,85 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     });
 
     await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
-      // keep the Menge column in view for the recording before reading it
-      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-      expect(await gridQtys(page)).toEqual([5, 5, 5]);
-      await page.reload();
-      await page
-        .getByTestId('status-button')
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-      // page.reload() resets the page and the grid to top-left; bring the Menge column back
-      // into view (vertically and horizontally) so the recording shows the persisted values
-      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
-      expect(await gridQtys(page)).toEqual([5, 5, 5]);
-      expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
-      const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
-      expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+      await assertQtysPersistedAfterReload(page, recordId);
+    });
+  });
+});
 
-      // recording aid: hold the final frame so the video shows the completed order
-      // with the persisted grid, not the header alone
-      await page.waitForTimeout(1500);
+// ---------------------------------------------------------------------------
+// The same edit, with the customer typed and the batch entry driven by keyboard only
+// ---------------------------------------------------------------------------
+
+/**
+ * The same Menge edit as above, but the whole order entry is keyboard only: the customer is typed
+ * and picked with Enter (no mouse), Alt+Q opens the batch entry, and the empty Packvorschrift is left
+ * with Enter (not Tab: Tab in the list field clears the stale flag and would hide the focus defect).
+ * The cursor must stay in the batch entry after every step. Before the fix it fails at a focus check
+ * that names a header field (e.g. lookup_AD_User_ID); then the same close / grid edit / Alt+U /
+ * reload / WebAPI assertions as the click variant apply.
+ */
+test.describe('Sales order — keyboard-only order entry and Menge edit', () => {
+  [
+    { language: 'de_DE', label: 'German' },
+    { language: 'en_US', label: 'English' },
+  ].forEach(({ language, label }) => {
+    test(`keyboard only: partner typed, Alt+Q, Enter on Packvorschrift, grid edit, Alt+U (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Keyboard-only order entry and Menge edit survive completion');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(300000);
+
+      const recorder = await installDocumentEventRecorder(page);
+      const masterdata = await createMasterdata(language, { valuePrefix: 'QTYEDITK' });
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      await Backend.resetWebApiCaches();
+
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await pickCustomerByKeyboard({
+        bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode,
+      });
+      console.log(`[keyboard-only] order ${recordId}`);
+
+      await test.step('Alt+Q, 3 lines with Menge 4 by keyboard only (Enter on Packvorschrift)', async () => {
+        await page.keyboard.press('Alt+Q'); // TOGGLE_QUICK_INPUT
+        await page
+          .locator('.quick-input-container')
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await enterLinesKeyboardOnly({
+          recorder,
+          windowId: SALES_ORDER_WINDOW_ID,
+          recordId,
+          products: PRODUCT_KEYS.map((key) => masterdata.products[key].productCode),
+          qtys: PRODUCT_KEYS.map(() => Number(INITIAL_QTY)),
+          packingInstructionsField: 'Y',
+        });
+        expect(await gridQtys(page)).toEqual([4, 4, 4]);
+        expect(await savedQtys(recordId)).toEqual([4, 4, 4]);
+      });
+
+      await test.step('close batch entry, focus leaves the order lines', async () => {
+        await closeBatchEntryAndAssertFocusOutsideLines(page);
+      });
+
+      await test.step('grid edit by keyboard: each Menge to 5, leave by Tab', async () => {
+        await editQtysKeyboardOnly(page, EDITED_QTY);
+      });
+
+      await test.step('complete the order by keyboard (Alt+U)', async () => {
+        await completeOrderKeyboardOnly(page, recordId);
+      });
+
+      await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
+        await assertQtysPersistedAfterReload(page, recordId);
+      });
     });
   });
 });

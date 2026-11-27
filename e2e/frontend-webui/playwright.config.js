@@ -11,6 +11,18 @@ const UAT_CAPTURE_SIZE = (() => {
   return { width, height };
 })();
 
+/** The Chromium launch args of the 'Desktop Chrome' project; a spec that overrides `launchOptions` reuses them. */
+export const CHROME_LAUNCH_ARGS = [
+  '--no-sandbox', // Avoids sandboxing issues inside Docker
+  '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080', // Treats it as a secure origin
+  '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
+  '--disable-site-isolation-trials', // Helps disable security sandboxing
+  '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
+  '--ignore-certificate-errors', // Ignores SSL certificate errors
+  '--allow-insecure-localhost', // Allows HTTP on local addresses
+  '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
+];
+
 export default defineConfig({
   testDir: './tests',
   workers: 1, // Sequential execution for test data isolation
@@ -102,16 +114,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         ...(isUatCapture ? { viewport: UAT_CAPTURE_SIZE } : {}),
         launchOptions: {
-          args: [
-            '--no-sandbox', // Avoids sandboxing issues inside Docker
-            '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080', // Treats it as a secure origin
-            '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
-            '--disable-site-isolation-trials', // Helps disable security sandboxing
-            '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
-            '--ignore-certificate-errors', // Ignores SSL certificate errors
-            '--allow-insecure-localhost', // Allows HTTP on local addresses
-            '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
-          ],
+          args: CHROME_LAUNCH_ARGS,
         },
       },
     },
@@ -126,6 +129,14 @@ export const test = require('@playwright/test').test.extend({
   page: async ({ page }, use) => {
     global.currentPage = page;
     Object.keys(testContext).forEach(key => delete testContext[key]);
-    await use(page);
+    try {
+      await use(page);
+    } finally {
+      // Lazy require: Backend.js imports this config, a static import here would be circular. Not a dynamic
+      // import(): Playwright transpiles only require()d files, a native import() of Backend.js fails with
+      // "Cannot use import statement outside a module" unless the spec happened to load it already.
+      const { Backend } = require('./tests/utils/Backend');
+      await Backend.restoreSysconfigsChangedByTest();
+    }
   },
 });

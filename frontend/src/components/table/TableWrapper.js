@@ -30,6 +30,7 @@ class TableWrapper extends PureComponent {
       },
       promptOpen: false,
       isBatchEntry: false,
+      isBatchEntryOpenedAutomatically: false,
     };
   }
 
@@ -107,11 +108,18 @@ class TableWrapper extends PureComponent {
     }
   };
 
-  handleBatchEntryToggle = () => {
+  /**
+   * Opens the batch entry if it is closed, else closes it.
+   * @param {Object} [options] also the click event when used as a click handler
+   * @param {boolean} [options.isAutomatic] true when the tab opens the batch entry by itself, not the user
+   */
+  handleBatchEntryToggle = (options) => {
     const { isBatchEntry } = this.state;
 
     this.setState({
       isBatchEntry: !isBatchEntry,
+      isBatchEntryOpenedAutomatically:
+        !isBatchEntry && options?.isAutomatic === true,
     });
   };
 
@@ -335,7 +343,12 @@ class TableWrapper extends PureComponent {
       pending,
     } = this.props;
 
-    const { contextMenu, promptOpen, isBatchEntry } = this.state;
+    const {
+      contextMenu,
+      promptOpen,
+      isBatchEntry,
+      isBatchEntryOpenedAutomatically,
+    } = this.state;
 
     const showPagination = !!(page && pageLength);
     const isAllowDeleteRow = !isModal && tabInfo?.allowDelete;
@@ -387,6 +400,7 @@ class TableWrapper extends PureComponent {
                 docId,
                 tabIndex,
                 isBatchEntry,
+                isBatchEntryOpenedAutomatically,
                 quickInputSupport,
                 newRecordInputMode,
                 pending,

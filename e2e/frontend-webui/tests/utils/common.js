@@ -11,6 +11,43 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 
 export const getPage = () => global.currentPage;
 
+// Sysconfig rows the current test overwrote, each with its value from BEFORE the test's first overwrite of that row
+// (first previous value per name+clientId+orgId wins). Filled by Backend's sysconfig-writing calls; the page fixture
+// restores them after every test, also a failed one, so no spec needs its own afterEach.
+let sysconfigsToRestore = [];
+
+const isSameRow = (a, b) => a.name === b.name && a.clientId === b.clientId && a.orgId === b.orgId;
+
+// The backend resets these to their defaults on every master data request and reports their previous values too.
+const SCANNER_SYSCONFIG_PREFIX = 'mobileui.frontend.barcodeScanner.';
+
+/**
+ * Remembers the previous value of each row the request changed, so the page fixture can restore it after the test.
+ * Left out: a row the request wrote with the value it already had, and a barcode-scanner row the request did not
+ * write itself (the next master data request resets it again).
+ * @param {{previousSysconfigs?: Array<{name: string, value: ?string, clientId: number, orgId: number}>}} response as returned by the backend
+ * @param {Object<string, string>} [written] the sysconfigs the request wrote explicitly, by name
+ */
+export const rememberSysconfigsToRestore = ({ previousSysconfigs }, written) => {
+  const writtenByName = written ?? {};
+  const isChange = (previous) =>
+    previous.name in writtenByName
+      ? previous.value !== writtenByName[previous.name]
+      : !previous.name.startsWith(SCANNER_SYSCONFIG_PREFIX);
+  (previousSysconfigs ?? [])
+    .filter(isChange)
+    .filter((previous) => !sysconfigsToRestore.some((remembered) => isSameRow(remembered, previous)))
+    .forEach((previous) => sysconfigsToRestore.push(previous));
+};
+
+/** Returns the remembered values; they stay remembered until forgetSysconfigsToRestore, so a failed restore is retried. */
+export const getSysconfigsToRestore = () => [...sysconfigsToRestore];
+
+/** Forgets the remembered values; call only after the restore succeeded. */
+export const forgetSysconfigsToRestore = () => {
+  sysconfigsToRestore = [];
+};
+
 /**
  * Selects the given grid rows: the first one with a plain click, the others with Ctrl/Cmd+click. Starting
  * from the WebUI's default single-row selection it selects nothing else; rows that are already selected

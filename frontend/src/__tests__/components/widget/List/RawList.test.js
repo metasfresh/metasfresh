@@ -6,7 +6,7 @@ import { RawList0 as RawListBare } from '../../../../components/widget/List/RawL
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 
-const createDummyProps = function(props, data) {
+const createDummyProps = function (props, data) {
   return {
     onFocus: jest.fn(),
     onBlur: jest.fn(),
@@ -148,8 +148,8 @@ describe('RawList component', () => {
     });
 
     it('list hides dropdown after selecting an option', () => {
-      jest.useFakeTimers('legacy'); // used 'legacy' because the latest Jest 27 has breaking changes for fakeTimers. 
-                                    // It seems Jest contributors didn't updated the documentation on time
+      jest.useFakeTimers('legacy'); // used 'legacy' because the latest Jest 27 has breaking changes for fakeTimers.
+      // It seems Jest contributors didn't updated the documentation on time
 
       const onCloseDropdownSpy = jest.fn();
       const onSelectSpy = jest.fn();
@@ -196,9 +196,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const requestFocusSpy = jest.spyOn(
-        RawListBare.prototype, 'requestFocus'
-      );
+      const requestFocusSpy = jest.spyOn(RawListBare.prototype, 'requestFocus');
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
       const wrapper = mount(<RawListBare {...props} />);
@@ -328,6 +326,58 @@ describe('RawList component', () => {
         wrapper.detach();
       });
 
+      it('does not take the focus back from another field on a later re-render while editable', () => {
+        const wrapper = mountAttached({ isFocused: true, readonly: false });
+        otherInput.focus();
+
+        wrapper.setProps({ listHash: uuidv4() });
+
+        expect(document.activeElement).toBe(otherInput);
+        wrapper.detach();
+      });
+
+      describe('focus-out', () => {
+        beforeEach(() => jest.useFakeTimers());
+        afterEach(() => jest.useRealTimers());
+
+        const mountFocused = () => {
+          const onBlur = jest.fn();
+          const wrapper = mountAttached({ isFocused: true, onBlur });
+          wrapper.find('.input-dropdown-container').getDOMNode().focus();
+          return { wrapper, onBlur };
+        };
+
+        it('calls onBlur once when the focus moves to an element outside', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          otherInput.focus();
+          jest.runAllTimers();
+
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        it('does not call onBlur when the focus moves to the body', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          document.activeElement.blur();
+          jest.runAllTimers();
+
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
+
+        it('does not call onBlur after unmount', () => {
+          const { wrapper, onBlur } = mountFocused();
+
+          otherInput.focus();
+          wrapper.unmount();
+          jest.runAllTimers();
+
+          expect(onBlur).not.toHaveBeenCalled();
+        });
+      });
+
       it('does not take the focus when mounted focused while disabled', () => {
         otherInput.focus();
 
@@ -347,6 +397,206 @@ describe('RawList component', () => {
         expect(document.activeElement).toBe(
           wrapper.find('.input-dropdown-container').getDOMNode()
         );
+        wrapper.detach();
+      });
+    });
+
+    // The two other cases in which an editable list flagged `isFocused` takes the focus on an update.
+    describe('an editable list with isFocused', () => {
+      let container;
+      let otherInput;
+
+      beforeEach(() => {
+        container = document.createElement('div');
+        document.body.appendChild(container);
+        otherInput = document.createElement('input');
+        document.body.appendChild(otherInput);
+      });
+
+      afterEach(() => {
+        document.body.removeChild(container);
+        document.body.removeChild(otherInput);
+      });
+
+      const mountAttached = (props) =>
+        mount(
+          <RawListBare
+            {...createDummyProps(
+              {
+                ...fixtures.data1.widgetProps,
+                isToggled: false,
+                tabIndex: 0,
+                readonly: false,
+                ...props,
+              },
+              fixtures.data1.listData
+            )}
+          />,
+          { attachTo: container }
+        );
+
+      // A list that is not part of a lookup (no wrapperElement) keeps taking the focus from another field.
+      it('takes the focus from another field when the flag turns on and it is not part of a lookup', () => {
+        const wrapper = mountAttached({ isFocused: false });
+        otherInput.focus();
+
+        wrapper.setProps({ isFocused: true });
+
+        expect(document.activeElement).toBe(
+          wrapper.find('.input-dropdown-container').getDOMNode()
+        );
+        wrapper.detach();
+      });
+
+      // A sub-list of a composed lookup: `lookupWrapper` stands for the lookup's wrapperElement, which holds
+      // the previous sub-field (e.g. the business partner input) and this list.
+      describe('as a sub-list of a lookup', () => {
+        let lookupWrapper;
+        let previousSubField;
+        let listContainer;
+
+        beforeEach(() => {
+          lookupWrapper = document.createElement('div');
+          previousSubField = document.createElement('input');
+          listContainer = document.createElement('div');
+          lookupWrapper.appendChild(previousSubField);
+          lookupWrapper.appendChild(listContainer);
+          document.body.appendChild(lookupWrapper);
+        });
+
+        afterEach(() => {
+          document.body.removeChild(lookupWrapper);
+        });
+
+        const mountInLookup = (props) =>
+          mount(
+            <RawListBare
+              {...createDummyProps(
+                {
+                  ...fixtures.data1.widgetProps,
+                  isToggled: false,
+                  tabIndex: 0,
+                  readonly: false,
+                  wrapperElement: lookupWrapper,
+                  ...props,
+                },
+                fixtures.data1.listData
+              )}
+            />,
+            { attachTo: listContainer }
+          );
+
+        // E.g. the lookup hands the focus from the business partner to its location sub-list.
+        it('takes the focus from the previous sub-field when the flag turns on', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({ isFocused: false, onBlur });
+          previousSubField.focus();
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
+
+        // E.g. a mouse pick of the previous sub-field left the cursor on the body.
+        it('takes the focus from the body when the flag turns on', () => {
+          const wrapper = mountInLookup({ isFocused: false });
+          document.activeElement.blur();
+          expect(document.activeElement).toBe(document.body);
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          wrapper.detach();
+        });
+
+        // E.g. Alt+Q put the cursor in the quick entry while the header still hands over to the contact sub-list.
+        // The flag is dropped as on a focus-out (onBlur), so the sub-list does not open its dropdown, whose key
+        // handler listens page-wide, behind the cursor.
+        it('does not take the focus from an element outside the lookup when the flag turns on, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({ isFocused: false, onBlur });
+          otherInput.focus();
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        // E.g. the lookup handed over to this sub-list while it was still read-only; it becomes editable with
+        // the partner's update, after Alt+Q put the cursor in the quick entry.
+        it('does not take the focus from an element outside the lookup when it becomes editable while flagged, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: true,
+            readonly: true,
+            onBlur,
+          });
+          otherInput.focus();
+
+          wrapper.setProps({ readonly: false });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        it('does not take the focus from an element outside the lookup when the flag turns on in the update that makes it editable, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: false,
+            readonly: true,
+            onBlur,
+          });
+          otherInput.focus();
+
+          wrapper.setProps({ isFocused: true, readonly: false });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        // The hand-over itself: the cursor is still in the previous sub-field when this sub-list becomes editable.
+        it('takes the focus from the previous sub-field when it becomes editable while flagged', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: true,
+            readonly: true,
+            onBlur,
+          });
+          previousSubField.focus();
+
+          wrapper.setProps({ readonly: false });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
+      });
+
+      // E.g. a mouse pick left the cursor on the body and the user continues with the keyboard.
+      it('takes the focus back on a later re-render when the focus was lost to the body', () => {
+        const wrapper = mountAttached({ isFocused: true });
+        const listElement = wrapper
+          .find('.input-dropdown-container')
+          .getDOMNode();
+        listElement.focus();
+        listElement.blur();
+        expect(document.activeElement).toBe(document.body);
+
+        wrapper.setProps({ listHash: uuidv4() });
+
+        expect(document.activeElement).toBe(listElement);
         wrapper.detach();
       });
     });

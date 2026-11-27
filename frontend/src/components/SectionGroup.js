@@ -11,6 +11,7 @@ import Tooltips from './tooltips/Tooltips';
 import Section from './window/Section';
 import Dropzone from './Dropzone';
 import { INITIALLY_CLOSED } from '../constants/Constants';
+import { isCursorHeldOutside } from '../utils/focusHelpers';
 
 const EMPTY_OBJECT = {};
 
@@ -364,6 +365,16 @@ class SectionGroup extends PureComponent {
       });
 
       if (currentWidgetIndex >= 0) {
+        // Called once the widget's value is saved, which can be after the user moved the cursor elsewhere
+        // (e.g. Alt+Q put it in the quick entry): then leave it there.
+        // eslint-disable-next-line react/no-find-dom-node
+        const currentElement = ReactDOM.findDOMNode(
+          this.widgets[currentWidgetIndex]
+        );
+        if (currentElement && isCursorHeldOutside(currentElement)) {
+          return;
+        }
+
         let nextWidgetIndex = Math.min(
           this.widgets.length - 1,
           currentWidgetIndex + 1
