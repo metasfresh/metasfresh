@@ -896,11 +896,7 @@ public class PickingJobService implements PickingSlotListener
 		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
-	/**
-	 * Closes the job's targets and every line's targets; closed HUs of lines in a label-required CU quantity entry mode go to their own line's picking slot, the others to the slot scanned last.
-	 * The mode is the line's <b>current</b> one ({@link de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy#isLabelRequired()}): CUs booked with a label are not looked at,
-	 * because release records every CU of a TU with its own QR code in Manual too. Switching the entry mode while a job runs is not supported; a TU booked in a label mode and closed after such a switch follows the line's new mode.
-	 */
+	/** Closes the job's targets and every line's targets; closed HUs of lines in a label-required CU quantity entry mode go to their own line's picking slot, the others to the slot scanned last. Switching the mode while a job runs is not supported. */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
 		final List<PickingJobLine> linesClosedOnTheirOwnSlot = pickingJob.getLines(configService::isLabelRequired);
