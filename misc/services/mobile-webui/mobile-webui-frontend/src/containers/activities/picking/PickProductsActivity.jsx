@@ -14,6 +14,7 @@ import { getLinesArrayFromActivity, isAnonymousPickHUsOnTheFly } from '../../../
 import {
   getCurrentPickFromHUQRCode,
   isAllowPickingAnyHUOnHeaderLevel,
+  isQuickPackAllAllowed,
   isUserEditable as isUserEditableFunc,
 } from '../../../utils/picking';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
@@ -28,6 +29,7 @@ import { isCurrentTargetEligibleForActivityAndLine } from '../../../reducers/wfP
 import { BarcodeScannerButton } from '../../../components/BarcodeScannerButton';
 import { usePickProductsScan } from './PickProductsScanScreen';
 import { useDispatch } from 'react-redux';
+import { forgetCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { postPickAll } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastErrorFromObj } from '../../../utils/toast';
@@ -42,12 +44,14 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useMobileNavigation();
   const dispatch = useDispatch();
 
-  const { allowQuickPackAll, isShowQtyAvailableForLines } = useApplicationInfoParameters({ applicationId });
+  const { isShowQtyAvailableForLines } = useApplicationInfoParameters({ applicationId });
+  const isQuickPackAllAllowedForJob = isQuickPackAllAllowed({ activity });
   const qtyAvailable = usePickingJobQtyAvailable({
     wfProcessId,
-    enabled: isShowQtyAvailableForLines || allowQuickPackAll,
+    enabled: isShowQtyAvailableForLines || isQuickPackAllAllowedForJob,
   });
-  const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
+  const isShowQuickPackAllButton =
+    isQuickPackAllAllowedForJob && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
 
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
 
@@ -65,7 +69,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const onScanButtonClick = () => {
     history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
   };
-  const onLineButtonClick = useLineButtonClickHandler({ applicationId, wfProcessId, activity, history });
+  const onLineButtonClick = useLineButtonClickHandler({ applicationId, wfProcessId, activity, history, dispatch });
 
   const isAtLeastOneReadOnlyLine = (groupedLines) => {
     if (!isUserEditable) return false;
@@ -223,15 +227,20 @@ const groupLinesByDisplayKey = (lines) => {
 //
 //
 
-const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, history }) => {
+// @VisibleForTesting
+export const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, history, dispatch }) => {
   const { activityId } = activity;
   const allowAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly({ activity });
 
   return ({ line }) => {
     const { pickingLineId: lineId, qtyPicked } = line;
 
+    // every way into the line's scan screen starts a new round: nothing is remembered from the last one
+    const startNewRound = () => dispatch(forgetCUEntry({ wfProcessId, activityId }));
+
     const pickFromHUQRCode = getCurrentPickFromHUQRCode({ activity });
     if (qtyPicked <= 0 && pickFromHUQRCode) {
+      startNewRound();
       history.push(
         pickingLineScanScreenLocation({
           applicationId,
@@ -243,6 +252,7 @@ const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, histo
         })
       );
     } else if (qtyPicked <= 0 && allowAnonymousPickHUsOnTheFly) {
+      startNewRound();
       history.push(
         pickingLineScanScreenLocation({
           applicationId,

@@ -1,4 +1,4 @@
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, revealForCaptureIfEnabled, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
@@ -269,6 +269,8 @@ export const PickingJobScreen = {
         if (isScanDirectly) {
             await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs, terminator });
         } else {
+            // "Scan" sits below the LU/TU buttons; once an LU was closed, the late has-closed-lu answer adds "Reopen LU" above them
+            await waitForJobScreenToSettle();
             await page.locator('#scanQRCode-button').tap(); // click the Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
             await PickingJobScanHUScreen.typeQRCode(qrCode);
@@ -362,6 +364,9 @@ export const PickingJobScreen = {
         await lineButton.getByTestId('picking-line-qty-available').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
+    /** The Quick Pack All button; for layout checks (see utils/layout.js) */
+    pickAllButtonLocator: () => pickAllButton(),
+
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
         const button = pickAllButton();
         await button.tap();
@@ -388,6 +393,12 @@ export const PickingJobScreen = {
         await button.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
     }),
 
+    expectPickAllButtonHiddenAfterQtyAvailable: async () => await step(`${NAME} - Expect Pick All button to be hidden (after qtyAvailable was answered)`, async () => {
+        await expect(locateLineButton({ index: 1 })).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        await waitForNoInFlightXhr(page, { urlPattern: QTY_AVAILABLE_QUERY, timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.getByTestId('pickAll-button')).toHaveCount(0);
+    }),
+
     abort: async () => await step(`${NAME} - Abort`, async () => {
         await page.locator('#abort-button').tap();
         await YesNoDialog.waitForDialog();
@@ -401,6 +412,24 @@ export const PickingJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await settleCompleteToJobsList();
+    }),
+
+    /** Presses "Fertigstellen" and confirms; the backend must refuse */
+    completeRefused: async ({ expectedError, whileToastShown }) => await step(`${NAME} - Complete, expect refusal '${expectedError}'`, async () => {
+        await waitForJobScreenToSettle();
+        await expectErrorToast(
+            `${NAME} complete refusal`,
+            async () => {
+                await page.locator('#last-confirm-button').tap();
+                await YesNoDialog.waitForDialog();
+                await YesNoDialog.clickYesButton();
+            },
+            async ({ textContent }) => {
+                expect(textContent).toContain(expectedError);
+                await whileToastShown?.();
+            }
+        );
+        await PickingJobScreen.waitForScreen();
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
@@ -557,9 +586,10 @@ const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 // The job screen (and its line view) asks `has-closed-lu` every time it mounts; once an LU was closed
 // (and reopening is allowed) the answer adds "Reopen LU" ABOVE "Complete". Matches with or without the
 // `lineId` query string.
+const QTY_AVAILABLE_QUERY = /\/picking\/job\/[^/]+\/qtyAvailable(\?|$)/;
 const HAS_CLOSED_LU_QUERY = /\/picking\/job\/[^/]+\/has-closed-lu(\?|$)/;
 
-// Tapping "Complete" while that answer is still on its way loses the tap: the answer pushes the button
+// Tapping "Complete" (or "Scan") while that answer is still on its way loses the tap: the answer pushes the button
 // down between the tap's point and the click that follows the touch, so the click hits whatever moved
 // under the old point and the confirmation dialog never opens (flaky cases 58 / 95 / 103 / 175). An
 // operator sees the screen settle before reaching for the button; wait for the same.

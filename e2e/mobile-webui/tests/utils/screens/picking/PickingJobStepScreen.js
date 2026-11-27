@@ -19,6 +19,15 @@ export const PickingJobStepScreen = {
         await PickingJobLineScreen.waitForScreen();
     }),
 
+    /** The unpick button; for layout checks (see utils/layout.js) */
+    unpickButton: () => page.locator('#unpick-button'),
+
+    /** Taps unpick and leaves the unpick dialog open */
+    tapUnpick: async () => await test.step(`${NAME} - Tap unpick`, async () => {
+        await PickingJobStepScreen.unpickButton().tap();
+        await UnpickDialog.waitForDialog();
+    }),
+
     // Whole-step unpick. With no argument the target-HU scan is skipped (the goods drop to loose
     // top-level TUs). Passing { targetHUQRCode } instead scans a target HU, so the unpicked goods
     // are moved onto that scanned HU. No-arg behaviour is preserved for existing callers.

@@ -7,12 +7,16 @@ import * as uiTrace from './ui_trace';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { ContextualError } from './ContextualError';
+import { UserMessageError } from './UserMessageError';
+import { ERROR_TOAST_BODY_STYLE, ERROR_TOAST_STYLE } from './toastLayout';
 
 export const toastErrorFromObj = (obj, toastId) => {
   console.log('toastErrorFromObj', { obj });
   if (!obj) {
     // shall not happen
     console.error('toastErrorFromObj called without any error');
+  } else if (obj instanceof UserMessageError) {
+    toastError({ messageKey: obj.messageKey, details: obj.details, context: obj.context, toastId });
   } else if (isError(obj) || obj instanceof ContextualError) {
     toastError({ axiosError: obj, context: obj?.context, toastId });
   } else if (typeof obj === 'object') {
@@ -22,15 +26,17 @@ export const toastErrorFromObj = (obj, toastId) => {
   }
 };
 
-export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context, toastId }) => {
+export const toastError = ({ axiosError, messageKey, details, fallbackMessageKey, plainMessage, context, toastId }) => {
   let code;
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
     code = extractErrorCodeFromAxiosError(axiosError);
   } else if (messageKey) {
+    // the details are technical (parser reasons, not localized): they go to the UI trace for support, the user reads only the localized message
     message = trl(messageKey);
     code = messageKey;
+    if (details) context = { ...context, details };
   } else if (plainMessage) {
     message = plainMessage;
   } else {
@@ -44,7 +50,8 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
-    bodyStyle: { overflow: 'auto' },
+    style: ERROR_TOAST_STYLE,
+    bodyStyle: ERROR_TOAST_BODY_STYLE,
     toastId,
   });
 
@@ -104,7 +111,14 @@ export const extractUserFriendlyErrorMessageFromAxiosError = ({ axiosError, fall
   return trl('error.PleaseTryAgain');
 };
 
-export const toastNotification = ({ messageKey, plainMessage }) => {
+/** the toast currently shown for each `replaceKey` */
+const toastIdByReplaceKey = {};
+
+/**
+ * @param {{messageKey?: string, plainMessage?: string, position?: string, replaceKey?: string}} options
+ * `replaceKey`: only one toast of this key is shown at a time; a new call dismisses the one on screen and shows a fresh one (with its full time) instead of stacking another
+ */
+export const toastNotification = ({ messageKey, plainMessage, position = 'bottom-center', replaceKey }) => {
   let message;
   if (messageKey) {
     message = trl(messageKey);
@@ -115,10 +129,17 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
     return;
   }
 
-  toast.success(message, {
-    position: 'bottom-center',
+  if (replaceKey && toastIdByReplaceKey[replaceKey] != null) {
+    toast.dismiss(toastIdByReplaceKey[replaceKey]);
+  }
+
+  const toastId = toast.success(message, {
+    position,
     transition: Bounce,
   });
+  if (replaceKey) {
+    toastIdByReplaceKey[replaceKey] = toastId;
+  }
 };
 
 export const extractErrorResponseFromAxiosError = (axiosError) => {

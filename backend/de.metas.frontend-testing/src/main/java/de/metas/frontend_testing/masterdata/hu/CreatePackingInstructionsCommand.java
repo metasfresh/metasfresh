@@ -13,11 +13,13 @@ import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStr
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.HUPIItemProductCreateRequest;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
@@ -39,7 +41,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -58,7 +59,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -78,6 +79,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final ProductPricePackingInstructionRepository productPricePackingInstructionRepository = new ProductPricePackingInstructionRepository();
 	@NonNull private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
@@ -97,6 +99,10 @@ public class CreatePackingInstructionsCommand
 		final JsonTestId tuPIItemProductTestId;
 		if (request.isCu())
 		{
+			if (request.isTuProductlessItemProduct())
+			{
+				throw new AdempiereException("tuProductlessItemProduct requires tu to be set: " + request);
+			}
 			tu = loadPI_CU();
 			tuPIItemProductTestId = null;
 		}
@@ -110,6 +116,11 @@ public class CreatePackingInstructionsCommand
 			if (request.getTuPackingMaterial() != null)
 			{
 				createPIItem_PackingMaterial(tu, request.getTuPackingMaterial());
+			}
+
+			if (request.isTuProductlessItemProduct())
+			{
+				createProductlessPIItemProduct(tuPIItemId);
 			}
 		}
 
@@ -580,26 +591,15 @@ public class CreatePackingInstructionsCommand
 		final Identifier tuIdentifier = request.getTuNotNull();
 		final Identifier productIdentifier = request.getProductNotNull();
 		final ProductId productId = context.getId(productIdentifier, ProductId.class);
-		final UomId uomId = productBL.getStockUOMId(productId);
 
-		final I_M_HU_PI_Item_Product record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
-
-		record.setM_Product_ID(productId.getRepoId());
-		record.setM_HU_PI_Item_ID(tuPIItemId.getRepoId());
-		final BigDecimal qtyCUsPerTU = request.getQtyCUsPerTU();
-		if (qtyCUsPerTU != null)
-		{
-			record.setIsInfiniteCapacity(false);
-			record.setQty(qtyCUsPerTU);
-		}
-		else
-		{
-			record.setIsInfiniteCapacity(true);
-			record.setQty(BigDecimal.ZERO);
-		}
-		record.setC_UOM_ID(uomId.getRepoId());
-		record.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
-		record.setEAN_TU(request.getTu_ean() != null ? request.getTu_ean().getAsString() : null);
+		final I_M_HU_PI_Item_Product record = huPIItemProductDAO.create(HUPIItemProductCreateRequest.builder()
+				.piItemId(tuPIItemId)
+				.productId(productId)
+				.uomId(productBL.getStockUOMId(productId))
+				.qtyCUsPerTU(request.getQtyCUsPerTU())
+				.validFrom(defaultValidFrom())
+				.eanTU(request.getTu_ean() != null ? request.getTu_ean().getAsString() : null)
+				.build());
 		record.setIsDefaultForProduct(request.isDefaultForProduct());
 		saveRecord(record);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID());
@@ -637,6 +637,27 @@ public class CreatePackingInstructionsCommand
 		Check.assume(updatedCount > 0,
 				"referencedByProductPrice needs product {} to have a price on price list version {} — give the product a price in the same request",
 				productId, priceListVersionId);
+	}
+
+	/**
+	 * Adds a capacity row without product ({@code M_Product_ID} null, {@code IsAllowAnyProduct=N}) to the given TU material item.
+	 * Not registered under any identifier: it only has to exist next to the regular row.
+	 */
+	private void createProductlessPIItemProduct(@NonNull final HuPackingInstructionsItemId tuPIItemId)
+	{
+		final ProductId productId = context.getId(request.getProductNotNull(), ProductId.class);
+		huPIItemProductDAO.create(HUPIItemProductCreateRequest.builder()
+				.piItemId(tuPIItemId)
+				.productId(null)
+				.uomId(productBL.getStockUOMId(productId))
+				.qtyCUsPerTU(request.getQtyCUsPerTU())
+				.validFrom(defaultValidFrom())
+				.build());
+	}
+
+	private static Instant defaultValidFrom()
+	{
+		return MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant();
 	}
 
 	private void renamePreviousEANs()

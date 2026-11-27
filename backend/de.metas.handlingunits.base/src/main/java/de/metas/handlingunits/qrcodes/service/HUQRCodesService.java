@@ -229,6 +229,12 @@ public class HUQRCodesService
 		return huQRCodesRepository.getHUAssignmentByQRCode(huQRCode);
 	}
 
+	@NonNull
+	public List<HUQRCodeAssignment> getHUAssignmentsByQRCodeIfExist(@NonNull final Collection<HUQRCode> huQRCodes)
+	{
+		return huQRCodesRepository.getHUAssignmentsByQRCodeIfExist(huQRCodes);
+	}
+
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
 	{
 		final HUQRCode existingQRCode = getFirstQRCodeByHuIdIfExists(huId).orElse(null);

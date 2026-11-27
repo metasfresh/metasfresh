@@ -341,6 +341,18 @@ export const Backend = {
 
         return responseBody;
     },
+
+    /** POSTs Quick Pack All of the job straight to the REST endpoint (not through the button); returns the HTTP status and the body text, errors are not asserted away */
+    postPickAll: async ({ wfProcessId }) => await test.step(`Backend: POST pickAll of ${wfProcessId}`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/picking/job/${wfProcessId}/pickAll`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': getAuthToken(),
+            }
+        });
+        return { status: response.status(), body: await response.text() };
+    }),
 }
 
 //

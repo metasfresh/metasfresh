@@ -27,6 +27,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
@@ -45,6 +46,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
@@ -67,6 +69,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
@@ -76,6 +79,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
@@ -93,6 +97,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -105,6 +110,7 @@ import java.util.function.UnaryOperator;
 
 public class PickingJobPickCommand
 {
+	private static final Logger logger = LogManager.getLogger(PickingJobPickCommand.class);
 	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
 	private final static AdMessageKey TU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.TU_CANNOT_BE_PICKED_ERROR_MSG");
 	private final static AdMessageKey PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICKING_UNIT_NOT_SUPPORTED_ERROR_MSG");
@@ -117,7 +123,9 @@ public class PickingJobPickCommand
 	private final static AdMessageKey ERR_LMQ_ManualCatchWeightMustBePresent = AdMessageKey.of("de.metas.handlingunits.picking.job.CATCH_WEIGHT_LM_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	private final static AdMessageKey HU_NOT_IN_VALID_PICKING_LOCATOR_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_NOT_IN_VALID_PICKING_LOCATOR");
-	private final static AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
+	public static final AdMessageKey CU_NO_OPEN_TU_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_NO_OPEN_TU");
+	public static final AdMessageKey CU_EACH_ONLY_FOR_PIECES_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.CU_EACH_ONLY_FOR_PIECES");
+	public static final AdMessageKey PICK_OVERDELIVERY_BLOCKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG");
 
 	//
 	// Services
@@ -158,6 +166,8 @@ public class PickingJobPickCommand
 	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
 	private final boolean serialNoPickingEnabled;
+	@NonNull private final CUQtyEntryPolicy cuQtyEntryPolicy;
+	@NonNull private final CULabelBooking cuLabelBooking;
 
 	//
 	// State
@@ -179,6 +189,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
 			final @NonNull PickingShelfLifeCheck shelfLifeCheck,
+			final @NonNull PickingCULabelService cuLabelService,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -202,7 +213,8 @@ public class PickingJobPickCommand
 			final boolean isSetSerialNos,
 			final @Nullable SerialNoSet serialNos,
 			final boolean isCloseTarget,
-			final boolean isShelfLifeConfirmed)
+			final boolean isShelfLifeConfirmed,
+			final @Nullable ScannedCode cuLabel)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -230,7 +242,17 @@ public class PickingJobPickCommand
 		this.pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
 		final I_C_UOM uom = line.getUOM();
-		this.isPickWholeTU = isPickWholeTU;
+		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
+		this.cuLabelBooking = CULabelBooking.builder()
+				.mode(pickingJobOptions.getCUQtyEntryModeOrDefault())
+				.cuLabelService(cuLabelService)
+				.huService(huService)
+				.lineSupplier(this::getLine)
+				.cuLabel(cuLabel)
+				.cuLabelFormatId(pickingJobOptions.getCULabelFormatId())
+				.build();
+		// label-required modes always book CUs into the open TU: never a whole TU
+		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
@@ -268,7 +290,12 @@ public class PickingJobPickCommand
 		}
 		else if (this.pickingUnit.isCU())
 		{
-			this.qtyToPickCUs = Quantity.of(qtyToPickBD, uom);
+			// Scan each CU: one CU per label, whatever quantity the client sent. One CU = one unit of the line UOM, so the line must be counted in pieces
+			if (cuQtyEntryPolicy.isOneCUPerLabel() && !X12DE355.EACH.equals(X12DE355.ofCode(uom.getX12DE355())))
+			{
+				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG);
+			}
+			this.qtyToPickCUs = Quantity.of(cuQtyEntryPolicy.getQtyToPickCUs(qtyToPickBD), uom);
 			this.qtyToPickTUs = null;
 
 			if (qtyRejectedReasonCode != null)
@@ -358,7 +385,7 @@ public class PickingJobPickCommand
 
 	/**
 	 * Server-side ordered-qty ceiling: refuses a pick that would take the line's picked qty above its ordered qty,
-	 * but ONLY when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}). When over-pick is allowed the
+	 * but only when over-pick is blocked ({@code !isShowConfirmationPromptWhenOverPick}) or the CU quantity entry mode always refuses it. Otherwise the
 	 * server never hard-rejects (the mobile client in-flight guard protects there). A partial pick within the remaining qty
 	 * is never refused; neither is a FIRST pick (nothing yet picked on the line), so a flow that over-delivers by design on
 	 * the first pick (e.g. AlwaysSplitHU "pick more than available") is unaffected - only a REPEAT pick that would push an
@@ -375,9 +402,10 @@ public class PickingJobPickCommand
 	 * double-save. A truly concurrent double-submit under the blocked config is prevented client-side by the in-flight
 	 * guard. Must run inside {@link #executeInTrx()}.
 	 */
-	private void assertNotAboveOrderedQtyWhenOverPickBlocked()
+	private void assertNotAboveOrderedQty()
 	{
-		if (pickingJobOptions.isShowConfirmationPromptWhenOverPick() || qtyToPickCUs.signum() <= 0)
+		final boolean isOverPickAllowed = pickingJobOptions.isShowConfirmationPromptWhenOverPick() && !cuQtyEntryPolicy.isOverPickAlwaysRefused();
+		if (isOverPickAllowed || qtyToPickCUs.signum() <= 0)
 		{
 			return;
 		}
@@ -391,16 +419,24 @@ public class PickingJobPickCommand
 		}
 
 		final Quantity qtyAllowedToPick = line.getQtyToPick().subtract(qtyAlreadyPicked).toZeroIfNegative();
-		if (qtyToPickCUs.compareTo(qtyAllowedToPick) > 0)
+		if (qtyToPickCUs.compareTo(qtyAllowedToPick) <= 0)
 		{
-			throw new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
-					.appendParametersToMessage()
-					.setParameter("pickingJobId", _pickingJob.getId())
-					.setParameter("pickingJobLineId", getLineId())
-					.setParameter("qtyToPick", qtyToPickCUs)
-					.setParameter("qtyOrdered", line.getQtyToPick())
-					.setParameter("qtyAlreadyPicked", line.getQtyPicked());
+			return;
 		}
+
+		final AdempiereException exception = new AdempiereException(PICK_OVERDELIVERY_BLOCKED_ERROR_MSG)
+				.setParameter("pickingJobId", _pickingJob.getId())
+				.setParameter("pickingJobLineId", getLineId())
+				.setParameter("qtyToPick", qtyToPickCUs)
+				.setParameter("qtyOrdered", line.getQtyToPick())
+				.setParameter("qtyAlreadyPicked", qtyAlreadyPicked);
+
+		if (cuQtyEntryPolicy.isRefusalParametersShownToPicker())
+		{
+			throw exception.appendParametersToMessage();
+		}
+		logger.warn("Over-pick refused (CU quantity entry mode {}): {}", pickingJobOptions.getCUQtyEntryModeOrDefault(), exception.getParameters());
+		throw exception;
 	}
 
 	public PickingJob execute()
@@ -414,7 +450,9 @@ public class PickingJobPickCommand
 
 		productService.assertPickAllowed(getProductId());
 
-		assertNotAboveOrderedQtyWhenOverPickBlocked();
+		assertCULabelBookingAllowed();
+
+		assertNotAboveOrderedQty();
 
 		checkOrAllocatePickingSlot();
 
@@ -443,6 +481,11 @@ public class PickingJobPickCommand
 
 		// Try loading it again to make sure we persisted a consistent/valid model
 		return pickingJobService.getById(_pickingJob.getId());
+	}
+
+	private void assertCULabelBookingAllowed()
+	{
+		cuLabelBooking.assertBookingAllowed(getPickingJob(), () -> getTUPickingTarget().isPresent());
 	}
 
 	private PickingJob getPickingJob()
@@ -770,7 +813,7 @@ public class PickingJobPickCommand
 	@NonNull
 	private PickAttributes computePickAttributes()
 	{
-		PickAttributes pickAttributes = this._manualPickAttributes;
+		PickAttributes pickAttributes = cuLabelBooking.getPickAttributes(this._manualPickAttributes);
 		boolean isCatchWeightRequired = false;
 		if (pickFromHUQRCode != null)
 		{
@@ -922,6 +965,7 @@ public class PickingJobPickCommand
 		}
 
 		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId, serialNoPickingEnabled);
+		cuLabelBooking.stampPackId(packedHUs);
 
 		//
 		// Add shipment schedule QtyPicked records
@@ -1248,6 +1292,7 @@ public class PickingJobPickCommand
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.recordLeafCUsAsTUParts(recordLeafCUsAsTUParts)
+						.isBookAsSingleCUInTU(cuQtyEntryPolicy.isBookAsSingleCUInTU())
 						.build()
 		);
 	}

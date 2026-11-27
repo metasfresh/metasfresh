@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.i18n.ITranslatableString;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -92,6 +94,11 @@ public class JsonPickingJobLine
 	// Per-line pick attributes the mobile UI should prompt for; extends (does not replace) the job-level
 	// JsonPickingJob.readAttributes by adding SerialNo for serial-no products.
 	@Builder.Default @NonNull Set<PickAttribute> readAttributes = ImmutableSet.of();
+	@NonNull String cuQtyEntryMode;
+	@NonNull JsonCUQtyEntryPolicy cuQtyEntryPolicy;
+	@Nullable ScannableCodeFormatId cuLabelFormatId;
+	/** The TU packing instructions the line's packing names; null = the packing names no TU PI (e.g. virtual). */
+	@Nullable HuPackingInstructionsId packingTuPIId;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,

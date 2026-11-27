@@ -61,6 +61,11 @@ public class JsonHUExpectation
 	@Nullable List<String> attributesAbsent;
 	@Nullable List<JsonHUExpectation> tus;
 	@Nullable List<CU> cus;
+	/**
+	 * Only for {@link #cus}: the CUs of the HU are matched to the expectations by their qty instead of by creation order (use when the
+	 * order in which the CUs were created is not the order of the bookings). Every expectation with a qty must find an equal-qty CU, else it fails.
+	 */
+	@Nullable Boolean cusInAnyOrder;
 	@Nullable Boolean isAggregatedTU;
 	@Nullable QtyTU qtyTUs;
 	/** Attribute codes that must exist on the HU and have a non-blank value (for values not known upfront, e.g. a generated SSCC18). */

@@ -39,6 +39,7 @@ const BarcodeScannerFooter = ({ activeMode, enabledModes, onModeSelected }) => {
           captionKey={toggleCaptionKey}
           typeFASIconName={toggleIconName}
           additionalCssClass="barcode-scanner-btn"
+          type="button"
           onClick={() => onModeSelected(toggleTarget)}
           testId="barcode-scanner-toggle-hw-camera"
         />
@@ -48,6 +49,7 @@ const BarcodeScannerFooter = ({ activeMode, enabledModes, onModeSelected }) => {
           captionKey="components.BarcodeScannerComponent.enterManually"
           typeFASIconName="fa-keyboard"
           additionalCssClass="barcode-scanner-btn"
+          type="button"
           onClick={() => onModeSelected(MODE.MANUAL)}
           testId="barcode-scanner-enter-manually"
         />

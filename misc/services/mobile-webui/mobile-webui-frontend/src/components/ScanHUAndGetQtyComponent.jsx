@@ -18,6 +18,8 @@ import Spinner from './Spinner';
 import { doFinally } from '../utils';
 import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 import { ATTR_isTUToBePickedAsWhole, ATTR_isUnique } from '../utils/qrCode/common';
+import DialogButton from './dialogs/DialogButton';
+import { isLineDoneAfterBooking } from '../utils/picking';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
@@ -32,6 +34,42 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 // Stable empty-array default (never a fresh [] literal per render) so handleAddGrais's useCallback
 // dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
 const EMPTY_LU_GRAIS = [];
+
+/**
+ * @param nextTUActions the node as is, or a function `({ scanner, pendingScan }) => node` for a button that owns the hidden scanner of the
+ *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
+ *   The first scan screen shows it only when `isBookedOnScan` (a scan books right away, there is no quantity block); otherwise it is shown in the quantity block only.
+ *   The pop-up's rescan scanner exists ONLY through the function form: a plain node adds no scanner, so a line that is repeated-booking
+ *   but passes no function has no rescan.
+ * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
+ * @param pendingScan `{ scannedBarcode, qtyEntered }`, the label scanned and the count typed so far in the quantity block; undefined on the scan step
+ * @return the node to render, or undefined when there are no next-TU actions
+ */
+const renderNextTUActions = (nextTUActions, scanner, pendingScan) =>
+  typeof nextTUActions === 'function' ? nextTUActions({ scanner, pendingScan }) : nextTUActions;
+
+// With `isBookedOnScan` there is no quantity block: the scan step shows the next-TU actions and a Close button.
+// Otherwise nothing is shown before the first scan.
+const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
+  if (!isBookedOnScan) return null;
+
+  return (
+    <div className="buttons is-centered mb-4">
+      {renderNextTUActions(nextTUActions, undefined)}
+      <DialogButton
+        captionKey="general.closeText"
+        className="is-danger"
+        testId="scan-each-close-button"
+        onClick={onCloseDialog}
+      />
+    </div>
+  );
+};
+HUScanActionButtons.propTypes = {
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+  isBookedOnScan: PropTypes.bool,
+  onCloseDialog: PropTypes.func,
+};
 
 const ScanHUAndGetQtyComponent = ({
   scannedBarcode: scannedBarcodeParam,
@@ -60,7 +98,13 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   customQRCodeFormats,
   readAttributes = [],
+  isRepeatedBooking = false,
+  isBookedOnScan = false,
+  isLotAndBestBeforeShownReadOnly = false,
+  isSubmitOnEnter = true,
   isShowCloseTargetButton = false,
+  nextTUActions,
+  suggestedQty,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -74,6 +118,7 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState(undefined);
+  const [quantityBlockKey, setQuantityBlockKey] = useState(0);
   const [isProcessing, setProcessing] = useState(false);
   // synchronous twin of isProcessing: state is only visible after the next render, so two taps handled
   // before that render would both pass a state-only check
@@ -198,7 +243,18 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onHUBarcodeResolvedResult = async (resolvedBarcodeDataNew) => {
+    // the scan only opened a TU (GRAI): stay on the scan step, nothing to book yet
+    if (resolvedBarcodeDataNew?.isNextTUOpened) {
+      setProgressStatus(STATUS_READ_HU_BARCODE);
+      return;
+    }
+
     setResolvedBarcodeData(resolvedBarcodeDataNew);
+
+    if (isBookedOnScan) {
+      await bookScannedCU({ resolvedBarcodeData: resolvedBarcodeDataNew });
+      return;
+    }
 
     if (resolvedBarcodeDataNew.isScanProductCodeRequired) {
       setProgressStatus(STATUS_READ_PRODUCT_BARCODE);
@@ -207,6 +263,21 @@ const ScanHUAndGetQtyComponent = ({
 
     await requestQtyOrReportResult({ resolvedBarcodeData: resolvedBarcodeDataNew });
   };
+
+  const bookScannedCU = async ({ resolvedBarcodeData }) =>
+    await fireOnResult({
+      qty: 1,
+      qtyRejected: 0,
+      reason: null,
+      scannedBarcode: resolvedBarcodeData.scannedBarcode,
+      resolvedBarcodeData,
+      isTUToBePickedAsWhole: false,
+      cuLabel: resolvedBarcodeData.cuLabel,
+      bestBeforeDate: resolvedBarcodeData.bestBeforeDate,
+      lotNo: resolvedBarcodeData.lotNo,
+      isCloseTarget: false,
+      isDone: isLineDoneAfterBooking({ qtyBooked: 1, qtyOpen: resolvedBarcodeData.qtyMax }),
+    });
 
   const onProductScannedCode = async ({ scannedBarcode: productScannedCode }) => {
     let resolveProductScannedCodeFuncResult = {};
@@ -290,6 +361,14 @@ const ScanHUAndGetQtyComponent = ({
     await fireOnResult(onResultPayload);
   };
 
+  const onCULabelRescanned = async (resolvedBarcodeDataNew) => {
+    if (resolvedBarcodeDataNew?.isNextTUOpened) {
+      return;
+    }
+    setResolvedBarcodeData(resolvedBarcodeDataNew);
+    setQuantityBlockKey((key) => key + 1);
+  };
+
   const validateQtyEntered = (qtyEntered, uom) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
@@ -332,13 +411,17 @@ const ScanHUAndGetQtyComponent = ({
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
+      cuLabel: resolvedBarcodeData.cuLabel,
       bestBeforeDate,
       productionDate,
       lotNo,
       serialNos,
       productNo,
       isCloseTarget,
-      isDone,
+      // scan once: the picker stays on the line until its open quantity is booked
+      isDone: isRepeatedBooking
+        ? isLineDoneAfterBooking({ qtyBooked: qtyEnteredAndValidated, qtyOpen: resolvedBarcodeData.qtyMax })
+        : isDone,
     };
 
     // GRAI Flow-Through: when GRAI scanning is required, do not report the pick yet — auto-invoke the
@@ -354,7 +437,16 @@ const ScanHUAndGetQtyComponent = ({
       return undefined;
     }
 
-    return onResult(result);
+    const resultPromise = onResult(result);
+    return isRepeatedBooking && resultPromise?.then
+      ? resultPromise.then((value) => {
+          // a done line navigates away: nothing to reset there; a booking that was not sent keeps the typed count
+          if (!result.isDone && !value?.isNotBooked) {
+            setQuantityBlockKey((key) => key + 1);
+          }
+          return value;
+        })
+      : resultPromise;
   };
 
   // The dialog knows the qty context (entered qty, rejected qty, reason); the caller's prompt may also
@@ -400,6 +492,13 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_HU_BARCODE: {
       return (
         <>
+          {/* The tu buttons come first: on a phone the scanner panel (icon, caption, "Enter manually") is tall, and the buttons below it
+              would sit under the fold. The scanner needs no tap (hardware scan), the buttons do. */}
+          <HUScanActionButtons
+            nextTUActions={nextTUActions}
+            isBookedOnScan={isBookedOnScan}
+            onCloseDialog={onCloseDialog}
+          />
           {useHUScanner ? (
             <HUScanner onResolvedBarcode={onHUScannerResult} eligibleBarcode={eligibleBarcode} />
           ) : (
@@ -435,11 +534,12 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_QTY: {
       return (
         <GetQuantityDialog
+          key={`${quantityBlockKey}_${suggestedQty ?? ''}`}
           userInfo={resolvedBarcodeData.userInfo}
           qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
-          qtyInitial={resolvedBarcodeData.qtyInitial}
+          qtyInitial={isRepeatedBooking ? suggestedQty : resolvedBarcodeData.qtyInitial}
           packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
@@ -453,9 +553,23 @@ const ScanHUAndGetQtyComponent = ({
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           readAttributes={readAttributes}
+          isRepeatedBooking={isRepeatedBooking}
+          isLotAndBestBeforeShownReadOnly={isLotAndBestBeforeShownReadOnly}
+          isSubmitOnEnter={isSubmitOnEnter}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
+          nextTUActions={({ qtyEntered }) =>
+            renderNextTUActions(
+              nextTUActions,
+              // the label rescan (new lot / best-before, next TU by its GRAI) is read by the hidden scanner of the "next TU" button
+              isRepeatedBooking
+                ? { resolveScannedBarcode: handleResolveHUScannedBarcode, onResolvedResult: onCULabelRescanned }
+                : undefined,
+              // what the screen keeps while the picker is away choosing the TU type
+              { scannedBarcode: resolvedBarcodeData.scannedBarcode, qtyEntered }
+            )
+          }
           //
           // `undefined` when the caller passes no prompt callback: GetQuantityDialog's "no prop -> no
           // prompt" contract is a truthiness check, which a bare wrapper would always satisfy.
@@ -536,7 +650,16 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
   readAttributes: PropTypes.array,
+  // Behaviour switches (the caller maps its own mode onto them)
+  /** the screen stays after every booking until the open quantity is booked; label can be rescanned */
+  isRepeatedBooking: PropTypes.bool,
+  /** every scan books one unit at once, without a quantity block; the scan step stays open and shows a Close button */
+  isBookedOnScan: PropTypes.bool,
+  isLotAndBestBeforeShownReadOnly: PropTypes.bool,
+  isSubmitOnEnter: PropTypes.bool,
   isShowCloseTargetButton: PropTypes.bool,
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+  suggestedQty: PropTypes.number,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
@@ -552,6 +675,9 @@ ScanHUAndGetQtyComponent.propTypes = {
   //
   // Functions
   getConfirmationPromptForQty: PropTypes.func,
+  // Books the entered quantity: (result) => Promise|any. Its resolved value is read only for repeated booking (scan once):
+  // the NOT_BOOKED marker (`{ isNotBooked: true }`, see useOpenNextTU) means the booking was not sent, so the typed count stays;
+  // any other value (including undefined) means it was sent.
   onResult: PropTypes.func,
   onClose: PropTypes.func,
 };

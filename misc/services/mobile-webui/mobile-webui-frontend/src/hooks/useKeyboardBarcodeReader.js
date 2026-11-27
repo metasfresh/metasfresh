@@ -10,6 +10,8 @@ import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/commo
 // Exported so the test asserts against the real value instead of mirroring a magic number.
 export const IDLE_ABANDON_MS = 15000;
 
+const TYPED_INPUT_MAX_SCAN_RATE_MS = 50;
+
 export const useKeyboardBarcodeReader = ({
   onReadDone,
   // Optional observer of the growing buffer (used by the hook tests); UI state should use isReadInProgress.
@@ -18,7 +20,16 @@ export const useKeyboardBarcodeReader = ({
   minLength = 10,
   idleAbandonMs = IDLE_ABANDON_MS,
   disabled = false,
+  isTypedInputTarget,
 }) => {
+  // A person types slower than this; the instance's scanner speed (`rateMs`) can only lower it
+  const typedInputScanRateMs = Math.min(TYPED_INPUT_MAX_SCAN_RATE_MS, rateMs);
+  const isTypedInputTargetRef = useRef(isTypedInputTarget);
+  useLayoutEffect(() => {
+    isTypedInputTargetRef.current = isTypedInputTarget;
+  });
+  const pendingTypedKeyRef = useRef(null);
+
   // Whether a scan is being read right now (first char received, not yet completed or dropped). The only
   // state of this hook: it changes twice per scan, so a consumer can show "scan in progress" without
   // re-rendering per keystroke.
@@ -166,6 +177,9 @@ export const useKeyboardBarcodeReader = ({
       // Printable characters
       else {
         const now = Date.now();
+        // In a field the operator types into, only a burst at scanner speed is a scan
+        const isTypedInput = !!isTypedInputTargetRef.current?.(event.target);
+        const effectiveRateMs = isTypedInput ? typedInputScanRateMs : rateMs;
 
         // A real gap since the last keystroke means a NEW scan is starting: flush the current buffer
         // FIRST so two back-to-back codes are separated, not merged into one garbage string. A
@@ -195,7 +209,7 @@ export const useKeyboardBarcodeReader = ({
             ? eventTimeMs - lastKeyEventTimeRef.current
             : now - lastKeyTimeRef.current;
         const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
-        if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {
+        if (bufferRef.current && gapMs >= effectiveRateMs && (!isPartial || gapMs >= idleAbandonMs)) {
           // A normal back-to-back scan (non-partial) is length-gated exactly as before; a partial we
           // abandon here is surfaced unconditionally (shouldEnforceMinLength:false) — matching the
           // interval-based abandon path below — so a genuinely-stuck code reaches the app as its
@@ -203,9 +217,36 @@ export const useKeyboardBarcodeReader = ({
           completeScan({ shouldEnforceMinLength: !isPartial });
         }
 
+        // Printable characters from a typed input: the first key is left to the field; only a second key at scanner
+        // speed makes it a scan, and the first key's insertion into the field is undone.
+        let isTypedBurstStart = false;
+        if (isTypedInput && !bufferRef.current) {
+          const pending = pendingTypedKeyRef.current;
+          if (pending && pending.target === event.target && now - pending.time < typedInputScanRateMs) {
+            pendingTypedKeyRef.current = null;
+            restoreInputValue(pending.target, pending.valueBefore);
+            bufferRef.current = pending.key;
+            scanStartTimeRef.current = pending.time;
+            lastKeyTimeRef.current = pending.time;
+            // the pending key's event time is unknown: fall back to the wall clock for the next gap
+            lastKeyHadEventTimeRef.current = false;
+            isTypedBurstStart = true;
+          } else {
+            pendingTypedKeyRef.current = {
+              target: event.target,
+              key: event.key,
+              time: now,
+              valueBefore: event.target.value,
+            };
+            return;
+          }
+        }
+
         // chunkGapMs is rateMs/2, so a counted gap is at least halfway to one that would split an
         // unprotected code. A partial HU QR is exempt until idleAbandonMs, so its count is advisory.
-        if (bufferRef.current) {
+        if (isTypedBurstStart) {
+          // the burst's first two keys: no gap statistics yet
+        } else if (bufferRef.current) {
           if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
           // Same gap on the WALL clock. gapMs is stall-immune, so the two differ by exactly how
           // long the thread was blocked.
@@ -274,7 +315,18 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [rateMs, minLength, idleAbandonMs, disabled]);
+  }, [rateMs, typedInputScanRateMs, minLength, idleAbandonMs, disabled]);
 
   return { isReadInProgress };
+};
+
+const restoreInputValue = (target, value) => {
+  if (target.value === value) return;
+  const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), 'value')?.set;
+  if (setter) {
+    setter.call(target, value);
+  } else {
+    target.value = value;
+  }
+  target.dispatchEvent(new Event('input', { bubbles: true }));
 };

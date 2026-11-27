@@ -1,5 +1,6 @@
 import { page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
+import { expect } from "@playwright/test";
 
 const NAME = 'SelectPickTargetTUScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -11,6 +12,11 @@ export const SelectPickTargetTUScreen = {
         // elements coexist in the DOM (one for LU, one for TU) during navigation.
         await containerElement().first().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** Asserts the TU list screen is not on screen */
+    expectNotShown: async () => await test.step(`${NAME} - Expect screen not shown`, async () => {
+        await expect(containerElement()).toHaveCount(0);
     }),
 
     clickTUButton: async ({ tu }) => await test.step(`${NAME} - Click TU button`, async () => {

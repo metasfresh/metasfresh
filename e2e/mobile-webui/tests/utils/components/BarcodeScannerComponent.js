@@ -150,6 +150,60 @@ export const BarcodeScannerComponent = {
         await dispatchScanKeystrokes(scannedCode);
     }),
 
+    /** Like {@link BarcodeScannerComponent.type}, but sends the code only once the scanner listens */
+    typeWhenScannerListens: async ({ scannedCode, testId }) => await test.step(`${NAME} - Type scanned code once the scanner listens`, async () => {
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+        console.log('Scanning scanned code (once the scanner listens):\n' + scannedCode);
+
+        await BarcodeScannerComponent.waitToAttach({ testId });
+        const selector = testId ? `#input-text[data-testid="${testId}"]` : '#input-text';
+
+        const deadline = Date.now() + SLOW_ACTION_TIMEOUT;
+        for (; ;) {
+            const result = await page.evaluate(({ code, selector }) => {
+                const input = document.querySelector(selector);
+                const valueBefore = input?.value;
+                // A change of the marker during the keys also shows a reader that finished the code by itself (HU QR, JSON):
+                // it resets the marker on the last character, so only the recorded change tells that it listened.
+                const observer = input ? new MutationObserver(() => {}) : null;
+                observer?.observe(input, { attributes: true, attributeFilter: ['data-scan-in-progress'] });
+                for (const char of code) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                }
+                const markerChanged = (observer?.takeRecords().length ?? 0) > 0;
+                observer?.disconnect();
+                const valueAfter = input?.value;
+                // The reader either echoes the keys into the input or, without echoing them, marks the
+                // scanner's own input with data-scan-in-progress (set for visible and invisible scanners).
+                const echoedInInput = valueAfter !== valueBefore;
+                const markedInProgress = input?.dataset.scanInProgress === 'true';
+                if (!echoedInInput && !markerChanged) {
+                    return { sent: false }; // no listener saw the keys: nothing was collected
+                }
+                if (!echoedInInput && !markedInProgress) {
+                    return { sent: true, collected: null }; // the reader completed the code by itself: already delivered
+                }
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                return { sent: true, collected: echoedInInput ? valueAfter : null };
+            }, { code: scannedCode, selector });
+
+            if (result.sent) {
+                if (result.collected !== null && result.collected !== scannedCode) {
+                    throw new Error(`The scanner collected '${result.collected}' instead of the scanned code '${scannedCode}'`);
+                }
+                return;
+            }
+            if (Date.now() > deadline) {
+                throw new Error(`The scanner (${selector}) did not listen within ${SLOW_ACTION_TIMEOUT} ms`);
+            }
+            await page.waitForTimeout(50);
+        }
+    }),
+
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
         let scannedCode;
         let testId;
