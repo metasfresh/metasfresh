@@ -107,6 +107,7 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -197,6 +198,7 @@ public class C_Invoice_StepDef
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
@@ -1078,6 +1080,37 @@ public class C_Invoice_StepDef
 				.map(identifier -> identifier.lookupNotNullIn(fiscalRepresentationTable))
 				.map(I_C_Fiscal_Representation::getC_Fiscal_Representation_ID)
 				.orElse(0);
+	}
+
+	/**
+	 * Completes the invoice in one transaction, as a document action does, and asserts that this fails with an error that contains
+	 * the translation of the given element or message ({@code @name@} in the error); the invoice is reloaded afterwards,
+	 * so the next steps see what the rolled-back transaction left.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then completing the invoice identified by "invoice" in one transaction fails with "BPartnerCreditStop"
+	 * </pre>
+	 */
+	@And("completing the invoice identified by {string} in one transaction fails with {string}")
+	public void invoice_completion_in_one_trx_fails(@NonNull final String invoiceIdentifier, @NonNull final String errorElementOrMessage)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> {
+			final I_C_Invoice invoiceInTrx = InterfaceWrapperHelper.load(invoiceId, I_C_Invoice.class);
+			invoiceInTrx.setDocAction(IDocument.ACTION_Complete);
+			documentBL.processEx(invoiceInTrx, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}));
+		assertThat(thrown).as("completing invoice %s shall fail", invoiceIdentifier).isNotNull();
+		assertThat(collectMessages(thrown))
+				.as("error of completing invoice %s", invoiceIdentifier)
+				.contains(msgBL.translate(Env.getCtx(), errorElementOrMessage));
+
+		InterfaceWrapperHelper.refresh(invoice);
 	}
 
 	/**

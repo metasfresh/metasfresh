@@ -242,6 +242,60 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
       | invoiceLine                 | invoice                 | service                 | 10          | taxDENL0 |
 
+  @Id:S32533_TC7r3b
+  Scenario: doc type that overwrites the invoice date on completion: a completion that fails after the date was set and the lines re-taxed leaves date, line taxes and tax rows as before
+    Given metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode |
+      | location_creditStop      | DE          |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier         | M_PricingSystem_ID.Identifier | IsCustomer | InvoiceRule |
+      | customerCreditStop | ps_1                          | Y          | D           |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                 | GLN           | C_BPartner_ID.Identifier | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | customerCreditStop_billing | 0123456789611 | customerCreditStop       | Y        | Y               | Y        | Y               | location_creditStop          |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
+      | order      | true    | customerCreditStop       | 2026-11-23  | customerCreditStop_billing            | customerCreditStop_billing      | wh_DE                         | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | service                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices | DateInvoiced |
+      | invoiceCandidate                  | false                  | 2026-11-23   |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    # a line added by hand with a forced rate: the re-tax at completion gives it the domestic rate of the billing address
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID$set |
+      | handAddedLine | invoice      | service      | 3 PCE       | taxDENL19    |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | handAddedLine               | invoice                 | service                 | 3           | taxDENL19 |
+    And the doc type of invoice "invoice" has IsOverwriteDateOnComplete true for this scenario
+    # the invoice is already prepared (In Progress): completion sets and saves the invoice date and re-taxes the lines first,
+    # then prepares the invoice again, and that preparation fails on the credit stop
+    And upsert C_BPartner_Stats
+      | C_BPartner_ID.Identifier | SOCreditStatus.Code |
+      | customerCreditStop       | S                   |
+
+    When completing the invoice identified by "invoice" in one transaction fails with "BPartnerCreditStop"
+
+    Then validate created invoices
+      | Identifier | DocStatus | DateInvoiced |
+      | invoice    | IP        | 2026-11-23   |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | handAddedLine               | invoice                 | service                 | 3           | taxDENL19 |
+    And C_InvoiceTax records for invoice "invoice" are matching
+      | C_Tax_ID  | TaxBaseAmt | TaxAmt |
+      | taxDEDE19 | 500        | 95     |
+      | taxDENL19 | 150        | 28.5   |
+
   @Id:S32533_TC7r4
   Scenario: order candidate billed in Austria and drop-shipped to a Dutch third party, invoiced directly: after the invoice date changes the line keeps the exempt Dutch rate on the third party's VAT ID
     # order candidates whose data destination is invoicing are accepted by the v1 order candidate API;
