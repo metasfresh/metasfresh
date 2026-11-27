@@ -125,10 +125,14 @@ describe('Lookup — moving on after a sub-field that is not the last one is pic
     document.body.append(lookupEl);
   });
 
-  const lookup = ({ onBlurWidget, isAddressReadonly = false }) => {
+  const lookup = ({
+    onBlurWidget,
+    isAddressReadonly = false,
+    addressDescriptor = properties[1],
+  }) => {
     const wrapper = shallow(
       <Lookup
-        properties={properties}
+        properties={[properties[0], addressDescriptor, properties[2]]}
         widgetData={widgetDataWithAddress(isAddressReadonly)}
         windowType="143"
         entity="window"
@@ -164,5 +168,37 @@ describe('Lookup — moving on after a sub-field that is not the last one is pic
 
     expect(wrapper.state('property')).toBe('C_BPartner_Location_ID');
     expect(onBlurWidget).toHaveBeenCalledTimes(1);
+  });
+
+  // Only a List part gets `autoFocus` when it becomes the current property; any other kind of part never takes the
+  // cursor, so the cursor must be moved on to the next form field as for a read-only one.
+  [
+    {
+      partLabel: 'a tooltip',
+      addressDescriptor: {
+        field: 'C_BPartner_Location_ID',
+        type: 'Tooltip',
+        caption: 'Address',
+      },
+    },
+    {
+      partLabel: 'a lookup',
+      addressDescriptor: {
+        field: 'C_BPartner_Location_ID',
+        source: 'lookup',
+        caption: 'Address',
+      },
+    },
+  ].forEach(({ partLabel, addressDescriptor }) => {
+    it(`moves the cursor on to the next form field when the next sub-field is ${partLabel}`, () => {
+      const onBlurWidget = jest.fn();
+      partnerInput.focus();
+      const wrapper = lookup({ onBlurWidget, addressDescriptor });
+
+      wrapper.instance().setNextProperty('C_BPartner_ID');
+
+      expect(wrapper.state('property')).toBe('C_BPartner_Location_ID');
+      expect(onBlurWidget).toHaveBeenCalledTimes(1);
+    });
   });
 });
