@@ -202,7 +202,8 @@ test('profile mode Scan once: a direct REST call of Quick Pack All is refused an
 
     // the button is hidden; the endpoint refuses on its own, whoever calls it
     const { status, body } = await Backend.postPickAll({ wfProcessId: `picking-${pickingJobId}` });
-    expect(status, `pickAll must be refused, body: ${body}`).toBeGreaterThanOrEqual(400);
+    expect(status, `body: ${body}`).toBe(422);                  // a refusal of the command, not a 401 / 404 of a wrong call
+    expect(JSON.parse(body).errors[0].errorCode).toBe('CU_QUICK_PACK_ALL_NOT_ALLOWED');
 
     await expectNoQuickPackAllButton({ pickingJobId });   // the job stays Drafted, nothing picked
 });

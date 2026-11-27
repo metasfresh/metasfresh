@@ -116,4 +116,22 @@ class PickingJobCUQtyEntryPick_UndoTest extends CUQtyEntryPickFixture
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("only CU 2 is still picked").hasSize(1).doesNotContain(cu1Id);
 		assertThat(pickedQtyOfLine(job)).as("the line's picked quantity dropped by 1").isEqualByComparingTo("1");
 	}
+
+	@Test
+	void profileSwitchedToManualAfterBooking_unpickOfTheOnlyCU_lineKeepsAnOpenTUOfTheSameType()
+	{
+		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
+		final HUInfo source = helper.createVHUInfo(productId, "100", "QR-W");
+		PickingJob job = openTUFromLinePacking(newJob().packedWith(tuPiipId).create());
+		job = pickEach(job, source, LOT_A, "1");
+		final HuId tuId = openTUId(job);
+		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(tuId, "1").getM_HU_ID());
+
+		setProfile(CUQtyEntryMode.MANUAL); // the decision follows the picked HU (a CU booked in a TU), not the profile of today
+		job = undo(job, cu1Id, source.getQrCode(), null);
+
+		final TUPickingTarget target = openTUTarget(job);
+		assertThat(target.isNewTU()).as("the emptied TU is not the target: an open TU of the same type is").isTrue();
+		assertThat(target.getTuPIIdNotNull()).isEqualTo(tuPIId);
+	}
 }

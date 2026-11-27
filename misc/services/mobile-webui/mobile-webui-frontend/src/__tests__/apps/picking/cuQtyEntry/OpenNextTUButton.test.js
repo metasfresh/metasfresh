@@ -296,10 +296,12 @@ describe('useOpenNextTU', () => {
       exposed.nextTU.onNextTU();
     });
     expect(setPickingTarget).toHaveBeenCalledTimes(1);
+    expect(toastErrorFromObj).not.toHaveBeenCalled(); // the busy tap is ignored, not shown as an error
     await act(async () => {
       gate.resolve({});
       await first;
     });
+    expect(toastErrorFromObj).not.toHaveBeenCalled();
   });
 
   it('success: shows the opened TU in a notification', async () => {

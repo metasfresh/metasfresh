@@ -364,7 +364,6 @@ public class PickingJobService implements PickingSlotListener
 						.pickingJobRepository(pickingJobRepository)
 						.pickingCandidateService(pickingCandidateService)
 						.huService(huService)
-						.configService(configService)
 						//
 						.pickingJob(pickingJob)
 						.lineId(event.getPickingLineId())

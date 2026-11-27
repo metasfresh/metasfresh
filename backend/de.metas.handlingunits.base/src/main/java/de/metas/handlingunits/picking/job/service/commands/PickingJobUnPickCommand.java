@@ -14,7 +14,6 @@ import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -53,7 +52,6 @@ public class PickingJobUnPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingJobHUService huService;
-	@NonNull private final MobileUIPickingUserProfileService configService;
 
 	//
 	// Params
@@ -72,7 +70,6 @@ public class PickingJobUnPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull PickingJobHUService huService,
-			final @NonNull MobileUIPickingUserProfileService configService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId lineId,
@@ -84,7 +81,6 @@ public class PickingJobUnPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 		this.huService = huService;
-		this.configService = configService;
 
 		this.initialPickingJob = pickingJob;
 		this.lineId = lineId;
@@ -299,15 +295,12 @@ public class PickingJobUnPickCommand
 		return reinitializeTUPickingTargetIfDestroyed(pickingJobWithLUTarget, targetLineId);
 	}
 
-	/**
-	 * In a label-required mode every CU is booked as the single CU of the open TU, so un-picking the last CU empties that TU and the HU framework destroys it:
-	 * replace it by a new TU of the same type so a later pick still has a target. Manual picks never empty the open TU this way, so they are left as they were.
-	 */
+	/** Un-picking the last CU empties the open TU and the HU framework destroys it: replace it by a new TU of the same type so a later pick still has a target. */
 	@NonNull
 	private PickingJob reinitializeTUPickingTargetIfDestroyed(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId targetLineId)
 	{
 		final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTarget(targetLineId).orElse(null);
-		if (tuPickingTarget == null || !tuPickingTarget.isExistingTU() || !configService.isLabelRequired(pickingJob.getLineById(lineId)))
+		if (tuPickingTarget == null || !tuPickingTarget.isExistingTU())
 		{
 			return pickingJob;
 		}

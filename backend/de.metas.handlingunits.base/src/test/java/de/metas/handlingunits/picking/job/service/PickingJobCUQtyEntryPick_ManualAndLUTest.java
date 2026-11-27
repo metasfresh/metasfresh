@@ -62,11 +62,8 @@ class PickingJobCUQtyEntryPick_ManualAndLUTest extends CUQtyEntryPickFixture
 		assertThat(countQtyPickedRowsOfTU(tuId)).isEqualTo(1);
 		assertThat(pickedQtyOfLine(job)).isEqualByComparingTo("2");
 
-		final TUPickingTarget targetBeforeUndo = openTUTarget(job);
-
 		job = undo(job, tuId, source.getQrCode(), null);
 
-		assertThat(openTUTarget(job)).as("Manual: the pick target is left as it was, not replaced by a new TU").isEqualTo(targetBeforeUndo);
 		assertThat(countQtyPickedRowsOfTU(tuId)).as("no QtyPicked row of the TU left").isEqualTo(0);
 		assertThat(pickedQtyOfLine(job)).as("nothing picked").isEqualByComparingTo("0");
 		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).isEmpty();
