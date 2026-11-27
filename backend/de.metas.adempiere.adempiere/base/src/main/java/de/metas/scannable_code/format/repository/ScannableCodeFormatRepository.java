@@ -12,8 +12,11 @@ import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ScannableCode_Format;
@@ -29,6 +32,7 @@ import java.util.Set;
 public class ScannableCodeFormatRepository
 {
 	@NotNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IErrorManager errorManager;
 	@NotNull private final CCache<Integer, ScannableCodeFormatsCollection> cache = CCache.<Integer, ScannableCodeFormatsCollection>builder()
 			.tableName(I_C_ScannableCode_Format.Table_Name)
@@ -88,41 +92,22 @@ public class ScannableCodeFormatRepository
 	 * Deactivates every active format that does not match the given query and returns the IDs of the formats it deactivated (for {@link #activate(Set)}).
 	 * Formats are global (a scan is tried against all active ones), so this lets a caller, e.g. a test, work with a known set of active formats.
 	 */
-	public ImmutableSet<ScannableCodeFormatId> deactivateAllExcept(@NonNull final ScannableCodeFormatQuery keepQuery)
+	public Set<ScannableCodeFormatId> deactivateAllExcept(@NonNull final ScannableCodeFormatQuery keepQuery)
 	{
-		// the keep query ignores the client (unlike delete): every active format of any client takes part in a scan, like in getAll()
-		final IQueryBuilder<I_C_ScannableCode_Format> keepSqlQuery = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class).addOnlyActiveRecordsFilter();
-		addQueryFilters(keepSqlQuery, keepQuery);
-		final ImmutableSet<ScannableCodeFormatId> keepIds = keepSqlQuery.create().idsAsSet(ScannableCodeFormatId::ofRepoId);
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
 
-		final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
-		try
-		{
 			queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
 					.addOnlyActiveRecordsFilter()
-					.addNotInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, keepIds) // empty keepIds = all
-					.create()
-					.stream()
+					.addFilter(toSqlFilter(keepQuery).negate())
 					.forEach(record -> {
 						record.setIsActive(false);
 						InterfaceWrapperHelper.saveRecord(record);
 						deactivatedIds.add(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID()));
 					});
-		}
-		catch (final RuntimeException e)
-		{
-			// the caller gets no IDs when this fails, so do not leave a half-done state behind
-			try
-			{
-				activate(deactivatedIds.build());
-			}
-			catch (final RuntimeException restoreEx)
-			{
-				e.addSuppressed(restoreEx);
-			}
-			throw e;
-		}
-		return deactivatedIds.build();
+
+			return deactivatedIds.build();
+		});
 	}
 
 	/**
@@ -147,22 +132,23 @@ public class ScannableCodeFormatRepository
 
 	private IQueryBuilder<I_C_ScannableCode_Format> toSqlQuery(final ScannableCodeFormatQuery query)
 	{
-		final IQueryBuilder<I_C_ScannableCode_Format> sqlQuery = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+		return queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
 				.orderBy(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
-
-		addQueryFilters(sqlQuery, query);
-
-		return sqlQuery;
+				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
+				.addFilter(toSqlFilter(query));
 	}
 
-	private static void addQueryFilters(@NonNull final IQueryBuilder<I_C_ScannableCode_Format> sqlQuery, @NonNull final ScannableCodeFormatQuery query)
+	private IQueryFilter<I_C_ScannableCode_Format> toSqlFilter(@NonNull final ScannableCodeFormatQuery query)
 	{
+		final ICompositeQueryFilter<I_C_ScannableCode_Format> sqlFilter = queryBL.createCompositeQueryFilter(I_C_ScannableCode_Format.class);
+
 		if (query.getDescription() != null)
 		{
-			sqlQuery.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, query.getDescription());
+			sqlFilter.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, query.getDescription());
 		}
+
+		return sqlFilter;
 	}
 
 	public void deleteParts(@NotNull final ScannableCodeFormatId formatId)

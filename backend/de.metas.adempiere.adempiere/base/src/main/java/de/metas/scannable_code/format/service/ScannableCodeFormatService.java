@@ -1,6 +1,5 @@
 package de.metas.scannable_code.format.service;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
@@ -45,11 +44,6 @@ public class ScannableCodeFormatService
 	public ScannableCodeFormat create(@NonNull final ScannableCodeFormatCreateRequest request)
 	{
 		return repository.create(request);
-	}
-
-	public ImmutableSet<ScannableCodeFormatId> deactivateAllExcept(@NonNull final ScannableCodeFormatQuery keepQuery)
-	{
-		return repository.deactivateAllExcept(keepQuery);
 	}
 
 	public void activate(@NonNull final Set<ScannableCodeFormatId> formatIds)
