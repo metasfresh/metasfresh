@@ -176,6 +176,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
@@ -1528,6 +1529,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
 	{
+		if (isReversal(invoice))
+		{
+			// a reversal mirrors the original: its lines keep the original's taxes, whatever its own date or warehouse
+			return;
+		}
+
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
@@ -1547,13 +1554,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			@Nullable final Timestamp dateInvoicedOverride)
 	{
-		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
-		if (inoutLineId != null)
+		final I_M_InOut shipment = getShipmentOrNull(invoiceLine);
+		if (shipment != null)
 		{
-			final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
-			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
-			final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
-			return InvoiceLineReTaxInput.ofShipment(io, getFromCountryId(invoice, invoiceLine), getFromWarehouseId(invoice, invoiceLine));
+			return InvoiceLineReTaxInput.ofShipment(shipment, getFromCountryId(invoice, () -> shipment), getFromWarehouseId(invoice, () -> shipment));
 		}
 
 		final InvoiceLineReTaxInput.InvoiceLineReTaxInputBuilder reTaxInput = InvoiceLineReTaxInput.builder()
@@ -1587,7 +1591,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (orderLineId != null)
 		{
 			// the inputs OrderLineBL.setTax uses
-			final org.compiere.model.I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+			final I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 			final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
 			return Optional.of(new TaxLocationAndFromCountry(
 					OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId(),
@@ -1601,9 +1605,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.@NonNull I_C_InvoiceLine invoiceLine)
 	{
+		return getFromCountryId(invoice, () -> getShipmentOrNull(invoiceLine));
+	}
+
+	/**
+	 * @param shipmentSupplier the line's shipment (or {@code null}); only called if the invoice has no warehouse country
+	 */
+	private CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final Supplier<I_M_InOut> shipmentSupplier)
+	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
 		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
 
@@ -1615,20 +1626,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final CountryId countryFromId;
 
+		final I_M_InOut shipment = warehouseCountryId == null ? shipmentSupplier.get() : null;
 		if (warehouseCountryId != null)
 		{
 
 			countryFromId = warehouseCountryId;
 		}
-		else if (invoiceLine.getM_InOutLine_ID() > 0)
+		else if (shipment != null)
 		{
-			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
-
-			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
-
-			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
-
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
 			countryFromId = warehouseBL.getCountryId(warehouseId);
 		}
 		else
@@ -1647,23 +1653,40 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Nullable
 	public WarehouseId getFromWarehouseId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.@NonNull I_C_InvoiceLine invoiceLine)
 	{
+		return getFromWarehouseId(invoice, () -> getShipmentOrNull(invoiceLine));
+	}
+
+	/**
+	 * @param shipmentSupplier the line's shipment (or {@code null}); only called if the invoice has no warehouse
+	 */
+	@Nullable
+	private static WarehouseId getFromWarehouseId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final Supplier<I_M_InOut> shipmentSupplier)
+	{
 		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
 		if (invoiceWarehouseId != null)
 		{
 			return invoiceWarehouseId;
 		}
 
+		final I_M_InOut shipment = shipmentSupplier.get();
+		return shipment != null ? WarehouseId.ofRepoIdOrNull(shipment.getM_Warehouse_ID()) : null;
+	}
+
+	/**
+	 * @return the shipment / receipt of the given invoice line's {@code M_InOutLine_ID}, {@code null} if it has none
+	 */
+	@Nullable
+	private static I_M_InOut getShipmentOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(invoiceLine.getM_InOutLine_ID());
 		if (inoutLineId == null)
 		{
 			return null;
 		}
 
-		// same shipment lookup as in getFromCountryId
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
-		final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
-		return WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
+		return inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 	}
 
 	@Override

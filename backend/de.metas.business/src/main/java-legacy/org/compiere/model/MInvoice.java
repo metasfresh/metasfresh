@@ -79,8 +79,10 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1170,11 +1172,17 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	/**
 	 * Sets the invoice date to now if the doc type overwrites it on completion, and saves the invoice,
 	 * so that the lines are re-taxed for the new date (interceptor {@code de.metas.invoice.interceptor.C_Invoice#updateInvoiceLinesTax}).
+	 * A reversal is left alone here: it keeps the original's lines, taxes and totals; its date is set in {@link #setDefiniteDocumentNo()}.
 	 *
-	 * @return true if the invoice date was changed
+	 * @return true if the invoice has to be prepared again: the date moved to another day (due date, pay schedule) or the re-tax changed a line's tax
 	 */
 	private boolean overwriteDateInvoicedOnComplete()
 	{
+		if (Services.get(IInvoiceBL.class).isReversal(this))
+		{
+			return false;
+		}
+
 		// prepareIt sets C_DocType_ID from C_DocTypeTarget_ID; this runs before it
 		final int docTypeId = getC_DocTypeTarget_ID() > 0 ? getC_DocTypeTarget_ID() : getC_DocType_ID();
 		if (docTypeId <= 0 || !MDocType.get(getCtx(), docTypeId).isOverwriteDateOnComplete())
@@ -1183,14 +1191,31 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 
 		final Timestamp now = SystemTime.asTimestamp();
-		if (now.equals(getDateInvoiced()))
+		final Timestamp previousDateInvoiced = getDateInvoiced();
+		if (now.equals(previousDateInvoiced))
 		{
 			return false;
 		}
 
+		final Map<Integer, Integer> lineTaxIdsBefore = getLineTaxIds();
 		setDateInvoiced(now);
 		saveEx();
-		return true;
+
+		final boolean isSameDay = previousDateInvoiced != null && TimeUtil.isSameDay(previousDateInvoiced, now);
+		return !isSameDay || !lineTaxIdsBefore.equals(getLineTaxIds());
+	}
+
+	/**
+	 * @return C_InvoiceLine_ID -> C_Tax_ID of the lines as they are in the DB
+	 */
+	private Map<Integer, Integer> getLineTaxIds()
+	{
+		final Map<Integer, Integer> lineTaxIds = new HashMap<>();
+		for (final MInvoiceLine line : getLines(true))
+		{
+			lineTaxIds.put(line.getC_InvoiceLine_ID(), line.getC_Tax_ID());
+		}
+		return lineTaxIds;
 	}
 
 	/**
@@ -1199,6 +1224,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	private void setDefiniteDocumentNo()
 	{
 		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		if (dt.isOverwriteDateOnComplete() && Services.get(IInvoiceBL.class).isReversal(this))
+		{
+			// like before the date of other invoices was set at the start of the completion; nothing re-taxes a reversal (IInvoiceBL#setInvoiceLineTaxes)
+			setDateInvoiced(SystemTime.asTimestamp());
+		}
 		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
