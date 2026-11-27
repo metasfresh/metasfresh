@@ -1,11 +1,9 @@
 package de.metas.handlingunits.picking.job.service.commands.grai;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
@@ -53,17 +51,17 @@ public class PickingJobGRAIValidator
 
 	public void validate()
 	{
-		getPickedHUIdsBySegment().forEach(this::validate);
+		getLinesBySegment().forEach(this::validate);
 	}
 
 	private void validate(
 			@NonNull final GRAIValidationSegment segment,
-			@NonNull final Collection<HuId> pickedHUIds)
+			@NonNull final Collection<PickingJobLine> segmentLines)
 	{
 		final GRAIRequired graiRequired = segment.getGraiRequired();
 		if (graiRequired.isNo()) {return;}
 
-		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshots(ImmutableSet.copyOf(pickedHUIds));
+		final HUGraiSnapshotsCollection snapshots = huService.getGraiSnapshotsOfPicked(segmentLines);
 
 		if (graiRequired == GRAIRequired.Yes)
 		{
@@ -76,15 +74,14 @@ public class PickingJobGRAIValidator
 		}
 	}
 
-	private Map<GRAIValidationSegment, Collection<HuId>> getPickedHUIdsBySegment()
+	private Map<GRAIValidationSegment, Collection<PickingJobLine>> getLinesBySegment()
 	{
-		final SetMultimap<GRAIValidationSegment, HuId> pickedHUIdsBySegment = HashMultimap.create();
+		final ListMultimap<GRAIValidationSegment, PickingJobLine> linesBySegment = ArrayListMultimap.create();
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
-			final GRAIValidationSegment segment = extractGRAIValidationSegment(line);
-			pickedHUIdsBySegment.putAll(segment, line.getPickedHUIds());
+			linesBySegment.put(extractGRAIValidationSegment(line), line);
 		}
-		return pickedHUIdsBySegment.asMap();
+		return linesBySegment.asMap();
 	}
 
 	private GRAIValidationSegment extractGRAIValidationSegment(final PickingJobLine line)

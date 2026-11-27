@@ -41,7 +41,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });
-  const { screenId, caption, homeLocation } = useNavigationInfoFromHeaders();
+  const { screenId, caption, homeLocation, rootDataAttributes } = useNavigationInfoFromHeaders();
   const captionEffective = caption ? caption : applicationInfo.caption;
 
   useEffect(() => {
@@ -64,7 +64,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   }
 
   return (
-    <div id={screenId} className="app-container">
+    <div id={screenId} className="app-container" {...rootDataAttributes}>
       <div className="app-header">
         <div className="columns is-mobile">
           <div className="column is-2 app-icon">

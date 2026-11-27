@@ -30,6 +30,7 @@ import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -134,6 +135,8 @@ public class MobileUIPickingUserProfileRepository
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
+				.cuQtyEntryMode(CUQtyEntryMode.ofNullableCode(profileRecord.getCUQtyEntryMode()))
+				.cuLabelFormatId(ScannableCodeFormatId.ofRepoIdOrNull(profileRecord.getC_ScannableCode_Format_ID()))
 				.build();
 	}
 
@@ -350,6 +353,8 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
+		record.setCUQtyEntryMode(from.getCUQtyEntryModeOrDefault().getCode());
+		record.setC_ScannableCode_Format_ID(ScannableCodeFormatId.toRepoId(from.getCULabelFormatId().orElse(null)));
 	}
 
 	private static void updateRecord(final @NonNull I_MobileUI_UserProfile_Picking record, final AllowedPickToStructures from)
@@ -450,6 +455,8 @@ public class MobileUIPickingUserProfileRepository
 				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
+				.cuQtyEntryMode(CUQtyEntryMode.ofNullableCode(record.getCUQtyEntryMode()))
+				.cuLabelFormatId(ScannableCodeFormatId.ofRepoIdOrNull(record.getC_ScannableCode_Format_ID()))
 				.build();
 
 		return GuavaCollectors.entry(pickingJobOptionsId, pickingJobOptions);

@@ -24,3 +24,17 @@
     }
   }
 }
+
+// The scan step of a CU quantity entry mode (Scan each CU, Scan once) must show its buttons ("Next TU", "Close") without scrolling on a
+// phone: its header table has up to 7 rows, which at the large font fill the whole screen. The attribute is set by the scan screen
+// (`rootDataAttributes`) from the line's CU quantity entry policy; a line that needs no label is not matched, so its header stays as it is.
+[data-cu-label-required='true'] {
+  .view-header tbody {
+    font-size: 1rem;
+
+    // a long value without a space (customer, the open TU's packing name) wraps instead of being cut off at the screen edge
+    td {
+      overflow-wrap: anywhere;
+    }
+  }
+}

@@ -1,12 +1,23 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
+const TYPED_INPUT_MAX_SCAN_RATE_MS = 50;
+
 export const useKeyboardBarcodeReader = ({
   onReadDone,
   onReadInProgress,
   rateMs = 50,
   minLength = 10,
   disabled = false,
+  isTypedInputTarget,
 }) => {
+  // A person types slower than this; the instance's scanner speed (`rateMs`) can only lower it
+  const typedInputScanRateMs = Math.min(TYPED_INPUT_MAX_SCAN_RATE_MS, rateMs);
+  const isTypedInputTargetRef = useRef(isTypedInputTarget);
+  useLayoutEffect(() => {
+    isTypedInputTargetRef.current = isTypedInputTarget;
+  });
+  const pendingTypedKeyRef = useRef(null);
+
   // The callbacks are read through refs, so that a new callback (e.g. an inline function of a re-rendered
   // consumer) does not remove and re-add the window listener. A re-render can happen while a keydown is
   // being dispatched (another window listener changing state on the same key), and a listener removed at
@@ -82,12 +93,34 @@ export const useKeyboardBarcodeReader = ({
         }
       }
       //
+      // Printable characters from a typed input: only a burst at scanner speed is a scan
+      else if (isTypedInputTargetRef.current?.(event.target) && !bufferRef.current) {
+        const now = Date.now();
+        const pending = pendingTypedKeyRef.current;
+        if (pending && pending.target === event.target && now - pending.time < typedInputScanRateMs) {
+          // second key of a burst => the first one was a scan key: undo its insertion into the field
+          pendingTypedKeyRef.current = null;
+          restoreInputValue(pending.target, pending.valueBefore);
+          bufferRef.current = pending.key + event.key;
+          onReadInProgressRef.current?.(bufferRef.current);
+          event.preventDefault();
+          lastKeyTimeRef.current = now;
+        } else {
+          pendingTypedKeyRef.current = {
+            target: event.target,
+            key: event.key,
+            time: now,
+            valueBefore: event.target.value,
+          };
+        }
+      }
       // Printable characters
       else {
         const now = Date.now();
         //
         // If the type rate is kept, collect the character
-        if (now - lastKeyTimeRef.current < rateMs) {
+        const effectiveRateMs = isTypedInputTargetRef.current?.(event.target) ? typedInputScanRateMs : rateMs;
+        if (now - lastKeyTimeRef.current < effectiveRateMs) {
           bufferRef.current += event.key;
           onReadInProgressRef.current?.(bufferRef.current);
           // Prevent the browser from also inserting the character into a focused input.
@@ -133,5 +166,16 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [rateMs, minLength, disabled]);
+  }, [rateMs, typedInputScanRateMs, minLength, disabled]);
+};
+
+const restoreInputValue = (target, value) => {
+  if (target.value === value) return;
+  const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(target), 'value')?.set;
+  if (setter) {
+    setter.call(target, value);
+  } else {
+    target.value = value;
+  }
+  target.dispatchEvent(new Event('input', { bubbles: true }));
 };

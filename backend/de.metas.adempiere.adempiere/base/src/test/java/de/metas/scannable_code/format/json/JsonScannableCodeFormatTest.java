@@ -37,4 +37,24 @@ class JsonScannableCodeFormatTest
 		assertThat(jsonDeserialized).usingRecursiveComparison().isEqualTo(json);
 		assertThat(jsonDeserialized).isEqualTo(json);
 	}
+
+	@Test
+	void jsonCarriesTheFormatId() throws JsonProcessingException
+	{
+		final ScannableCodeFormat format = ScannableCodeFormat.builder()
+				.id(ScannableCodeFormatId.ofRepoId(540123))
+				.name("With id")
+				.parts(ImmutableList.of(
+						ScannableCodeFormatPart.builder().startPosition(1).endPosition(4).type(ScannableCodeFormatPartType.ProductCode).build()
+				))
+				.build();
+
+		final JsonScannableCodeFormat json = JsonScannableCodeFormat.of(format);
+		assertThat(json.getId()).isEqualTo(ScannableCodeFormatId.ofRepoId(540123));
+
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final String jsonString = objectMapper.writeValueAsString(json);
+		assertThat(objectMapper.readTree(jsonString).get("id").asInt()).isEqualTo(540123);
+		assertThat(objectMapper.readValue(jsonString, JsonScannableCodeFormat.class).getId()).isEqualTo(ScannableCodeFormatId.ofRepoId(540123));
+	}
 }

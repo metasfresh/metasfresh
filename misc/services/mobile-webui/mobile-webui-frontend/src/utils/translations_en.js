@@ -51,6 +51,17 @@ const translations = {
     workstation: 'Workstation',
     trolley: 'Trolley',
   },
+  picking: {
+    cuLabel: {
+      formatMismatch: 'The label does not match the label format of the picking profile. Nothing was booked.',
+      noFormat: 'No label format set on the picking profile.',
+      noPackId: 'The label contains no pack ID. Nothing was booked.',
+    },
+    pickFromRequired: "Please scan 'Pick From' first.",
+    nextTU: 'Next TU',
+    nextTUOpened: 'New TU opened',
+    nextTUBusy: 'A TU is just being opened. Scan again in a moment.',
+  },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',

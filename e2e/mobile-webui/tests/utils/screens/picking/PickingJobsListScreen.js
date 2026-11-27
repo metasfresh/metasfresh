@@ -26,6 +26,30 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
 
+/**
+ * Waits for a launcher that the test's own freshly created orders produce.
+ * Why a reload can help: the launcher list is fetched when the screen mounts and afterwards changes only by
+ * websocket push (`useLaunchers.js`), so a launcher that is missing from that fetch and whose push did not
+ * arrive is shown only by a fresh fetch. Why a push can be missed is not established, so the reload is a
+ * workaround of the test: a launcher still missing after the last round is a product defect, not test noise.
+ */
+const waitForLauncherWithReload = async (locator, { rounds = 4, roundTimeout = SLOW_ACTION_TIMEOUT } = {}) => {
+    for (let round = 1; ; round++) {
+        try {
+            await locator.waitFor({ state: 'visible', timeout: roundTimeout });
+            return;
+        } catch (error) {
+            if (round >= rounds) throw error;
+        }
+        await test.step(`${NAME} - Launcher not listed yet, reload the list (round ${round})`, async () => {
+            await page.locator(ID_BACK_BUTTON).tap();
+            await ApplicationsListScreen.waitForScreen();
+            await ApplicationsListScreen.startApplication('picking');
+            await PickingJobsListScreen.waitForScreen();
+        });
+    }
+};
+
 export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout });
@@ -41,8 +65,13 @@ export const PickingJobsListScreen = {
     // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
     // Locate by an exact data attribute (e.g. customerId) — never by a documentNo substring, which
     // collides with other jobs in a shared/full-suite run.
-    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
-        await locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId, reloadIfMissing = false } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId });
+        if (reloadIfMissing) {
+            await waitForLauncherWithReload(button);
+        } else {
+            await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        }
     }),
 
     /**
@@ -96,7 +125,7 @@ export const PickingJobsListScreen = {
         await PickingJobsListScanScreen.waitForScreen();
     }),
 
-    startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
+    startJob: async ({ index, documentNo, qtyToDeliver, productId, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
@@ -118,7 +147,7 @@ export const PickingJobsListScreen = {
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await tapLauncherUntilJobScreen({ index, qtyToDeliver, customerLocationId });
+                await tapLauncherUntilJobScreen({ index, qtyToDeliver, productId, customerLocationId });
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
                 }
@@ -168,7 +197,6 @@ export const PickingJobsListScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await ApplicationsListScreen.waitForScreen();
     }),
-
 };
 
 /**
@@ -179,14 +207,18 @@ export const PickingJobsListScreen = {
  *        list; a retry that is already back on a populated list can pass a shorter budget.
  * @returns {Promise<import('@playwright/test').Locator>} the locator to tap
  */
-const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationId, settleTimeout = SLOW_ACTION_TIMEOUT }) => {
+const resolveLauncherTapTarget = async ({ index, qtyToDeliver, productId, customerLocationId, settleTimeout = SLOW_ACTION_TIMEOUT }) => {
     await page.locator('.loading').waitFor({ state: 'detached', timeout: settleTimeout });
 
-    const byAttribute = qtyToDeliver != null || customerLocationId != null;
+    const byAttribute = qtyToDeliver != null || productId != null || customerLocationId != null;
     const identified = byAttribute
-        ? locateJobButtons({ qtyToDeliver, customerLocationId })
+        ? locateJobButtons({ qtyToDeliver, productId, customerLocationId })
         : locateJobButtons({ index });
-    await identified.waitFor({ state: 'visible', timeout: settleTimeout });
+    if (productId != null) {
+        await waitForLauncherWithReload(identified, { roundTimeout: settleTimeout });
+    } else {
+        await identified.waitFor({ state: 'visible', timeout: settleTimeout });
+    }
 
     // Exactly one launcher must be addressed. A bare index (.nth is always ≤1) is reorder-safe only
     // against a single-candidate list (a prior filterByDocumentNo / single-order masterdata), so the
@@ -209,12 +241,12 @@ const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationI
  * the trailing full-settle waitForScreen throws and the test fails loud (a genuine broken start is
  * never swallowed).
  */
-const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocationId }) => {
+const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, productId, customerLocationId }) => {
     for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
         // First attempt settles the freshly-navigated (websocket-populating) list on the full budget;
         // a retry is already back on a populated list, so it re-settles on a short budget.
         const settleTimeout = attempt === 1 ? SLOW_ACTION_TIMEOUT : FAST_ACTION_TIMEOUT;
-        const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId, settleTimeout });
+        const target = await resolveLauncherTapTarget({ index, qtyToDeliver, productId, customerLocationId, settleTimeout });
         await target.tap();
 
         const hasArrived = await jobScreenElement()
@@ -291,4 +323,3 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
         }
     }
 });
-

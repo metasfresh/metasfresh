@@ -5,6 +5,7 @@ import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
 import { toQRCodeString } from '../utils/qrCode/hu';
+import { DEFAULT_TIMEOUT_MILLIS } from './confirmation';
 
 // Stable empty-array reference: avoids handing callers a fresh [] literal every render (a caller may
 // use this as a useCallback dependency — e.g. ScanHUAndGetQtyComponent's handleAddGrais — where a
@@ -52,21 +53,36 @@ const getAvailablePickingTargets = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+/**
+ * Request timeout of the picking target calls (open / close a TU or LU). Without it a half-open connection (handheld roaming between WLAN cells)
+ * hangs forever, and a booking that waits for the TU opening (see useOpenNextTU `bookAfterTUOpened`) would hang with it.
+ * After the timeout the call rejects, the picker sees the error and can retry; same value and reason as the user confirmation call (api/confirmation.js).
+ */
+export const PICKING_TARGET_TIMEOUT_MILLIS = DEFAULT_TIMEOUT_MILLIS;
+
 export const setLUPickingTarget = ({ wfProcessId, lineId, target }) => {
   return axios
-    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target`, { lineId }), target)
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target`, { lineId }), target, {
+      timeout: PICKING_TARGET_TIMEOUT_MILLIS,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
 const setTUPickingTarget = ({ wfProcessId, lineId, target }) => {
   return axios
-    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), target)
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), target, {
+      timeout: PICKING_TARGET_TIMEOUT_MILLIS,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
 export const setTUPickingTargetFromGrai = ({ wfProcessId, lineId, graiString }) => {
   return axios
-    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), { grai: graiString })
+    .post(
+      toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }),
+      { grai: graiString },
+      { timeout: PICKING_TARGET_TIMEOUT_MILLIS }
+    )
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -78,13 +94,17 @@ export const closePickingTarget = ({ wfProcessId, lineId, type }) => {
 
 const closeLUPickingTarget = ({ wfProcessId, lineId }) => {
   return axios
-    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/close`, { lineId }))
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/close`, { lineId }), null, {
+      timeout: PICKING_TARGET_TIMEOUT_MILLIS,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
 const closeTUPickingTarget = ({ wfProcessId, lineId }) => {
   return axios
-    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu/close`, { lineId }))
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu/close`, { lineId }), null, {
+      timeout: PICKING_TARGET_TIMEOUT_MILLIS,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -107,6 +127,7 @@ export const postStepPicked = ({
   lotNo,
   setGrais,
   graiCodes,
+  cuLabel,
   isCloseTarget = false,
 }) => {
   const realRejectedQtyReason =
@@ -132,6 +153,7 @@ export const postStepPicked = ({
     lotNo,
     setGrais,
     graiCodes,
+    cuLabel,
     isCloseTarget,
   });
 };

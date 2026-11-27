@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
@@ -23,11 +24,13 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -173,8 +176,12 @@ public class PickingJobUnPickCommand
 
 		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
 
+		// a picked CU in a TU leaves it as a whole: its QtyPicked rows still point to the TU, so the top-level lookup below would miss them
+		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
+		deleteQtyPickedOfCUsInTUs(huIdAndQRCodeList, shipmentScheduleId);
+
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
 		// extractToTopLevel above may have relocated/regenerated the QR codes (and the picked HU can carry
@@ -220,6 +227,16 @@ public class PickingJobUnPickCommand
 	{
 		final Set<HuId> topLevelHUIds = newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
 		return huService.getByIds(topLevelHUIds);
+	}
+
+	private void deleteQtyPickedOfCUsInTUs(@NonNull final Collection<HUIdAndQRCode> huIdAndQRCodes, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final ImmutableSet<HuId> huIds = huIdAndQRCodes.stream().map(HUIdAndQRCode::getHuId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<HuId> cusInTUs = huService.filterCUsInTU(huIds);
+		if (!cusInTUs.isEmpty())
+		{
+			shipmentScheduleService.deleteByVHUsAndShipmentScheduleId(cusInTUs, shipmentScheduleId);
+		}
 	}
 
 	private static ImmutableSet<HUIdAndQRCode> extractHuIdAndQRCodes(final @NonNull List<PickingJobStepPickedToHU> pickedToHUs)
@@ -273,14 +290,31 @@ public class PickingJobUnPickCommand
 	@NonNull
 	private PickingJob reinitializePickingTargetIfDestroyed(final PickingJob pickingJob)
 	{
-		if (isLineLevelPickTarget(pickingJob))
+		final PickingJobLineId targetLineId = isLineLevelPickTarget(pickingJob) ? lineId : null;
+		final PickingJob pickingJobWithLUTarget = pickingJob.withLuPickingTarget(targetLineId, this::reinitializeLUPickingTarget);
+		return reinitializeTUPickingTargetIfDestroyed(pickingJobWithLUTarget, targetLineId);
+	}
+
+	/** Un-picking the last CU empties the open TU and the HU framework destroys it: replace it by a new TU of the same type so a later pick still has a target. */
+	@NonNull
+	private PickingJob reinitializeTUPickingTargetIfDestroyed(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId targetLineId)
+	{
+		final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTarget(targetLineId).orElse(null);
+		if (tuPickingTarget == null || !tuPickingTarget.isExistingTU())
 		{
-			return pickingJob.withLuPickingTarget(lineId, this::reinitializeLUPickingTarget);
+			return pickingJob;
 		}
-		else
+
+		final HuId tuId = tuPickingTarget.getTuIdNotNull();
+		final I_M_HU tu = huService.getById(tuId);
+		if (!huService.isDestroyedOrEmptyStorage(tu))
 		{
-			return pickingJob.withLuPickingTarget(null, this::reinitializeLUPickingTarget);
+			return pickingJob;
 		}
+
+		final HuPackingInstructionsIdAndCaption tuPI = huService.getEffectivePackingInstructionsIdAndCaption(tu);
+		final GRAI grai = huService.getGrais(tuId).noneOrSingleElement();
+		return pickingJob.withTuPickingTarget(targetLineId, TUPickingTarget.ofPackingInstructions(tuPI.getId(), tuPI.getCaption(), grai));
 	}
 
 	private boolean isLineLevelPickTarget(final PickingJob pickingJob) {return pickingJob.isLineLevelPickTarget();}

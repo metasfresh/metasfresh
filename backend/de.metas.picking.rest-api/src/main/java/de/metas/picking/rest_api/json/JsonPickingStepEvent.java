@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -73,6 +74,8 @@ public class JsonPickingStepEvent
 	boolean isCloseTarget;
 	boolean setGrais;
 	@Nullable List<String> graiCodes;
+	/** The scanned CU label, as the raw scanned string; blank = no label. */
+	@Nullable ScannedCode cuLabel;
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;

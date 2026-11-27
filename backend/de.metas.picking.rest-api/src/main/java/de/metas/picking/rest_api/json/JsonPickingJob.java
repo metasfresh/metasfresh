@@ -62,6 +62,8 @@ public class JsonPickingJob
 	boolean showPromptWhenOverPicking;
 	boolean anonymousPickHUsOnTheFly;
 	boolean completeJobAutomatically;
+	/** Effective for this job: the profile allows pick-all and no line requires a label (pick-all books without one). */
+	boolean quickPackAllAllowed;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{

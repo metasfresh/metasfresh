@@ -20,7 +20,33 @@ const useHardwareConfigParams = () => {
   };
 };
 
-const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disabled, onBarcodeScanned, testId }) => {
+const isEditableElement = (element) =>
+  !!element && (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable === true);
+
+// Next to a field the operator types into, the scanner input must not take the focus away from that field.
+// While the operator is not typing, it keeps the focus: in IME-style configs the OS commits the scanned text into the focused element.
+const isOperatorTypingElsewhere = (inputElement) =>
+  isEditableElement(document.activeElement) && document.activeElement !== inputElement;
+
+/**
+ * The scanner's input reacts to Enter on key-up (see handleInputTextKeyPress). Its Enter must never also submit a form the
+ * input sits in: the hidden scanner of the quantity block is in the same form as the OK button, and a scan would book the quantity.
+ */
+const preventEnterFromSubmittingForm = (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+  }
+};
+
+const HardwareModePanel = ({
+  invisible,
+  inputPlaceholderText,
+  isProcessing,
+  disabled,
+  isCoexistingWithTypedInput,
+  onBarcodeScanned,
+  testId,
+}) => {
   const { hardwareInputMode, isHardwareInputReadOnly, triggerOnChangeIfLengthGreaterThan, textChangedDebounceMillis } =
     useHardwareConfigParams();
   const inputTextRef = useRef();
@@ -32,13 +58,21 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
   useEffect(() => {
     disabledRef.current = disabled;
   }, [disabled]);
+  // Same live-value reason: the scanner must not pull the focus out of a field the operator types into
+  const isCoexistingWithTypedInputRef = useRef(isCoexistingWithTypedInput);
+  useEffect(() => {
+    isCoexistingWithTypedInputRef.current = isCoexistingWithTypedInput;
+  }, [isCoexistingWithTypedInput]);
+  // the scanner leaves the focus where the operator types (reads the live values, so it is also right in a timer)
+  const isFocusLeftToTypedField = () =>
+    isCoexistingWithTypedInputRef.current && isOperatorTypingElsewhere(inputTextRef.current);
 
   // Refocus the offscreen <input> after every render — necessary for IME-style configs (the
   // input is editable, OS expects focus to route InputConnection). Skipped for keystroke-wedge
   // configs (readOnly + inputMode=none) which capture at window level and don't need focus.
   // Always skipped when `disabled` so the visible ManualModePanel input keeps its focus.
   useEffect(() => {
-    if (disabled) return;
+    if (disabled || isFocusLeftToTypedField()) return;
     if (hardwareInputMode !== 'none' && !isHardwareInputReadOnly) {
       inputTextRef?.current?.focus();
     }
@@ -47,8 +81,9 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
   // Mount-time focus for DataWedge IME (inputMode=none) — establishes InputConnection once;
   // the window-level hook handles subsequent scans.
   useEffect(() => {
-    if (disabled) return;
-    if (hardwareInputMode === 'none') {
+    if (disabled || isFocusLeftToTypedField()) return;
+    // next to a typed-in field only an IME config (editable input) needs the focus; a read-only input is read at window level
+    if (hardwareInputMode === 'none' && !(isCoexistingWithTypedInput && isHardwareInputReadOnly)) {
       inputTextRef?.current?.focus();
     }
   }, []);
@@ -110,6 +145,10 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     // with `activeMode === MANUAL` so keystrokes flow to the visible manual input instead
     // of the offscreen hardware one).
     disabled,
+    // Next to a field the operator types into: only scanner-speed bursts from that field are scans
+    isTypedInputTarget: isCoexistingWithTypedInput
+      ? (target) => target !== inputTextRef.current && isEditableElement(target)
+      : undefined,
   });
 
   const handleInputTextKeyPress = (e) => {
@@ -142,6 +181,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       // later. If the user switched into MANUAL during the window, we must NOT yank focus
       // back from the visible manual input.
       if (disabledRef.current) return;
+      if (isFocusLeftToTypedField()) return;
       inputTextRef?.current?.focus();
     }, 2000);
   };
@@ -168,6 +208,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
       onFocus={handleInputTextFocus}
       onBlur={handleInputTextBlur}
       onChange={handleInputTextChangedDebounced}
+      onKeyDown={preventEnterFromSubmittingForm}
       onKeyUp={handleInputTextKeyPress}
       data-testid={testId ?? 'qrCode-input'}
     />
@@ -205,12 +246,15 @@ HardwareModePanel.propTypes = {
   inputPlaceholderText: PropTypes.string,
   isProcessing: PropTypes.bool,
   disabled: PropTypes.bool,
+  /** the scanner sits next to a field the operator types into */
+  isCoexistingWithTypedInput: PropTypes.bool,
   onBarcodeScanned: PropTypes.func.isRequired,
   testId: PropTypes.string,
 };
 HardwareModePanel.defaultProps = {
   invisible: false,
   disabled: false,
+  isCoexistingWithTypedInput: false,
 };
 
 export default HardwareModePanel;

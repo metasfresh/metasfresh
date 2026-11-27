@@ -20,6 +20,7 @@ public class JsonCreateHURequest
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean generateHUQRCodesForAllTUs;
+	@Nullable Boolean isQrCodeOfAggregatedTU;
 	@Nullable Integer splitOutTUsCountAfterQRCodes;
 	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;
@@ -51,6 +52,10 @@ public class JsonCreateHURequest
 	 */
 	@JsonIgnore
 	public int getSplitOutTUsCountAfterQRCodes() {return splitOutTUsCountAfterQRCodes != null ? splitOutTUsCountAfterQRCodes : 0;}
+
+	/** When true, the response's {@code qrCode} is the QR code of the aggregated TU inside the created HU instead of the top-level HU's. */
+	@JsonIgnore
+	public boolean isQrCodeOfAggregatedTU() {return isQrCodeOfAggregatedTU != null && isQrCodeOfAggregatedTU;}
 
 	@JsonIgnore
 	public boolean isTuOnly() {return tuOnly != null && tuOnly;}

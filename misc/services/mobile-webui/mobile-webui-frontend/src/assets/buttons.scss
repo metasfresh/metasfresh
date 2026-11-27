@@ -3,6 +3,20 @@
 .button {
   height: 2.5em;
 
+  // DialogButton with an icon (prop `icon`): the icon sits inside the button's usual width. The icon is smaller than the caption and the
+  // side padding gives its room back (Bulma: 1 em each side), so the button grows by only a few px and its row, height and font size stay
+  // those of its neighbours (OK, Abbrechen, Schliessen) at every phone width.
+  &.has-dialog-icon {
+    padding-left: 0.5em;
+    padding-right: 0.65em;
+    white-space: nowrap;
+  }
+
+  .dialog-button-icon {
+    font-size: 0.75em;
+    margin-right: 0.4em;
+  }
+
   .full-size-btn {
     //border: 1px dotted yellow;
     width: 100%;

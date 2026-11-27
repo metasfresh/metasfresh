@@ -1167,6 +1167,33 @@ public class HUTransformServiceTests
 	}
 
 	@Test
+	public void husToNewSingleCU_twoUnreservedPieces_oneCUOfTheSum()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		final I_M_HU piece1 = testsBase.createStandaloneSaladCU(FOUR);
+		final I_M_HU piece2 = testsBase.createStandaloneSaladCU(FOUR);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(piece1)
+				.sourceHU(piece2)
+				.productId(data.helper.pSaladProductId)
+				.qtyCU(Quantity.of(FIVE, data.helper.uomKg))
+				.build();
+
+		final I_M_HU singleCU = huTransformService.husToNewSingleCU(request);
+
+		assertThat(singleCU).isTopLevelHU();
+		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+		assertThat(singleCU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(IHandlingUnitsBL.extractLocatorIdOrNull(singleCU)).isEqualTo(testsBase.getStandaloneCUMasterData().locatorId);
+		assertThat(singleCU.getC_BPartner_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerId.getRepoId());
+		assertThat(singleCU.getC_BPartner_Location_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerLocationId);
+
+		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(THREE, data.helper.uomKg));
+	}
+
+	@Test
 	public void husToNewCUs_with_aggregate_source_HU_partial_TU()
 	{
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();

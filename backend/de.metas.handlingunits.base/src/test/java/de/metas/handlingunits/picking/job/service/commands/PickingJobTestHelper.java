@@ -18,6 +18,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
+import de.metas.handlingunits.picking.job.service.PickingCULabelService;
 import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -87,6 +88,7 @@ import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceCreateRequest;
@@ -159,6 +161,11 @@ public class PickingJobTestHelper
 
 	public PickingJobTestHelper()
 	{
+		this(PickingCULabelService::newInstanceForUnitTesting);
+	}
+
+	public PickingJobTestHelper(@NonNull final java.util.function.Supplier<PickingCULabelService> cuLabelServiceSupplier)
+	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
@@ -217,7 +224,8 @@ public class PickingJobTestHelper
 				huLabelService,
 				huReservationService,
 				inventoryService,
-				new HUGraiService(new HUPIGraiRepository()));
+				new HUGraiService(new HUPIGraiRepository()),
+				ScannableCodeFormatService.newInstanceForUnitTesting());
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
@@ -244,7 +252,8 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
-				new PickingJobGraiTargetService(huService)
+				new PickingJobGraiTargetService(huService),
+				cuLabelServiceSupplier.get()
 		);
 
 		huTracer = new HUTracerInstance()

@@ -38,6 +38,7 @@ import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
@@ -61,6 +62,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -268,6 +270,8 @@ public class PickingJobRestService
 
 	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return configService.getPickingJobOptions(customerId);}
+
+	public boolean isAnyLabelRequiredLine(@NonNull final Collection<PickingJobLine> lines) {return configService.isAnyLabelRequiredLine(lines);}
 
 	@NonNull
 	public List<HuId> getClosedLUs(

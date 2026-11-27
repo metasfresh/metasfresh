@@ -65,3 +65,31 @@ export const isLineNotCompleted = ({ line }) => line.completeStatus !== Complete
 export const isCatchWeight = ({ line }) => {
   return !!line.catchWeightUOM;
 };
+
+/** The last typed count capped by the open quantity; null when nothing was typed yet. */
+export const computeSuggestedQty = ({ lastTypedQty, qtyOpen } = {}) => {
+  if (lastTypedQty == null) {
+    return null;
+  }
+  const last = Number(lastTypedQty);
+  return qtyOpen == null ? last : Math.min(last, qtyOpen);
+};
+
+/** The count to remember after a booking */
+export const computeLastTypedQty = ({ storedLastTypedQty, suggestedQty, qtyBooked }) => {
+  const booked = Number(qtyBooked);
+  if (storedLastTypedQty != null && suggestedQty != null && booked === Number(suggestedQty)) {
+    return Number(storedLastTypedQty);
+  }
+  return booked;
+};
+
+export const isLineDoneAfterBooking = ({ qtyBooked, qtyOpen }) => qtyOpen == null || Number(qtyBooked) >= qtyOpen;
+
+/** What the screen remembers after a scan once booking of a line: the count, for the next TU of this round. No label. */
+export const computeCUEntryToRemember = ({ storedLastTypedQty, suggestedQty, qtyBooked }) => ({
+  lastTypedQty: computeLastTypedQty({ storedLastTypedQty, suggestedQty, qtyBooked }),
+});
+
+/** The backend decides per job (profile switch, no line requiring a label) and publishes the answer */
+export const isQuickPackAllAllowed = ({ activity }) => activity?.dataStored?.isQuickPackAllAllowed ?? false;

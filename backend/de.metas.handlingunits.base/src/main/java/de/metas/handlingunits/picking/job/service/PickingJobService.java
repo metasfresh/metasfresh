@@ -89,6 +89,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -114,6 +115,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
+	@NonNull private final PickingCULabelService cuLabelService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -350,6 +352,7 @@ public class PickingJobService implements PickingSlotListener
 						.isCloseTarget(event.isCloseTarget())
 						.isSetGrais(event.isSetGrais())
 						.graiCodes(event.getGraiCodes())
+						.cuLabel(event.getCuLabel())
 						//
 						.build()
 						.execute();
@@ -388,7 +391,8 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService);
+				.huService(huService)
+				.cuLabelService(cuLabelService);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
@@ -787,9 +791,49 @@ public class PickingJobService implements PickingSlotListener
 		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
+	/** Closes the job's targets and every line's targets; closed HUs of lines in a label-required CU quantity entry mode, or with CUs booked with a label, go to their own line's picking slot, the others to the slot scanned last. */
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
 	{
+		final Predicate<PickingJobLine> isLabelRequired = configService::isLabelRequired;
+		final Predicate<PickingJobLine> isToCheckForLabelBookings = isLabelRequired.negate();
+		final ImmutableSet<HuId> cusBookedWithLabel = pickingJob.hasLine(isToCheckForLabelBookings)
+				? huService.filterBookedWithLabel(pickingJob.getPickedHUInfos(isToCheckForLabelBookings))
+				: ImmutableSet.of();
+		final List<PickingJobLine> linesClosedOnTheirOwnSlot = pickingJob.getLines(line -> isLabelRequired.test(line) || line.hasPickedHUIdIn(cusBookedWithLabel));
+		if (linesClosedOnTheirOwnSlot.isEmpty())
+		{
+			return closeAllTargetsOnLastScannedSlot(pickingJob);
+		}
+		else
+		{
+			return closeTargetsPerOwnLineSlot(pickingJob, linesClosedOnTheirOwnSlot);
+		}
+	}
+
+	private PickingJob closeAllTargetsOnLastScannedSlot(@NonNull final PickingJob pickingJob)
+	{
 		return closeLUAndTUPickingTargets(pickingJob, true, true, null, false);
+	}
+
+	private PickingJob closeTargetsPerOwnLineSlot(@NonNull final PickingJob pickingJob, @NonNull final List<PickingJobLine> linesClosedOnTheirOwnSlot)
+	{
+		PickingJob pickingJobChanged = closeHeaderTargets(pickingJob);
+		for (final PickingJobLine line : linesClosedOnTheirOwnSlot)
+		{
+			pickingJobChanged = closeLineTargets(pickingJobChanged, line.getId());
+		}
+		return closeLineTargets(pickingJobChanged, null);
+	}
+
+	private PickingJob closeHeaderTargets(@NonNull final PickingJob pickingJob)
+	{
+		return closeLUAndTUPickingTargets(pickingJob, true, false, null, false);
+	}
+
+	/** @param lineId null = the targets of all lines */
+	private PickingJob closeLineTargets(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		return closeLUAndTUPickingTargets(pickingJob, false, true, lineId, false);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(
@@ -978,6 +1022,7 @@ public class PickingJobService implements PickingSlotListener
 	{
 		return PickingJobPickAllCommand.builder()
 				.pickingJobService(this)
+				.configService(configService)
 				//
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)

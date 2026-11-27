@@ -1673,6 +1673,31 @@ public class HUTransformService
 		return husToNewCUs(newCURequest).singleCU();
 	}
 
+	/** Like {@link #husToNewCUs(HUsToNewCUsRequest)}, but returns exactly ONE new CU: if the quantity came from several source pieces, the other new CUs are merged into the first. */
+	public I_M_HU husToNewSingleCU(@NonNull final HUsToNewCUsRequest request)
+	{
+		Check.assume(!request.isKeepNewCUsUnderSameParent(), "keepNewCUsUnderSameParent is not supported, the result is a standalone CU: {}", request);
+
+		return trxManager.callInThreadInheritedTrx(() -> husToNewSingleCU_InTrx(request));
+	}
+
+	private I_M_HU husToNewSingleCU_InTrx(@NonNull final HUsToNewCUsRequest request)
+	{
+		final List<I_M_HU> newCUs = husToNewCUs(request).getNewCUs();
+		if (newCUs.isEmpty())
+		{
+			throw new AdempiereException("No CU could be created from the given source HUs; request=" + request);
+		}
+
+		final I_M_HU singleCU = newCUs.get(0);
+		if (newCUs.size() > 1)
+		{
+			// never load straight from the source HUs (that would bypass the reservation guard); only merge the CUs we just split off
+			cusToExistingCU(newCUs.subList(1, newCUs.size()), singleCU);
+		}
+		return singleCU;
+	}
+
 	/**
 	 * Creates new CUs (vhus) according to the given request
 	 */

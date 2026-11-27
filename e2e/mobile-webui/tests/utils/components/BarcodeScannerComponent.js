@@ -84,6 +84,46 @@ export const BarcodeScannerComponent = {
         }, scannedCode);
     }),
 
+    /** Like {@link BarcodeScannerComponent.type}, but sends the code only once the scanner listens */
+    typeWhenScannerListens: async ({ scannedCode, testId }) => await test.step(`${NAME} - Type scanned code once the scanner listens`, async () => {
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+        console.log('Scanning scanned code (once the scanner listens):\n' + scannedCode);
+
+        await BarcodeScannerComponent.waitToAttach({ testId });
+        const selector = testId ? `#input-text[data-testid="${testId}"]` : '#input-text';
+
+        const deadline = Date.now() + SLOW_ACTION_TIMEOUT;
+        for (; ;) {
+            const result = await page.evaluate(({ code, selector }) => {
+                const valueBefore = document.querySelector(selector)?.value;
+                for (const char of code) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                }
+                const valueAfter = document.querySelector(selector)?.value;
+                if (valueAfter === valueBefore) {
+                    return { sent: false }; // no listener saw the keys: nothing was collected
+                }
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                return { sent: true, collected: valueAfter };
+            }, { code: scannedCode, selector });
+
+            if (result.sent) {
+                if (result.collected !== scannedCode) {
+                    throw new Error(`The scanner collected '${result.collected}' instead of the scanned code '${scannedCode}'`);
+                }
+                return;
+            }
+            if (Date.now() > deadline) {
+                throw new Error(`The scanner (${selector}) did not listen within ${SLOW_ACTION_TIMEOUT} ms`);
+            }
+            await page.waitForTimeout(50);
+        }
+    }),
+
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
         let scannedCode;
         let testId;

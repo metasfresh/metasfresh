@@ -146,7 +146,6 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
-				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
 				.build();
 	}
 
@@ -466,6 +465,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				// Parse the raw scanned strings (canonical or GS1 AI 8003) into a GRAISet once, here at the
 				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
 				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
+				.cuLabel(json.getCuLabel())
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)

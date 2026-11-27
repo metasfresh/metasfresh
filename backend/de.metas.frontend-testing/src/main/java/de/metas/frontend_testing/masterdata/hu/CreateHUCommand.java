@@ -106,7 +106,10 @@ public class CreateHUCommand
 		final String huQRCodeStr;
 		if (request.isGenerateHUQRCode())
 		{
-			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+			// an aggregated TU stands for several TUs and gets one QR code per TU: any of them identifies it, so take the first
+			huQRCodeStr = (request.isQrCodeOfAggregatedTU()
+					? huQRCodesService.getFirstQRCodeByHuId(getAggregatedTUId(huId))
+					: huQRCodesService.getQRCodeByHuId(huId)).toGlobalQRCodeString();
 		}
 		else
 		{
@@ -161,13 +164,25 @@ public class CreateHUCommand
 	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
 	{
 		huTrxBL.process(huContext -> {
-			final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
-			if (aggregateTU == null)
-			{
-				throw new AdempiereException("No aggregate TU found under HU " + huId + " to split TUs out of");
-			}
+			final I_M_HU aggregateTU = findAggregateTUOrThrow(huId, " to split TUs out of");
 			HUTransformService.newInstance(huContext).tuToNewTUs(aggregateTU, QtyTU.ofInt(count));
 		});
+	}
+
+	private @NonNull HuId getAggregatedTUId(@NonNull final HuId huId)
+	{
+		return HuId.ofRepoId(findAggregateTUOrThrow(huId, "").getM_HU_ID());
+	}
+
+	@NonNull
+	private I_M_HU findAggregateTUOrThrow(@NonNull final HuId huId, @NonNull final String messageSuffix)
+	{
+		final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
+		if (aggregateTU == null)
+		{
+			throw new AdempiereException("No aggregate TU found under HU " + huId + messageSuffix);
+		}
+		return aggregateTU;
 	}
 
 	/**

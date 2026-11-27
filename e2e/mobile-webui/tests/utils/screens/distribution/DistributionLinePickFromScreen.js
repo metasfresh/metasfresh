@@ -50,6 +50,11 @@ export const DistributionLinePickFromScreen = {
             await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'scanHUBarcode-input' });
         }),
 
+        /** The product code input is off-screen (scanner target), so it is only attached, never visible */
+        waitForProductCodeInput: async () => await test.step(`${NAME} - Wait for product code input`, async () => {
+            await page.getByTestId('scanProductCode-input').waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+        }),
+
         typeProductCode: async (productScannedCode) => await test.step(`${NAME} - Type Product Scanned Code: ${productScannedCode}`, async () => {
             await BarcodeScannerComponent.type({ scannedCode: productScannedCode, testId: 'scanProductCode-input' });
         }),

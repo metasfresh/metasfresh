@@ -124,6 +124,7 @@ const ManualModePanel = ({ isProcessing, onBarcodeScanned, enabledModes, onModeS
         captionKey="components.BarcodeScannerComponent.manualInputSubmit"
         typeFASIconName="fa-check"
         additionalCssClass="barcode-scanner-btn"
+        type="button"
         disabled={isProcessing}
         onClick={handleManualSubmit}
         testId="manual-entry-submit"
@@ -133,6 +134,7 @@ const ManualModePanel = ({ isProcessing, onBarcodeScanned, enabledModes, onModeS
           captionKey={BACK_TO_SCANNER_CAPTION_KEY[backToScannerTarget]}
           typeFASIconName={BACK_TO_SCANNER_ICON[backToScannerTarget]}
           additionalCssClass="barcode-scanner-btn"
+          type="button"
           disabled={isProcessing}
           onClick={() => onModeSelected(backToScannerTarget)}
           testId="barcode-scanner-back-to-scanner"
