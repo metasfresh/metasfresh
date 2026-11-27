@@ -79,6 +79,10 @@ public class CreatePackingInstructionsCommand
 		final JsonTestId tuPIItemProductTestId;
 		if (request.isCu())
 		{
+			if (request.isTuProductlessItemProduct())
+			{
+				throw new AdempiereException("tuProductlessItemProduct requires tu to be set: " + request);
+			}
 			tu = loadPI_CU();
 			tuPIItemProductTestId = null;
 		}
@@ -87,6 +91,10 @@ public class CreatePackingInstructionsCommand
 			tu = createPI(request.getTuNotNull(), HuUnitType.TU);
 			final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
 			tuPIItemProductTestId = createPIItemProduct(tuPIItemId);
+			if (request.isTuProductlessItemProduct())
+			{
+				createProductlessPIItemProduct(tuPIItemId);
+			}
 		}
 
 		//
@@ -451,6 +459,25 @@ public class CreatePackingInstructionsCommand
 		context.putIdentifier(Identifier.ofString(tuIdentifier.getAsString() + "_" + productIdentifier.getAsString()), piItemProductId);
 
 		return MaterialReceiptActivityHandler.extractNewTUTargetTestId(record);
+	}
+
+	/**
+	 * Adds a capacity row without product ({@code M_Product_ID} null, {@code IsAllowAnyProduct=N}) to the given TU material item.
+	 * Not registered under any identifier: it only has to exist next to the regular row.
+	 */
+	private void createProductlessPIItemProduct(@NonNull final HuPackingInstructionsItemId tuPIItemId)
+	{
+		final ProductId productId = context.getId(request.getProductNotNull(), ProductId.class);
+		final UomId uomId = productBL.getStockUOMId(productId);
+
+		final I_M_HU_PI_Item_Product record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		record.setM_HU_PI_Item_ID(tuPIItemId.getRepoId());
+		record.setIsAllowAnyProduct(false);
+		record.setIsInfiniteCapacity(false);
+		record.setQty(request.getQtyCUsPerTU() != null ? request.getQtyCUsPerTU() : BigDecimal.ONE);
+		record.setC_UOM_ID(uomId.getRepoId());
+		record.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
+		saveRecord(record);
 	}
 
 	private void renamePreviousEANs()

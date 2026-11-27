@@ -66,8 +66,11 @@ const assetTypeOf = (grai) => grai.split('.')[1];
  *   PI_NOCAPACITY — LU_MAIN + TU_NOCAPACITY → no-capacity (its PIIP is removed below)
  *
  * The bpartner has GRAIRequired='Y' so the GRAI scanner is enabled.
+ *
+ * @param {boolean} tuProductlessItemProduct – when true, TU_MAPPED additionally gets a capacity row
+ *        (M_HU_PI_Item_Product) without product and with IsAllowAnyProduct=N
  */
-const createMasterdataForGraiScan = async () => {
+const createMasterdataForGraiScan = async ({ tuProductlessItemProduct = false } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -95,7 +98,7 @@ const createMasterdataForGraiScan = async () => {
             },
             packingInstructions: {
                 // happy path / no-mapping / multiple / unparseable — TU_MAPPED allowed on LU_MAIN with capacity
-                PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                PI_MAIN: { lu: 'LU_MAIN', qtyTUsPerLU: 20, tu: 'TU_MAPPED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true, tuProductlessItemProduct },
                 // TU on a different LU (LU_OTHER), not associable with the picking-target LU_MAIN
                 PI_NOTALLOWED: { lu: 'LU_OTHER', qtyTUsPerLU: 10, tu: 'TU_NOTALLOWED', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
                 // a second mapped TU on LU_MAIN, providing a distinct GRAI mapping with P1 capacity (the no-capacity scenario builds its own masterdata)
@@ -519,14 +522,11 @@ test('Order-based, job-level GRAI scan → top-level TU with GRAI on shipped HU'
 
 // ─── Happy path — scan one GRAI → TU created, GRAI attribute attached ────────
 
-// noinspection JSUnusedLocalSymbols
-test('Scan one GRAI → TU created with GRAI attribute', async ({ page }) => {
-    await allure.epic('E0105: Picking');
-    await allure.feature('F00230: MobileUI Picking');
-    await allure.story('GRAI scan picking — scan one GRAI, pick, GRAI stamped on the shipped HU');
-    await allure.severity('critical');
-
-    const masterdata = await createMasterdataForGraiScan();
+/**
+ * Happy path on the given masterdata (from {@link createMasterdataForGraiScan}): scan PI_MAIN's GRAI on the line,
+ * pick 4 PCE of HU1 into the GRAI-resolved TU on LU_MAIN, complete, and verify the shipped TU carries the GRAI.
+ */
+const scanOneGraiPickAndExpectGraiOnShippedTU = async (masterdata) => {
     const graiMapped = masterdata.packingInstructions.PI_MAIN.grai;
 
     await LoginScreen.login(masterdata.login.user);
@@ -587,6 +587,30 @@ test('Scan one GRAI → TU created with GRAI attribute', async ({ page }) => {
             },
         },
     });
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Scan one GRAI → TU created with GRAI attribute', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — scan one GRAI, pick, GRAI stamped on the shipped HU');
+    await allure.severity('critical');
+
+    await scanOneGraiPickAndExpectGraiOnShippedTU(await createMasterdataForGraiScan());
+});
+
+// ─── The resolved TU also has a capacity row without product ─────────────────
+
+// noinspection JSUnusedLocalSymbols
+test('Scan one GRAI, resolved TU also has a capacity row without product → TU created with GRAI attribute', async ({ page }) => {
+    await allure.epic('E0105: Picking');
+    await allure.feature('F00230: MobileUI Picking');
+    await allure.story('GRAI scan picking — a capacity row without product on the resolved TU does not break the scan');
+    await allure.severity('critical');
+
+    // TU_MAPPED has its P1 capacity row plus a row with M_Product_ID null and IsAllowAnyProduct=N.
+    // The GRAI scan must skip that row and use the P1 row (before the fix: "Assumption failure: productId > 0").
+    await scanOneGraiPickAndExpectGraiOnShippedTU(await createMasterdataForGraiScan({ tuProductlessItemProduct: true }));
 });
 
 // ─── Scanned GRAI has no mapping → GRAINoMatchingTUType error ────────────────
