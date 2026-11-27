@@ -73,9 +73,8 @@ public class Identifier
 	public String getAsString() {return string;}
 
 	/**
-	 * @return this identifier plus a timestamp suffix (yyyyMMdd'T'HHmmssSSS) that no other call in this JVM returns.
-	 * Calls within the same millisecond, also from parallel E2E workers, get consecutive milliseconds,
-	 * so e.g. generated logins never hit AD_User_Login_UQ.
+	 * @return this identifier plus a timestamp suffix (yyyyMMdd'T'HHmmssSSS) that no other call in this JVM returns;
+	 * a call in a millisecond already handed out gets the next free millisecond.
 	 */
 	public String toUniqueString() {return string + "_" + DATETIME_FORMAT.format(nextUniqueTimestamp());}
 
