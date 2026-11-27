@@ -120,6 +120,44 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setC_ScannableCode_Format_ID (final int C_ScannableCode_Format_ID)
+	{
+		if (C_ScannableCode_Format_ID < 1) 
+			set_Value (COLUMNNAME_C_ScannableCode_Format_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ScannableCode_Format_ID, C_ScannableCode_Format_ID);
+	}
+
+	@Override
+	public int getC_ScannableCode_Format_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ScannableCode_Format_ID);
+	}
+
+	/** 
+	 * CUQtyEntryMode AD_Reference_ID=542157
+	 * Reference name: CUQtyEntryMode
+	 */
+	public static final int CUQTYENTRYMODE_AD_Reference_ID=542157;
+	/** MANUAL = MANUAL */
+	public static final String CUQTYENTRYMODE_MANUAL = "MANUAL";
+	/** SCAN_EACH_CU = SCAN_EACH_CU */
+	public static final String CUQTYENTRYMODE_SCAN_EACH_CU = "SCAN_EACH_CU";
+	/** SCAN_ONCE_ENTER_QTY = SCAN_ONCE_ENTER_QTY */
+	public static final String CUQTYENTRYMODE_SCAN_ONCE_ENTER_QTY = "SCAN_ONCE_ENTER_QTY";
+	@Override
+	public void setCUQtyEntryMode (final java.lang.String CUQtyEntryMode)
+	{
+		set_Value (COLUMNNAME_CUQtyEntryMode, CUQtyEntryMode);
+	}
+
+	@Override
+	public java.lang.String getCUQtyEntryMode() 
+	{
+		return get_ValueAsString(COLUMNNAME_CUQtyEntryMode);
+	}
+
+	@Override
 	public void setIsActiveWorkplaceRequired (final boolean IsActiveWorkplaceRequired)
 	{
 		set_Value (COLUMNNAME_IsActiveWorkplaceRequired, IsActiveWorkplaceRequired);

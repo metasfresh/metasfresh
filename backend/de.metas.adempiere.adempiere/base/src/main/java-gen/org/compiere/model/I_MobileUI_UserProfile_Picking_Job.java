@@ -183,6 +183,50 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_CreateShipmentPolicy = "CreateShipmentPolicy";
 
 	/**
+	 * Set Scannable Code Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ScannableCode_Format_ID (int C_ScannableCode_Format_ID);
+
+	/**
+	 * Get Scannable Code Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ScannableCode_Format_ID();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_C_ScannableCode_Format> COLUMN_C_ScannableCode_Format_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "C_ScannableCode_Format_ID", org.compiere.model.I_C_ScannableCode_Format.class);
+	String COLUMNNAME_C_ScannableCode_Format_ID = "C_ScannableCode_Format_ID";
+
+	/**
+	 * Set CU quantity entry.
+	 * How the CU quantity is entered when picking.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCUQtyEntryMode (@Nullable java.lang.String CUQtyEntryMode);
+
+	/**
+	 * Get CU quantity entry.
+	 * How the CU quantity is entered when picking.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCUQtyEntryMode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_CUQtyEntryMode = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "CUQtyEntryMode", null);
+	String COLUMNNAME_CUQtyEntryMode = "CUQtyEntryMode";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: TextLong

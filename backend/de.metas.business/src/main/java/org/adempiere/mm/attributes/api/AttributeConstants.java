@@ -88,4 +88,7 @@ public class AttributeConstants
 
 	/** "Herkunft" — ISO 3166-1 alpha-2 country-of-origin list attribute. {@code M_Attribute.Value = '1000001'}. */
 	public static final AttributeCode ATTR_CountryOfOrigin = AttributeCode.ofString("1000001");
+
+	/** Pack ID of the CU label, set when a CU is picked in CU quantity entry mode (CU level, virtual PI 101). */
+	public static final AttributeCode PackId = AttributeCode.ofString("PackId");
 }

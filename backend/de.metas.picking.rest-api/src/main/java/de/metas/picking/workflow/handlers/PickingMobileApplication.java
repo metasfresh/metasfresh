@@ -146,7 +146,6 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilters(true)
 				.showFilterByQRCode(profile.isFilterByBarcode())
 				.showFilterByQtyAvailableAtPickFromLocator(true)
-				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
 				.applicationParameter("massPrinting", profile.isMassPrinting())
 				.applicationParameter("isShowQtyAvailableForLines", profile.isShowQtyAvailableForLines())
 				.build();
@@ -487,6 +486,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
 				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
 				.isShelfLifeConfirmed(json.isShelfLifeConfirmed())
+				.cuLabel(json.getCuLabel())
 				//
 				// Any supported HU label may identify the unpack target - a metasfresh global QR code, a
 				// configured scannable code format, or the plain M_HU.Value / ExternalBarcode printed on the

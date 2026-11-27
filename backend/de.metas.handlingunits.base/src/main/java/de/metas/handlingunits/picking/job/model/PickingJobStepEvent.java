@@ -54,6 +54,7 @@ public class PickingJobStepEvent
 	boolean isCloseTarget;
 	boolean isSetGrais;
 	@Nullable GRAISet graiCodes;
+	@Nullable ScannedCode cuLabel;
 
 	//
 	// Shelf-life acknowledgement (PICK only)

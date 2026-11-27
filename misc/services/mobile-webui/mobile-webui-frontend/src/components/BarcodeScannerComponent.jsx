@@ -19,6 +19,7 @@ const BarcodeScannerComponent = ({
   onResolvedResult,
   inputPlaceholderText,
   invisible,
+  isCoexistingWithTypedInput,
 }) => {
   const { enabledModes, defaultMode, okBeepParams, errorBeepParams, scanDuplicatesIntervalMillis } = useConfigParams({
     invisible,
@@ -108,7 +109,7 @@ const BarcodeScannerComponent = ({
   );
 
   return (
-    <div className="barcode-scanner">
+    <div className={'barcode-scanner'}>
       {!invisible && isProcessing && <Spinner />}
       {/* HardwareModePanel is rendered in EVERY visible mode:
             HARDWARE → full scan-prompt UI + off-screen <input>
@@ -126,6 +127,7 @@ const BarcodeScannerComponent = ({
         invisible={invisible || activeMode !== MODE.HARDWARE}
         isProcessing={isProcessing}
         disabled={isProcessing || activeMode === MODE.MANUAL}
+        isCoexistingWithTypedInput={isCoexistingWithTypedInput}
         onBarcodeScanned={validateScannedBarcodeAndForward}
         testId={testId}
       />
@@ -166,10 +168,12 @@ BarcodeScannerComponent.propTypes = {
   inputPlaceholderText: PropTypes.string,
   onResolvedResult: PropTypes.func.isRequired,
   invisible: PropTypes.bool,
+  isCoexistingWithTypedInput: PropTypes.bool,
 };
 
 BarcodeScannerComponent.defaultProps = {
   invisible: false,
+  isCoexistingWithTypedInput: false,
 };
 
 export default BarcodeScannerComponent;

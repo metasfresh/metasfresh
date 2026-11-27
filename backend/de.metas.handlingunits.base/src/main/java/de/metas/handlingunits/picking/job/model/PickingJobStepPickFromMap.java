@@ -143,6 +143,19 @@ public class PickingJobStepPickFromMap
 	}
 
 	@NonNull
+	public List<HUInfo> getPickedHUInfos()
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.filter(pickedTo -> pickedTo.getQtyPicked().signum() > 0)
+				.flatMap(pickedTo -> pickedTo.getActualPickedHUs().stream())
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
 	{
 		return map.values()

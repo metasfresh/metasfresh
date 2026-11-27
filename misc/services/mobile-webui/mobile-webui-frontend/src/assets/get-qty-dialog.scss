@@ -4,6 +4,26 @@ $serialno-extra-orange: #e67e22;
 
 .get-qty-dialog {
 
+  // fits-screen: the dialog is never taller than the screen; the table area shrinks (and scrolls inside) only when the rest does not fit.
+  &.fits-screen .message {
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .message-body {
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+
+      form {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+    }
+  }
+
   .table-container {
     // Cap-and-scroll, do NOT force the height: a fixed `height: 70vh` reserved 70vh even when the
     // content is short (just Qty / Qty-to-Receive), leaving a large empty band and pushing the
@@ -14,6 +34,8 @@ $serialno-extra-orange: #e67e22;
     // qty table AND the EditableAttributesSection table; both are plain `.table`s (no `view-header`),
     // so they render with the SAME base rules below as picking's qty table — identical typography.
     max-height: 70vh;
+    flex: 0 1 auto;
+    min-height: 0;
     overflow-x: auto;
     overflow-y: auto;
 
@@ -46,6 +68,9 @@ $serialno-extra-orange: #e67e22;
           td {
             text-align: right;
             white-space: pre-wrap;
+            // A long value without a space (an article or packing name) wraps instead of making the table wider
+            // than the dialog: the wider table gets scrolled sideways by the focused quantity field, which pushes the labels off the left edge.
+            overflow-wrap: anywhere;
             vertical-align: middle;
 
             input {

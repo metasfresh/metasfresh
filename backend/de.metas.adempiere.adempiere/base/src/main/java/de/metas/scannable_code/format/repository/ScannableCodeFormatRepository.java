@@ -20,6 +20,8 @@ import org.compiere.model.I_C_ScannableCode_Format_Part;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class ScannableCodeFormatRepository
@@ -39,6 +41,11 @@ public class ScannableCodeFormatRepository
 	public ScannableCodeFormatsCollection getAll()
 	{
 		return cache.getOrLoad(0, this::retrieveAll);
+	}
+
+	public Optional<ScannableCodeFormat> getById(@NonNull final ScannableCodeFormatId id)
+	{
+		return getAll().getById(id);
 	}
 
 	private ScannableCodeFormatsCollection retrieveAll()

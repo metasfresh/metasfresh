@@ -308,6 +308,20 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public List<HUInfo> getPickedHUInfos()
+	{
+		return steps.stream()
+				.map(PickingJobStep::getPickedHUInfos)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean hasPickedHUIdIn(@NonNull final Set<HuId> huIds)
+	{
+		return getPickedHUIds().stream().anyMatch(huIds::contains);
+	}
+
 	public Optional<HuId> getLastPickedHUId()
 	{
 		return steps.stream()
@@ -348,5 +362,11 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	public boolean isFullyPickedExcludingRejectedQty()
 	{
 		return qtyToPick.subtract(qtyPicked).signum() <= 0;
+	}
+
+	@NonNull
+	public ITranslatableString getProductName()
+	{
+		return productValueAndName.getName();
 	}
 }

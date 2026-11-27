@@ -2,9 +2,11 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -21,6 +23,7 @@ import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.rest_api.json.JsonCUQtyEntryPolicy;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
@@ -43,6 +46,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,6 +73,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobOptions pickingJobOptions;
 	@NonNull private final DisplayValueProvider displayValueProvider;
 	@NonNull private final HUCache huCache;
+	private final Map<BPartnerId, PickingJobOptions> lineOptionsByCustomerId = new HashMap<>();
 
 	@Builder
 	private JsonPickingJobConverterCommand(
@@ -104,7 +109,8 @@ public class JsonPickingJobConverterCommand
 				.readAttributes(pickingJobOptions.getPickAttributes().getAttributesToReadSet())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
-				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue());
+				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
+				.quickPackAllAllowed(profile.isAllowQuickPackAll() && !pickingJobRestService.isAnyLabelRequiredLine(pickingJob.getLines()));
 
 		// The LU/TU pick targets are already set by JsonPickingJob.builderFrom(pickingJob).
 
@@ -131,16 +137,7 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> enrichLineCarrierAdvise(
-							JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
-									.displayGroupKey(group.getKey())
-									.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
-									.readAttributes(computeLineReadAttributes(line))
-									.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
-											getAdditionalHeaderProperties(line), jsonOpts)),
-							line)
-							.build()
-					)
+					.map(line -> toJsonPickingJobLine(line, group.getKey()))
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
@@ -199,6 +196,32 @@ public class JsonPickingJobConverterCommand
 			return base;
 		}
 		return ImmutableSet.<PickAttribute>builder().addAll(base).add(PickAttribute.SerialNo).build();
+	}
+
+	@NonNull
+	private JsonPickingJobLine toJsonPickingJobLine(@NonNull final PickingJobLine line, @NonNull final String displayGroupKey)
+	{
+		final PickingJobOptions lineOptions = getLineOptions(line);
+		final CUQtyEntryMode cuQtyEntryMode = lineOptions.getCUQtyEntryModeOrDefault();
+		return enrichLineCarrierAdvise(
+				JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+						.displayGroupKey(displayGroupKey)
+						.cuQtyEntryMode(cuQtyEntryMode.getCode())
+						.cuQtyEntryPolicy(JsonCUQtyEntryPolicy.of(cuQtyEntryMode.getPolicy()))
+						.cuLabelFormatId(lineOptions.getCULabelFormatId().orElse(null))
+						.packingTuPIId(huService.getPackingTuPIId(line.getPackingInfo()))
+						.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+						.readAttributes(computeLineReadAttributes(line))
+						.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(getAdditionalHeaderProperties(line), jsonOpts)),
+				line)
+				.build();
+	}
+
+	/** The options of the line's own customer: a mixed product job can hold lines of different customers, each with its own mode / format. */
+	@NonNull
+	private PickingJobOptions getLineOptions(@NonNull final PickingJobLine line)
+	{
+		return lineOptionsByCustomerId.computeIfAbsent(line.getCustomerId(), pickingJobRestService::getPickingJobOptions);
 	}
 
 	@Nullable

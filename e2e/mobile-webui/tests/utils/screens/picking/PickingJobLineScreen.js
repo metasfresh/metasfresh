@@ -28,12 +28,41 @@ export const PickingJobLineScreen = {
         await GetQuantityDialog.waitForDialog();
     }),
 
+    /** "HU verpacken" / "Pack HU" */
+    tapPickHUButton: async () => await test.step(`${NAME} - Tap Pick HU button`, async () => {
+        await page.getByTestId(`PickHU-button`).tap();
+    }),
+
     clickScanButton: async () => await test.step(`${NAME} - Click Scan button`, async () => {
         await page.getByRole('button', { name: 'Scan' }).tap();
     }),
 
+    /** "Schließen" / "Close" */
+    clickCloseButton: async () => await test.step(`${NAME} - Click Close button`, async () => {
+        await page.getByTestId('closeText-button').tap();
+    }),
+
+    /** "Wieder öffnen" / "Re-open" */
+    clickReOpenButton: async () => await test.step(`${NAME} - Click Re-open button`, async () => {
+        await page.getByTestId('reOpenText-button').tap();
+    }),
+
+    expectCloseButtonVisible: async () => await test.step(`${NAME} - Expect Close button`, async () => {
+        await expect(page.getByTestId('closeText-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectReOpenButtonVisible: async () => await test.step(`${NAME} - Expect Re-open button`, async () => {
+        await expect(page.getByTestId('reOpenText-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /** The button of a booked step; for layout checks (see utils/layout.js) */
+    stepButton: ({ index }) => page.locator(`#step-${index}-button`),
+
+    /** The Re-open button; for layout checks */
+    reOpenButton: () => page.getByTestId('reOpenText-button'),
+
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
-        await page.locator(`#step-${index}-button`).tap();
+        await PickingJobLineScreen.stepButton({ index }).tap();
         await PickingJobStepScreen.waitForScreen();
     }),
 

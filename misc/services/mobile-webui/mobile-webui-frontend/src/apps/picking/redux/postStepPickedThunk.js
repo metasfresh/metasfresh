@@ -38,6 +38,7 @@ export const postStepPickedThunk =
     graiCodes,
     setSerialNos,
     serialNos,
+    cuLabel,
     isCloseTarget = false,
   }) =>
   async (dispatch, getState) => {
@@ -62,6 +63,7 @@ export const postStepPickedThunk =
       graiCodes,
       setSerialNos,
       serialNos,
+      cuLabel,
       isCloseTarget,
     };
 

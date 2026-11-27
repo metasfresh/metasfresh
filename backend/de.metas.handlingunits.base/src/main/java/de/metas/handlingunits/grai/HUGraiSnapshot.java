@@ -19,7 +19,7 @@ import java.util.List;
 @Builder
 public class HUGraiSnapshot
 {
-	private static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
+	public static final AdMessageKey GRAI_COUNT_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAICountMismatch");
 
 	@NonNull HuId huId;
 	@NonNull ImmutableList<TU> tus;
