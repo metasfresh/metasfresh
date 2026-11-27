@@ -37,7 +37,7 @@ FROM (
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
-                a.Name                   AS at_Name,
+                COALESCE(a.printvalue_override, a.Name) AS at_Name,
                 a.IsAttrDocumentRelevant AS at_IsAttrDocumentRelevant,
                 a.IsPrintedInDocument
          FROM M_AttributeInstance ai

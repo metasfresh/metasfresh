@@ -177,7 +177,7 @@ SELECT iol.line,
             LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
             LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
        -- Attributes
-            LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(AT.ai_value, ', '
+            LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(AT.at_name || ': ' || AT.ai_value, ', '
                                             ORDER BY LENGTH(AT.ai_value), AT.ai_value)
                                             FILTER (WHERE AT.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
                                                                                          AS Attributes,
