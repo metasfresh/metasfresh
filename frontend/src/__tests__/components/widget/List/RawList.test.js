@@ -529,6 +529,59 @@ describe('RawList component', () => {
           expect(onBlur).toHaveBeenCalledTimes(1);
           wrapper.detach();
         });
+
+        // E.g. the lookup handed over to this sub-list while it was still read-only; it becomes editable with
+        // the partner's update, after Alt+Q put the cursor in the quick entry.
+        it('does not take the focus from an element outside the lookup when it becomes editable while flagged, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: true,
+            readonly: true,
+            onBlur,
+          });
+          otherInput.focus();
+
+          wrapper.setProps({ readonly: false });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        it('does not take the focus from an element outside the lookup when the flag turns on in the update that makes it editable, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: false,
+            readonly: true,
+            onBlur,
+          });
+          otherInput.focus();
+
+          wrapper.setProps({ isFocused: true, readonly: false });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
+
+        // The hand-over itself: the cursor is still in the previous sub-field when this sub-list becomes editable.
+        it('takes the focus from the previous sub-field when it becomes editable while flagged', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({
+            isFocused: true,
+            readonly: true,
+            onBlur,
+          });
+          previousSubField.focus();
+
+          wrapper.setProps({ readonly: false });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
       });
 
       // E.g. a mouse pick left the cursor on the body and the user continues with the keyboard.

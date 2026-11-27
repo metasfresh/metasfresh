@@ -157,30 +157,26 @@ export class RawList0 extends PureComponent {
     // Edge-only re-take: a composed lookup's sub-list (e.g. the contact of a business partner) is flagged
     // `isFocused` from its first render and must not pull the cursor back on every re-render once it has
     // moved elsewhere. Take the focus only when:
-    // - the flag just turned on and the cursor is not outside the enclosing lookup (`wrapperElement`): the
-    //   lookup hands the cursor on from the previous sub-field. A list that is not part of a lookup (no
-    //   `wrapperElement`) takes it from any element;
-    // - the field just became editable while flagged (GL Journal batch entry, first field D/C); this may take
-    //   the focus from any element;
+    // - the flag just turned on, or the field just became editable while flagged, and the cursor is not
+    //   outside the enclosing lookup (`wrapperElement`): the lookup hands the cursor on from the previous
+    //   sub-field. A list that is not part of a lookup (no `wrapperElement`) takes it from any element (e.g.
+    //   GL Journal batch entry, first field D/C, once it becomes editable);
     // - the cursor was lost to nowhere (document.body / null, e.g. mouse pick then keyboard continue).
     // On any other re-render it is never taken from another element.
-    // If the flag turns on while the user has moved the cursor out of the lookup (e.g. Alt+Q put it in the
-    // quick entry while the hand-over to this sub-list ran), the cursor stays there and the flag is dropped
-    // as on a focus-out (`onBlur`), so this list does not open its dropdown, whose key handler listens on the
-    // whole page, behind the cursor. The focus-out also cancels List's pending "focus when the options arrive",
+    // If the flag turns on, or the field becomes editable, while the user has moved the cursor out of the
+    // lookup (e.g. Alt+Q put it in the quick entry while the hand-over to this sub-list ran), the cursor stays
+    // there and the flag is dropped as on a focus-out (`onBlur`), so this list does not open its dropdown, whose
+    // key handler listens on the whole page, behind the cursor. The focus-out also cancels List's pending "focus when the options arrive",
     // so the arriving options do not raise the flag again.
     if (this.props.isFocused && !this.props.readonly) {
       const { wrapperElement, onBlur } = this.props;
-      const hasFlagTurnedOn = !prevProps.isFocused;
+      const hasJustBecomeFocusable =
+        !prevProps.isFocused || !!prevProps.readonly;
       const isCursorOutsideLookup =
         !!wrapperElement && isCursorHeldOutside(wrapperElement);
-      if (hasFlagTurnedOn && isCursorOutsideLookup && !prevProps.readonly) {
+      if (hasJustBecomeFocusable && isCursorOutsideLookup) {
         onBlur();
-      } else if (
-        hasFlagTurnedOn ||
-        prevProps.readonly ||
-        isCursorHeldByNothing()
-      ) {
+      } else if (hasJustBecomeFocusable || isCursorHeldByNothing()) {
         this.focus();
       }
     }
