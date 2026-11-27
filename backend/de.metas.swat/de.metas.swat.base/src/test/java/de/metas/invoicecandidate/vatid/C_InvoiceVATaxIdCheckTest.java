@@ -333,6 +333,44 @@ class C_InvoiceVATaxIdCheckTest
 		assertThat(creditMemo.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
 	}
 
+	/**
+	 * The sales counter document of a purchase credit memo references that purchase document, whose VAT IDs are never stored:
+	 * it is not a copy of a sales invoice, so it gets the values of its own lines.
+	 */
+	@Test
+	void salesCounterCreditMemoOfPurchaseCreditMemo_isResolved()
+	{
+		final I_C_Invoice purchaseCreditMemo = createInvoice(null);
+		purchaseCreditMemo.setIsSOTrx(false);
+		save(purchaseCreditMemo);
+		final I_C_Invoice counterCreditMemo = createCreditMemo(purchaseCreditMemo);
+		createLineForShipment(counterCreditMemo, deliveryNL);
+
+		stamper.stampOrCheck(counterCreditMemo);
+
+		assertThat(counterCreditMemo.getBuyerVATaxID()).isEqualTo(NL_VAT);
+	}
+
+	/**
+	 * An adjustment charge references the invoice it was copied from, but is no credit memo: it gets the values of its own lines.
+	 */
+	@Test
+	void adjustmentCharge_isResolved()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_Invoice adjustmentCharge = createInvoice(null);
+		adjustmentCharge.setC_DocTypeTarget_ID(createDocType(X_C_DocType.DOCBASETYPE_ARInvoice));
+		adjustmentCharge.setRef_Invoice_ID(original.getC_Invoice_ID());
+		save(adjustmentCharge);
+		createLineForShipment(adjustmentCharge, deliveryNL);
+
+		stamper.stampOrCheck(adjustmentCharge);
+
+		assertThat(adjustmentCharge.getBuyerVATaxID()).isEqualTo(NL_VAT);
+		assertThat(adjustmentCharge.getSellerVATaxID()).isNull();
+		assertThat(adjustmentCharge.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+	}
+
 	private I_C_Invoice createStampedInvoice()
 	{
 		final I_C_Invoice original = createInvoice(NL_VAT);

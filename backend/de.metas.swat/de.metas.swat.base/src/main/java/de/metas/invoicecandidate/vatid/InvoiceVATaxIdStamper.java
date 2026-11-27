@@ -83,8 +83,8 @@ import java.util.stream.Collectors;
  * Stores or checks the buyer VAT ID, seller VAT ID and fiscal representation of a sales invoice before it is completed.
  * The first matching rule wins:
  * <ol>
- *     <li>a reversal, or a credit memo that references the invoice it was copied from, gets the values stored on that invoice, as they are (also when empty);
- *     its lines are never resolved again (see {@link #getCopiedFromInvoiceId(I_C_Invoice)}). Any other copy starts without values ({@code IInvoiceBL#copyFrom})
+ *     <li>a reversal, or a credit memo that references the sales invoice it was copied from, gets the values stored on that invoice, as they are (also when empty);
+ *     its lines are never resolved again (see {@link #getCopiedFromInvoice(I_C_Invoice)}). Any other copy starts without values ({@code IInvoiceBL#copyFrom})
  *     and is handled like an invoice of its own by the next rules.</li>
  *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing;
  *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
@@ -135,11 +135,11 @@ public class InvoiceVATaxIdStamper
 			return;
 		}
 
-		final InvoiceId copiedFromInvoiceId = getCopiedFromInvoiceId(invoice);
-		if (copiedFromInvoiceId != null)
+		final I_C_Invoice copiedFromInvoice = getCopiedFromInvoice(invoice);
+		if (copiedFromInvoice != null)
 		{
 			// the copy's lines were resolved when the original was completed; re-resolving them from today's master data could block the copy or change its values
-			setVATaxIds(invoice, getStoredVATaxIds(invoiceBL.getById(copiedFromInvoiceId)));
+			setVATaxIds(invoice, getStoredVATaxIds(copiedFromInvoice));
 			return;
 		}
 
@@ -157,25 +157,26 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * @return the invoice the given one was copied from, if its VAT IDs come from there: the reversed invoice of a reversal,
+	 * @return the sales invoice the given one was copied from, if its VAT IDs come from there: the reversed invoice of a reversal,
 	 * or the credited invoice of a credit memo that references it; {@code null} otherwise.
+	 * A referenced purchase invoice (e.g. the purchase credit memo of a sales counter document) has no stored values and gives {@code null}.
 	 */
 	@Nullable
-	private InvoiceId getCopiedFromInvoiceId(@NonNull final I_C_Invoice invoice)
+	private I_C_Invoice getCopiedFromInvoice(@NonNull final I_C_Invoice invoice)
 	{
-		final InvoiceId reversedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getReversal_ID());
-		if (reversedInvoiceId != null)
+		InvoiceId copiedFromInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getReversal_ID());
+		if (copiedFromInvoiceId == null)
 		{
-			return reversedInvoiceId;
+			final InvoiceId creditedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
+			if (creditedInvoiceId == null || !invoiceBL.isCreditMemo(invoice))
+			{
+				return null;
+			}
+			copiedFromInvoiceId = creditedInvoiceId;
 		}
 
-		final InvoiceId creditedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
-		if (creditedInvoiceId != null && invoiceBL.isCreditMemo(invoice))
-		{
-			return creditedInvoiceId;
-		}
-
-		return null;
+		final I_C_Invoice copiedFromInvoice = invoiceBL.getById(copiedFromInvoiceId);
+		return copiedFromInvoice.isSOTrx() ? copiedFromInvoice : null;
 	}
 
 	/**

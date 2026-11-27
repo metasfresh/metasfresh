@@ -260,6 +260,52 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | reversal   | RE        |              |               |                            |
       | creditMemo | CO        |              |               |                            |
 
+  @Id:S32533_TC12e
+  Scenario: TC12 - the reversal of an invoice whose lines would resolve to different VAT IDs (Dutch candidate line, German line added by hand) completes with the invoice's stored values
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
+      | invoiceCandidate                  | false                  |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    # no tax given: the line is taxed from the German billing address
+    And metasfresh contains C_InvoiceLines
+      | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | handAddedLine | invoice      | service      | 3 PCE       |
+    And the invoice identified by invoice is completed
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | candidateLine               | invoice                 | product                 | 10          | taxDENL0  |
+      | handAddedLine               | invoice                 | service                 | 3           | taxDEDE19 |
+    And validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | NL827764364B01 |               |                            |
+
+    # the reversal's lines lose the shipment line: the candidate line resolves the Dutch VAT ID from its order line,
+    # the line added by hand the German one from the billing address
+    When the invoice identified by invoice is reversed
+    And the reversal of invoice invoice is identified by reversal
+
+    Then validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
+      | reversal   | RE        | NL827764364B01 |               |                            |
+
   @Id:S32533_TC15
   Scenario: TC15 - the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines
     Given metasfresh contains C_Orders:
