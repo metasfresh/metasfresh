@@ -21,7 +21,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -30,6 +29,7 @@ import org.compiere.model.I_C_ScannableCode_Format_Part;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -228,23 +228,23 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private void deactivateFormatsNotOfTheScenario()
 	{
-		final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
-		// NULL-safe: a format without a description is not the scenario's either
-		final IQueryFilter<I_C_ScannableCode_Format> notOfTheScenario = queryBL.createCompositeQueryFilter(I_C_ScannableCode_Format.class)
-				.setJoinOr()
-				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, null)
-				.addNotEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, DESCRIPTION_CUCUMBER);
-		queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+		// NotEquals also matches a format without a description (CompareQueryFilter)
+		final List<I_C_ScannableCode_Format> formats = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
 				.addOnlyActiveRecordsFilter()
-				.addFilter(notOfTheScenario)
+				.addNotEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, DESCRIPTION_CUCUMBER)
 				.create()
-				.stream()
-				.forEach(record -> {
-					record.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(record);
-					deactivatedIds.add(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID()));
-				});
-		deactivatedFormatIds = deactivatedIds.build();
+				.list();
+
+		// remembered BEFORE the first save: each save commits on its own, so a failure half way must still be restored by the reactivation
+		deactivatedFormatIds = formats.stream()
+				.map(format -> ScannableCodeFormatId.ofRepoId(format.getC_ScannableCode_Format_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final I_C_ScannableCode_Format format : formats)
+		{
+			format.setIsActive(false);
+			InterfaceWrapperHelper.saveRecord(format);
+		}
 	}
 
 	/**
