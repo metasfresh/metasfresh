@@ -410,6 +410,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -419,6 +420,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -431,7 +433,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -441,7 +443,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -681,6 +683,31 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsBookingConfirmed = new ModelColumn<>(I_M_ShipperTransportation.class, "IsBookingConfirmed", null);
 	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
+
+	/**
+	 * Set Manual order.
+	 * Transport order without a shipment;
+ can be completed without lines.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualOrder (boolean IsManualOrder);
+
+	/**
+	 * Get Manual order.
+	 * Transport order without a shipment;
+ can be completed without lines.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualOrder();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsManualOrder = new ModelColumn<>(I_M_ShipperTransportation.class, "IsManualOrder", null);
+	String COLUMNNAME_IsManualOrder = "IsManualOrder";
 
 	/**
 	 * Set WE Notice.
