@@ -13,23 +13,25 @@ import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
-import org.compiere.model.I_AD_Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,7 +60,9 @@ class ScannableCodeFormatRepositoryTest
 		return ScannableCodeFormatCreateRequest.Part.builder().startPosition(start).endPosition(end).type(ScannableCodeFormatPartType.Constant).constantValue(value).build();
 	}
 
-	/** (01) 1..4, product code 5..18, (11) 19..22, production date 23..28, (10) 29..32, lot 33..open */
+	/**
+	 * (01) 1..4, product code 5..18, (11) 19..22, production date 23..28, (10) 29..32, lot 33..open
+	 */
 	private ScannableCodeFormat createLabelFormat()
 	{
 		return repository.create(ScannableCodeFormatCreateRequest.builder()
@@ -285,7 +289,7 @@ class ScannableCodeFormatRepositoryTest
 			final ScannableCodeFormatId other = create("other", "foreign");
 			final ScannableCodeFormatId noDescription = create("no description", null);
 
-			final ImmutableSet<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+			final Set<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
 
 			assertThat(deactivated).containsExactlyInAnyOrder(other, noDescription);
 			assertThat(activeNames()).containsExactly("kept");
@@ -299,7 +303,7 @@ class ScannableCodeFormatRepositoryTest
 			create("kept", "mine");
 			create("other", "foreign");
 
-			final ImmutableSet<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+			final Set<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
 			repository.activate(deactivated);
 
 			assertThat(activeNames()).containsExactlyInAnyOrder("kept", "other");
@@ -312,7 +316,7 @@ class ScannableCodeFormatRepositoryTest
 			final ScannableCodeFormatId inactive = create("inactive", "foreign");
 			repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
 
-			final ImmutableSet<ScannableCodeFormatId> secondRun = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+			final Set<ScannableCodeFormatId> secondRun = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
 
 			assertThat(secondRun).isEmpty();
 			repository.activate(secondRun);
