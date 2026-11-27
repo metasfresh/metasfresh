@@ -1,7 +1,6 @@
 @from:cucumber
-@allure.label.epic:E0140_Purchasing
-@allure.label.feature:F00600_Purchase_Order
-@F00600
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29080_Transport_Order
 @ghActions:run_on_executor7
 Feature: Manual transport order
   A transport order flagged as manual order can be completed without lines; without the flag the line check stays.
@@ -9,9 +8,6 @@ Feature: Manual transport order
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-04-16T13:30:13+01:00[Europe/Berlin]
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-
     And load M_Shipper:
       | Identifier  | Name |
       | shipper_DHL | Dhl  |
@@ -29,22 +25,22 @@ Feature: Manual transport order
     When the M_ShipperTransportation identified by to_manual is completed
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | to_manual | shipper_DHL | carrier | carrier | CO |
+      | to_manual                             | shipper_DHL             | carrier                        | carrier                        | CO            |
 
     When the M_ShipperTransportation identified by to_manual is reactivated
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | to_manual | shipper_DHL | carrier | carrier | IP |
+      | to_manual                             | shipper_DHL             | carrier                        | carrier                        | IP            |
 
     When the M_ShipperTransportation identified by to_manual is completed
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | to_manual | shipper_DHL | carrier | carrier | CO |
+      | to_manual                             | shipper_DHL             | carrier                        | carrier                        | CO            |
 
     When the M_ShipperTransportation identified by to_manual is closed
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | to_manual | shipper_DHL | carrier | carrier | CL |
+      | to_manual                             | shipper_DHL             | carrier                        | carrier                        | CL            |
 
     And the following PL/pgSQL function is created or replaced in the DB:
       """
@@ -79,4 +75,4 @@ Feature: Manual transport order
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
-      | to_plain | shipper_DHL | carrier | carrier | DR |
+      | to_plain                              | shipper_DHL             | carrier                        | carrier                        | DR            |

@@ -298,8 +298,8 @@ public class M_Delivery_Instruction_StepDef
 
 	/**
 	 * Drives a document action on the delivery instruction - the same {@code Complete} / {@code Re-Activate} /
-	 * {@code Void} / {@code Close} buttons a planner presses on the instruction's own window, which is what makes the allocations
-	 * follow (or stay put).
+	 * {@code Void} / {@code Close} buttons a planner presses on the instruction's own window. Complete, Re-Activate and Void are the
+	 * ones that make the allocations follow (or stay put); Close has no delivery-instruction guard.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
@@ -321,7 +321,7 @@ public class M_Delivery_Instruction_StepDef
 
 	/**
 	 * Presses {@code Complete}, {@code Re-Activate}, {@code Void} or {@code Close} on the delivery instruction expecting it to be
-	 * REFUSED, and asserts which rejection came back. All four are guarded, so all four need the refusal form.
+	 * REFUSED, and asserts which rejection came back. Complete, Re-Activate and Void are guarded for a delivery instruction (Close is not), so those need the refusal form.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
