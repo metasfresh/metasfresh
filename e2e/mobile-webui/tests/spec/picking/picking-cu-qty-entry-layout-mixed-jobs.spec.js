@@ -62,7 +62,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 // close short, no reject reason asked; reopen
                 await PickingJobLineScreen.clickCloseButton();
-                await PickingJobScreen.waitForScreen(); // closing leads back to the job screen (release: history.goBack() is called)
+                await PickingJobScreen.waitForScreen(); // closing a line leads back to the job screen
                 await PickingJobScreen.clickLineButton({ index: 1 });
                 await PickingJobLineScreen.waitForScreen();
                 await PickingJobLineScreen.expectReOpenButtonVisible();

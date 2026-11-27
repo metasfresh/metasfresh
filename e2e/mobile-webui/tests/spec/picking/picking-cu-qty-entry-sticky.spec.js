@@ -128,7 +128,7 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 
     await test.step('"Schließen": the line is closed, nothing is asked', async () => {
         await PickingJobLineScreen.clickCloseButton();
-        await PickingJobScreen.waitForScreen();      // closing leads back to the job screen (release: history.goBack() is called)
+        await PickingJobScreen.waitForScreen();      // closing a line leads back to the job screen
         await GetQuantityDialog.expectNotShown();   // no reject reason / quantity dialog
         await PickingJobScreen.clickLineButton({ index: 1 });
         await PickingJobLineScreen.waitForScreen();
@@ -200,8 +200,8 @@ test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the coun
         },
         hus: {
             // both bookings sit in the one TU, on the lot of each scanned label
-            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' }, // the CUs' creation order is not the booking order: told apart by the TU total and the two booking rows above
-            cus: [{ attributes: { 'Lot-Nummer': lot } }, { attributes: { 'Lot-Nummer': lot } }] },
+            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' }, // the CUs' creation order is not the booking order: matched by qty
+            cusInAnyOrder: true, cus: [{ qty: '6 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '4 PCE', attributes: { 'Lot-Nummer': lot } }] },
         },
     });
 });

@@ -1,5 +1,8 @@
 package de.metas.frontend_testing.expectations;
 
+import java.util.function.Function;
+import de.metas.quantity.Quantity;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -253,7 +256,7 @@ class AssertHUExpectationsCommand
 		}
 		if (expectation.getCus() != null)
 		{
-			assertCUs(expectation.getCus(), huId);
+			assertCUs(expectation.getCus(), Boolean.TRUE.equals(expectation.getCusInAnyOrder()), huId);
 		}
 
 		if (expectation.getShipped() != null)
@@ -553,10 +556,60 @@ class AssertHUExpectationsCommand
 
 	}
 
-	private void assertCUs(@NonNull final List<JsonHUExpectation.CU> expectations, @NonNull final HuId huId)
+	/**
+	 * Orders {@code actuals} like {@code expectations}: an expectation with a qty takes the first unused actual of that qty;
+	 * the others (no qty, or no actual of that qty) take the remaining actuals in their given order, so a wrong qty still fails the per-CU check.
+	 */
+	@VisibleForTesting
+	static <E, A> List<A> alignByQty(
+			@NonNull final List<E> expectations,
+			@NonNull final Function<E, Quantity> expectedQtyOf,
+			@NonNull final List<A> actuals,
+			@NonNull final Function<A, Quantity> actualQtyOf)
 	{
-		final ArrayList<I_M_HU> cus = new ArrayList<>(services.getCUs(huId));
-		cus.sort(Comparator.comparing(I_M_HU::getM_HU_ID)); // make sure we are iterating them in the creation order
+		if (expectations.size() != actuals.size())
+		{
+			return actuals; // the size check of the caller reports it
+		}
+
+		final ArrayList<A> unused = new ArrayList<>(actuals);
+		final ArrayList<A> result = new ArrayList<>(java.util.Collections.nCopies(expectations.size(), (A)null));
+		for (int i = 0; i < expectations.size(); i++)
+		{
+			final Quantity expectedQty = expectedQtyOf.apply(expectations.get(i));
+			if (expectedQty == null)
+			{
+				continue;
+			}
+			for (final A actual : unused)
+			{
+				if (expectedQty.equals(actualQtyOf.apply(actual)))
+				{
+					result.set(i, actual);
+					unused.remove(actual);
+					break;
+				}
+			}
+		}
+		for (int i = 0; i < result.size(); i++)
+		{
+			if (result.get(i) == null)
+			{
+				result.set(i, unused.remove(0));
+			}
+		}
+		return result;
+	}
+
+	private void assertCUs(@NonNull final List<JsonHUExpectation.CU> expectations, final boolean anyOrder, @NonNull final HuId huId)
+	{
+		final ArrayList<I_M_HU> sortedCUs = new ArrayList<>(services.getCUs(huId));
+		sortedCUs.sort(Comparator.comparing(I_M_HU::getM_HU_ID)); // make sure we are iterating them in the creation order
+		final List<I_M_HU> cus = anyOrder
+				? alignByQty(
+				expectations, expectation -> expectation.getQty() != null ? expectation.getQty().toQuantity() : null,
+				sortedCUs, cu -> services.getSingleProductStorage(cu).getQty())
+				: sortedCUs;
 
 		assertThat(cus).hasSameSize(expectations);
 

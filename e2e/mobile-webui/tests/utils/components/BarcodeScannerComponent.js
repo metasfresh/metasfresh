@@ -176,8 +176,8 @@ export const BarcodeScannerComponent = {
                 const markerChanged = (observer?.takeRecords().length ?? 0) > 0;
                 observer?.disconnect();
                 const valueAfter = input?.value;
-                // The reader either echoes the keys into the input (hotfix line) or, without echoing them, marks the
-                // scanner's own input with data-scan-in-progress (release line; set for visible and invisible scanners).
+                // The reader either echoes the keys into the input or, without echoing them, marks the
+                // scanner's own input with data-scan-in-progress (set for visible and invisible scanners).
                 const echoedInInput = valueAfter !== valueBefore;
                 const markedInProgress = input?.dataset.scanInProgress === 'true';
                 if (!echoedInInput && !markerChanged) {

@@ -183,7 +183,7 @@ export const allureMeta = (story) => {
 /** Packing instructions of a GRAI-mapped TU type of P1 (`extra`: further packing instruction fields) */
 export const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
 
-// a CU booked into a bare TU: the shipment schedule records the TU, VHU_ID stays null (PickingJobPickCommand, release line)
+// a CU booked into a bare TU: the shipment schedule records the TU, VHU_ID stays null (PickingJobPickCommand)
 export const qtyPickedRow = ({ qty, tu }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu: '-', tu, lu: '-', processed: false, shipmentLineId: '-' });
 
 export { uniqueLot };
