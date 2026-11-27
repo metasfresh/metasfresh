@@ -557,6 +557,55 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
+  @Id:S32533_TC13b
+  Scenario: order drop-shipped to a Dutch third party whose VAT ID is on the partner only: the exempt line's Dutch VAT ID is stored and printed
+    Given update C_BPartner:
+      | Identifier | VATaxID        |
+      | thirdParty | NL112233442B01 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule | IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID |
+      | order      | true    | customer                 | 2026-09-02  | customer_DE                           | customer_billing                | wh_DE                         | F            | true       | thirdParty           | thirdParty_NL        |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And validate the created shipments
+      | M_InOut_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | DocStatus |
+      | shipment              | thirdParty_NL                     | true      | CO        |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCandidate                  |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCandidate                  | invoice                 |
+    # the 0 % line is justified by the third party's Dutch VAT ID (its partner's, the address has none), so that VAT ID is stored
+    And validate created invoices
+      | Identifier | C_BPartner_Location_ID | BuyerVATaxID   |
+      | invoice    | customer_billing       | NL112233442B01 |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
+
+    # the printed invoice shows the Dutch VAT ID, not the bill partner's German one
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    Then the PDF archived for the record identified by "invoice" contains text "NL112233442B01"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE123456788"
+
   @Id:S32533_TC14
   Scenario: one order line shipped to the Dutch address in two shipments, invoiced as one line: the Dutch VAT ID
     Given update C_BPartner_Location:

@@ -218,6 +218,75 @@ public class InvoiceVATaxIdServiceTest
 				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
 	}
 
+	/**
+	 * Drop-ship to a third party whose VAT ID is on its partner only: the exempt line's tax was found with that VAT ID (tax determination falls back to the partner),
+	 * so the invoice must show it, not the bill partner's.
+	 */
+	@Test
+	public void byDelivery_headerVATOfOtherPartner_exemptLine_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("NL333333330B01"), nl, null);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createExemptTax(), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+	}
+
+	/**
+	 * Central billing, domestic: the ship-to partner's header VAT ID did not decide a tax exemption, so the invoice shows the bill partner's VAT ID as before.
+	 */
+	@Test
+	public void byDelivery_headerVATOfOtherPartner_notExemptLine_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE111111125"), de, null);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerId)).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * The bill partner's own address without VAT ID and an exempt line: the bill partner's VAT ID justified it, which the invoice shows anyway.
+	 */
+	@Test
+	public void byDelivery_headerVATOfBillPartner_exemptLine_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), nl, null);
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createExemptTax(), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * Without a fiscal representation only the buyer VAT ID is resolved; the line tax is still needed if the delivery partner's header VAT ID may have justified an exemption.
+	 */
+	@Test
+	public void buyerByDelivery_headerVATOfOtherPartner_lineTaxNeeded()
+	{
+		final BPartnerLocationId thirdPartyLocation = createLocation(createBPartner("NL333333330B01"), nl, null);
+		final BPartnerLocationId ownLocationVAT = createLocation(createBPartner(null), nl, "NL444444441B01");
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(thirdPartyLocation), billPartnerId)).isTrue();
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(ownLocationVAT), billPartnerId)).isFalse();
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(thirdPartyLocation), createExemptTax(), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(thirdPartyLocation), createTax(false), billPartnerId)).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(ownLocationVAT), null, billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL444444441B01", null, null));
+	}
+
+	/**
+	 * The short-circuit looks at every org: a registration of another org (e.g. a shipment's) keeps resolution on.
+	 */
+	@Test
+	public void isVATaxIdByDeliveryPossible_registrationOfAnyOrg()
+	{
+		assertThat(service.isVATaxIdByDeliveryPossible()).isFalse();
+
+		createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.isVATaxIdByDeliveryPossible()).isTrue();
+	}
+
 	private static BPartnerId billPartnerOf(final BPartnerLocationId location)
 	{
 		return location.getBpartnerId();
@@ -286,6 +355,20 @@ public class InvoiceVATaxIdServiceTest
 		}
 		saveRecord(row);
 		return row;
+	}
+
+	private static TaxId createExemptTax()
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		tax.setName("test-exempt-tax");
+		tax.setAD_Org_ID(ORG.getRepoId());
+		tax.setValidFrom(Timestamp.valueOf("2026-01-01 00:00:00"));
+		tax.setC_TaxCategory_ID(1);
+		tax.setSOPOType("B");
+		tax.setIsFiscalRepresentation("N");
+		tax.setRequiresTaxCertificate("Y");
+		saveRecord(tax);
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 
 	private static TaxId createTax(final boolean isFiscalRepresentation)

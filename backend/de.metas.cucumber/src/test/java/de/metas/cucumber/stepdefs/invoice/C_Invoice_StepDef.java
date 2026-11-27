@@ -1143,6 +1143,32 @@ public class C_Invoice_StepDef
 	}
 
 	/**
+	 * Tries to reactivate the completed invoice in its own transaction and asserts that this fails and the invoice stays completed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the invoice identified by "invoice" cannot be reactivated
+	 * </pre>
+	 */
+	@And("the invoice identified by {string} cannot be reactivated")
+	public void invoice_cannot_be_reactivated(@NonNull final String invoiceIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		final Throwable thrown = catchThrowable(() -> trxManager.runInNewTrx(() -> {
+			final I_C_Invoice invoiceInTrx = InterfaceWrapperHelper.load(invoiceId, I_C_Invoice.class);
+			documentBL.processEx(invoiceInTrx, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+		}));
+		assertThat(thrown).as("reactivating invoice %s shall fail", invoiceIdentifier).isNotNull();
+
+		InterfaceWrapperHelper.refresh(invoice);
+		assertThat(invoice.getDocStatus()).as("DocStatus of invoice %s", invoiceIdentifier).isEqualTo(IDocument.STATUS_Completed);
+	}
+
+	/**
 	 * Tries to complete the invoice and asserts that this fails with the translated text of the given {@code AD_Message};
 	 * every literal part of the text around its {@code {n}} placeholders must be part of the error message.
 	 *

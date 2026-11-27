@@ -49,6 +49,10 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 	private final CCache<OrgId, Boolean> orgsWithActiveFiscalRepresentationCache = CCache.<OrgId, Boolean>builder()
 			.tableName(I_C_Fiscal_Representation.Table_Name)
 			.build();
+	private final CCache<Integer, Boolean> anyActiveFiscalRepresentationCache = CCache.<Integer, Boolean>builder()
+			.tableName(I_C_Fiscal_Representation.Table_Name)
+			.initialCapacity(1)
+			.build();
 
 	public void updateCountryId(final I_C_Fiscal_Representation fiscalRep)
 	{
@@ -111,6 +115,15 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 	{
 		return orgsWithActiveFiscalRepresentationCache.getOrLoad(orgId, () -> queryBL.createQueryBuilderOutOfTrx(I_C_Fiscal_Representation.class)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch());
+	}
+
+	@Override
+	public boolean hasAnyActiveFiscalRepresentationInAnyOrg()
+	{
+		return anyActiveFiscalRepresentationCache.getOrLoad(0, () -> queryBL.createQueryBuilderOutOfTrx(I_C_Fiscal_Representation.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch());

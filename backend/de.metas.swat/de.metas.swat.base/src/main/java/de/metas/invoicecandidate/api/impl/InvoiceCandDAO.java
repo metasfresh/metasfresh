@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.async.AsyncBatchId;
@@ -131,6 +132,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -749,9 +751,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public ImmutableSet<InvoiceLineId> retrieveInvoiceLineIdsWithAllocation(@NonNull final InvoiceId invoiceId)
+	public ImmutableMap<InvoiceLineId, ImmutableList<InvoiceCandidateId>> retrieveInvoiceCandidateIdsByAllocatedLine(@NonNull final InvoiceId invoiceId)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+		final Map<InvoiceLineId, ImmutableList.Builder<InvoiceCandidateId>> candidateIdsByLineId = new LinkedHashMap<>();
+		queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(
 						I_C_Invoice_Line_Alloc.COLUMNNAME_C_InvoiceLine_ID,
@@ -759,10 +762,20 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 								.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
 								.create())
+				.orderBy(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.stream()
-				.map(alloc -> InvoiceLineId.ofRepoId(alloc.getC_InvoiceLine_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+				.forEach(alloc -> {
+					final ImmutableList.Builder<InvoiceCandidateId> candidateIds = candidateIdsByLineId.computeIfAbsent(InvoiceLineId.ofRepoId(alloc.getC_InvoiceLine_ID()), lineId -> ImmutableList.builder());
+					final InvoiceCandidateId candidateId = InvoiceCandidateId.ofRepoIdOrNull(alloc.getC_Invoice_Candidate_ID());
+					if (candidateId != null)
+					{
+						candidateIds.add(candidateId);
+					}
+				});
+		return candidateIdsByLineId.entrySet()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, entry -> entry.getValue().build()));
 	}
 
 	/**

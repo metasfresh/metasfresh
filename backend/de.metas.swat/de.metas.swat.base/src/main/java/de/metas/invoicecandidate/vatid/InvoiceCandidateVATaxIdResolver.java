@@ -24,13 +24,16 @@ package de.metas.invoicecandidate.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.IFiscalRepresentationBL;
-import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,10 +53,10 @@ import java.util.Map;
  * the candidate's tax location and the tax its invoice line will get, resolved by {@link InvoiceVATaxIdService}
  * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByDelivery}).
  * <p>
- * Invoicing runs of customers who cannot use VAT IDs by delivery pay for none of this: if the candidate's org has no active fiscal representation
- * and no partner location carries a VAT ID, the result is {@link InvoiceVATaxIds#NONE} without looking at the candidate's location or tax
- * ({@link InvoiceVATaxIdService#isVATaxIdByDeliveryPossible}, cached).
- * If only the fiscal representation is missing, the line's tax cannot give a seller VAT ID, so it is not looked up.
+ * Invoicing runs of customers who cannot use VAT IDs by delivery pay for almost none of this: if no org has an active fiscal representation
+ * and no partner location carries a VAT ID ({@link InvoiceVATaxIdService#isVATaxIdByDeliveryPossible}, cached), the result is {@link InvoiceVATaxIds#NONE}
+ * without looking at the candidate's location or predicting its tax, unless the line can be exempt on another partner's VAT ID (see {@link #isExemptOnOtherPartnerPossible}).
+ * If only the tax location org's fiscal representation is missing, the line's tax cannot give a seller VAT ID, so it is predicted only if the buyer VAT ID depends on it.
  */
 @Component
 @RequiredArgsConstructor
@@ -61,6 +64,8 @@ public class InvoiceCandidateVATaxIdResolver
 {
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
 	@NonNull private final InvoiceCandidateLineTaxResolver lineTaxResolver;
 
@@ -89,24 +94,52 @@ public class InvoiceCandidateVATaxIdResolver
 			return null;
 		}
 
-		if (!invoiceVATaxIdService.isVATaxIdByDeliveryPossible(OrgId.ofRepoId(ic.getAD_Org_ID())))
+		if (!invoiceVATaxIdService.isVATaxIdByDeliveryPossible() && !isExemptOnOtherPartnerPossible(ic, shipmentLine, cache))
 		{
 			return InvoiceVATaxIds.NONE;
 		}
 
-		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(ic, shipmentLine);
 		final BPartnerId billPartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
+
+		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(ic, shipmentLine);
 		if (!fiscalRepresentationBL.hasAnyActiveFiscalRepresentation(taxLocation.getOrgId()))
 		{
+			final TaxId lineTax = invoiceVATaxIdService.isLineTaxNeededForBuyer(taxLocation, billPartnerId)
+					? lineTaxResolver.getLineTax(ic, shipmentLine)
+					: null;
 			return cache.resolved.computeIfAbsent(
-					new ResolveKey(taxLocation, null, billPartnerId),
-					key -> invoiceVATaxIdService.resolveBuyerIfByDelivery(key.getTaxLocation(), key.getBillPartnerId()));
+					new ResolveKey(taxLocation, lineTax, billPartnerId),
+					key -> invoiceVATaxIdService.resolveBuyerIfByDelivery(key.getTaxLocation(), key.getTaxId(), key.getBillPartnerId()));
 		}
 
 		final TaxId lineTax = lineTaxResolver.getLineTax(ic, shipmentLine);
 		return cache.resolved.computeIfAbsent(
 				new ResolveKey(taxLocation, lineTax, billPartnerId),
 				key -> invoiceVATaxIdService.resolveIfByDelivery(key.getTaxLocation(), lineTax, key.getBillPartnerId()));
+	}
+
+	/**
+	 * Without registrations and location VAT IDs, a line can only use VAT IDs by delivery if its tax is exempt on the VAT ID of a partner other than the bill partner
+	 * (see {@link InvoiceVATaxIdService#resolveIfByDelivery}). Checked without looking up the candidate's tax location or predicting its line tax:
+	 * <ul>
+	 *     <li>without shipment line, the invoice line gets the candidate's effective tax;</li>
+	 *     <li>with shipment line, the line is taxed from the shipment's location (see {@link de.metas.invoicecandidate.api.impl.ShipmentTaxLocation}), so only a shipment to another partner's location can matter.</li>
+	 * </ul>
+	 */
+	private boolean isExemptOnOtherPartnerPossible(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@Nullable final I_M_InOutLine shipmentLine,
+			@NonNull final Cache cache)
+	{
+		if (shipmentLine == null)
+		{
+			return invoiceVATaxIdService.isRequiresTaxCertificate(invoiceCandBL.getTaxEffective(ic).getTaxId());
+		}
+
+		final BPartnerId shipmentPartnerId = cache.shipmentPartnerIds.computeIfAbsent(
+				InOutId.ofRepoId(shipmentLine.getM_InOut_ID()),
+				shipmentId -> InOutDocumentLocationAdapterFactory.locationAdapter(inOutDAO.getById(shipmentId)).getBPartnerLocationAndCaptureId().getBpartnerId());
+		return !shipmentPartnerId.equals(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()));
 	}
 
 	/**
@@ -124,6 +157,7 @@ public class InvoiceCandidateVATaxIdResolver
 	public static final class Cache
 	{
 		private final Map<ResolveKey, InvoiceVATaxIds> resolved = new HashMap<>();
+		private final Map<InOutId, BPartnerId> shipmentPartnerIds = new HashMap<>();
 
 		private Cache() {}
 	}

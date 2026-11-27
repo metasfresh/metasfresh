@@ -38,6 +38,7 @@ import de.metas.tax.api.VATIdentifier;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Fiscal_Representation;
@@ -68,48 +69,87 @@ public class InvoiceVATaxIdService
 	}
 
 	/**
-	 * @return {@code false} if no invoice of the given org can use VAT IDs by delivery, so all its invoices store {@link InvoiceVATaxIds#NONE} without looking at their lines:
-	 * the org has no active fiscal representation and no partner location carries a VAT ID ({@link #hasOwnVATaxId} is then false for every location).
-	 * Both facts are cached, so this costs no query per invoice or candidate. A pure optimisation: whenever it returns {@code false}, resolving would give none as well.
+	 * @return {@code false} if no line of any org can use VAT IDs by delivery because of master data: no org has an active fiscal representation
+	 * and no partner location carries a VAT ID. Both facts are cached, so this costs no query.
+	 * Then only a line whose tax requires a tax certificate (i.e. is exempt on the buyer's VAT ID) can still resolve to values (see {@link #resolveIfByDelivery}):
+	 * callers may skip a line only if this returns {@code false} and its tax does not require a tax certificate, so skipping never changes a result.
+	 * All orgs are looked at because a line's registration is the one of its tax location's org (e.g. the shipment's), not necessarily the invoice's.
 	 */
-	public boolean isVATaxIdByDeliveryPossible(@NonNull final OrgId orgId)
+	public boolean isVATaxIdByDeliveryPossible()
 	{
-		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentation(orgId) || bpartnerDAO.isAnyLocationWithVATaxId();
+		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentationInAnyOrg() || bpartnerDAO.isAnyLocationWithVATaxId();
 	}
 
 	/**
-	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery: a fiscal representation applies,
-	 * or its location has a VAT ID of its own that differs from the bill partner's VAT ID (the value the invoice's outputs show without stored values).
-	 * Otherwise {@link InvoiceVATaxIds#NONE}: the invoice is grouped and stores no values, so its outputs show the bill partner's VAT ID, as without per-address VAT IDs.
+	 * @return {@code true} if the given tax is exempt on the buyer's VAT ID ({@code C_Tax.RequiresTaxCertificate='Y'})
+	 */
+	public boolean isRequiresTaxCertificate(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId).isRequiresTaxCertificate();
+	}
+
+	/**
+	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery; otherwise {@link InvoiceVATaxIds#NONE}:
+	 * the invoice is grouped and stores no values, so its outputs show the bill partner's VAT ID, as without per-address VAT IDs.
+	 * A line uses VAT IDs by delivery if a fiscal representation applies, or if its buyer VAT ID (the one tax determination uses: the location's, else that location's partner's)
+	 * differs from the bill partner's VAT ID (the value the outputs show without stored values) and
+	 * <ul>
+	 *     <li>the location carries that VAT ID itself, or</li>
+	 *     <li>the line's tax requires a tax certificate, i.e. that VAT ID justified the exemption (e.g. a drop-ship to a third party whose VAT ID is on its partner only).</li>
+	 * </ul>
+	 * A delivery partner's VAT ID that did not decide the tax is not shown (e.g. central billing with domestic deliveries to other partners).
 	 */
 	@NonNull
 	public InvoiceVATaxIds resolveIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
 	{
-		return ifByDelivery(resolve(taxLocation, lineTax), taxLocation, billPartnerId);
+		return ifByDelivery(resolve(taxLocation, lineTax), taxLocation, lineTax, billPartnerId);
 	}
 
 	/**
-	 * Like {@link #resolveIfByDelivery}, for an org without any fiscal representation: no line tax can give a seller VAT ID, so only the buyer VAT ID is resolved and the line tax is not needed.
+	 * Like {@link #resolveIfByDelivery}, for a tax location whose org has no fiscal representation: no line tax can give a seller VAT ID, so only the buyer VAT ID is resolved.
+	 *
+	 * @param lineTax the tax of the line; may be {@code null} only if {@link #isLineTaxNeededForBuyer} is {@code false}
 	 */
 	@NonNull
-	public InvoiceVATaxIds resolveBuyerIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	public InvoiceVATaxIds resolveBuyerIfByDelivery(@NonNull final TaxLocation taxLocation, @Nullable final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
 	{
-		return ifByDelivery(new InvoiceVATaxIds(getBuyerVATaxId(taxLocation), null, null), taxLocation, billPartnerId);
+		return ifByDelivery(new InvoiceVATaxIds(getBuyerVATaxId(taxLocation), null, null), taxLocation, lineTax, billPartnerId);
+	}
+
+	/**
+	 * @return {@code true} if the result of {@link #resolveBuyerIfByDelivery} depends on the line's tax: the location has no VAT ID of its own,
+	 * but its partner's VAT ID differs from the bill partner's
+	 */
+	public boolean isLineTaxNeededForBuyer(@NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	{
+		return !hasOwnVATaxId(taxLocation.getBpartnerLocationId())
+				&& !Objects.equals(getBuyerVATaxId(taxLocation), getHeaderVATaxId(billPartnerId));
 	}
 
 	@NonNull
-	private InvoiceVATaxIds ifByDelivery(@NonNull final InvoiceVATaxIds vatTaxIds, @NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	private InvoiceVATaxIds ifByDelivery(
+			@NonNull final InvoiceVATaxIds vatTaxIds,
+			@NonNull final TaxLocation taxLocation,
+			@Nullable final TaxId lineTax,
+			@NonNull final BPartnerId billPartnerId)
 	{
 		if (vatTaxIds.getFiscalRepresentationId() != null)
 		{
 			return vatTaxIds;
 		}
-		if (hasOwnVATaxId(taxLocation.getBpartnerLocationId())
-				&& !Objects.equals(vatTaxIds.getBuyerVATaxId(), getHeaderVATaxId(billPartnerId)))
+		if (vatTaxIds.getBuyerVATaxId() == null || Objects.equals(vatTaxIds.getBuyerVATaxId(), getHeaderVATaxId(billPartnerId)))
+		{
+			return InvoiceVATaxIds.NONE;
+		}
+		if (hasOwnVATaxId(taxLocation.getBpartnerLocationId()))
 		{
 			return vatTaxIds;
 		}
-		return InvoiceVATaxIds.NONE;
+		if (lineTax == null)
+		{
+			throw new AdempiereException("The line tax is needed to resolve the buyer VAT ID of " + taxLocation);
+		}
+		return isRequiresTaxCertificate(lineTax) ? vatTaxIds : InvoiceVATaxIds.NONE;
 	}
 
 	@Nullable

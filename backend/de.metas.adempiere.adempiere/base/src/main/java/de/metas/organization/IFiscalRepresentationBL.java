@@ -48,6 +48,11 @@ public interface IFiscalRepresentationBL extends ISingletonService
 	 */
 	boolean hasAnyActiveFiscalRepresentation(@NonNull OrgId orgId);
 
+	/**
+	 * @return true if any org has an active registration, in whatever country and validity period; cached until a registration changes
+	 */
+	boolean hasAnyActiveFiscalRepresentationInAnyOrg();
+
 	@NonNull
 	I_C_Fiscal_Representation getById(@NonNull FiscalRepresentationId fiscalRepresentationId);
 }

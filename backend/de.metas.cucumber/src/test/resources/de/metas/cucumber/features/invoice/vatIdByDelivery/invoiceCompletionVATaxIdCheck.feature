@@ -145,6 +145,33 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
       | invoice_NL | CO        | NL123456782B01 |               |                            |
 
+  @Id:S32533_TC10d3
+  Scenario: a completed manual invoice with order line lines cannot be reactivated, so it is never completed again on the candidate path
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order_NL   | true    | customer                 | 2026-10-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_NL | order_NL              | service                 | 5          |
+    And the order identified by order_NL is completed
+
+    # created by hand from the order line, with its exempt Dutch tax: taxed from the Dutch delivery address
+    When metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customer      | customer_billing       | pl_DE          | Ausgangsrechnung        | 2026-10-02   | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_OrderLine_ID | C_Tax_ID |
+      | invoiceL1  | invoice      | service      | 5 PCE       | orderLine_NL   | taxDENL0 |
+    And the invoice identified by invoice is completed
+    Then validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   |
+      | invoice    | CO        | NL123456782B01 |
+    # completing linked the line to the order line's invoice candidate; a second completion would see it as a candidate line, but there is none
+    And the invoice identified by "invoice" cannot be reactivated
+    And validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   |
+      | invoice    | CO        | NL123456782B01 |
+
   @Id:S32533_TC10d2
   Scenario: a manual invoice for shipments to two partners with VAT IDs on the partners only (no address VAT ID, no fiscal representation) completes as before, without stored VAT IDs
     Given metasfresh contains C_Location:

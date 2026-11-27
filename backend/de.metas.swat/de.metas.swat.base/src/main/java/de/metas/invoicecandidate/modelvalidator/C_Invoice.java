@@ -48,6 +48,7 @@ public class C_Invoice
 
 	/**
 	 * Runs before {@link #handleCompleteForInvoice(I_C_Invoice)} creates the allocations of a manual invoice, so a manual invoice is still recognised as one.
+	 * A completed invoice cannot be reactivated ({@code MInvoice.reActivateIt}), so it is never completed again with those allocations.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void stampOrCheckVATaxIds(final I_C_Invoice invoice)

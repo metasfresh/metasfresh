@@ -283,11 +283,43 @@ class C_InvoiceVATaxIdCheckTest
 	}
 
 	/**
-	 * A customer without a fiscal representation and without any partner location that carries a VAT ID cannot use VAT IDs by delivery:
-	 * the invoice stores none, and neither its lines nor their taxes are looked at.
+	 * A customer without a fiscal representation and without any partner location that carries a VAT ID cannot use VAT IDs by delivery for lines that are not exempt on a VAT ID:
+	 * the invoice stores none, and its lines are not resolved (only their cached taxes are looked at).
 	 */
 	@Test
-	void noFiscalRepresentationAndNoLocationWithVATaxId_storesNoneWithoutTaxLookup()
+	void noFiscalRepresentationAndNoLocationWithVATaxId_notExemptLines_storesNoneWithoutResolving()
+	{
+		deliveryNL.setVATaxID(null);
+		save(deliveryNL);
+		billToDE.setVATaxID(null);
+		save(billToDE);
+		final I_C_Invoice invoice = createInvoice(NL_VAT);
+		invoice.setSellerVATaxID(SELLER_VAT);
+		invoice.setC_Fiscal_Representation_ID(FISCAL_REPRESENTATION_ID);
+		save(invoice);
+		createCandidateLine(invoice, taxDEDE19, deliveryNL);
+		createLine(invoice, taxDEDE19);
+
+		final ITaxDAO taxDAO = Mockito.spy(Services.get(ITaxDAO.class));
+		Services.registerService(ITaxDAO.class, taxDAO);
+		final InvoiceVATaxIdService service = Mockito.spy(new InvoiceVATaxIdService());
+		final InvoiceVATaxIdStamper stamperWithSpies = new InvoiceVATaxIdStamper(service);
+
+		stamperWithSpies.stampOrCheck(invoice);
+
+		assertThat(invoice.getBuyerVATaxID()).isNull();
+		assertThat(invoice.getSellerVATaxID()).isNull();
+		assertThat(invoice.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+		Mockito.verify(service, Mockito.never()).resolveIfByDelivery(Mockito.any(), Mockito.any(), Mockito.any());
+		Mockito.verify(taxDAO, Mockito.never()).getBy(Mockito.any());
+	}
+
+	/**
+	 * Without fiscal representations and location VAT IDs, exempt lines are still resolved: their tax was found with a VAT ID, which the invoice must show if it is not the bill partner's.
+	 * Here it is the bill partner's own VAT ID (the Dutch address has none), so the invoice stores none; no tax is determined anew.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationWithVATaxId_exemptLinesOnBillPartnerVATaxId_storesNone()
 	{
 		deliveryNL.setVATaxID(null);
 		save(deliveryNL);
@@ -300,16 +332,35 @@ class C_InvoiceVATaxIdCheckTest
 		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 		createLine(invoice, taxDENL0Exempt);
 
-		final ITaxDAO taxDAO = Mockito.mock(ITaxDAO.class);
+		final ITaxDAO taxDAO = Mockito.spy(Services.get(ITaxDAO.class));
 		Services.registerService(ITaxDAO.class, taxDAO);
-		final InvoiceVATaxIdStamper stamperWithMockedTaxDAO = new InvoiceVATaxIdStamper(new InvoiceVATaxIdService());
+		final InvoiceVATaxIdStamper stamperWithSpy = new InvoiceVATaxIdStamper(new InvoiceVATaxIdService());
 
-		stamperWithMockedTaxDAO.stampOrCheck(invoice);
+		stamperWithSpy.stampOrCheck(invoice);
 
 		assertThat(invoice.getBuyerVATaxID()).isNull();
 		assertThat(invoice.getSellerVATaxID()).isNull();
 		assertThat(invoice.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
-		Mockito.verifyZeroInteractions(taxDAO);
+		Mockito.verify(taxDAO, Mockito.never()).getBy(Mockito.any());
+	}
+
+	/**
+	 * Without fiscal representations and location VAT IDs: a line shipped to a third party whose VAT ID is on its partner only and exempt on it stores that VAT ID.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationWithVATaxId_exemptLineOnThirdPartyHeaderVATaxId_storesIt()
+	{
+		deliveryNL.setVATaxID(null);
+		save(deliveryNL);
+		billToDE.setVATaxID(null);
+		save(billToDE);
+		final I_C_BPartner_Location thirdPartyNL = createLocation(createBPartner("NL112233442B01"), load(deliveryNL.getC_Location_ID(), I_C_Location.class).getC_Country_ID(), null);
+		final I_C_Invoice invoice = createInvoice(null);
+		createCandidateLine(invoice, taxDENL0Exempt, thirdPartyNL);
+
+		stamper.stampOrCheck(invoice);
+
+		assertThat(invoice.getBuyerVATaxID()).isEqualTo("NL112233442B01");
 	}
 
 	@Test
@@ -367,6 +418,43 @@ class C_InvoiceVATaxIdCheckTest
 
 		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
 		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * A credit memo with a line added by hand that credits no line (e.g. a restocking fee, taxed from the German bill-to) next to a credited line:
+	 * the added line is checked like one added by hand to a candidate invoice - not exempt, so accepted - and the credit memo keeps the credited invoice's values.
+	 */
+	@Test
+	void creditMemo_handAddedNotExemptLine_isAccepted()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
+		createLine(creditMemo, taxDEDE19);
+
+		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
+		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * A line added by hand to a credit memo that is exempt on a VAT ID other than the stored one (here the German bill-to's) is rejected, as on a candidate invoice.
+	 */
+	@Test
+	void creditMemo_handAddedExemptLineOnOtherVATaxId_fails()
+	{
+		final I_C_Tax taxDEDE0Exempt = createTax(true, deId, deId);
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
+		final I_C_InvoiceLine handAddedLine = createLine(creditMemo, taxDEDE0Exempt);
+		handAddedLine.setM_InOutLine_ID(createShipmentLine(createLocation(createBPartner(OTHER_DE_VAT), deId, null)).getM_InOutLine_ID());
+		save(handAddedLine);
+
+		assertThatThrownBy(() -> stamper.stampOrCheck(creditMemo))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_ExemptLineVATaxIdMismatch");
 	}
 
 	/**
@@ -484,7 +572,7 @@ class C_InvoiceVATaxIdCheckTest
 
 	/**
 	 * A manual invoice whose lines resolve no VAT ID of an address and no fiscal representation completes as before:
-	 * here the two shipments went to partners with different VAT IDs on the partner only.
+	 * here the two domestic shipments went to partners with different VAT IDs on the partner only (central billing); their VAT IDs did not decide the domestic tax.
 	 */
 	@Test
 	void manualInvoiceWithoutAddressVATaxIdOrFiscalRepresentation_isNotStamped()
@@ -492,8 +580,8 @@ class C_InvoiceVATaxIdCheckTest
 		final I_C_BPartner_Location deliveryPartner1 = createLocation(createBPartner(DE_VAT), deId, null);
 		final I_C_BPartner_Location deliveryPartner2 = createLocation(createBPartner(OTHER_DE_VAT), deId, null);
 		final I_C_Invoice invoice = createInvoice(null);
-		createLineForShipment(invoice, deliveryPartner1);
-		createLineForShipment(invoice, deliveryPartner2);
+		createLineForShipment(invoice, deliveryPartner1, taxDEDE19);
+		createLineForShipment(invoice, deliveryPartner2, taxDEDE19);
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
 		assertThat(invoice.getBuyerVATaxID()).isNull();
@@ -644,7 +732,12 @@ class C_InvoiceVATaxIdCheckTest
 
 	private void createLineForShipment(final I_C_Invoice invoice, final I_C_BPartner_Location delivery)
 	{
-		final I_C_InvoiceLine line = createLine(invoice, taxDENL0Exempt);
+		createLineForShipment(invoice, delivery, taxDENL0Exempt);
+	}
+
+	private void createLineForShipment(final I_C_Invoice invoice, final I_C_BPartner_Location delivery, final I_C_Tax tax)
+	{
+		final I_C_InvoiceLine line = createLine(invoice, tax);
 		line.setM_InOutLine_ID(createShipmentLine(delivery).getM_InOutLine_ID());
 		save(line);
 	}

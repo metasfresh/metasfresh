@@ -31,11 +31,13 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,17 +74,18 @@ class InvoiceCandidateVATaxIdResolverTest
 	}
 
 	/**
-	 * A customer who cannot use VAT IDs by delivery (no fiscal representation of the org, no partner location with a VAT ID of its own)
-	 * pays nothing per candidate: neither the candidate's tax location nor the tax of its line is looked up.
+	 * A customer who cannot use VAT IDs by delivery (no fiscal representation of any org, no partner location with a VAT ID of its own)
+	 * pays nothing per candidate whose tax is not exempt on a VAT ID: neither the candidate's tax location nor the tax of its line is looked up.
 	 */
 	@Test
 	void noFiscalRepresentationAndNoLocationVATaxId_noLocationOrTaxLookup()
 	{
 		final InvoiceCandidateVATaxIdResolver resolverWithFailingLookups = newResolverWithFailingLookups(null);
 
-		// a sales candidate without tax, location or handler: any tax or location lookup would fail on it
+		// a sales candidate without location or handler: any location lookup would fail on it; its (cached) tax is not exempt
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setIsSOTrx(true);
+		ic.setC_Tax_ID(createTax(false).getRepoId());
 		save(ic);
 
 		assertThat(resolverWithFailingLookups.resolve(ic, null, resolverWithFailingLookups.newCache())).isEqualTo(InvoiceVATaxIds.NONE);
@@ -145,6 +148,96 @@ class InvoiceCandidateVATaxIdResolverTest
 
 		final InvoiceVATaxIds vatTaxIds = resolverWithFailingTaxLookup.resolve(ic, null, resolverWithFailingTaxLookup.newCache());
 		assertThat(vatTaxIds).isEqualTo(new InvoiceVATaxIds("NL123456782B01", null, null));
+	}
+
+	/**
+	 * The short-circuit never changes a result: without fiscal representations and location VAT IDs, a candidate exempt on the VAT ID of a drop-ship third party
+	 * (on its partner only) is resolved to that VAT ID, which justified the exemption.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationVATaxId_exemptOnThirdPartyHeaderVATaxId_isResolved()
+	{
+		final I_C_BPartner thirdParty = newInstance(I_C_BPartner.class);
+		thirdParty.setVATaxID("NL112233442B01");
+		save(thirdParty);
+		final I_C_BPartner_Location thirdPartyLocation = newInstance(I_C_BPartner_Location.class);
+		thirdPartyLocation.setC_BPartner_ID(thirdParty.getC_BPartner_ID());
+		save(thirdPartyLocation);
+		final BPartnerLocationId thirdPartyLocationId = BPartnerLocationId.ofRepoId(thirdParty.getC_BPartner_ID(), thirdPartyLocation.getC_BPartner_Location_ID());
+
+		final I_C_BPartner billPartner = newInstance(I_C_BPartner.class);
+		billPartner.setVATaxID("DE123456788");
+		save(billPartner);
+
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setIsSOTrx(true);
+		ic.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
+		ic.setC_Tax_ID(createTax(true).getRepoId());
+		save(ic);
+
+		final TaxLocation taxLocation = new TaxLocation(thirdPartyLocationId, OrgId.ofRepoId(ic.getAD_Org_ID()), TimeUtil.parseTimestamp("2026-09-02"), null);
+		registerHandlerBL(taxLocation);
+		final InvoiceCandidateVATaxIdResolver resolverWithLineTax = new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting(), new InvoiceCandidateLineTaxResolver());
+
+		assertThat(resolverWithLineTax.resolve(ic, null, resolverWithLineTax.newCache()))
+				.isEqualTo(new InvoiceVATaxIds("NL112233442B01", null, null));
+	}
+
+	/**
+	 * Central billing: the same candidate with a tax that is not exempt keeps the bill partner's VAT ID (nothing stored), as before.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationVATaxId_notExemptForThirdParty_none()
+	{
+		final I_C_BPartner thirdParty = newInstance(I_C_BPartner.class);
+		thirdParty.setVATaxID("DE111111125");
+		save(thirdParty);
+		final I_C_BPartner_Location thirdPartyLocation = newInstance(I_C_BPartner_Location.class);
+		thirdPartyLocation.setC_BPartner_ID(thirdParty.getC_BPartner_ID());
+		save(thirdPartyLocation);
+		final BPartnerLocationId thirdPartyLocationId = BPartnerLocationId.ofRepoId(thirdParty.getC_BPartner_ID(), thirdPartyLocation.getC_BPartner_Location_ID());
+
+		final I_C_BPartner billPartner = newInstance(I_C_BPartner.class);
+		billPartner.setVATaxID("DE123456788");
+		save(billPartner);
+
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setIsSOTrx(true);
+		ic.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
+		ic.setC_Tax_ID(createTax(false).getRepoId());
+		save(ic);
+
+		final TaxLocation taxLocation = new TaxLocation(thirdPartyLocationId, OrgId.ofRepoId(ic.getAD_Org_ID()), TimeUtil.parseTimestamp("2026-09-02"), null);
+		registerHandlerBL(taxLocation);
+		final InvoiceCandidateVATaxIdResolver resolverWithLineTax = new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting(), new InvoiceCandidateLineTaxResolver());
+
+		assertThat(resolverWithLineTax.resolve(ic, null, resolverWithLineTax.newCache())).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	private static TaxId createTax(final boolean requiresTaxCertificate)
+	{
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("test-tax");
+		tax.setValidFrom(TimeUtil.parseTimestamp("2026-01-01"));
+		tax.setC_TaxCategory_ID(1);
+		tax.setSOPOType("B");
+		tax.setRequiresTaxCertificate(requiresTaxCertificate ? "Y" : "N");
+		save(tax);
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
+	}
+
+	private static void registerHandlerBL(final TaxLocation taxLocation)
+	{
+		final IInvoiceCandidateHandlerBL handlerBL = Mockito.mock(
+				IInvoiceCandidateHandlerBL.class,
+				invocation -> {
+					if ("getTaxLocation".equals(invocation.getMethod().getName()))
+					{
+						return taxLocation;
+					}
+					throw new AssertionError("unexpected handler call: " + invocation);
+				});
+		Services.registerService(IInvoiceCandidateHandlerBL.class, handlerBL);
 	}
 
 	/**
