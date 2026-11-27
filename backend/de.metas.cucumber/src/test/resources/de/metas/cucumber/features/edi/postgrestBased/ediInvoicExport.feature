@@ -1570,6 +1570,7 @@ Feature: EDI INVOIC export via postgREST
 @allure.label.feature:F00350_EDI
 @F00350
   Scenario: INVOIC JSON of an invoice without a stored buyer VAT ID falls back to the partner's VAT ID on the buyer and invoice parties
+    # the billing address carries another VAT ID than the partner: the parties show the partner's, so the fallback source is pinned
     Given metasfresh has date and time 2026-09-02T10:00:00+02:00[Europe/Berlin]
     And the org partner of organisation 1000000 has VATaxID 'DE136695976' for this scenario
     And all periods are open
@@ -1602,10 +1603,10 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | M_PriceList_ID   |
       | salesPLVNL | salesPriceListNL |
     And metasfresh contains M_Products:
-      | Identifier         | Value              | Name               |
-      | product_S32533_NL_NoStored  | product_S32533_NL_NoStored  | product_S32533_NL_NoStored  |
+      | Identifier                 | Value                      | Name                       |
+      | product_S32533_NL_NoStored | product_S32533_NL_NoStored | product_S32533_NL_NoStored |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | M_PriceList_Version_ID | M_Product_ID               | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | product_S32533_NL_NoStored | 5.00     | PCE      | taxCategory      |
       | salesPLVNL             | product_S32533_NL_NoStored | 5.00     | PCE      | taxCategory      |
     And metasfresh contains C_Location:
@@ -1616,12 +1617,12 @@ Feature: EDI INVOIC export via postgREST
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier |
       | customerNL | Y          | N        | pricingSystem      | D           | DE123456788 | aggHeader                            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
-      | customerNL_billing  | 0123456789201 | customerNL    | N        | N               | Y        | Y               | location_billing             |
-      | customerNL_NL       | 0123456789204 | customerNL    | Y        | Y               | N        | N               | location_NL                  |
+      | Identifier         | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | customerNL_billing | 0123456789201 | customerNL    | N        | N               | Y        | Y               | location_billing             |
+      | customerNL_NL      | 0123456789204 | customerNL    | Y        | Y               | N        | N               | location_NL                  |
     And update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | VATaxID        |
-      | customerNL_billing                | DE123456788    |
+      | C_BPartner_Location_ID.Identifier | VATaxID     |
+      | customerNL_billing                | DE222222220 |
     And metasfresh contains M_Warehouse:
       | Identifier | IsDropShipWarehouse |
       | wh_DE      | N                   |
@@ -1629,14 +1630,14 @@ Feature: EDI INVOIC export via postgREST
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inventory                 | 2026-09-02   | wh_DE          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID      | QtyBook | QtyCount | UOM.X12DE355 |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID               | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | inventoryLine                 | product_S32533_NL_NoStored | 0       | 10       | PCE          |
     And the inventory identified by inventory is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerNL    | 2026-09-02  | customerNL_NL                         | customerNL_billing              | wh_DE                         | F            |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID               | QtyEntered |
       | orderLine  | order                 | product_S32533_NL_NoStored | 10         |
     And the order identified by order is completed
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1655,7 +1656,7 @@ Feature: EDI INVOIC export via postgREST
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
       | invoiceCandidate                  | invoice                 | invoice_ID   |
     And validate created invoices
-      | Identifier | C_BPartner_Location_ID | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
+      | Identifier | C_BPartner_Location_ID | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
       | invoice    | customerNL_billing     |              |               |                            |
 
     And the following API_Audit_Config records are created:
