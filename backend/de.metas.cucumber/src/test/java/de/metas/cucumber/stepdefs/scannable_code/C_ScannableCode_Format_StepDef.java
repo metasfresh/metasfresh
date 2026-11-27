@@ -166,10 +166,16 @@ public class C_ScannableCode_Format_StepDef
 	public void deleteCreatedFormats()
 	{
 		pendingFormatNames.clear();
-		reactivateDeactivatedFormats(); // normally already done by the step; here for a step that was interrupted
 		unrelatedFormatIdentifiers.clear();
-		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
-		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
+		try
+		{
+			reactivateDeactivatedFormats(); // retries formats that the step could not reactivate
+		}
+		finally
+		{
+			formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
+			formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
+		}
 	}
 
 	/**
@@ -180,20 +186,38 @@ public class C_ScannableCode_Format_StepDef
 	@Given("parse scanned code and expect:")
 	public void parseScannedCodeAndExpect(@NonNull final DataTable dataTable)
 	{
+		Throwable primaryFailure = null;
 		try
 		{
 			deactivateFormatsNotOfTheScenario();
 			DataTableRows.of(dataTable).forEach(this::parseAndExpect);
 		}
+		catch (final Throwable t)
+		{
+			primaryFailure = t;
+			throw t;
+		}
 		finally
 		{
-			reactivateDeactivatedFormats();
+			try
+			{
+				reactivateDeactivatedFormats();
+			}
+			catch (final RuntimeException e)
+			{
+				// must not replace the scenario's own failure
+				if (primaryFailure == null)
+				{
+					throw e;
+				}
+				primaryFailure.addSuppressed(e);
+			}
 		}
 	}
 
 	/**
 	 * Makes the scenario's own formats the only active ones: a format that is not one of the scenario's (e.g. added by a migration) could read the same codes
-	 * and, being tried first, change the result. Test isolation only; the expectations are not touched.
+	 * and, depending on the order in which formats are tried, change the result. Test isolation only; the expectations are not touched.
 	 */
 	private void deactivateFormatsNotOfTheScenario()
 	{
@@ -210,10 +234,11 @@ public class C_ScannableCode_Format_StepDef
 	}
 
 	/**
-	 * Reactivates every format that was deactivated; a format that fails does not stop the others and does not hide the scenario's own error.
+	 * Reactivates every format that was deactivated; a format that fails does not stop the others; failed ones stay in the list (retried by the @After) and are named in the exception.
 	 */
 	private void reactivateDeactivatedFormats()
 	{
+		final List<I_C_ScannableCode_Format> failed = new ArrayList<>();
 		RuntimeException firstError = null;
 		for (final I_C_ScannableCode_Format format : deactivatedFormats)
 		{
@@ -224,6 +249,7 @@ public class C_ScannableCode_Format_StepDef
 			}
 			catch (final RuntimeException e)
 			{
+				failed.add(format);
 				if (firstError == null)
 				{
 					firstError = e;
@@ -235,10 +261,12 @@ public class C_ScannableCode_Format_StepDef
 			}
 		}
 		deactivatedFormats.clear();
+		deactivatedFormats.addAll(failed);
 
 		if (firstError != null)
 		{
-			throw new AdempiereException("Failed to reactivate scannable code formats deactivated by the step; they stay inactive", firstError);
+			final String names = failed.stream().map(f -> f.getName() + " (C_ScannableCode_Format_ID=" + f.getC_ScannableCode_Format_ID() + ")").collect(java.util.stream.Collectors.joining(", "));
+			throw new AdempiereException("Failed to reactivate scannable code formats deactivated by the step; they stay inactive: " + names, firstError);
 		}
 	}
 
