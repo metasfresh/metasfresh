@@ -91,13 +91,15 @@ const isField = (element) =>
 
 /**
  * @param {...?{contains: function(Node): boolean}} containers as for {@link isCursorHeldOutside}
- * @returns {boolean} true if the cursor is in a field outside the given containers and the user works in that
- *          field: the user put the cursor in it, or typed or clicked in it, and the cursor has stayed within that
- *          widget's field container since (an app hand-over between a lookup's sub-fields, or a new input the widget
- *          rendered, still counts). False for a field that got the cursor by itself (e.g. the first field of a loaded
- *          document) unless the user typed or clicked in it, and for an element that is not a field (e.g. a tab or
- *          the grid). Limits: a press that does not move the cursor counts only inside the field that has it; a
- *          widget without a `.form-group` container counts only for the very element the user used.
+ * @returns {boolean} true if the cursor is now in a field outside the given containers, and that field is in the
+ *          widget's field container (see fieldContainerOf) of the user's last input: the field the user last put
+ *          the cursor in, or typed or clicked in. So an app hand-over between a lookup's sub-fields, or a new input
+ *          the widget rendered, still counts. False for a field that got the cursor by itself (e.g. the first field
+ *          of a loaded document) unless the user typed or clicked in it, and for an element that is not a field
+ *          (e.g. a tab or the grid). Limits: only where the cursor is now is checked, not where it went in between,
+ *          so if the app moves the cursor from the user's field X to another field Y and back to X without a user
+ *          input, X still counts; a press that does not move the cursor counts only inside the field that has it;
+ *          a widget without a `.form-group` container counts only for the very element the user used.
  */
 export const isUserWorkingInFieldOutside = (...containers) => {
   if (!isCursorHeldOutside(...containers)) {
