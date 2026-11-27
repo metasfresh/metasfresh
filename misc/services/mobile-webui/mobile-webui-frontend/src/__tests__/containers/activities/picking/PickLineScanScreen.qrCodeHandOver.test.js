@@ -11,6 +11,8 @@ const mockHistory = { push: jest.fn(), replace: jest.fn(), goBack: jest.fn() };
 let mockScanProps;
 let mockCUEntry;
 let mockSuggestedQty = null;
+// when set, replaces the screen's `nextTU.bookAfterTUOpened`: the test decides how the booking ends
+let mockBookAfterTUOpened;
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
@@ -45,6 +47,16 @@ jest.mock('../../../../api/picking', () => ({
     setPickingTarget: jest.fn(),
   }),
 }));
+jest.mock('../../../../apps/picking/cuQtyEntry/useOpenNextTU', () => {
+  const actual = jest.requireActual('../../../../apps/picking/cuQtyEntry/useOpenNextTU');
+  return {
+    ...actual,
+    useOpenNextTU: (...args) => {
+      const nextTU = actual.useOpenNextTU(...args);
+      return mockBookAfterTUOpened ? { ...nextTU, bookAfterTUOpened: mockBookAfterTUOpened } : nextTU;
+    },
+  };
+});
 jest.mock('../../../../api/launchers', () => ({ getWFProcess: jest.fn() }));
 jest.mock('../../../../reducers/settings', () => ({
   ...jest.requireActual('../../../../reducers/settings'),
@@ -87,6 +99,7 @@ describe('PickLineScanScreen: the source HU of the hop from the line screen (URL
     mockHistory.push.mockClear();
     mockCUEntry = undefined;
     mockSuggestedQty = null;
+    mockBookAfterTUOpened = undefined;
     window.history.pushState({}, '', '/scanner?next=pickingJob&qrCode=HU%231');
   });
   afterAll(() => window.history.pushState({}, '', '/'));
@@ -108,24 +121,81 @@ describe('PickLineScanScreen: the source HU of the hop from the line screen (URL
     expect(returnTo).toBe('/picking/wf/wf/pick/A/a/L/l/scanner?next=pickingJob&qrCode=HU%231');
   });
 
-  it('the count kept for the trip is offered once: after a booking the normal capped suggestion is offered again (open 10, kept 6, booked 6, open 4 -> 4)', async () => {
+  const deferred = () => {
+    let resolve, reject;
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+
+  const renderAfterReturnWithKeptCount = () => {
     mockCUEntry = { pendingScan: { scannedBarcode: 'LABEL#1', qtyEntered: '6' } };
-    mockSuggestedQty = 4; // what the normal rule gives once 6 are booked (last typed count capped by the open quantity)
     render(
       <Provider store={createStore((state = {}) => state)}>
         <PickLineScanScreen />
       </Provider>
     );
     expect(mockScanProps.suggestedQty).toBe(6);
+  };
+
+  const bookKeptCount = () =>
+    mockScanProps.onResult({ qtyEnteredAndValidated: 6, scannedBarcode: 'LABEL#1', isDone: false });
+
+  it('the count kept for the trip is offered once: after a booking the normal capped suggestion is offered again (open 10, kept 6, booked 6, open 4 -> 4)', async () => {
+    mockSuggestedQty = 4; // what the normal rule gives once 6 are booked (last typed count capped by the open quantity)
+    mockBookAfterTUOpened = () => Promise.resolve(false);
+    renderAfterReturnWithKeptCount();
 
     await act(async () => {
-      try {
-        await mockScanProps.onResult({ qtyEnteredAndValidated: 6, scannedBarcode: 'LABEL#1' });
-      } catch (e) {
-        // the booking itself (API) is not under test here, only that the kept count is used up
-      }
+      await bookKeptCount();
     });
 
     expect(mockScanProps.suggestedQty).toBe(4);
+  });
+
+  it('first round of the line (no normal suggestion yet): the kept count stays offered while the booking is in flight, so the quantity dialog is not re-created mid-booking', async () => {
+    mockSuggestedQty = null; // nothing booked on this line yet: the normal rule offers nothing
+    const booking = deferred();
+    mockBookAfterTUOpened = () => booking.promise;
+    renderAfterReturnWithKeptCount();
+
+    let result;
+    await act(async () => {
+      result = bookKeptCount();
+    });
+    expect(mockScanProps.suggestedQty).toBe(6);
+
+    await act(async () => {
+      booking.resolve(false);
+      await result;
+    });
+    expect(mockScanProps.suggestedQty).toBeUndefined();
+  });
+
+  it('a refused booking keeps the kept count offered (no retyping)', async () => {
+    mockSuggestedQty = null;
+    mockBookAfterTUOpened = () => Promise.reject(new Error('refused by the server'));
+    renderAfterReturnWithKeptCount();
+
+    await act(async () => {
+      await expect(bookKeptCount()).rejects.toThrow('refused by the server');
+    });
+
+    expect(mockScanProps.suggestedQty).toBe(6);
+  });
+
+  it('a booking that was not sent (the TU opening it waited for failed) keeps the kept count offered', async () => {
+    const { NOT_BOOKED } = jest.requireActual('../../../../apps/picking/cuQtyEntry/useOpenNextTU');
+    mockSuggestedQty = 4;
+    mockBookAfterTUOpened = () => Promise.resolve(NOT_BOOKED);
+    renderAfterReturnWithKeptCount();
+
+    await act(async () => {
+      expect(await bookKeptCount()).toBe(NOT_BOOKED);
+    });
+
+    expect(mockScanProps.suggestedQty).toBe(6);
   });
 });

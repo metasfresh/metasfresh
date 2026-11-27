@@ -150,7 +150,7 @@ const PickLineScanScreen = () => {
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
   // back from the TU list ("Weiteres TU" on a line without a TU type): the label and the count the picker had are shown again.
   // Taken once, when the screen opens (the redux copy is dropped at once, so a later visit of the screen starts clean).
-  // The kept count is offered for the first booking only: it is cleared in `onResult`, so the next round is offered
+  // The kept count is offered until its booking succeeded (see `onResult`); the next round is offered
   // the normal suggestion (last typed count, capped by the open quantity).
   const [pendingScan] = useState(() => cuEntry?.pendingScan ?? null);
   const [isKeptQtyUsed, setKeptQtyUsed] = useState(false);
@@ -228,10 +228,19 @@ const PickLineScanScreen = () => {
     onClose,
   });
 
-  // a count confirmed while a TU is being opened (button or GRAI scan) goes into that TU
+  // a count confirmed while a TU is being opened (button or GRAI scan) goes into that TU.
+  // The kept count is used up only once its booking was sent and succeeded: while the booking runs the offered count
+  // (and so the quantity dialog) stays as it is, and a refused or not sent booking keeps the count for the next try.
   const onResult = (result) => {
-    setKeptQtyUsed(true);
-    return nextTU.bookAfterTUOpened(() => postQtyPicked(result));
+    const booking = nextTU.bookAfterTUOpened(() => postQtyPicked(result));
+    return booking?.then
+      ? booking.then((value) => {
+          if (!value?.isNotBooked) {
+            setKeptQtyUsed(true);
+          }
+          return value;
+        })
+      : booking;
   };
 
   const getConfirmationPromptForQty = useCallback(

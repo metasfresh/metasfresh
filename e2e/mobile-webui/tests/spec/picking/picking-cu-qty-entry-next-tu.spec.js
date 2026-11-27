@@ -747,6 +747,38 @@ test('line without a TU type: a GRAI scanned on the "Gebinde" list opens that TU
     await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
 });
 
+// noinspection JSUnusedLocalSymbols
+test('line without a TU type: the count kept for the "Gebinde" trip is offered for the first booking only, the next round offers the normal count capped by the open quantity', async ({ page }) => {
+    allureMeta('Open TU first, line without a TU type');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 6, graiRequired: 'Y', piItemProduct: null }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const tuName = masterdata.packingInstructions.P1_20x4.tuName;
+    await startJob(masterdata, { qtyToDeliver: 6 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await GetQuantityDialog.typeQtyEntered(4);
+
+    await test.step('"Next TU", the picker chooses the TU type, back with the kept count: the first booking takes it', async () => {
+        await PickLineScanScreen.nextTU();
+        await SelectPickTargetTUScreen.waitForScreen();
+        await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
+        await PickLineScanScreen.waitForScreen();
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
+    });
+
+    await test.step('the next round offers the last typed count capped by the open quantity (2), not the kept count (4)', async () => {
+        await GetQuantityDialog.expectQtyEntered(2);
+        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+        await PickingJobScreen.waitForScreen();
+    });
+});
+
 /** The same three line packings in Scan each CU */
 const scanEachMasterdataOf = async ({ orders, packingInstructions }) =>
     await createScanEachMasterdata({ packFormatName: uniqueFormatName(), orders, packingInstructions });
