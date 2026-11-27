@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
@@ -54,7 +53,6 @@ import java.util.function.Supplier;
 public class BPartnerAddressEffectiveBL
 {
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
 	@NonNull private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry;
 
@@ -112,7 +110,6 @@ public class BPartnerAddressEffectiveBL
 				.isPreAdviceRequired(Boolean.TRUE.equals(resolveLocationThenPartner(effectiveLocationId,
 						loc -> StringUtils.toBoolean(loc.getIsPreAdviceRequired(), null),
 						effectivePartner::isPreAdviceRequired)))
-				.vatTaxId(bpartnerBL.getVATTaxId(effectiveLocationId).orElse(null))
 				.build();
 	}
 

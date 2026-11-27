@@ -94,6 +94,7 @@ public class FlatrateTermRefund_Handler
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	// this handler is instantiated by the invoice candidate handler framework, not by Spring
 	@NonNull private final SpringContextHolder.Lazy<RefundContractRepository> refundContractRepository = SpringContextHolder.lazyBean(RefundContractRepository.class);
 
@@ -242,7 +243,7 @@ public class FlatrateTermRefund_Handler
 				billLocationId.getBpartnerLocationId(),
 				orgId,
 				taxDate,
-				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	private PriceListId retrievePriceListIdInCurrency(

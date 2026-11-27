@@ -50,6 +50,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	@Override
 	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull final QueryLimit limit)
@@ -101,7 +102,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				shipToLocationId.getBpartnerLocationId(),
 				orgId,
 				ic.getDateOrdered(),
-				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	private boolean isEligibleForInvoiceAutoCreation(@NonNull final I_C_Flatrate_Term flatrateTerm)

@@ -31,6 +31,7 @@ import de.metas.invoicecandidate.vatid.InvoiceVATaxIdStamper;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
@@ -39,18 +40,11 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice
 {
-	private final InvoiceWithDetailsService invoiceWithDetailsService;
-	private final InvoiceVATaxIdStamper invoiceVATaxIdStamper;
-
-	public C_Invoice(
-			@NonNull final InvoiceWithDetailsService invoiceWithDetailsService,
-			@NonNull final InvoiceVATaxIdStamper invoiceVATaxIdStamper)
-	{
-		this.invoiceWithDetailsService = invoiceWithDetailsService;
-		this.invoiceVATaxIdStamper = invoiceVATaxIdStamper;
-	}
+	@NonNull private final InvoiceWithDetailsService invoiceWithDetailsService;
+	@NonNull private final InvoiceVATaxIdStamper invoiceVATaxIdStamper;
 
 	/**
 	 * Runs before {@link #handleCompleteForInvoice(I_C_Invoice)} creates the allocations of a manual invoice, so a manual invoice is still recognised as one.

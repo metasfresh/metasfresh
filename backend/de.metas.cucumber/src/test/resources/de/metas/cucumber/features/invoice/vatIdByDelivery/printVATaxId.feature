@@ -132,7 +132,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | C_BPartner_Location_ID.Identifier | VATaxID     |
       | customer_billing                  | DE111111125 |
       | customer_DE                       | DE111111125 |
-      | customerGR_GR                     | EL094014201 |
+      | customerGR_GR                     | EL444444445 |
 
     # both warehouses are in Germany (default: the organisation's address)
     And metasfresh contains M_Warehouse:
@@ -334,7 +334,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | EL094014201  | EL094259216   | regGR                      |
+      | invoice    | EL444444445  | EL094259216   | regGR                      |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceL1                   | invoice                 | productGR               | 10          | taxDEGR24 |
@@ -384,7 +384,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | EL094014201  | EL998877666   | regGR                      |
+      | invoice    | EL444444445  | EL998877666   | regGR                      |
     When The jasper process is run
       | Value             | Record_ID |
       | Rechnung (Jasper) | invoice   |
@@ -428,7 +428,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | EL094014201  |               |                            |
+      | invoice    | EL444444445  |               |                            |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
       | invoiceL1                   | invoice                 | productGR               | 10          | taxDEGR0 |
@@ -481,7 +481,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | EL094014201  | EL094259216   | regGR                      |
+      | invoice    | EL444444445  | EL094259216   | regGR                      |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceL1                   | invoice                 | productGR               | 10          | taxGRGR24 |

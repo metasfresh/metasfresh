@@ -106,6 +106,7 @@ import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -125,6 +126,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
@@ -553,15 +556,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()), I_C_OrderLine.class);
+		final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(orderLine);
 		final BPartnerLocationAndCaptureId location = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId();
+
+		// C_OrderLine.DatePromised is nullable; fall back to the order's, like OrderLineBL does for the price date
+		final Timestamp taxDate = CoalesceUtil.coalesceSuppliersNotNull(
+				orderLine::getDatePromised,
+				() -> orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID())).getDatePromised());
 
 		return Optional.of(new TaxLocation(
 				location.getBpartnerLocationId(),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-				orderLine.getDatePromised(),
-				Services.get(IWarehouseBL.class).getCountryId(warehouseId),
+				taxDate,
+				warehouseBL.getCountryId(warehouseId),
 				warehouseId)
 				.withLocationCaptureId(location.getLocationCaptureId()));
 	}

@@ -140,6 +140,10 @@ public class BPartnerAddressEffectiveBLTest
 		assertThat(bpartnerAddressEffectiveBL.getEffectiveBillBPartner(createLocation(memberBP))).isNull();
 	}
 
+	/*
+	 * The VAT ID of a delivery location (location VAT, else partner header; IgnorePartnerVATID respected), as tax determination and the invoice VAT IDs look it up.
+	 */
+
 	@Test
 	public void vatTaxId_locationVAT_wins()
 	{
@@ -149,9 +153,7 @@ public class BPartnerAddressEffectiveBLTest
 		final BPartnerLocationId locationId = createLocation(bpartner);
 		setLocationVATaxID(locationId, "NL333333330B01");
 
-		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
-
-		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL333333330B01"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
 	}
 
 	@Test
@@ -162,9 +164,7 @@ public class BPartnerAddressEffectiveBLTest
 		saveRecord(bpartner);
 		final BPartnerLocationId locationId = createLocation(bpartner);
 
-		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
-
-		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("DE111111125"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("DE111111125"));
 	}
 
 	@Test
@@ -176,9 +176,7 @@ public class BPartnerAddressEffectiveBLTest
 		saveRecord(bpartner);
 		final BPartnerLocationId locationId = createLocation(bpartner);
 
-		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
-
-		assertThat(result.getVatTaxId()).isNull();
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isNull();
 	}
 
 	@Test
@@ -191,27 +189,24 @@ public class BPartnerAddressEffectiveBLTest
 		final BPartnerLocationId locationId = createLocation(bpartner);
 		setLocationVATaxID(locationId, "NL333333330B01");
 
-		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(null, locationId);
-
-		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL333333330B01"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
 	}
 
 	@Test
-	public void vatTaxId_dropShipLocation_isUsedInsteadOfMainLocation()
+	public void vatTaxId_dropShipLocation_ownVATaxId()
 	{
 		final I_C_BPartner mainBP = createBPartner(createPlainBPGroup());
 		mainBP.setVATaxID("DE111111125");
 		saveRecord(mainBP);
 		final BPartnerLocationId mainLocationId = createLocation(mainBP);
-		setLocationVATaxID(mainLocationId, "DE811128135");
+		setLocationVATaxID(mainLocationId, "DE555555551");
 
 		final I_C_BPartner dropShipBP = createBPartner(createPlainBPGroup());
 		final BPartnerLocationId dropShipLocationId = createLocation(dropShipBP);
 		setLocationVATaxID(dropShipLocationId, "NL333333330B01");
 
-		final BPartnerAddressEffective result = bpartnerAddressEffectiveBL.getDeliveryEffective(dropShipLocationId, mainLocationId);
-
-		assertThat(result.getVatTaxId()).isEqualTo(VATIdentifier.of("NL333333330B01"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(mainLocationId).orElse(null)).isEqualTo(VATIdentifier.of("DE555555551"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(dropShipLocationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
 	}
 
 	private static void setLocationVATaxID(final BPartnerLocationId locationId, final String vatTaxId)

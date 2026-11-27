@@ -76,6 +76,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	/**
 	 * Return "CREATE_CANDIDATES" because not all ICs are created by the model interceptor {@link de.metas.contracts.interceptor.C_Flatrate_DataEntry} when the {@code C_Flatrate_DataEntry} is completed.
@@ -264,7 +265,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 				shipToLocationId.getBpartnerLocationId(),
 				orgId,
 				flatrateDataEntryRecord.getC_Period().getEndDate(),
-				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	private IPricingContext createPricingContext(

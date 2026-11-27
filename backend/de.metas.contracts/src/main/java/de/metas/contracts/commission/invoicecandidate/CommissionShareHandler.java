@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
@@ -110,6 +111,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	@Override
 	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
@@ -390,8 +392,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return Optional.of(new TaxLocation(
 				ContractLocationHelper.extractBillToLocationId(flatrateTerm).getBpartnerLocationId(),
 				orgId,
-				icRecord.getDeliveryDate(),
-				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
+				CoalesceUtil.coalesceNotNull(icRecord.getDeliveryDate(), icRecord.getDateOrdered()), // DeliveryDate is set from DateOrdered and nullable in the DB
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	@Override

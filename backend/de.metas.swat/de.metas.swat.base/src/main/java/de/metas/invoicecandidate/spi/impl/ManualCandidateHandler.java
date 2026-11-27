@@ -46,6 +46,9 @@ import java.util.Optional;
 
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	/**
 	 * Not actually a real table name but a marker that is used to pick this manual handler. Please note that {@link #getSourceTable()} returns this.
 	 */
@@ -128,10 +131,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final OrgId icOrgId = OrgId.ofRepoId(ic.getAD_Org_ID());
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		final WarehouseId warehouseId = ic.isSOTrx() ? orgDAO.getOrgWarehouseId(icOrgId) : orgDAO.getOrgPOWarehouseId(icOrgId);
 
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final BPartnerLocationAndCaptureId billLocation = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId();
 		return Optional.of(new TaxLocation(
 				billLocation.getBpartnerLocationId(),
