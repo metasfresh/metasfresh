@@ -73,10 +73,10 @@ test('real case, buyer A 50 CU in 11 TUs (Scan once), buyer B 6 CU in 2 TUs with
 
     await PickingJobScreen.complete();
 
-    // one booking = one CU row: buyer A 3, 5, 8 x 5, 2 in TUs 1 - 11; buyer B 6 x 1 in TUs 12, 13 (3 each)
+    // one booking = one TU row: buyer A 3, 5, 8 x 5, 2 in TUs 1 - 11; buyer B 6 x 1 in TUs 12, 13 (3 each)
     // the release line records the TU of a bare-TU pick, VHU_ID stays null
     const row = (qty, tu) => ({ qtyPicked: `${qty} PCE`, vhu: '-', tu: `tu${tu}`, processed: true });
-    const buyerARows = [row(3, 1, 1), row(5, 2, 2), ...[3, 4, 5, 6, 7, 8, 9, 10].map((tu) => row(5, tu)), row(2, 11)];
+    const buyerARows = [row(3, 1), row(5, 2), ...[3, 4, 5, 6, 7, 8, 9, 10].map((tu) => row(5, tu)), row(2, 11)];
     const buyerBRows = [12, 12, 12, 13, 13, 13].map((tu) => row(1, tu));
     const tu = (qty, grai) => ({ storages: { P1: `${qty} PCE` }, ...(grai !== undefined ? { attributes: { GRAI: grai } } : {}) });
     await Backend.expect({

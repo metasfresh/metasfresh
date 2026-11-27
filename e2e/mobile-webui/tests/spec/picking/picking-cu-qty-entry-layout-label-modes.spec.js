@@ -63,8 +63,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             const boxes = await GetQuantityDialog.measureBoxes();
             // positions are printed, to compare the layout before and after a change
             console.log('MANUAL-DIALOG-TUS ' + viewport.name + ' ' + JSON.stringify(boxes));
-            // the release line caps the table area at 70vh and lets it shrink to its content (get-qty-dialog.scss: "Cap-and-scroll, do NOT force the height")
-            expect(boxes.tableArea.height, 'Manual table area height is at most 70vh').toBeLessThanOrEqual(viewport.height * 0.7 + 0.5);
+            await GetQuantityDialog.expectTableAreaFitsContent(viewport.height);
         });
 
         // noinspection JSUnusedLocalSymbols

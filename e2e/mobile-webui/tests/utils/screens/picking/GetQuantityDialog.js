@@ -146,6 +146,17 @@ export const GetQuantityDialog = {
     }),
     /** True when the rows are taller than the table area: it scrolls inside */
     isTableAreaScrolling: async () => await GetQuantityDialog.tableArea().evaluate((area) => area.scrollHeight > area.clientHeight),
+    /**
+     * The table area shrinks to its rows (no empty band, no inner scroll) and never exceeds 70vh: the CSS is `max-height: 70vh`.
+     * A forced `height: 70vh` (the "huge gap" defect) fails the first check for a short table.
+     */
+    expectTableAreaFitsContent: async (viewportHeight) => await test.step(`${NAME} - Expect the table area fits its content, at most 70vh`, async () => {
+        const area = GetQuantityDialog.tableArea();
+        const { height, contentHeight } = await area.evaluate((el) => ({ height: el.getBoundingClientRect().height, contentHeight: [...el.children].reduce((sum, child) => sum + child.getBoundingClientRect().height, 0) }));
+        expect(height, 'Table area is at most 70vh').toBeLessThanOrEqual(viewportHeight * 0.7 + 0.5);
+        expect(height, 'Table area shrinks to its content (no forced height)').toBeLessThanOrEqual(contentHeight + 0.5);
+        expect(await GetQuantityDialog.isTableAreaScrolling(), 'Table area does not scroll for a short table').toBe(false);
+    }),
     /** Boxes and font size of the given buttons of the dialog (by data-testid) */
     measureButtonRow: async (testIds) => await measureButtonRow(containerElement(), testIds),
     /** Reference layout for a check: the barcode icon of the Next TU button of the dialog removed */
