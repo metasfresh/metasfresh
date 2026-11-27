@@ -140,7 +140,8 @@ export const PickLineScanScreen = {
     /** Scans one raw CU label on the pick-line scan screen */
     scanCULabel: async (label) => await step(`${NAME} - Scan CU label`, async () => {
         await PickLineScanScreen.waitForScreen();
-        await PickLineScanScreen.typeQRCode(label);
+        // a label scanned right after the previous booking: the reader of the scan screen may not listen yet (release re-arms it after the booking)
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label });
         await waitForNoInFlightXhr(page, { urlPattern: /\/picking\//, timeout: SLOW_ACTION_TIMEOUT });
     }),
 
@@ -149,7 +150,7 @@ export const PickLineScanScreen = {
         await PickLineScanScreen.waitForScreen();
         await expectErrorToast(
             `${NAME} label refusal`,
-            async () => await PickLineScanScreen.typeQRCode(label),
+            async () => await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: label }),
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedText);
                 if (unexpectedText) expect(textContent).not.toContain(unexpectedText);
