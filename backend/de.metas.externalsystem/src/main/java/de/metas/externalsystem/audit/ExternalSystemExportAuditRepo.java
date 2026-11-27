@@ -80,8 +80,11 @@ public class ExternalSystemExportAuditRepo
 		record.setRecord_ID(request.getTableRecordReference().getRecord_ID());
 		record.setAD_Table_ID(request.getTableRecordReference().getAD_Table_ID());
 		record.setExportTime(TimeUtil.asTimestamp(request.getExportTime()));
-		record.setExportUser_ID(request.getExportUserId().getRepoId());
-		record.setExportRole_ID(request.getExportRoleId().getRepoId());
+		// NOTE: do NOT use the generated setExportUser_ID/setExportRole_ID here: they map any id < 1 to NULL,
+		// but 0 is the valid System user / System Administrator role (FK targets exist) and both columns are mandatory.
+		// Exports triggered without a logged-in user/role (async threads, system context) use exactly these ids.
+		InterfaceWrapperHelper.setValue(record, I_ExternalSystem_ExportAudit.COLUMNNAME_ExportUser_ID, request.getExportUserId().getRepoId());
+		InterfaceWrapperHelper.setValue(record, I_ExternalSystem_ExportAudit.COLUMNNAME_ExportRole_ID, request.getExportRoleId().getRepoId());
 		record.setExportParameters(request.getExportParameters());
 
 		if (request.getPInstanceId() != null)

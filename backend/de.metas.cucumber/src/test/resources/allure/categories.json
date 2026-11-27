@@ -23,5 +23,10 @@
     "name": "Infrastructure issues",
     "messageRegex": ".*container.*|.*docker.*|.*connection refused.*|.*RabbitMQ.*",
     "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "Unexpected AD_Issue",
+    "messageRegex": ".*Unexpected AD_Issue.*",
+    "matchedStatuses": ["failed", "broken"]
   }
 ]

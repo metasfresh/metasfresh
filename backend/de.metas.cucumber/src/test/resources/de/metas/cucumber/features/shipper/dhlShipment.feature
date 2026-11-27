@@ -96,6 +96,7 @@ Feature: Dhl Shipment
       | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | dhl_huProductTU_X | false                     |
 
   @Id:S0335.1_100
+  @expectsAdIssue:definitely.bad.url
   Scenario: Auto-processing of olcand and shipped via DHL
     When metasfresh contains External System
       | Name                 | Value                |
@@ -195,6 +196,7 @@ Feature: Dhl Shipment
 
 
   @Id:S0335.1_200
+  @expectsAdIssue:definitely.bad.url
   Scenario: Auto-processing of olcand and shipped via DHL, where the product is self packed
     When metasfresh contains External System
       | Name                 | Value                |
@@ -291,6 +293,7 @@ Feature: Dhl Shipment
 
 
   @Id:S0335.1_300
+  @expectsAdIssue:definitely.bad.url
   Scenario: DHL shipment with default WeightSourceTypes=ProductWeight (no HU pipeline)
     # M_Package.PackageWeight is read from product.GrossWeight × qty directly (no HU attribute path).
     Given set sys config String value ProductWeight for sys config de.metas.shipping.WeightSourceTypes

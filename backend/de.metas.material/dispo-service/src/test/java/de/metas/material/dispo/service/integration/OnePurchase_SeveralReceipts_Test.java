@@ -503,6 +503,73 @@ public class OnePurchase_SeveralReceipts_Test
 				);
 	}
 
+	/**
+	 * Two receipts for the same receipt schedule that land at the <b>identical</b> {@code DateProjected} and the
+	 * <b>same</b> storage-attributes key (the situation a cucumber run with a frozen clock produces: every transaction
+	 * of the run carries the same instant). Each realized receipt must get its <b>own</b> STOCK candidate; the second
+	 * one must not silently adopt the first receipt's STOCK candidate as its parent.
+	 * <p>
+	 * Before the fix the split-off {@link CandidateType#UNEXPECTED_INCREASE} candidate inherited the SUPPLY's seqNo, so
+	 * both receipts resolved to one STOCK candidate at the shared (date, seqNo) coordinate. That (a) dropped the second
+	 * receipt's quantity from the running ATP and (b) left two main candidates pointing at one STOCK, which blew up
+	 * {@code StockCandidateService.computeStockIdToMainCandidateMap} with an {@code IllegalStateException: Duplicate key}
+	 * (swallowed to AD_Issue on the event-bus thread).
+	 */
+	@Test
+	public void receive_twice_sameDate_sameASI_eachReceiptGetsItsOwnStock()
+	{
+		prepareMasterdata()
+				.qtyOrdered(10000)
+				.datePromised("2019-10-31T23:59:59Z")
+				.initialize();
+
+		prepareReceiptScheduleCreatedEvent()
+				.reservedQuantity(10000)
+				.fire();
+
+		//
+		// First receipt: 24 @ monthsUntilExpiry=1
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:00:00Z")
+				.qtyReceived(24)
+				.monthsUntilExpiry(1)
+				.receiptScheduleRemainingReservedQuantity(9976)
+				.fire();
+
+		//
+		// Second receipt: 2 @ monthsUntilExpiry=1, SAME date and SAME ASI as the first receipt
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:00:00Z")
+				.qtyReceived(2)
+				.monthsUntilExpiry(1)
+				.receiptScheduleRemainingReservedQuantity(9974)
+				.fire();
+
+		// both realized receipts stored their own transaction detail
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate_Transaction_Detail.class)).hasSize(2);
+
+		// each UNEXPECTED_INCREASE has its OWN stock: two STOCK candidates in the attr-1 ATP lane (independent of the
+		// NONE-attr SUPPLY lane), running 24 then 26 -> the second receipt's +2 is kept in the running ATP.
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9974"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9974"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("24"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("24"), asAttrKeyString(1), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("2"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("26"), asAttrKeyString(1), CandidateType.STOCK.getCode()));
+
+		// the two realized-receipt candidates must not share a STOCK parent
+		final List<Integer> unexpectedIncreaseParentIds = POJOLookupMap.get().getRecords(I_MD_Candidate.class)
+				.stream()
+				.filter(r -> CandidateType.UNEXPECTED_INCREASE.getCode().equals(r.getMD_Candidate_Type()))
+				.map(I_MD_Candidate::getMD_Candidate_Parent_ID)
+				.collect(ImmutableList.toImmutableList());
+		assertThat(unexpectedIncreaseParentIds).doesNotHaveDuplicates();
+	}
+
 	private String asAttrKeyString(final int monthsUntilExpiry)
 	{
 		return monthsUntilExpiryAttributesKey(monthsUntilExpiry).getAsString();

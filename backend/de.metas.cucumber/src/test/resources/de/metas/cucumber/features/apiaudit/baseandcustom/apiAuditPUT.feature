@@ -98,6 +98,7 @@ Feature: API Audit PUT http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_070
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -138,6 +139,7 @@ Feature: API Audit PUT http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_080
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -183,6 +185,7 @@ Feature: API Audit PUT http method
 @allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_140
+  @expectsAdIssue:Endpoint.invoked;.log.ad_issue
   Scenario: Testcase 140, failing PUT and replay
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |

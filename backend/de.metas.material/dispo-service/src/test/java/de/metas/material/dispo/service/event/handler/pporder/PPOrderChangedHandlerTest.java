@@ -36,6 +36,8 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -131,6 +133,41 @@ public class PPOrderChangedHandlerTest
 		final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
 		assertThat(productionDetail).isNotNull();
 		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
+	}
+
+	@Test
+	public void handleEvent_noCandidates_isNoOp()
+	{
+		// A PPOrderChangedEvent can legitimately arrive with no dispo candidates to update:
+		// e.g. completing/voiding a PP_Order whose creation produced no candidates. The async
+		// material-event handler must then be a no-op instead of raising an AD_Issue.
+		final PPOrder ppOrder = createPPOrder();
+		final PPOrderId ppOrderId = ppOrder.getPpOrderId();
+
+		when(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId))
+				.thenReturn(ImmutableList.of());
+
+		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.oldDocStatus(DocStatus.Completed)
+				.newDocStatus(DocStatus.Completed)
+				.oldDatePromised(SystemTime.asInstant())
+				.newDatePromised(SystemTime.asInstant())
+				.newQtyDelivered(ONE)
+				.newQtyRequired(TEN)
+				.oldQtyDelivered(ONE)
+				.oldQtyRequired(TEN)
+				.ppOrderAfterChanges(ppOrder)
+				.build();
+
+		final PPOrderChangedHandler ppOrderDocStatusChangedHandler = new PPOrderChangedHandler(
+				candidateRepositoryRetrieval,
+				candidateChangeService);
+
+		// before the fix this threw "No Candidates found for PP_Order_ID=..."; now it must be a no-op
+		ppOrderDocStatusChangedHandler.handleEvent(ppOrderChangedEvent);
+
+		verify(candidateChangeService, never()).onCandidateNewOrChange(any());
 	}
 
 	private PPOrder createPPOrder()
