@@ -59,6 +59,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	@NonNull I_M_HU_PI_Item_Product getRecordById(@NonNull HUPIItemProductId id);
 
+	@NonNull I_M_HU_PI_Item_Product create(@NonNull HUPIItemProductCreateRequest request);
+
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
 	List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(I_M_HU_PI_Item itemDef);
