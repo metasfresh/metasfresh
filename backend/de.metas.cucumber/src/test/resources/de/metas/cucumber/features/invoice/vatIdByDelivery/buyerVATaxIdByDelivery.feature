@@ -199,10 +199,20 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate                  | invoice                 |
     # the delivery address has no VAT ID of its own and there is no fiscal representation: the invoice is grouped and stores
-    # no values as without per-address VAT IDs; its outputs fall back to the partner's VAT ID (see the central billing print scenario)
+    # no values as without per-address VAT IDs; its outputs fall back to the partner's VAT ID
     And validate created invoices
       | Identifier | BuyerVATaxID |
       | invoice    |              |
+
+    # what the buyer sees is unchanged: the printed invoice shows the partner's VAT ID (the fallback for no stored value)
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    Then the PDF archived for the record identified by "invoice" contains text "DE123456788"
 
   @Id:S32533_TC3b
   Scenario: partner VAT ID ignored by sys config and delivery address without VAT ID: no buyer VAT ID is stored
