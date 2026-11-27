@@ -35,6 +35,34 @@ async function describeActiveElement(page) {
   });
 }
 
+/**
+ * Mark (data-pin-next="A") the element that Tab moves the cursor to from the element at `selector`: the next one in
+ * the browser's sequential focus order (positive tabindex ascending first, then tabindex 0; document order within
+ * each), skipping disabled and not rendered elements and those inside `selector`. Returns its description.
+ */
+async function markNextInTabOrder(page, selector) {
+  return await page.evaluate((sel) => {
+    const from = document.querySelector(sel);
+    const tabbable = Array.from(document.querySelectorAll('*')).filter(
+      (e) =>
+        e.tabIndex >= 0 &&
+        !e.disabled &&
+        e.getClientRects().length > 0 &&
+        getComputedStyle(e).visibility !== 'hidden' &&
+        (e === from || !from.contains(e))
+    );
+    const ordered = [
+      ...tabbable.filter((e) => e.tabIndex > 0).sort((a, b) => a.tabIndex - b.tabIndex),
+      ...tabbable.filter((e) => e.tabIndex === 0),
+    ];
+    const next = ordered[ordered.indexOf(from) + 1];
+    if (!next) return 'none';
+    next.setAttribute('data-pin-next', 'A');
+    const field = next.closest('[class*="form-field-"]');
+    return `${next.tagName}${field ? ' in ' + (field.className.match(/form-field-[A-Za-z0-9_]+/) || [''])[0] : ''}`;
+  }, selector);
+}
+
 async function savedKey(recordId, column) {
   const f = (await getRecordData(SALES_ORDER_WINDOW_ID, recordId)).fieldsByName;
   const key = f?.[column]?.value?.key;
@@ -137,10 +165,24 @@ testCases.forEach(({ language, label }) => {
       const option = page.locator(OPTION).nth(1);
       await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       const key = await optionKey(option);
+      const pickSaved = page.waitForResponse(
+        (r) => r.request().method() === 'PATCH' && new URL(r.url()).pathname.endsWith(`/window/${SALES_ORDER_WINDOW_ID}/${recordId}`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      pickSaved.catch(() => {}); // awaited below; a timeout fails the test there
       await option.click();
       await expect(page.locator(PAYMENT_RULE), 'dropdown closed after the pick').not.toHaveClass(/opened/);
+      // The mouse-down on the option sends the cursor to the body, and PaymentRule takes it back right after the
+      // pick. Saving the pick can hide the next field (a cash payment rule hides the payment term), so the next field
+      // is known only once the save is answered. Tab is pressed when both have happened, as a user would see them.
+      await pickSaved;
+      await expectFocusOn(page.locator(PAYMENT_RULE), 'after the pick: cursor back in PaymentRule');
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      const expectedNext = await markNextInTabOrder(page, PAYMENT_RULE);
+      console.log(`Next field after PaymentRule in tab order (${language}): ${expectedNext}`);
 
       await page.keyboard.press('Tab');
+      await expectFocusOn(page.locator('[data-pin-next="A"]'), `after Tab: cursor on the next field (${expectedNext})`);
       await expect
         .poll(
           async () =>
