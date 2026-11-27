@@ -22,13 +22,16 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.util.ISingletonService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
@@ -98,4 +101,10 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
 	void setPickedData(I_C_Invoice_Candidate ic);
+
+	/**
+	 * Where, by whom and when the given candidate is taxed: the delivery location, org and movement date of the given shipment line if there is one,
+	 * else the tax location of the candidate's handler, else the candidate's bill location, org and {@code DateOrdered}.
+	 */
+	TaxLocation getTaxLocation(I_C_Invoice_Candidate ic, @Nullable I_M_InOutLine shipmentLine);
 }

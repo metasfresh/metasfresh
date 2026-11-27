@@ -396,6 +396,21 @@ public class TaxDAO implements ITaxDAO
 		}
 
 		final CountryId destCountryId = getCountryId(taxQuery);
+		final Timestamp fiscalRepresentationFromDate = coalesceNotNull(taxQuery.getDateOfInterest(), Env.getDate());
+		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
+
+		// Sales lines shipped from a drop-ship warehouse ship from the destination country if the org holds a valid fiscal representation there.
+		final WarehouseId dropShipWarehouseId = taxQuery.getWarehouseId();
+		if (taxQuery.getSoTrx().isSales()
+				&& dropShipWarehouseId != null
+				&& hasFiscalRepresentation
+				&& orgDAO.isDropShipTaxFromDestCountry(orgId)
+				&& warehouseBL.getById(dropShipWarehouseId).isDropShipWarehouse())
+		{
+			loggable.addLog("Drop-ship warehouse M_Warehouse_ID={} and org has fiscal representation in C_Country_ID={}; -> using it as ship-from country", dropShipWarehouseId.getRepoId(), destCountryId.getRepoId());
+			countryId = destCountryId;
+		}
+
 		final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, destCountryId);
 
 		final boolean euOneStopShop = orgDAO.isEUOneStopShop(orgId);
@@ -476,8 +491,6 @@ public class TaxDAO implements ITaxDAO
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, typeOfDestCountry.getCode(), null);
 		}
 
-		final Timestamp fiscalRepresentationFromDate = coalesceNotNull(taxQuery.getDateOfInterest(), Env.getDate());
-		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
 

@@ -56,6 +56,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -441,9 +442,40 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void discountInvoice(@NonNull I_C_Invoice invoice, @NonNull Amount discountAmt, @NonNull Timestamp date);
 
+	/**
+	 * Re-taxes every line of the given invoice (e.g. after its {@code DateInvoiced} or {@code M_Warehouse_ID} changed) with the inputs of {@link #getReTaxInput}, and saves it.
+	 */
 	void setInvoiceLineTaxes(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 
+	/**
+	 * The inputs with which the given invoice line is re-taxed:
+	 * <ul>
+	 * <li>a line with shipment line: the shipment's org, movement date, partner location and SO flag;</li>
+	 * <li>else the invoice's org, {@code DateInvoiced} (or the given override) and SO flag, and the tax location:
+	 * <ul>
+	 * <li>for a sales invoice line with order line: the order line's delivery location, with the ship-from country and warehouse of the order line's warehouse
+	 * (the inputs the order line was taxed with);</li>
+	 * <li>for another sales invoice line: the location an {@link InvoiceLineTaxLocationProvider} knows (e.g. that of the line's invoice candidates);</li>
+	 * <li>else (lines added by hand, purchase invoices): the invoice's bill location.</li>
+	 * </ul>
+	 * </li>
+	 * </ul>
+	 * Ship-from country and warehouse are {@link #getFromCountryId} and {@link #getFromWarehouseId} unless stated above.
+	 *
+	 * @param dateInvoicedOverride the tax date to use instead of the invoice's {@code DateInvoiced}, e.g. the date a completion will set; {@code null} = the invoice's
+	 */
+	InvoiceLineReTaxInput getReTaxInput(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine, @Nullable Timestamp dateInvoicedOverride);
+
 	CountryId getFromCountryId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	/**
+	 * @return the warehouse the given line ships from: the invoice's warehouse, else the warehouse of the line's shipment, else {@code null}.
+	 * Same order as {@link #getFromCountryId(I_C_Invoice, org.compiere.model.I_C_InvoiceLine)}, so the country and the warehouse
+	 * of a tax query always come from the same warehouse (a warehouse always has a country: {@code IWarehouseBL#getCountryId} throws otherwise).
+	 * Note: a warehouse on the invoice header applies to all its lines, also to lines that belong to a shipment from another warehouse.
+	 */
+	@Nullable
+	WarehouseId getFromWarehouseId(@NonNull I_C_Invoice invoice, @NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	String getLocationEmail(InvoiceId invoiceId);
 

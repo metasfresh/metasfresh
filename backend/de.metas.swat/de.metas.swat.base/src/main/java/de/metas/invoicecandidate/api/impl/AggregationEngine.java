@@ -3,6 +3,7 @@
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.api.Aggregation;
@@ -34,6 +35,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -48,6 +50,7 @@ import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapte
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.promotioncode.PromotionCodeId;
@@ -55,6 +58,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.FiscalRepresentationId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.product.ProductId;
@@ -116,7 +120,8 @@ public final class AggregationEngine
 		Adempiere.assertUnitTestMode();
 		return builder()
 				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
-				.docTypeInvoicingPoolService(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
+				.docTypeInvoicingPoolService(DocTypeInvoicingPoolService.newInstanceForUnitTesting())
+				.vatTaxIdResolver(InvoiceCandidateVATaxIdResolver.newInstanceForUnitTesting());
 	}
 
 	//
@@ -148,6 +153,8 @@ public final class AggregationEngine
 	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
+	private final InvoiceCandidateVATaxIdResolver vatTaxIdResolver;
+	private final InvoiceCandidateVATaxIdResolver.Cache vatTaxIdResolverCache;
 	private final boolean deliveryDateAsInvoiceDate;
 	@Nullable private final Boolean partialInvoice;
 
@@ -189,6 +196,7 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
+			@NonNull final InvoiceCandidateVATaxIdResolver vatTaxIdResolver,
 			final boolean deliveryDateAsInvoiceDate,
 			@Nullable final Boolean partialInvoice)
 	{
@@ -208,6 +216,8 @@ public final class AggregationEngine
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+		this.vatTaxIdResolver = vatTaxIdResolver;
+		this.vatTaxIdResolverCache = this.vatTaxIdResolver.newCache();
 		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
 		this.partialInvoice = partialInvoice;
 	}
@@ -219,6 +229,17 @@ public final class AggregationEngine
 				.add("key2headerAndAggregators", key2headerAndAggregators)
 				.add("alwaysUseDefaultHeaderAggregationKeyBuilder", alwaysUseDefaultHeaderAggregationKeyBuilder)
 				.toString();
+	}
+
+	/**
+	 * @return the header aggregation keys of the invoices aggregated so far, as strings
+	 */
+	@VisibleForTesting
+	public ImmutableList<String> getHeaderAggregationKeyStrings()
+	{
+		return key2headerAndAggregators.keySet().stream()
+				.map(AggregationKey::getAggregationKeyString)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public AggregationEngine addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
@@ -337,6 +358,9 @@ public final class AggregationEngine
 		final I_M_InOutLine icInOutLine = iciol == null ? null : iciol.getM_InOutLine();
 		final InOutId inoutId = icInOutLine != null ? InOutId.ofRepoIdOrNull(icInOutLine.getM_InOut_ID()) : null;
 
+		// resolved once per (candidate, shipment line): the same value goes into the aggregation key and onto the invoice
+		final InvoiceVATaxIds invoiceVATaxIds = resolveInvoiceVATaxIds(icRecord, icInOutLine);
+
 		//
 		// Get and parse aggregation key
 		// => resolve last variables, right before invoicing
@@ -348,7 +372,9 @@ public final class AggregationEngine
 					.invoiceCandidate(icRecord)
 					.inoutLine(icInOutLine)
 					.build();
-			headerAggregationKey = headerAggregationKeyUnparsed.parse(evalCtx);
+			// the VAT IDs are appended after parsing, so they are never evaluated as an expression,
+			// and neither an aggregation override nor a customer aggregation can drop them
+			headerAggregationKey = appendVATaxIds(headerAggregationKeyUnparsed.parse(evalCtx), invoiceVATaxIds);
 			icAggregationOrNull = Optional.of(icRecord.getHeaderAggregationKeyBuilder_ID())
 					.map(AggregationId::ofRepoIdOrNull)
 					.filter(Objects::nonNull)
@@ -365,7 +391,7 @@ public final class AggregationEngine
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, invoiceVATaxIds);
 
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -378,7 +404,7 @@ public final class AggregationEngine
 		else
 		{
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, invoiceVATaxIds);
 		}
 
 		//
@@ -433,13 +459,48 @@ public final class AggregationEngine
 		lineAggregator.addInvoiceCandidate(icAggregationRequest);
 	}
 
-	private void addToInvoiceHeader(
-			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
-			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final InOutId inoutId)
+	@Nullable
+	private InvoiceVATaxIds resolveInvoiceVATaxIds(@NonNull final I_C_Invoice_Candidate icRecord, @Nullable final I_M_InOutLine inOutLine)
 	{
 		try
 		{
+			return vatTaxIdResolver.resolve(icRecord, inOutLine, vatTaxIdResolverCache);
+		}
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+					.setParameter("C_Invoice_Candidate_ID", icRecord.getC_Invoice_Candidate_ID())
+					.setParameter("M_InOutLine_ID", inOutLine != null ? inOutLine.getM_InOutLine_ID() : null);
+		}
+	}
+
+	/**
+	 * One invoice per buyer VAT ID and per seller VAT ID (with the fiscal representation it comes from), so the values stored on the invoice hold for all its lines.
+	 * Candidates that do not use VAT IDs by delivery ({@link InvoiceVATaxIds#isNone()}) keep their key as it is, so they are grouped as without this feature.
+	 */
+	@NonNull
+	private static AggregationKey appendVATaxIds(@NonNull final AggregationKey headerAggregationKey, @Nullable final InvoiceVATaxIds invoiceVATaxIds)
+	{
+		if (invoiceVATaxIds == null || invoiceVATaxIds.isNone())
+		{
+			return headerAggregationKey;
+		}
+		final FiscalRepresentationId fiscalRepresentationId = invoiceVATaxIds.getFiscalRepresentationId();
+		return headerAggregationKey
+				.append("BuyerVAT=" + coalesceNotNull(invoiceVATaxIds.getBuyerVATaxId(), "-"))
+				.append("SellerVAT=" + coalesceNotNull(invoiceVATaxIds.getSellerVATaxId(), "-"))
+				.append("FiscalRep=" + (fiscalRepresentationId != null ? String.valueOf(fiscalRepresentationId.getRepoId()) : "-"));
+	}
+
+	private void addToInvoiceHeader(
+			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final InOutId inoutId,
+			@Nullable final InvoiceVATaxIds invoiceVATaxIds)
+	{
+		try
+		{
+			invoiceHeader.setInvoiceVATaxIds(invoiceVATaxIds);
 			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBillTo(getBillTo(icRecord));

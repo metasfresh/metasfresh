@@ -62,6 +62,7 @@ public class EDI_cctop_invoic_v_StepDef
 {
 	private static final String TAGNAME_GTIN = "GTIN";
 	private static final String TAGNAME_CONTACT = "Contact";
+	private static final String TAGNAME_VATAXID = "VATaxID";
 	private static final String TAGNAME_EANCOM_LOCATIONTYPE = "eancom_locationtype";
 	private static final String TAGNAME_BUYER_GTIN_CU = "Buyer_GTIN_CU";
 	private static final String TAGNAME_BUYER_EAN_CU = "Buyer_EAN_CU";
@@ -198,6 +199,23 @@ public class EDI_cctop_invoic_v_StepDef
 				assertThat(contactElement.getTextContent()).isEqualTo(actualContactValue);
 			}
 		}
+
+		final String vatTaxId = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + TAGNAME_VATAXID);
+		if (Check.isNotBlank(vatTaxId))
+		{
+			final Element vatTaxIdElement = getElement(cctop119Element, TAGNAME_VATAXID);
+
+			final String expectedVatTaxId = DataTableUtil.nullToken2Null(vatTaxId);
+			if (expectedVatTaxId == null)
+			{
+				assertThat(vatTaxIdElement).as("VATaxID of party %s", eanComLocationType).isNull();
+			}
+			else
+			{
+				assertThat(vatTaxIdElement).as("VATaxID of party %s", eanComLocationType).isNotNull();
+				assertThat(vatTaxIdElement.getTextContent()).as("VATaxID of party %s", eanComLocationType).isEqualTo(expectedVatTaxId);
+			}
+		}
 	}
 
 	private void validateEdiInvoic500(@NonNull final Map<String, String> tableRow)
@@ -283,6 +301,19 @@ public class EDI_cctop_invoic_v_StepDef
 		return (Element)childNode;
 	}
 
+	@Nullable
+	private static Element getDirectChildElement(@NonNull final Element parent, @NonNull final String tagName)
+	{
+		for (Node child = parent.getFirstChild(); child != null; child = child.getNextSibling())
+		{
+			if (child.getNodeType() == Node.ELEMENT_NODE && tagName.equals(child.getNodeName()))
+			{
+				return (Element)child;
+			}
+		}
+		return null;
+	}
+
 	private void ediExportInvoice(@NonNull final Map<String, String> row)
 	{
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -328,6 +359,23 @@ public class EDI_cctop_invoic_v_StepDef
 		{
 			final String invoicIdentifier = DataTableUtil.extractStringForColumnName(row, I_EDI_cctop_invoic_v.COLUMNNAME_EDI_cctop_invoic_v_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final Document invoic = cctopInvoiceTable.get(invoicIdentifier);
+
+			final String senderVatTaxId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + TAGNAME_VATAXID);
+			if (Check.isNotBlank(senderVatTaxId))
+			{
+				// the sender's VAT ID is a direct child of the document; every party below it has a VATaxID element of its own
+				final Element senderVatTaxIdElement = getDirectChildElement(invoic.getDocumentElement(), TAGNAME_VATAXID);
+				final String expectedSenderVatTaxId = DataTableUtil.nullToken2Null(senderVatTaxId);
+				if (expectedSenderVatTaxId == null)
+				{
+					assertThat(senderVatTaxIdElement).as("sender VATaxID").isNull();
+				}
+				else
+				{
+					assertThat(senderVatTaxIdElement).as("sender VATaxID").isNotNull();
+					assertThat(senderVatTaxIdElement.getTextContent()).as("sender VATaxID").isEqualTo(expectedSenderVatTaxId);
+				}
+			}
 
 			final String desadvIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_EDI_cctop_invoic_v.COLUMNNAME_EDIDesadvDocumentNo + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(desadvIdentifier))

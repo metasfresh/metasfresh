@@ -25,8 +25,10 @@ package de.metas.organization;
 import de.metas.location.CountryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_C_Fiscal_Representation;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 public interface IFiscalRepresentationBL extends ISingletonService
 {
@@ -34,4 +36,23 @@ public interface IFiscalRepresentationBL extends ISingletonService
      * @return true if the given org has a fiscal representation in the given country at the given time
      */
 	boolean hasFiscalRepresentation(@NonNull CountryId countryId, @NonNull OrgId orgId, @NonNull Timestamp date);
+
+	/**
+	 * @return the active registration of the given org in the given destination country at the given time;
+	 * if several overlap, the one with the latest {@code ValidFrom}, then the highest ID.
+	 */
+	Optional<I_C_Fiscal_Representation> getFiscalRepresentation(@NonNull CountryId countryId, @NonNull OrgId orgId, @NonNull Timestamp date);
+
+	/**
+	 * @return true if the given org has any active registration, in whatever country and validity period; cached until a registration changes
+	 */
+	boolean hasAnyActiveFiscalRepresentation(@NonNull OrgId orgId);
+
+	/**
+	 * @return true if any org has an active registration, in whatever country and validity period; cached until a registration changes
+	 */
+	boolean hasAnyActiveFiscalRepresentationInAnyOrg();
+
+	@NonNull
+	I_C_Fiscal_Representation getById(@NonNull FiscalRepresentationId fiscalRepresentationId);
 }

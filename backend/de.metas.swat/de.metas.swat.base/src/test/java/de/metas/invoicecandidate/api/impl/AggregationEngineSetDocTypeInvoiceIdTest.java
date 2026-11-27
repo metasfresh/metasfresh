@@ -8,6 +8,7 @@ import de.metas.document.impl.DocTypeBL;
 import de.metas.document.impl.DocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.vatid.NoVATaxIdsResolver;
 import de.metas.money.MoneyService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.util.Services;
@@ -49,6 +50,7 @@ class AggregationEngineSetDocTypeInvoiceIdTest
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		NoVATaxIdsResolver.register(); // these fixtures lack the master data to resolve real VAT IDs
 
 		// Register the real DocTypeDAO + DocTypeBL instead of mocking IDocTypeBL.
 		// Each test creates the I_C_DocType records it needs via InterfaceWrapperHelper.newInstance + save;

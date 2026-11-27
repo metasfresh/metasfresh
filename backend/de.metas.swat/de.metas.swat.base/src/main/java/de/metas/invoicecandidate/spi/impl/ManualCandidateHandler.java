@@ -25,18 +25,31 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.invoice.vatid.TaxLocation;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
 	/**
 	 * Not actually a real table name but a marker that is used to pick this manual handler. Please note that {@link #getSourceTable()} returns this.
 	 */
@@ -109,6 +122,27 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
+	}
+
+	/**
+	 * Location and date as the manual candidate's tax code uses them ({@code ManualCandidateService}): the bill location and {@code DateOrdered}
+	 * (which that code always sets; on a candidate created otherwise it may be empty, then the fallback date of {@link InvoiceCandidateHandlerBL#getFallbackTaxDate} applies).
+	 * That tax code passes the org's default warehouse, and the tax lookup then switches to the warehouse's org and takes the warehouse's country as the ship-from country.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final OrgId icOrgId = OrgId.ofRepoId(ic.getAD_Org_ID());
+		final WarehouseId warehouseId = ic.isSOTrx() ? orgDAO.getOrgWarehouseId(icOrgId) : orgDAO.getOrgPOWarehouseId(icOrgId);
+
+		final BPartnerLocationAndCaptureId billLocation = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId();
+		return Optional.of(new TaxLocation(
+				billLocation.getBpartnerLocationId(),
+				warehouseId != null ? warehouseBL.getWarehouseOrgId(warehouseId) : icOrgId,
+				InvoiceCandidateHandlerBL.getFallbackTaxDate(ic), // DateOrdered is not mandatory
+				warehouseId != null ? warehouseBL.getCountryId(warehouseId) : null,
+				warehouseId)
+				.withLocationCaptureId(billLocation.getLocationCaptureId()));
 	}
 
 	@Override

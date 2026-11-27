@@ -24,6 +24,7 @@ package de.metas.contracts.flatrate.dataEntry.invoice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.HandlerTools;
@@ -32,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -64,6 +66,7 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -73,6 +76,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	/**
 	 * Return "CREATE_CANDIDATES" because not all ICs are created by the model interceptor {@link de.metas.contracts.interceptor.C_Flatrate_DataEntry} when the {@code C_Flatrate_DataEntry} is completed.
@@ -235,6 +239,33 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 				.taxId(taxId)
 				.taxIncluded(pricingResult.isTaxIncluded())
 				.build();
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #calculatePriceAndTax}: the term's drop-ship location (else its bill-to), the candidate's org and the end date of the entry's period.
+	 * Empty if that tax code does not run either (the term is not a reported-quantity term).
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_C_Flatrate_DataEntry flatrateDataEntryRecord = TableRecordReference.ofReferenced(icRecord).getModel(I_C_Flatrate_DataEntry.class);
+		final I_C_Flatrate_Term termRecord = flatrateDAO.getById(flatrateDataEntryRecord.getC_Flatrate_Term_ID());
+		final I_C_Flatrate_Conditions fcRecord = flatrateDAO.getConditionsById(termRecord.getC_Flatrate_Conditions_ID());
+		if (!X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity.equals(fcRecord.getType_Flatrate()))
+		{
+			return Optional.empty();
+		}
+
+		final OrgId orgId = OrgId.ofRepoId(icRecord.getAD_Org_ID());
+		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> ContractLocationHelper.extractDropshipLocationId(termRecord),
+				() -> ContractLocationHelper.extractBillToLocationId(termRecord));
+
+		return Optional.of(new TaxLocation(
+				shipToLocationId.getBpartnerLocationId(),
+				orgId,
+				flatrateDataEntryRecord.getC_Period().getEndDate(),
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	private IPricingContext createPricingContext(

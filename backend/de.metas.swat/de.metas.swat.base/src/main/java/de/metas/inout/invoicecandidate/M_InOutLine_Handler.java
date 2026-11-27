@@ -31,10 +31,12 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
+import de.metas.invoicecandidate.api.impl.ShipmentTaxLocation;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -88,6 +90,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static java.math.BigDecimal.ONE;
@@ -925,6 +928,19 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.setFrom(billLocation);
+	}
+
+	/**
+	 * The tax location of an in/out line candidate is the delivery location, the in/out line's org and the movement date of its in/out
+	 * and its ship-from country is the one of the in/out's warehouse, exactly as {@code #calculatePriceAndTax} determines the tax.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final org.compiere.model.I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
+
+		return Optional.of(ShipmentTaxLocation.of(inOut, OrgId.ofRepoId(inOutLine.getAD_Org_ID())));
 	}
 
 	@Override

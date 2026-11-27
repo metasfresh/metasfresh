@@ -475,6 +475,37 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that the visual line containing {@code needleText} does NOT also contain {@code unexpectedText}.
+	 * Use it when a value must be printed in the document, but not on one particular line -- e.g. a VAT ID that
+	 * belongs to a separate block and must not appear in the line of another VAT ID -- and that line carries
+	 * further data which differs between databases, so {@link #assert_archived_pdf_visual_line_is_exactly}
+	 * would pin unrelated values.
+	 * <p>
+	 * {@code needleText} only locates the line (the first line, top-to-bottom, containing it).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the visual line containing text "DE136695976" in the PDF archived for the record identified by "invoice" does not contain text "EL998877666"
+	 * </pre>
+	 */
+	@Then("the visual line containing text {string} in the PDF archived for the record identified by {string} does not contain text {string}")
+	public void assert_archived_pdf_visual_line_does_not_contain(
+			@NonNull final String needleText,
+			@NonNull final String recordIdentifier,
+			@NonNull final String unexpectedText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final int idx = indexOfLineContaining(lines, needleText, 0);
+		assertThat(idx).as("Line containing '%s' in extracted PDF text %s", needleText, textsOf(lines)).isGreaterThanOrEqualTo(0);
+
+		assertThat(lines.get(idx).getText())
+				.as("Full text of the visual line containing '%s' in extracted PDF text %s", needleText, textsOf(lines))
+				.doesNotContain(unexpectedText);
+	}
+
+	/**
 	 * Asserts that no two words in the archived PDF are printed on top of each other.
 	 * <p>
 	 * A generic layout net: it needs no knowledge of the document, so it can be added to any scenario that

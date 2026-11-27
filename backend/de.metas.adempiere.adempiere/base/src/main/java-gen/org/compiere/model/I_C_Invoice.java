@@ -198,6 +198,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
+	 * Set Buyer VAT ID.
+	 * The customer VAT ID used on the invoice.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBuyerVATaxID (@Nullable java.lang.String BuyerVATaxID);
+
+	/**
+	 * Get Buyer VAT ID.
+	 * The customer VAT ID used on the invoice.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBuyerVATaxID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_BuyerVATaxID = new ModelColumn<>(I_C_Invoice.class, "BuyerVATaxID", null);
+	String COLUMNNAME_BuyerVATaxID = "BuyerVATaxID";
+
+	/**
 	 * Set Activity.
 	 * Business Activity
 	 *
@@ -488,6 +511,31 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, org.compiere.model.I_C_DunningLevel> COLUMN_C_DunningLevel_ID = new ModelColumn<>(I_C_Invoice.class, "C_DunningLevel_ID", org.compiere.model.I_C_DunningLevel.class);
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
+
+	/**
+	 * Set Fiscal Representation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Fiscal_Representation_ID (int C_Fiscal_Representation_ID);
+
+	/**
+	 * Get Fiscal Representation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Fiscal_Representation_ID();
+
+	@Nullable org.compiere.model.I_C_Fiscal_Representation getC_Fiscal_Representation();
+
+	void setC_Fiscal_Representation(@Nullable org.compiere.model.I_C_Fiscal_Representation C_Fiscal_Representation);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Fiscal_Representation> COLUMN_C_Fiscal_Representation_ID = new ModelColumn<>(I_C_Invoice.class, "C_Fiscal_Representation_ID", org.compiere.model.I_C_Fiscal_Representation.class);
+	String COLUMNNAME_C_Fiscal_Representation_ID = "C_Fiscal_Representation_ID";
 
 	/**
 	 * Set Charge amount.
@@ -794,6 +842,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CreateDta.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCreateDta (@Nullable java.lang.String CreateDta);
+
+	/**
+	 * Get CreateDta.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCreateDta();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CreateDta = new ModelColumn<>(I_C_Invoice.class, "CreateDta", null);
+	String COLUMNNAME_CreateDta = "CreateDta";
+
+	/**
 	 * Set Create From ....
 	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
@@ -931,6 +1000,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -940,6 +1010,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Description.
+	 * Optional short description of the record.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -973,7 +1044,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -983,7 +1054,7 @@ public interface I_C_Invoice
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -2064,6 +2135,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_ScriptedExport_Status = new ModelColumn<>(I_C_Invoice.class, "ScriptedExport_Status", null);
 	String COLUMNNAME_ScriptedExport_Status = "ScriptedExport_Status";
+
+	/**
+	 * Set Seller VAT ID.
+	 * The own VAT ID under which the invoice is issued.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSellerVATaxID (@Nullable java.lang.String SellerVATaxID);
+
+	/**
+	 * Get Seller VAT ID.
+	 * The own VAT ID under which the invoice is issued.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSellerVATaxID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_SellerVATaxID = new ModelColumn<>(I_C_Invoice.class, "SellerVATaxID", null);
+	String COLUMNNAME_SellerVATaxID = "SellerVATaxID";
 
 	/**
 	 * Set Send EMail.

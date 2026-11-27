@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
@@ -38,10 +39,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_DocType_Invoicing_Pool;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
@@ -55,19 +58,27 @@ public class C_DocType_StepDef
 
 	private final C_DocType_Invoicing_Pool_StepDefData invoicingPoolTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final C_Invoice_StepDefData invoiceTable;
 
 	public C_DocType_StepDef(
 			@NonNull final C_DocType_Invoicing_Pool_StepDefData invoicingPoolTable,
-			@NonNull final C_DocType_StepDefData docTypeTable)
+			@NonNull final C_DocType_StepDefData docTypeTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.invoicingPoolTable = invoicingPoolTable;
 		this.docTypeTable = docTypeTable;
+		this.invoiceTable = invoiceTable;
 	}
 
 	/**
 	 * {@code C_DocType_ID} -> the {@code IsActive} the doc type had before {@link #update_C_DocType(DataTable)} changed it, so {@link #restoreIsActive()} can put it back.
 	 */
 	private final Map<Integer, Boolean> isActiveBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * {@code C_DocType_ID} -> the {@code IsOverwriteDateOnComplete} the doc type had before the scenario changed it, so {@link #restoreIsActive()} can put it back.
+	 */
+	private final Map<Integer, Boolean> isOverwriteDateOnCompleteBeforeScenario = new LinkedHashMap<>();
 
 	/**
 	 * Updates existing {@code C_DocType}s that were registered before, e.g. with {@code load C_DocType:}.
@@ -90,6 +101,48 @@ public class C_DocType_StepDef
 	public void update_C_DocType(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::updateDocType);
+	}
+
+	/**
+	 * Sets {@code IsOverwriteDateOnComplete} on the doc types the invoice actually uses ({@code C_DocType_ID} and {@code C_DocTypeTarget_ID});
+	 * the former values are restored after the scenario, also when a step failed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the doc type of invoice "invoice" has IsOverwriteDateOnComplete Y for this scenario
+	 * </pre>
+	 */
+	@And("the doc type of invoice {string} has IsOverwriteDateOnComplete {word} for this scenario")
+	public void doc_type_of_invoice_has_IsOverwriteDateOnComplete(@NonNull final String invoiceIdentifier, @NonNull final String isOverwriteDateOnComplete)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		InterfaceWrapperHelper.refresh(invoice);
+
+		final boolean newValue;
+		if ("Y".equals(isOverwriteDateOnComplete) || "true".equals(isOverwriteDateOnComplete))
+		{
+			newValue = true;
+		}
+		else if ("N".equals(isOverwriteDateOnComplete) || "false".equals(isOverwriteDateOnComplete))
+		{
+			newValue = false;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Expected Y/N/true/false but got: " + isOverwriteDateOnComplete);
+		}
+
+		IntStream.of(invoice.getC_DocType_ID(), invoice.getC_DocTypeTarget_ID())
+				.filter(docTypeId -> docTypeId > 0)
+				.distinct()
+				.forEach(docTypeId -> {
+					final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+					isOverwriteDateOnCompleteBeforeScenario.putIfAbsent(docTypeId, docTypeRecord.isOverwriteDateOnComplete());
+					docTypeRecord.setIsOverwriteDateOnComplete(newValue);
+					saveRecord(docTypeRecord);
+				});
 	}
 
 	/**
@@ -165,7 +218,7 @@ public class C_DocType_StepDef
 	}
 
 	/**
-	 * Sets back the {@code IsActive} of every doc type that {@link #update_C_DocType(DataTable)} changed.
+	 * Sets back the {@code IsActive} of every doc type that {@link #update_C_DocType(DataTable)} changed, and the {@code IsOverwriteDateOnComplete} of every doc type that {@link #doc_type_of_invoice_has_IsOverwriteDateOnComplete(String, String)} changed.
 	 * <p>
 	 * Doc types are shared by every scenario on the executor, so a doc type left inactive would break whatever runs next;
 	 * an {@code @After} hook also runs when a step failed, a trailing Gherkin step would not.
@@ -173,11 +226,30 @@ public class C_DocType_StepDef
 	@After
 	public void restoreIsActive()
 	{
-		isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
-			final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
-			docTypeRecord.setIsActive(isActive);
-			saveRecord(docTypeRecord);
-		});
-		isActiveBeforeScenario.clear();
+		try
+		{
+			isActiveBeforeScenario.forEach((docTypeId, isActive) -> {
+				final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+				docTypeRecord.setIsActive(isActive);
+				saveRecord(docTypeRecord);
+			});
+		}
+		finally
+		{
+			isActiveBeforeScenario.clear();
+		}
+
+		try
+		{
+			isOverwriteDateOnCompleteBeforeScenario.forEach((docTypeId, isOverwriteDateOnComplete) -> {
+				final I_C_DocType docTypeRecord = InterfaceWrapperHelper.load(docTypeId, I_C_DocType.class);
+				docTypeRecord.setIsOverwriteDateOnComplete(isOverwriteDateOnComplete);
+				saveRecord(docTypeRecord);
+			});
+		}
+		finally
+		{
+			isOverwriteDateOnCompleteBeforeScenario.clear();
+		}
 	}
 }

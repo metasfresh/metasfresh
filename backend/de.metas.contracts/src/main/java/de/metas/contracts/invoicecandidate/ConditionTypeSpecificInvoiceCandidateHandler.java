@@ -1,6 +1,7 @@
 package de.metas.contracts.invoicecandidate;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
@@ -10,6 +11,7 @@ import org.adempiere.ad.dao.QueryLimit;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /*
@@ -47,6 +49,17 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	Timestamp calculateDateOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate invoiceCandidateRecord);
+
+	/**
+	 * Where, by whom and when the candidate is taxed, exactly as {@link #calculatePriceAndTax(I_C_Invoice_Candidate)} determines its tax.
+	 * Those tax codes pass no warehouse, so the ship-from country of an override is the country of the org it passes.
+	 *
+	 * @return empty (default) if this handler has no tax location of its own
+	 */
+	default Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		return Optional.empty();
+	}
 
 	Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(Consumer<I_C_Invoice_Candidate> defaultImplementation);
 

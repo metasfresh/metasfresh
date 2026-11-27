@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Org
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Org extends org.compiere.model.PO implements I_AD_Org, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1255990917L;
+	private static final long serialVersionUID = -1801333347L;
 
     /** Standard Constructor */
     public X_AD_Org (final Properties ctx, final int AD_Org_ID, @Nullable final String trxName)
@@ -71,6 +71,18 @@ public class X_AD_Org extends org.compiere.model.PO implements I_AD_Org, org.com
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsDropShipTaxFromDestCountry (final boolean IsDropShipTaxFromDestCountry)
+	{
+		set_Value (COLUMNNAME_IsDropShipTaxFromDestCountry, IsDropShipTaxFromDestCountry);
+	}
+
+	@Override
+	public boolean isDropShipTaxFromDestCountry() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShipTaxFromDestCountry);
 	}
 
 	@Override

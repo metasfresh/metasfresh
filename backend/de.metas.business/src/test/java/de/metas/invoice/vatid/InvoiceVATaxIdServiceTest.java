@@ -1,0 +1,431 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+package de.metas.invoice.vatid;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.location.CountryId;
+import de.metas.organization.FiscalRepresentationId;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.TaxId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Fiscal_Representation;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class InvoiceVATaxIdServiceTest
+{
+	private static final OrgId ORG = OrgId.ofRepoId(1000000);
+	private static final Timestamp TAX_DATE = Timestamp.valueOf("2026-06-22 00:00:00");
+
+	private InvoiceVATaxIdService service;
+	private CountryId nl;
+	private CountryId gr;
+	private CountryId de;
+
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		service = InvoiceVATaxIdService.newInstanceForUnitTesting();
+		nl = createCountry("NL");
+		gr = createCountry("GR");
+		de = createCountry("DE");
+	}
+
+	@Test
+	public void nlLocation_noRegistration()
+	{
+		final BPartnerLocationId location = createLocation(nl, "NL333333330B01");
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+	}
+
+	@Test
+	public void grLocation_ownRegistration()
+	{
+		final BPartnerLocationId location = createLocation(gr, null);
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				null,
+				"EL094259216",
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	@Test
+	public void grLocation_viaRepresentative_rowWithoutVAT_usesRepresentativeVAT()
+	{
+		final BPartnerLocationId location = createLocation(gr, null);
+		final I_C_BPartner representative = createBPartner("EL998877666");
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, null, representative);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				null,
+				"EL998877666",
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	@Test
+	public void grLocation_ownRegistration_keepsBuyerVAT()
+	{
+		final BPartnerLocationId location = createLocation(gr, "EL111111111");
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				"EL111111111",
+				"EL094259216",
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	/**
+	 * A registration without any VAT ID (own or representative's): the registration is still recorded,
+	 * the seller VAT ID stays NULL (readers fall back to the organization's main VAT ID).
+	 */
+	@Test
+	public void grLocation_registrationWithoutAnyVAT_sellerNullButRegistrationRecorded()
+	{
+		final BPartnerLocationId location = createLocation(gr, null);
+		final I_C_BPartner representative = createBPartner(null);
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, null, representative);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(
+				null,
+				null,
+				FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	/**
+	 * D16: the registration applies only if the line's tax has IsFiscalRepresentation='Y'.
+	 */
+	@Test
+	public void grLocation_registration_lineTaxNotFiscalRep_mainVat()
+	{
+		final BPartnerLocationId location = createLocation(gr, null);
+		createFiscalRepresentation(gr, "EL094259216", null);
+
+		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(false));
+
+		assertThat(result).isEqualTo(new InvoiceVATaxIds(null, null, null));
+	}
+
+	/**
+	 * A delivery partner with only a header VAT ID and no fiscal representation: nothing by delivery applies,
+	 * so the invoice is grouped, stored and printed as without per-address VAT IDs (the bill partner's VAT ID is shown).
+	 */
+	@Test
+	public void byDelivery_partnerHeaderVATOnly_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, null);
+
+		assertThat(service.resolve(taxLocation(location), createTax(false))).isEqualTo(new InvoiceVATaxIds("DE123456788", null, null));
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.hasOwnVATaxId(location)).isFalse();
+	}
+
+	@Test
+	public void byDelivery_ownLocationVAT_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), nl, "NL333333330B01");
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location)))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+		assertThat(service.hasOwnVATaxId(location)).isTrue();
+	}
+
+	@Test
+	public void byDelivery_fiscalRepresentation_resolvedWithPartnerHeaderVAT()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(true), billPartnerOf(location)))
+				.isEqualTo(new InvoiceVATaxIds("EL111111111", "EL094259216", FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	@Test
+	public void byDelivery_registrationButLineTaxNotFiscalRep_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
+		createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * The address carries the partner's own VAT ID: the resolved value is what the invoice shows anyway (the bill partner's VAT ID), so nothing by delivery applies.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATEqualsBillPartnerVAT_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, "DE123456788");
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * The address carries the partner's own VAT ID written another way (lower case, spaces): it is the same VAT ID, so nothing by delivery applies.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATEqualsBillPartnerVATWrittenOtherwise_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, "de 123 456 788");
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(createLocation(createBPartner(" de123456788 "), de, null)), billPartnerOf(location))).isFalse();
+	}
+
+	@Test
+	public void isSameVATaxId_ignoresCaseAndSpaces()
+	{
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", " de 123456 788 ")).isTrue();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId(null, " ")).isTrue();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", "DE123456789")).isFalse();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", null)).isFalse();
+	}
+
+	/**
+	 * An exempt tax to NL: a location in NL may have justified it, a German one did not.
+	 */
+	@Test
+	public void getExemptTaxDestinationCountryIfLocationNotThere()
+	{
+		final TaxId exemptToNL = createExemptTax(nl);
+		final TaxId notExemptToNL = createTax(false);
+
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(nl, null)), exemptToNL)).isEmpty();
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), exemptToNL)).contains(nl);
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), notExemptToNL)).isEmpty();
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), createExemptTax())).as("exempt tax without destination country").isEmpty();
+	}
+
+	/**
+	 * Drop-ship: the delivery partner is not the bill partner; its address VAT ID is compared with the bill partner's VAT ID.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATOfOtherPartner_equalToItsHeaderButNotToBillPartnerVAT_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("NL333333330B01"), nl, "NL333333330B01");
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+	}
+
+	/**
+	 * Drop-ship to a third party whose VAT ID is on its partner only: the exempt line's tax was found with that VAT ID (tax determination falls back to the partner),
+	 * so the invoice must show it, not the bill partner's.
+	 */
+	@Test
+	public void byDelivery_headerVATOfOtherPartner_exemptLine_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("NL333333330B01"), nl, null);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createExemptTax(), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+	}
+
+	/**
+	 * Central billing, domestic: the ship-to partner's header VAT ID did not decide a tax exemption, so the invoice shows the bill partner's VAT ID as before.
+	 */
+	@Test
+	public void byDelivery_headerVATOfOtherPartner_notExemptLine_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE111111125"), de, null);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerId)).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * The bill partner's own address without VAT ID and an exempt line: the bill partner's VAT ID justified it, which the invoice shows anyway.
+	 */
+	@Test
+	public void byDelivery_headerVATOfBillPartner_exemptLine_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), nl, null);
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createExemptTax(), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * Without a fiscal representation only the buyer VAT ID is resolved; the line tax is still needed if the delivery partner's header VAT ID may have justified an exemption.
+	 */
+	@Test
+	public void buyerByDelivery_headerVATOfOtherPartner_lineTaxNeeded()
+	{
+		final BPartnerLocationId thirdPartyLocation = createLocation(createBPartner("NL333333330B01"), nl, null);
+		final BPartnerLocationId ownLocationVAT = createLocation(createBPartner(null), nl, "NL444444441B01");
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(thirdPartyLocation), billPartnerId)).isTrue();
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(ownLocationVAT), billPartnerId)).isFalse();
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(thirdPartyLocation), createExemptTax(), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(thirdPartyLocation), createTax(false), billPartnerId)).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.resolveBuyerIfByDelivery(taxLocation(ownLocationVAT), null, billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL444444441B01", null, null));
+	}
+
+	/**
+	 * The short-circuit looks at every org: a registration of another org (e.g. a shipment's) keeps resolution on.
+	 */
+	@Test
+	public void isVATaxIdByDeliveryPossible_registrationOfAnyOrg()
+	{
+		assertThat(service.isVATaxIdByDeliveryPossible()).isFalse();
+
+		createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.isVATaxIdByDeliveryPossible()).isTrue();
+	}
+
+	private static BPartnerId billPartnerOf(final BPartnerLocationId location)
+	{
+		return location.getBpartnerId();
+	}
+
+	private TaxLocation taxLocation(final BPartnerLocationId location)
+	{
+		return new TaxLocation(location, ORG, TAX_DATE, de);
+	}
+
+	private static I_C_BPartner createBPartner(@Nullable final String vatTaxId)
+	{
+		final I_C_BP_Group group = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		group.setIsDeviatingBillBPartner(false);
+		saveRecord(group);
+
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartner.setC_BP_Group_ID(group.getC_BP_Group_ID());
+		bpartner.setVATaxID(vatTaxId);
+		saveRecord(bpartner);
+		return bpartner;
+	}
+
+	private static CountryId createCountry(final String code)
+	{
+		final I_C_Country country = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+		country.setCountryCode(code);
+		saveRecord(country);
+		return CountryId.ofRepoId(country.getC_Country_ID());
+	}
+
+	private static BPartnerLocationId createLocation(final CountryId countryId, @Nullable final String locationVATaxId)
+	{
+		return createLocation(createBPartner(null), countryId, locationVATaxId);
+	}
+
+	private static BPartnerLocationId createLocation(final I_C_BPartner bpartner, final CountryId countryId, @Nullable final String locationVATaxId)
+	{
+		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		location.setC_Country_ID(countryId.getRepoId());
+		saveRecord(location);
+
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		bpLocation.setC_Location_ID(location.getC_Location_ID());
+		bpLocation.setVATaxID(locationVATaxId);
+		saveRecord(bpLocation);
+
+		return BPartnerLocationId.ofRepoId(bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+	}
+
+	private static I_C_Fiscal_Representation createFiscalRepresentation(
+			final CountryId toCountryId,
+			@Nullable final String vatTaxId,
+			@Nullable final I_C_BPartner representative)
+	{
+		final I_C_Fiscal_Representation row = InterfaceWrapperHelper.newInstance(I_C_Fiscal_Representation.class);
+		row.setAD_Org_ID(ORG.getRepoId());
+		row.setTo_Country_ID(toCountryId.getRepoId());
+		row.setValidFrom(Timestamp.valueOf("2026-06-01 00:00:00"));
+		row.setVATaxID(vatTaxId);
+		row.setTaxID("TAX");
+		if (representative != null)
+		{
+			row.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
+		}
+		saveRecord(row);
+		return row;
+	}
+
+	private static TaxId createExemptTax()
+	{
+		return createExemptTax(null);
+	}
+
+	private static TaxId createExemptTax(@Nullable final CountryId toCountryId)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		if (toCountryId != null)
+		{
+			tax.setTo_Country_ID(toCountryId.getRepoId());
+		}
+		tax.setName("test-exempt-tax");
+		tax.setAD_Org_ID(ORG.getRepoId());
+		tax.setValidFrom(Timestamp.valueOf("2026-01-01 00:00:00"));
+		tax.setC_TaxCategory_ID(1);
+		tax.setSOPOType("B");
+		tax.setIsFiscalRepresentation("N");
+		tax.setRequiresTaxCertificate("Y");
+		saveRecord(tax);
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
+	}
+
+	private static TaxId createTax(final boolean isFiscalRepresentation)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		tax.setName("test-tax");
+		tax.setAD_Org_ID(ORG.getRepoId());
+		tax.setValidFrom(Timestamp.valueOf("2026-01-01 00:00:00"));
+		tax.setC_TaxCategory_ID(1);
+		tax.setSOPOType("B");
+		tax.setIsFiscalRepresentation(isFiscalRepresentation ? "Y" : "N");
+		saveRecord(tax);
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
+	}
+}

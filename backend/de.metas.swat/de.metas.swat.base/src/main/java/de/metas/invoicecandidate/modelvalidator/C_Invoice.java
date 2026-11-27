@@ -27,9 +27,11 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.vatid.InvoiceVATaxIdStamper;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
@@ -38,13 +40,23 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice
 {
-	private final InvoiceWithDetailsService invoiceWithDetailsService;
+	@NonNull private final InvoiceWithDetailsService invoiceWithDetailsService;
+	@NonNull private final InvoiceVATaxIdStamper invoiceVATaxIdStamper;
 
-	public C_Invoice(@NonNull InvoiceWithDetailsService invoiceWithDetailsService)
+	/**
+	 * Runs before {@link #handleCompleteForInvoice(I_C_Invoice)} creates the allocations of a manual invoice, so a manual invoice is still recognised as one.
+	 * A completed invoice cannot be reactivated ({@code MInvoice.reActivateIt}), so it is never completed again with those allocations.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void stampOrCheckVATaxIds(final I_C_Invoice invoice)
 	{
-		this.invoiceWithDetailsService = invoiceWithDetailsService;
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
+		{
+			invoiceVATaxIdStamper.stampOrCheck(invoice);
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_CLOSE })

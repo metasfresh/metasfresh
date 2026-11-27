@@ -127,6 +127,12 @@ public interface IOrgDAO extends ISingletonService
 	 */
 	boolean isEUOneStopShop(@NonNull OrgId orgId);
 
+	/**
+	 * @return true if sales lines shipped from a drop-ship warehouse shall take the destination country as ship-from country
+	 * for tax determination, wherever the org holds a valid fiscal representation for that destination
+	 */
+	boolean isDropShipTaxFromDestCountry(@NonNull OrgId orgId);
+
 	UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(OrgId ofRepoId);
 
 	UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(OrgId orgId);

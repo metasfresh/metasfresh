@@ -62,7 +62,8 @@ SELECT i.C_Invoice_ID                                                           
           AND sl.IsRemitTo = 'Y'::BPChar
           AND sl.GLN IS NOT NULL
           AND sl.IsActive = 'Y'::BPChar)                                                                    AS SenderGLN
-     , REGEXP_REPLACE(sp.VATaxId, '\s+$', '')                                                               AS VATaxId
+     /* the seller VAT ID stored on the invoice, else the VAT ID of the organisation's partner */
+     , REGEXP_REPLACE(COALESCE(NULLIF(TRIM(i.SellerVATaxID), ''), sp.VATaxId), '\s+$', '')                   AS VATaxId
      , c.ISO_Code
      , REGEXP_REPLACE(i.CreditMemoReason, '\s+$', '')                                                       AS CreditMemoReason
      , (SELECT REGEXP_REPLACE(Name, '\s+$', '') AS Name

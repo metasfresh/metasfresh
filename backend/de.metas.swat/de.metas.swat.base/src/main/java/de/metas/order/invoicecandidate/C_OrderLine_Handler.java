@@ -22,6 +22,7 @@
 
 package de.metas.order.invoicecandidate;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -36,6 +37,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -63,6 +65,7 @@ import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -92,6 +95,9 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -100,8 +106,10 @@ import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -118,6 +126,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final SpringContextHolder.Lazy<PercentCompensationLineInvoicing> percentCompensationLineInvoicing = SpringContextHolder.lazyBean(PercentCompensationLineInvoicing.class);
 
@@ -537,6 +547,31 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
+	}
+
+	/**
+	 * The tax location of an order line candidate is the order <b>line's</b> location, org and promised date (not the order header's),
+	 * and its ship-from country is the one of the line's warehouse, exactly as {@code OrderLineBL#setTax} determines the line's tax.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()), I_C_OrderLine.class);
+		final WarehouseId warehouseId = warehouseAdvisor.evaluateWarehouse(orderLine);
+		final BPartnerLocationAndCaptureId location = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId();
+
+		// C_OrderLine.DatePromised is nullable; fall back to the order's, like OrderLineBL does for the price date
+		final Timestamp taxDate = CoalesceUtil.coalesceSuppliersNotNull(
+				orderLine::getDatePromised,
+				() -> orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID())).getDatePromised());
+
+		return Optional.of(new TaxLocation(
+				location.getBpartnerLocationId(),
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				taxDate,
+				warehouseBL.getCountryId(warehouseId),
+				warehouseId)
+				.withLocationCaptureId(location.getLocationCaptureId()));
 	}
 
 	@Override

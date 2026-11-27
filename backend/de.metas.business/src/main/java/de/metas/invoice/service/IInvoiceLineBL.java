@@ -23,16 +23,18 @@ package de.metas.invoice.service;
  */
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
-import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxQuery;
 import de.metas.util.ISingletonService;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -51,6 +53,26 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <b>IMPORTANT:</b> if the il has M_InoutLine_ID<=0, the method does nothing!
 	 */
 	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
+
+	/**
+	 * The tax query {@link #setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine, String)} uses for an invoice line of the given shipment:
+	 * the shipment's org, movement date, delivery location and SO flag, plus the given ship-from country, warehouse and tax category.
+	 * Shared with callers that must predict that tax before the invoice line exists.
+	 */
+	TaxQuery createShipmentTaxQuery(I_M_InOut shipment, CountryId countryFromId, @Nullable WarehouseId warehouseId, @Nullable TaxCategoryId taxCategoryId);
+
+	/**
+	 * The tax query of the given re-tax inputs (see {@link IInvoiceBL#getReTaxInput}) and tax category; {@link #createShipmentTaxQuery} builds the same query.
+	 */
+	TaxQuery createTaxQuery(InvoiceLineReTaxInput reTaxInput, @Nullable TaxCategoryId taxCategoryId);
+
+	/**
+	 * The tax query with which {@link #setTaxForInvoiceLine} re-taxes the given line: the given inputs and the line's tax category,
+	 * else (looked up, not set on the line) the one of its charge, pricing or order line ({@link #getTaxCategoryId}); read-only.
+	 *
+	 * @return empty if the re-tax leaves the line alone (no product)
+	 */
+	Optional<TaxQuery> createReTaxQuery(org.compiere.model.I_C_InvoiceLine il, InvoiceLineReTaxInput reTaxInput);
 
 	/**
 	 * @return true if invoice line's prices are locked (i.e. should be the same as linked OrderLine)
@@ -93,7 +115,12 @@ public interface IInvoiceLineBL extends ISingletonService
 	 */
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
-	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
+	/**
+	 * Sets the tax of the given re-tax inputs (see {@link IInvoiceBL#getReTaxInput}) on the given line, without saving it.
+	 *
+	 * @return true if the line's tax changed
+	 */
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, InvoiceLineReTaxInput reTaxInput);
 
 	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
 

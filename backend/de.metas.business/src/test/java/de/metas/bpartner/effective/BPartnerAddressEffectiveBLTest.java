@@ -24,10 +24,17 @@ package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.VATIdentifier;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -131,5 +138,81 @@ public class BPartnerAddressEffectiveBLTest
 		final I_C_BPartner memberBP = createBPartner(createPlainBPGroup());
 
 		assertThat(bpartnerAddressEffectiveBL.getEffectiveBillBPartner(createLocation(memberBP))).isNull();
+	}
+
+	/*
+	 * The VAT ID of a delivery location (location VAT, else partner header; IgnorePartnerVATID respected), as tax determination and the invoice VAT IDs look it up.
+	 */
+
+	@Test
+	public void vatTaxId_locationVAT_wins()
+	{
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE111111125");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+		setLocationVATaxID(locationId, "NL333333330B01");
+
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
+	}
+
+	@Test
+	public void vatTaxId_noLocationVAT_fallsBackToHeader()
+	{
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE111111125");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("DE111111125"));
+	}
+
+	@Test
+	public void vatTaxId_ignorePartnerVATID_noLocationVAT_isNull()
+	{
+		Services.get(ISysConfigBL.class).setValue(IBPartnerBL.SYS_CONFIG_IgnorePartnerVATID, true, ClientId.SYSTEM, OrgId.ANY);
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE111111125");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isNull();
+	}
+
+	@Test
+	public void vatTaxId_ignorePartnerVATID_locationVAT_stillWins()
+	{
+		Services.get(ISysConfigBL.class).setValue(IBPartnerBL.SYS_CONFIG_IgnorePartnerVATID, true, ClientId.SYSTEM, OrgId.ANY);
+		final I_C_BPartner bpartner = createBPartner(createPlainBPGroup());
+		bpartner.setVATaxID("DE111111125");
+		saveRecord(bpartner);
+		final BPartnerLocationId locationId = createLocation(bpartner);
+		setLocationVATaxID(locationId, "NL333333330B01");
+
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(locationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
+	}
+
+	@Test
+	public void vatTaxId_dropShipLocation_ownVATaxId()
+	{
+		final I_C_BPartner mainBP = createBPartner(createPlainBPGroup());
+		mainBP.setVATaxID("DE111111125");
+		saveRecord(mainBP);
+		final BPartnerLocationId mainLocationId = createLocation(mainBP);
+		setLocationVATaxID(mainLocationId, "DE555555551");
+
+		final I_C_BPartner dropShipBP = createBPartner(createPlainBPGroup());
+		final BPartnerLocationId dropShipLocationId = createLocation(dropShipBP);
+		setLocationVATaxID(dropShipLocationId, "NL333333330B01");
+
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(mainLocationId).orElse(null)).isEqualTo(VATIdentifier.of("DE555555551"));
+		assertThat(Services.get(IBPartnerBL.class).getVATTaxId(dropShipLocationId).orElse(null)).isEqualTo(VATIdentifier.of("NL333333330B01"));
+	}
+
+	private static void setLocationVATaxID(final BPartnerLocationId locationId, final String vatTaxId)
+	{
+		final I_C_BPartner_Location location = InterfaceWrapperHelper.load(locationId.getRepoId(), I_C_BPartner_Location.class);
+		location.setVATaxID(vatTaxId);
+		saveRecord(location);
 	}
 }

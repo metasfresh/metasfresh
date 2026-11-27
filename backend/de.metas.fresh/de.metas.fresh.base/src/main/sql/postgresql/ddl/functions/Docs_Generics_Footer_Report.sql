@@ -3,9 +3,31 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_
                                                                                        IN p_ad_language character varying)
 ;
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(numeric,
+                                                                                       character(1),
+                                                                                       IN p_ad_language character varying,
+                                                                                       IN p_c_invoice_id numeric)
+;
+
+/*
+ * Two overloads:
+ * - (p_org_id, p_isFactoringPartner, p_ad_language): every document except the sales invoice; unchanged result.
+ * - (p_org_id, p_isFactoringPartner, p_ad_language, p_c_invoice_id): the sales invoice footer. No parameter has a
+ *   default, so a call with 1 to 3 arguments can only resolve to the first overload.
+ *
+ * p_c_invoice_id: the sales invoice whose footer is printed. NULL prints the organisation's VAT ID like the
+ * 3-argument overload. With an invoice:
+ * - the invoice's fiscal registration has no representative: vataxid = the stored SellerVATaxID, or the
+ *   organisation's VAT ID when the invoice stores none;
+ * - the invoice's fiscal registration has a representative: vataxid = the organisation's VAT ID, and the
+ *   taxrep_* columns carry the representative's name, address (the registration's location, else the
+ *   representative's bill-to address) and the stored SellerVATaxID.
+ * The taxrep_* columns are NULL in every other case.
+ */
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
-                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
-                                                                               IN p_ad_language     character varying DEFAULT 'de_DE')
+                                                                               p_isFactoringPartner character(1),
+                                                                               IN p_ad_language     character varying,
+                                                                               IN p_c_invoice_id    numeric)
     RETURNS TABLE
             (
                 org_name              character varying,
@@ -27,7 +49,10 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p
                 phone2                character varying,
                 fax                   character varying,
                 email                 character varying,
-                url                   character varying
+                url                   character varying,
+                taxrep_name           character varying,
+                taxrep_address        character varying,
+                taxrep_vataxid        character varying
             )
     STABLE
     LANGUAGE sql
@@ -94,12 +119,23 @@ SELECT COALESCE(org_bp.name, '')                    AS org_name,
        )                                            AS org_addressline,
        org_bp.description                           AS orgpartnerdescription,
        usr.firstname || ' ' || usr.lastname         AS manager,
-       org_bp.vataxid                               AS vataxid,
+       CASE
+           WHEN rep.c_bpartner_id IS NOT NULL
+               THEN org_bp.vataxid
+               ELSE COALESCE(inv.sellervataxid, org_bp.vataxid)
+       END                                          AS vataxid,
        COALESCE(usr.phone, org_bpl.phone, '-')      AS phone,
        usr.phone2                                   AS phone2,
        COALESCE(usr.fax, org_bpl.fax, '-')          AS fax,
        COALESCE(usr.email, '-')                     AS email,
-       org_bp.url
+       org_bp.url,
+       rep.name                                     AS taxrep_name,
+       NULLIF(CONCAT_WS(', ',
+                        NULLIF(TRIM(rep_loc.address1), ''),
+                        NULLIF(TRIM(CONCAT_WS(' ', NULLIF(TRIM(rep_loc.postal), ''), NULLIF(TRIM(rep_loc.city), ''))), ''),
+                        COALESCE(rep_country_trl.name, rep_country.name)
+              ), '')                                AS taxrep_address,
+       CASE WHEN rep.c_bpartner_id IS NOT NULL THEN inv.sellervataxid END AS taxrep_vataxid
 
 FROM ad_org org
          INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
@@ -119,6 +155,21 @@ FROM ad_org org
          LEFT OUTER JOIN c_bank bankf ON bpbf.c_bank_id = bankf.c_bank_id
          LEFT OUTER JOIN C_Currency curf ON bpbf.C_Currency_ID = curf.C_Currency_ID
 
+         LEFT OUTER JOIN c_invoice inv ON inv.c_invoice_id = p_c_invoice_id
+         LEFT OUTER JOIN c_fiscal_representation fr ON fr.c_fiscal_representation_id = inv.c_fiscal_representation_id
+         LEFT OUTER JOIN c_bpartner rep ON rep.c_bpartner_id = fr.c_bpartner_representative_id
+         LEFT OUTER JOIN c_bpartner_location rep_bpl ON rep_bpl.c_bpartner_location_id = fr.c_bpartner_location_id
+    -- a registration without location: the representative's bill-to address, as the e-invoice (BG-12) takes it
+         LEFT OUTER JOIN LATERAL (SELECT rep_bpl_fallback.c_location_id
+                                  FROM c_bpartner_location rep_bpl_fallback
+                                  WHERE rep_bpl_fallback.c_bpartner_id = rep.c_bpartner_id
+                                    AND rep_bpl_fallback.isactive = 'Y'
+                                  ORDER BY rep_bpl_fallback.isbillto DESC, rep_bpl_fallback.c_bpartner_location_id
+                                  LIMIT 1) rep_fallback ON fr.c_bpartner_location_id IS NULL
+         LEFT OUTER JOIN c_location rep_loc ON rep_loc.c_location_id = COALESCE(rep_bpl.c_location_id, rep_fallback.c_location_id)
+         LEFT OUTER JOIN c_country rep_country ON rep_country.c_country_id = rep_loc.c_country_id
+         LEFT OUTER JOIN c_country_trl rep_country_trl ON rep_country_trl.c_country_id = rep_country.c_country_id AND rep_country_trl.ad_language = p_ad_language
+
 WHERE org.ad_org_id = p_org_id
 -- Prefer the location explicitly configured in AD_OrgInfo (OrgBP_Location_ID) when it is set
 -- and belongs to the org BPartner; otherwise fall back to the default bill-to / ship-to address.
@@ -137,3 +188,60 @@ LIMIT 1
 $$
 ;
 
+
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
+                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
+                                                                               IN p_ad_language     character varying DEFAULT 'de_DE')
+    RETURNS TABLE
+            (
+                org_name              character varying,
+                org_address1          character varying,
+                org_postal            character varying,
+                org_city              character varying,
+                org_country           character varying,
+                org_bank_acct         character varying,
+                org_bank_name         character varying,
+                org_bank_blz          character varying,
+                org_bank_iban         character varying,
+                org_bank_swift        character varying,
+                org_bank_currency     character varying,
+                org_addressline       character varying,
+                orgpartnerdescription character varying,
+                manager               character varying,
+                vataxid               character varying,
+                phone                 character varying,
+                phone2                character varying,
+                fax                   character varying,
+                email                 character varying,
+                url                   character varying
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT f.org_name,
+       f.org_address1,
+       f.org_postal,
+       f.org_city,
+       f.org_country,
+       f.org_bank_acct,
+       f.org_bank_name,
+       f.org_bank_blz,
+       f.org_bank_iban,
+       f.org_bank_swift,
+       f.org_bank_currency,
+       f.org_addressline,
+       f.orgpartnerdescription,
+       f.manager,
+       f.vataxid,
+       f.phone,
+       f.phone2,
+       f.fax,
+       f.email,
+       f.url
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id,
+                                                                    p_isFactoringPartner,
+                                                                    p_ad_language,
+                                                                    NULL::numeric) f
+$$
+;

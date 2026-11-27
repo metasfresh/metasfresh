@@ -77,6 +77,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
@@ -534,6 +536,43 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Check.assumeNotNull(
 				getBPartnerLocationByIdEvenInactive(bpartnerLocationId),
 				"BPartner location not found: {}", bpartnerLocationId);
+	}
+
+	private final CCache<Integer, Boolean> anyLocationWithVATaxIdCache = CCache.<Integer, Boolean>builder()
+			.tableName(I_C_BPartner_Location.Table_Name)
+			.initialCapacity(1)
+			.build();
+
+	@Override
+	public boolean isAnyLocationWithVATaxId()
+	{
+		return anyLocationWithVATaxIdCache.getOrLoad(0, () -> queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.filter(LocationWithVATaxIdFilter.INSTANCE)
+				.create()
+				.anyMatch());
+	}
+
+	/**
+	 * A location whose {@code VATaxID} is not blank.
+	 */
+	private static final class LocationWithVATaxIdFilter implements IQueryFilter<I_C_BPartner_Location>, ISqlQueryFilter
+	{
+		private static final LocationWithVATaxIdFilter INSTANCE = new LocationWithVATaxIdFilter();
+
+		private static final String SQL = "TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + ") <> ''";
+
+		@Override
+		public String getSql() {return SQL;}
+
+		@Override
+		public List<Object> getSqlParams(final Properties ctx) {return ImmutableList.of();}
+
+		@Override
+		public boolean accept(final I_C_BPartner_Location location)
+		{
+			return StringUtils.trimBlankToNull(location.getVATaxID()) != null;
+		}
 	}
 
 	@Override

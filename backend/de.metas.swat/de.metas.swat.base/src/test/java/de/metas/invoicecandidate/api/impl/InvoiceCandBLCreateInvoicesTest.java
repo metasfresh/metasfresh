@@ -44,6 +44,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.invoicecandidate.vatid.NoVATaxIdsResolver;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
 import de.metas.user.UserRepository;
@@ -160,6 +161,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		NoVATaxIdsResolver.register(); // these fixtures lack the master data to resolve real VAT IDs
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 

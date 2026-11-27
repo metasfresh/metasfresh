@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.CommissionConstants;
@@ -16,6 +18,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -61,6 +64,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Iterator;
+import java.util.Optional;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -107,6 +111,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final transient IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	@Override
 	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
@@ -372,6 +377,23 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return TableRecordReference
 				.ofReferenced(ic)
 				.getModel(I_C_Commission_Share.class);
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #createInvoiceCandidateRecordFor}: the term's bill-to location, the share's org and the candidate's {@code DeliveryDate}.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_C_Commission_Share commissionShareRecord = TableRecordReference.ofReferenced(icRecord).getModel(I_C_Commission_Share.class);
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
+		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
+
+		return Optional.of(new TaxLocation(
+				ContractLocationHelper.extractBillToLocationId(flatrateTerm).getBpartnerLocationId(),
+				orgId,
+				CoalesceUtil.coalesceNotNull(icRecord.getDeliveryDate(), icRecord.getDateOrdered()), // DeliveryDate is set from DateOrdered and nullable in the DB
+				bpartnerOrgBL.getOrgCountryId(orgId)));
 	}
 
 	@Override

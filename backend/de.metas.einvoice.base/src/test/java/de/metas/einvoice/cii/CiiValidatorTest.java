@@ -16,6 +16,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Location;
@@ -466,6 +467,49 @@ public class CiiValidatorTest
 				.as("Expected no FATAL/ERROR EN16931 rule violations on the valid fixture. "
 						+ "Firing rules (mapper gaps): " + fatalErrors)
 				.isEmpty();
+	}
+
+	/**
+	 * Representative invoice (BG-11): BT-31 = org VAT ID, BT-62 name, BG-12 address with country,
+	 * BT-63 = stored seller VAT ID. The EN16931 schematron (BR-56 etc.) must not fire.
+	 */
+	@Test
+	void validRepresentativeInvoice_noFatalErrors() throws Exception
+	{
+		final FixtureResult fixture = buildCompleteFixture();
+
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode("GR");
+		saveRecord(country);
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1("Odos Ermou 1");
+		location.setCity("Athens");
+		location.setPostal("10563");
+		location.setC_Country_ID(country.getC_Country_ID());
+		saveRecord(location);
+		final I_C_BPartner representative = newInstance(I_C_BPartner.class);
+		representative.setName("Vertreter SA");
+		saveRecord(representative);
+		final I_C_BPartner_Location representativeLoc = newInstance(I_C_BPartner_Location.class);
+		representativeLoc.setC_BPartner_ID(representative.getC_BPartner_ID());
+		representativeLoc.setC_Location_ID(location.getC_Location_ID());
+		representativeLoc.setIsBillTo(true);
+		saveRecord(representativeLoc);
+
+		final I_C_Fiscal_Representation registration = newInstance(I_C_Fiscal_Representation.class);
+		registration.setAD_Org_ID(fixture.invoice.getAD_Org_ID());
+		registration.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
+		saveRecord(registration);
+		fixture.invoice.setC_Fiscal_Representation_ID(registration.getC_Fiscal_Representation_ID());
+		fixture.invoice.setSellerVATaxID("EL998877666");
+		saveRecord(fixture.invoice);
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+		final String xml = marshalToXml(cii);
+		assertThat(xml).contains("SellerTaxRepresentativeTradeParty").contains("EL998877666");
+
+		final List<String> fatalErrors = new CiiValidator().validate(xml).getFatalAndErrorRuleIds();
+		assertThat(fatalErrors).as("Representative invoice must satisfy the schematron: " + fatalErrors).isEmpty();
 	}
 
 	/**

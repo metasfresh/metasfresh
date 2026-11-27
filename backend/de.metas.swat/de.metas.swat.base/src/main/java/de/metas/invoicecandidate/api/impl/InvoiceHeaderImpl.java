@@ -8,6 +8,7 @@ import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -123,6 +124,9 @@ import java.util.Optional;
 
 	@Getter @Setter @Nullable
 	private PromotionCodeId promotionCode2Id;
+
+	@Getter @Setter @Nullable
+	private InvoiceVATaxIds invoiceVATaxIds;
 
 	/**
 	 * Caller's explicit Y/N intent for {@code C_Invoice.IsPartialInvoice}; {@code null} means no

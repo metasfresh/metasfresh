@@ -23,12 +23,14 @@
 package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -117,6 +119,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIl(I_C_InvoiceLine il);
+
+	/**
+	 * @return the lines of the given invoice that have an active {@code C_Invoice_Line_Alloc}, i.e. were created from invoice candidates, with their candidates ordered by ID; in one query.
+	 * The lines without allocation are not contained.
+	 */
+	ImmutableMap<InvoiceLineId, ImmutableList<InvoiceCandidateId>> retrieveInvoiceCandidateIdsByAllocatedLine(@NonNull InvoiceId invoiceId);
 
 	I_C_Invoice_Line_Alloc retrieveIlaForIcAndIl(I_C_Invoice_Candidate invoiceCand, org.compiere.model.I_C_InvoiceLine invoiceLine);
 

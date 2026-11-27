@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.spi;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -23,6 +24,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
 
@@ -261,6 +263,16 @@ public interface IInvoiceCandidateHandler
 	}
 
 	default void setShipmentSchedule(final I_C_Invoice_Candidate ic) { /* do nothing */ };
+
+	/**
+	 * Where, by whom and when the given candidate (when it has no shipment line) is taxed, exactly as this handler's tax code determines the candidate's tax.
+	 *
+	 * @return empty (default) if this handler has no tax location of its own; the caller then falls back to the candidate's bill location, org and {@code DateOrdered} (else {@code PresetDateInvoiced}, else {@code DateInvoiced})
+	 */
+	default Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return Optional.empty();
+	}
 
 	/**
 	 * * Method responsible for setting

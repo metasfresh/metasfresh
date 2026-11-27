@@ -2,8 +2,10 @@ package de.metas.invoicecandidate.spi.impl;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -41,8 +43,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Properties;
 
 import static java.math.BigDecimal.ZERO;
@@ -193,16 +197,14 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				productId);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
-		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
-				.getDropShipPartnerInfo(olcRecord)
-				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
+		final BPartnerInfo shipToPartnerInfo = getShipToPartnerInfo(olcRecord);
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
-				CoalesceUtil.coalesceNotNull(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
+				getTaxDate(olcRecord),
 				orgId,
 				(WarehouseId)null,
 				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
@@ -269,6 +271,38 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(olCandQuantity, productId);
 
 		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
+	}
+
+	/**
+	 * Same inputs as the tax code in {@link #createInvoiceCandidateForOLCand}: the drop-ship partner (else the buyer), the candidate's org
+	 * and {@code COALESCE(DatePromised_Override, DatePromised, PresetDateInvoiced)}. That tax code passes no warehouse,
+	 * so the tax lookup takes the org's country as the ship-from country.
+	 */
+	@Override
+	public Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_OLCand olCand = getOLCand(ic);
+		final BPartnerInfo shipToPartnerInfo = getShipToPartnerInfo(olCand);
+		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
+
+		return Optional.of(new TaxLocation(
+				shipToPartnerInfo.getBpartnerLocationId(),
+				orgId,
+				getTaxDate(olCand),
+				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId))
+				.withLocationCaptureId(shipToPartnerInfo.toBPartnerLocationAndCaptureId().getLocationCaptureId()));
+	}
+
+	private BPartnerInfo getShipToPartnerInfo(@NonNull final I_C_OLCand olCand)
+	{
+		return olCandEffectiveValuesBL
+				.getDropShipPartnerInfo(olCand)
+				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olCand));
+	}
+
+	private static Timestamp getTaxDate(@NonNull final I_C_OLCand olCand)
+	{
+		return CoalesceUtil.coalesceNotNull(olCand.getDatePromised_Override(), olCand.getDatePromised(), olCand.getPresetDateInvoiced());
 	}
 
 	private I_C_OLCand getOLCand(@NonNull final I_C_Invoice_Candidate ic)

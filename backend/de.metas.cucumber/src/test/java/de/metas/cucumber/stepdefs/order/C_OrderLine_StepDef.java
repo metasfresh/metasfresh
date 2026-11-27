@@ -27,6 +27,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -148,6 +149,7 @@ public class C_OrderLine_StepDef
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_BPartner_StepDefData partnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData partnerLocationTable;
 	@NonNull private final C_Order_StepDefData orderTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -182,6 +184,7 @@ public class C_OrderLine_StepDef
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 *   <li>{@code C_CompensationGroup_CalibrationRule_ID} (optional, identifier-ref) — the calibration rule the line refers to</li>
+	 *   <li>{@code C_BPartner_Location_ID} (optional, identifier-ref) — the line's location, e.g. a location of the order's partner or drop-ship partner; replaces the one copied from the order header, together with its captured address ({@code C_BPartner_Location_Value_ID})</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -323,6 +326,16 @@ public class C_OrderLine_StepDef
 				.ifPresent(compGroupIdentifier -> {
 					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
 					orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
+				});
+
+		// after orderLineBL.setOrder, which copies the order header's location onto the line;
+		// the captured address (C_BPartner_Location_Value_ID) is set too, as tax determination reads its country
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(partnerLocationTable::get)
+				.ifPresent(bpartnerLocation -> {
+					orderLine.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+					orderLine.setC_BPartner_Location_Value_ID(bpartnerLocation.getC_Location_ID());
 				});
 
 		saveRecord(orderLine);

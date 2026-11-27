@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
@@ -173,6 +174,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StepDef
 {
+	private static final String COLUMN_HeaderAggregation_Override_FromCandidate = "HeaderAggregation_Override.FromCandidate";
+
 	private final static Logger logger = LogManager.getLogger(C_Invoice_Candidate_StepDef.class);
 
 	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
@@ -195,6 +198,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
 	private final C_ElementValue_StepDefData elementValueTable;
+	private final TestContext restTestContext;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -209,7 +213,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_PromotionCode_StepDefData promotionCodeTable,
-			@NonNull final C_ElementValue_StepDefData elementValueTable)
+			@NonNull final C_ElementValue_StepDefData elementValueTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -224,6 +229,7 @@ public class C_Invoice_Candidate_StepDef
 		this.projectTable = projectTable;
 		this.promotionCodeTable = promotionCodeTable;
 		this.elementValueTable = elementValueTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -338,6 +344,7 @@ public class C_Invoice_Candidate_StepDef
 	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the candidate to update<br>
 	 *   <b>QtyToInvoice_Override</b> — (optional) sets the manual qty-to-invoice override<br>
 	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override; propagated to the generated invoice line on processing<br>
+	 *   <b>HeaderAggregation_Override.FromCandidate</b> — (optional, identifier-ref) another invoice candidate; this candidate's header aggregation override is set to that candidate's header aggregation, so both land on the same invoice<br>
 	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData, C_ElementValue_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -362,6 +369,18 @@ public class C_Invoice_Candidate_StepDef
 					row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_ElementValue_Override_ID)
 							.map(elementValueTable::getId)
 							.ifPresent(elementValueId -> invoiceCandidate.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
+
+					row.getAsOptionalIdentifier(COLUMN_HeaderAggregation_Override_FromCandidate)
+							.ifPresent(otherIdentifier -> {
+								if (otherIdentifier.isNullPlaceholder())
+								{
+									invoiceCandidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(0); // clears the override
+									return;
+								}
+								final I_C_Invoice_Candidate otherCandidate = otherIdentifier.lookupNotNullIn(invoiceCandTable);
+								InterfaceWrapperHelper.refresh(otherCandidate);
+								invoiceCandidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(otherCandidate.getC_Invoice_Candidate_HeaderAggregation_ID());
+							});
 
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -1051,6 +1070,21 @@ public class C_Invoice_Candidate_StepDef
 				.forEach(row -> findInvoiceCandidateByOrderId(timeoutSec, row));
 	}
 
+	/**
+	 * Waits until exactly as many active invoice candidates with the given {@code ExternalHeaderId} exist as identifiers are given, and stores them in ID order.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID.Identifier</b> — (required) comma-separated identifiers to store the found candidates under<br>
+	 *   <b>ExternalHeaderId</b> — (required) the candidates' external header id; {@code @name@} tokens are replaced by REST context variables
+	 *   (e.g. a random product value, so that a rerun on a persistent DB does not find the candidates of an earlier run)
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, locate C_Invoice_Candidates by externalHeaderId
+	 *   | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId |
+	 *   | invoiceCandidate                  | @productValue@_H |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, locate C_Invoice_Candidates by externalHeaderId$")
 	public void locate_invoice_candidate_by_externalHeaderId(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -1743,7 +1777,7 @@ public class C_Invoice_Candidate_StepDef
 	@NonNull
 	private Boolean loadInvoiceCandidatesByExternalHeaderId(@NonNull final Map<String, String> row)
 	{
-		final String externalHeaderId = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId);
+		final String externalHeaderId = restTestContext.resolveVariables(DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId));
 
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 

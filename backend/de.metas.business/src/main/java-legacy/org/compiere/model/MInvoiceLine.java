@@ -694,6 +694,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
 				.fromCountryId(fromCountryId)
+				.warehouseId(invoiceBL.getFromWarehouseId(invoice, invoiceLine))
 				.orgId(fromOrgId)
 				.bPartnerLocationId(taxBPartnerLocationId)
 				.dateOfInterest(taxDate)

@@ -1,0 +1,278 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.invoice.vatid;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.organization.FiscalRepresentationId;
+import de.metas.organization.IFiscalRepresentationBL;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VATIdentifier;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Fiscal_Representation;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
+/**
+ * Resolves the buyer and seller VAT IDs of an invoice from the {@link TaxLocation} of its lines.
+ */
+@Service
+public class InvoiceVATaxIdService
+{
+	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+
+	@VisibleForTesting
+	public static InvoiceVATaxIdService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(InvoiceVATaxIdService.class, InvoiceVATaxIdService::new);
+	}
+
+	/**
+	 * @return {@code false} if no line of any org can use VAT IDs by delivery because of master data: no org has an active fiscal representation
+	 * and no partner location carries a VAT ID. Both facts are cached, so this costs no query.
+	 * Then only a line whose tax requires a tax certificate (i.e. is exempt on the buyer's VAT ID) can still resolve to values (see {@link #resolveIfByDelivery}):
+	 * callers may skip a line only if this returns {@code false} and its tax does not require a tax certificate, so skipping never changes a result.
+	 * All orgs are looked at because a line's registration is the one of its tax location's org (e.g. the shipment's), not necessarily the invoice's.
+	 * <p>
+	 * Both facts are reset by the model cache invalidation, i.e. when a {@code C_Fiscal_Representation} or {@code C_BPartner_Location} record is saved through the application.
+	 * A registration or a location VAT ID written by plain SQL (a data fix, a script run on a running instance) is seen only after a cache reset or a restart;
+	 * until then a cached {@code false} keeps such lines from being resolved.
+	 */
+	public boolean isVATaxIdByDeliveryPossible()
+	{
+		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentationInAnyOrg() || bpartnerDAO.isAnyLocationWithVATaxId();
+	}
+
+	/**
+	 * @return {@code true} if the given tax is exempt on the buyer's VAT ID ({@code C_Tax.RequiresTaxCertificate='Y'})
+	 */
+	public boolean isRequiresTaxCertificate(@NonNull final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId).isRequiresTaxCertificate();
+	}
+
+	/**
+	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery; otherwise {@link InvoiceVATaxIds#NONE}:
+	 * the invoice is grouped and stores no values, so its outputs show the bill partner's VAT ID, as without per-address VAT IDs.
+	 * A line uses VAT IDs by delivery if a fiscal representation applies, or if its buyer VAT ID (the one tax determination uses: the location's, else that location's partner's)
+	 * differs from the bill partner's VAT ID (the value the outputs show without stored values) and
+	 * <ul>
+	 *     <li>the location carries that VAT ID itself, or</li>
+	 *     <li>the line's tax requires a tax certificate, i.e. that VAT ID justified the exemption (e.g. a drop-ship to a third party whose VAT ID is on its partner only).</li>
+	 * </ul>
+	 * A delivery partner's VAT ID that did not decide the tax is not shown (e.g. central billing with domestic deliveries to other partners).
+	 */
+	@NonNull
+	public InvoiceVATaxIds resolveIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
+	{
+		return ifByDelivery(resolve(taxLocation, lineTax), taxLocation, lineTax, billPartnerId);
+	}
+
+	/**
+	 * Like {@link #resolveIfByDelivery}, for a tax location whose org has no fiscal representation: no line tax can give a seller VAT ID, so only the buyer VAT ID is resolved.
+	 *
+	 * @param lineTax the tax of the line; may be {@code null} only if {@link #isLineTaxNeededForBuyer} is {@code false}
+	 */
+	@NonNull
+	public InvoiceVATaxIds resolveBuyerIfByDelivery(@NonNull final TaxLocation taxLocation, @Nullable final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
+	{
+		return ifByDelivery(new InvoiceVATaxIds(getBuyerVATaxId(taxLocation), null, null), taxLocation, lineTax, billPartnerId);
+	}
+
+	/**
+	 * @return {@code true} if the result of {@link #resolveBuyerIfByDelivery} depends on the line's tax: the location has no VAT ID of its own,
+	 * but its partner's VAT ID differs from the bill partner's
+	 */
+	public boolean isLineTaxNeededForBuyer(@NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	{
+		return !hasOwnVATaxId(taxLocation.getBpartnerLocationId())
+				&& !isSameVATaxId(getBuyerVATaxId(taxLocation), getHeaderVATaxId(billPartnerId));
+	}
+
+	@NonNull
+	private InvoiceVATaxIds ifByDelivery(
+			@NonNull final InvoiceVATaxIds vatTaxIds,
+			@NonNull final TaxLocation taxLocation,
+			@Nullable final TaxId lineTax,
+			@NonNull final BPartnerId billPartnerId)
+	{
+		if (vatTaxIds.getFiscalRepresentationId() != null)
+		{
+			return vatTaxIds;
+		}
+		if (vatTaxIds.getBuyerVATaxId() == null || isSameVATaxId(vatTaxIds.getBuyerVATaxId(), getHeaderVATaxId(billPartnerId)))
+		{
+			return InvoiceVATaxIds.NONE;
+		}
+		if (hasOwnVATaxId(taxLocation.getBpartnerLocationId()))
+		{
+			return vatTaxIds;
+		}
+		if (lineTax == null)
+		{
+			throw new AdempiereException("The line tax is needed to resolve the buyer VAT ID of " + taxLocation);
+		}
+		return isRequiresTaxCertificate(lineTax) ? vatTaxIds : InvoiceVATaxIds.NONE;
+	}
+
+	/**
+	 * @return {@code true} if both VAT IDs are the same one, written alike or not: they are compared trimmed, upper-cased and without spaces (e.g. {@code de 123 456 788} = {@code DE123456788}).
+	 * The values themselves are stored as entered.
+	 */
+	public static boolean isSameVATaxId(@Nullable final String vatTaxId1, @Nullable final String vatTaxId2)
+	{
+		return Objects.equals(normalizeForComparison(vatTaxId1), normalizeForComparison(vatTaxId2));
+	}
+
+	@Nullable
+	private static String normalizeForComparison(@Nullable final String vatTaxId)
+	{
+		if (vatTaxId == null)
+		{
+			return null;
+		}
+		final String normalized = WHITESPACE.matcher(vatTaxId).replaceAll("").toUpperCase(Locale.ROOT);
+		return normalized.isEmpty() ? null : normalized;
+	}
+
+	/**
+	 * @return the destination country of the given tax if that tax requires a tax certificate (i.e. is exempt on the buyer's VAT ID) and the given location is not in that country:
+	 * then that location's VAT ID did not justify the exemption, and the VAT ID that did is not known.
+	 * Empty otherwise, also for a tax without destination country.
+	 */
+	@NonNull
+	public Optional<CountryId> getExemptTaxDestinationCountryIfLocationNotThere(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
+	{
+		final Tax tax = taxDAO.getTaxById(lineTax);
+		final CountryId taxDestinationCountryId = tax.getToCountryId();
+		if (!tax.isRequiresTaxCertificate() || taxDestinationCountryId == null)
+		{
+			return Optional.empty();
+		}
+		return taxDestinationCountryId.equals(getCountryId(taxLocation)) ? Optional.empty() : Optional.of(taxDestinationCountryId);
+	}
+
+	/**
+	 * The country of the captured address the line's tax used, like {@code TaxDAO}; else of the location's current address.
+	 */
+	@NonNull
+	private CountryId getCountryId(@NonNull final TaxLocation taxLocation)
+	{
+		return taxLocation.getLocationCaptureId() != null
+				? locationDAO.getCountryIdByLocationId(taxLocation.getLocationCaptureId())
+				: bpartnerDAO.getCountryId(taxLocation.getBpartnerLocationId());
+	}
+
+	@Nullable
+	private String getHeaderVATaxId(@NonNull final BPartnerId bpartnerId)
+	{
+		return VATIdentifier.toString(VATIdentifier.ofNullable(bpartnerDAO.getById(bpartnerId).getVATaxID()));
+	}
+
+	/**
+	 * @return {@code true} if the given location has a VAT ID of its own (not only its partner's)
+	 */
+	public boolean hasOwnVATaxId(@NonNull final BPartnerLocationId locationId)
+	{
+		return Check.isNotBlank(bpartnerDAO.getBPartnerLocationByIdEvenInactive(locationId).getVATaxID());
+	}
+
+	/**
+	 * @param lineTax the tax of the line; the seller VAT ID / fiscal representation are only set
+	 *                if this tax is flagged {@code IsFiscalRepresentation}.
+	 */
+	@NonNull
+	public InvoiceVATaxIds resolve(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
+	{
+		final String buyerVATaxId = getBuyerVATaxId(taxLocation);
+
+		if (!Boolean.TRUE.equals(taxDAO.getTaxById(lineTax).getIsFiscalRepresentation()))
+		{
+			return new InvoiceVATaxIds(buyerVATaxId, null, null);
+		}
+
+		final CountryId destCountryId = getCountryId(taxLocation);
+		final Optional<I_C_Fiscal_Representation> registration = fiscalRepresentationBL.getFiscalRepresentation(destCountryId, taxLocation.getOrgId(), TimeUtil.asTimestampNotNull(taxLocation.getTaxDate()));
+		if (!registration.isPresent())
+		{
+			return new InvoiceVATaxIds(buyerVATaxId, null, null);
+		}
+
+		return new InvoiceVATaxIds(
+				buyerVATaxId,
+				getSellerVATaxId(registration.get()),
+				FiscalRepresentationId.ofRepoId(registration.get().getC_Fiscal_Representation_ID()));
+	}
+
+	@Nullable
+	private String getBuyerVATaxId(@NonNull final TaxLocation taxLocation)
+	{
+		return VATIdentifier.toString(bpartnerBL.getVATTaxId(taxLocation.getBpartnerLocationId()).orElse(null));
+	}
+
+	/**
+	 * The registration's own VAT ID, else the representative partner's header VAT ID, else {@code null}.
+	 */
+	@Nullable
+	private String getSellerVATaxId(@NonNull final I_C_Fiscal_Representation registration)
+	{
+		final VATIdentifier ownVATaxId = VATIdentifier.ofNullable(registration.getVATaxID());
+		if (ownVATaxId != null)
+		{
+			return ownVATaxId.getAsString();
+		}
+
+		final BPartnerId representativeId = BPartnerId.ofRepoIdOrNull(registration.getC_BPartner_Representative_ID());
+		if (representativeId == null)
+		{
+			return null;
+		}
+		return VATIdentifier.toString(VATIdentifier.ofNullable(bpartnerDAO.getById(representativeId).getVATaxID()));
+	}
+}

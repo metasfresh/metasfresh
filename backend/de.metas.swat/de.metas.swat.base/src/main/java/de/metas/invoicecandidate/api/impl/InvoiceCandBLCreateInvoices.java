@@ -28,6 +28,7 @@ import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -44,6 +45,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -61,6 +63,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.Getter;
 import lombok.NonNull;
@@ -155,6 +158,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
+	private final transient InvoiceCandidateVATaxIdResolver vatTaxIdResolver = SpringContextHolder.instance.getBean(InvoiceCandidateVATaxIdResolver.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -435,6 +439,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_PromotionCode_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCodeId()));
 			invoice.setC_PromotionCode2_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCode2Id()));
+
+			final InvoiceVATaxIds invoiceVATaxIds = invoiceHeader.getInvoiceVATaxIds();
+			if (invoiceVATaxIds != null)
+			{
+				invoice.setBuyerVATaxID(invoiceVATaxIds.getBuyerVATaxId());
+				invoice.setSellerVATaxID(invoiceVATaxIds.getSellerVATaxId());
+				invoice.setC_Fiscal_Representation_ID(RepoIdAwares.toRepoId(invoiceVATaxIds.getFiscalRepresentationId()));
+			}
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 			invoice.setExternalSystem_ID(ExternalSystemId.toRepoId(invoiceHeader.getExternalSystemId()));
 			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
@@ -977,6 +989,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.vatTaxIdResolver(vatTaxIdResolver)
 				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
 				.partialInvoice(invoicingParams != null ? invoicingParams.getIsPartialInvoice() : null)
 				.build();
