@@ -25,8 +25,8 @@ const SHORT_SCREEN = { width: 360, height: 300, deviceScaleFactor: 3 };
 
 const expectDialogFitsScreen = async (where, { isTableAreaScrolling }) => {
     await expectInsideScreen(GetQuantityDialog.messageBox(), `${where}: the whole pop-up`, SHORT_SCREEN);
-    await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), `${where}: OK button`, SHORT_SCREEN);
-    await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), `${where}: Cancel button`, SHORT_SCREEN);
+    await expectInsideScreen(GetQuantityDialog.doneButton(), `${where}: OK button`, SHORT_SCREEN);
+    await expectInsideScreen(GetQuantityDialog.cancelButton(), `${where}: Cancel button`, SHORT_SCREEN);
     if (isTableAreaScrolling) {
         // the rows are taller than the table area that is left: it scrolls inside, the pop-up does not grow
         const scrolls = await GetQuantityDialog.isTableAreaScrolling();

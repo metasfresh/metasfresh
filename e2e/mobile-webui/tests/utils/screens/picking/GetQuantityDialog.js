@@ -43,7 +43,7 @@ export const GetQuantityDialog = {
 
     /** Presses OK in Scan once and stays */
     clickDoneStayOpen: async ({ expectedQtyTarget } = {}) => await test.step(`${NAME} - Press OK, stay on the line`, async () => {
-        await page.getByTestId('done-button').tap();
+        await GetQuantityDialog.doneButton().tap();
         if (expectedQtyTarget != null) {
             await GetQuantityDialog.expectQtyTarget(expectedQtyTarget);
         }
@@ -54,7 +54,7 @@ export const GetQuantityDialog = {
         await expectErrorToast(
             `${NAME} refusal`,
             async () => {
-                await page.getByTestId('done-button').tap();
+                await GetQuantityDialog.doneButton().tap();
             },
             async ({ textContent }) => {
                 expect(textContent).toContain(expectedError);
@@ -65,7 +65,7 @@ export const GetQuantityDialog = {
     }),
 
     expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
-        await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
+        await expect(GetQuantityDialog.qtyInputField()).toHaveValue(`${expected}`);
     }),
 
     expectUserInfoValue: async ({ captionKey, expectedValue }) => await test.step(`${NAME} - Expect ${captionKey} to contain '${expectedValue}'`, async () => {
@@ -74,26 +74,22 @@ export const GetQuantityDialog = {
     }),
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
-        await page.locator('#qty-input').fill(`${qty}`);
+        await GetQuantityDialog.qtyInputField().fill(`${qty}`);
     }),
 
     expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
-        await expect(page.getByTestId('lotNo')).toBeVisible();
+        await expect(GetQuantityDialog.lotNoField()).toBeVisible();
     }),
 
     expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
-        await expect(page.getByTestId('lotNo')).not.toBeVisible();
+        await expect(GetQuantityDialog.lotNoField()).not.toBeVisible();
     }),
 
     /** Asserts the value of the LotNo field */
     expectLotNoValue: async (expected) => await test.step(`${NAME} - Expect LotNo to be '${expected}'`, async () => {
-        await expect(page.getByTestId('lotNo')).toHaveValue(expected);
+        await expect(GetQuantityDialog.lotNoField()).toHaveValue(expected);
     }),
 
-    /** A control of the dialog by its data-testid (lotNo, bestBeforeDate, done-button, cancel-button, next-tu-button, ...) */
-    controlByTestId: (testId) => containerElement().getByTestId(testId),
-    /** The quantity input, looked up inside the dialog */
-    qtyInputInDialog: () => containerElement().locator('#qty-input'),
     /** The message box: the whole pop-up as drawn */
     messageBox: () => containerElement().locator('.message'),
     /** The table area of the dialog (the part that shrinks and scrolls inside) */
@@ -103,9 +99,9 @@ export const GetQuantityDialog = {
 
     /** Boxes (Playwright boundingBox) of the quantity field, OK, Cancel and the table area of the dialog */
     measureBoxes: async () => ({
-        field: await GetQuantityDialog.qtyInputInDialog().boundingBox(),
-        ok: await GetQuantityDialog.controlByTestId('done-button').boundingBox(),
-        cancel: await GetQuantityDialog.controlByTestId('cancel-button').boundingBox(),
+        field: await GetQuantityDialog.qtyInputField().boundingBox(),
+        ok: await GetQuantityDialog.doneButton().boundingBox(),
+        cancel: await GetQuantityDialog.cancelButton().boundingBox(),
         tableArea: await GetQuantityDialog.tableArea().boundingBox(),
     }),
     /** Sideways scroll of the table area, how much too wide its content is, and where each label starts relative to the area's left edge */
@@ -136,15 +132,15 @@ export const GetQuantityDialog = {
     }),
 
     expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
-        await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
+        await expect(GetQuantityDialog.bestBeforeDateField()).toBeVisible();
     }),
 
     expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
-        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+        await expect(GetQuantityDialog.bestBeforeDateField()).not.toBeVisible();
     }),
 
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
-        const field = page.getByTestId('lotNo');
+        const field = GetQuantityDialog.lotNoField();
         await clickAndType(field, lotNo);
     }),
 
@@ -152,7 +148,7 @@ export const GetQuantityDialog = {
         // The Best-Before field is a DateInput. With the default config
         // (mobileui.frontend.dateInput.isUseNativeComponent=N) it renders as a text input
         // expecting the DD.MM.YYYY display format; fill() sets the whole value in one event.
-        const field = page.getByTestId('bestBeforeDate');
+        const field = GetQuantityDialog.bestBeforeDateField();
         await field.tap();
         await field.fill(bestBeforeDate);
     }),
@@ -193,19 +189,31 @@ export const GetQuantityDialog = {
     }),
 
     expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
-        await expect(page.getByTestId('done-button')).toBeDisabled();
+        await expect(GetQuantityDialog.doneButton()).toBeDisabled();
     }),
 
     expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
-        await expect(page.getByTestId('done-button')).toBeEnabled();
+        await expect(GetQuantityDialog.doneButton()).toBeEnabled();
     }),
 
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
     }),
 
-    /** The quantity (count) field */
-    qtyInputField: () => page.locator('#qty-input'),
+    /** The quantity (count) field, looked up inside the dialog */
+    qtyInputField: () => containerElement().locator('#qty-input'),
+
+    /** The LotNo field, looked up inside the dialog */
+    lotNoField: () => containerElement().getByTestId('lotNo'),
+
+    /** The best-before date field, looked up inside the dialog */
+    bestBeforeDateField: () => containerElement().getByTestId('bestBeforeDate'),
+
+    /** The Cancel button, looked up inside the dialog */
+    cancelButton: () => containerElement().getByTestId('cancel-button'),
+
+    /** The "Weiteres TU" (next TU) button, looked up inside the dialog */
+    nextTUButton: () => containerElement().getByTestId('next-tu-button'),
 
     /** The open quantity shown by the dialog (`qty-target`) */
     qtyTargetElement: () => page.getByTestId('qty-target'),
@@ -213,8 +221,8 @@ export const GetQuantityDialog = {
     /** The first row of the dialog's table (the one with the target quantity) */
     firstRow: () => page.locator('tr').filter({ has: page.getByTestId('qty-target') }).first(),
 
-    /** The OK button; for layout checks (see utils/layout.js) */
-    doneButton: () => page.getByTestId('done-button'),
+    /** The OK button, looked up inside the dialog; for layout checks (see utils/layout.js) */
+    doneButton: () => containerElement().getByTestId('done-button'),
 
     /** The "OK und LU schließen" button; for layout checks */
     doneAndCloseTargetButton: () => page.getByTestId('confirmDoneAndCloseTarget-button'),
@@ -246,7 +254,7 @@ export const GetQuantityDialog = {
     expectReachableWithKeyboard: async (label, viewport) => await test.step(`${NAME} - Expect ${label} reachable with keyboard`, async () => {
         const smaller = { width: viewport.width, height: Math.round(viewport.height * 0.55) };
         await page.setViewportSize(smaller);
-        const qtyInput = containerElement().locator('#qty-input');
+        const qtyInput = GetQuantityDialog.qtyInputField();
         await qtyInput.tap();
         for (const [testId, name] of [['done-button', 'OK'], ['cancel-button', 'Cancel']]) {
             const button = containerElement().getByTestId(testId);
@@ -259,7 +267,7 @@ export const GetQuantityDialog = {
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
-        let doneButton = page.getByTestId('done-button');
+        let doneButton = GetQuantityDialog.doneButton();
 
         await expectErrorToastIf(
             !!expectedError,
@@ -289,22 +297,22 @@ export const GetQuantityDialog = {
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
-        await page.getByTestId('cancel-button').tap();
+        await GetQuantityDialog.cancelButton().tap();
         await GetQuantityDialog.expectComponentsDisabled();
         await GetQuantityDialog.waitToClose();
     }),
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
+        await GetQuantityDialog.qtyInputField().waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
-        await expectMissingOrDisabled(page.locator('#qty-input'));
-        // await expectMissingOrDisabled(page.getByTestId('bestBeforeDate'));
-        // await expectMissingOrDisabled(page.getByTestId('lotNo'));
-        await expectMissingOrDisabled(page.getByTestId('done-button'));
-        await expectMissingOrDisabled(page.getByTestId('cancel-button'));
+        await expectMissingOrDisabled(GetQuantityDialog.qtyInputField());
+        // await expectMissingOrDisabled(GetQuantityDialog.bestBeforeDateField());
+        // await expectMissingOrDisabled(GetQuantityDialog.lotNoField());
+        await expectMissingOrDisabled(GetQuantityDialog.doneButton());
+        await expectMissingOrDisabled(GetQuantityDialog.cancelButton());
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 

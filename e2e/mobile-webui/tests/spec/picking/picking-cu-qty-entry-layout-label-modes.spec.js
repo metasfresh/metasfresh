@@ -33,12 +33,12 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await openLine({ index: 1 });
                 await scanLabel(labelOf({ masterdata }));
                 await PickLineScanScreen.openTU();
-                await expectInsideScreen(GetQuantityDialog.qtyInputInDialog(), 'Scan once quantity field', viewport);
-                await expectInsideScreen(GetQuantityDialog.controlByTestId('lotNo'), 'Scan once lot field', viewport);
-                await expectInsideScreen(GetQuantityDialog.controlByTestId('bestBeforeDate'), 'Scan once best-before field', viewport);
-                await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), 'Scan once OK button', viewport);
-                await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), 'Scan once Cancel button', viewport);
-                await expectInsideScreen(GetQuantityDialog.controlByTestId('next-tu-button'), 'Scan once Next TU button', viewport);
+                await expectInsideScreen(GetQuantityDialog.qtyInputField(), 'Scan once quantity field', viewport);
+                await expectInsideScreen(GetQuantityDialog.lotNoField(), 'Scan once lot field', viewport);
+                await expectInsideScreen(GetQuantityDialog.bestBeforeDateField(), 'Scan once best-before field', viewport);
+                await expectInsideScreen(GetQuantityDialog.doneButton(), 'Scan once OK button', viewport);
+                await expectInsideScreen(GetQuantityDialog.cancelButton(), 'Scan once Cancel button', viewport);
+                await expectInsideScreen(GetQuantityDialog.nextTUButton(), 'Scan once Next TU button', viewport);
                 await GetQuantityDialog.clickCancel();
                 await PickingJobScreen.waitForScreen();
             });
@@ -57,9 +57,9 @@ for (const viewport of PHONE_VIEWPORTS) {
             await PickingJobScreen.clickLineButton({ index: 1 });
             await GetQuantityDialog.waitForDialog();
 
-            await expectInsideScreen(GetQuantityDialog.qtyInputInDialog(), 'Manual quantity field', viewport);
-            await expectInsideScreen(GetQuantityDialog.controlByTestId('done-button'), 'Manual OK button', viewport);
-            await expectInsideScreen(GetQuantityDialog.controlByTestId('cancel-button'), 'Manual Cancel button', viewport);
+            await expectInsideScreen(GetQuantityDialog.qtyInputField(), 'Manual quantity field', viewport);
+            await expectInsideScreen(GetQuantityDialog.doneButton(), 'Manual OK button', viewport);
+            await expectInsideScreen(GetQuantityDialog.cancelButton(), 'Manual Cancel button', viewport);
             const boxes = await GetQuantityDialog.measureBoxes();
             // positions are printed, to compare the layout before and after a change
             console.log('MANUAL-DIALOG-TUS ' + viewport.name + ' ' + JSON.stringify(boxes));
