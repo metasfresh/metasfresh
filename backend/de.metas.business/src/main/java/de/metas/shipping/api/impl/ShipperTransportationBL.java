@@ -7,6 +7,7 @@ import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -15,6 +16,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 
@@ -25,6 +27,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 {
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final SpringContextHolder.Lazy<ShipperTransportationDocSubTypeGuard> docSubTypeGuard = SpringContextHolder.lazyBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Override
 	public void save(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)
@@ -111,5 +114,13 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		{
 			shipperTransportationDAO.clearShipperTransportationIdIfMatches(inOutId, shipperTransportationId);
 		}
+	}
+
+	@Override
+	public boolean isManualTransportOrder(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		// the flag is checked first, so a document without it never resolves the guard bean
+		return shipperTransportation.isManualOrder()
+				&& !docSubTypeGuard.get().isDeliveryInstruction(shipperTransportation);
 	}
 }

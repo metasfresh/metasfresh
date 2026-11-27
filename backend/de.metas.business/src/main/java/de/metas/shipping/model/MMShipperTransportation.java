@@ -50,7 +50,6 @@ import java.util.Properties;
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -61,7 +60,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.util.Services;
 
@@ -354,7 +352,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return IDocument.STATUS_Invalid;
 
 		final List<I_M_ShippingPackage> lines = getLines(true);
-		if (lines.isEmpty() && !isManualTransportOrder())
+		if (lines.isEmpty() && !Services.get(IShipperTransportationBL.class).isManualTransportOrder(this))
 		{
 			throw AdempiereException.noLines();
 		}
@@ -368,13 +366,6 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}    // prepareIt
-
-	/** A manual transport order (no shipment) may be completed without lines; a delivery instruction never. */
-	private boolean isManualTransportOrder()
-	{
-		return isManualOrder()
-				&& !SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class).isDeliveryInstruction(this);
-	}
 
 	@Override
 	public boolean processIt(final String processAction)
