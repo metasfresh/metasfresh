@@ -3139,6 +3139,147 @@ public class CiiMapperTest
 
 	// ===== Shared helpers =====
 
+	// ===== Stored VAT IDs (BT-48, BT-31, BG-11) =====
+
+	private static final String BT48_PATH = "//ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID='VA']/ram:ID";
+	private static final String BT31_PATH = "//ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID='VA']/ram:ID";
+	private static final String BG11 = "//ram:ApplicableHeaderTradeAgreement/ram:SellerTaxRepresentativeTradeParty";
+
+	private I_C_BPartner newBPartnerWithLocation(final String name, final String vatId, final String countryCode, final String city)
+	{
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode(countryCode);
+		saveRecord(country);
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1(name + " street 1");
+		location.setCity(city);
+		location.setPostal("10000");
+		location.setC_Country_ID(country.getC_Country_ID());
+		saveRecord(location);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
+		bp.setName(name);
+		bp.setVATaxID(vatId);
+		saveRecord(bp);
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_BPartner_ID(bp.getC_BPartner_ID());
+		bpLoc.setC_Location_ID(location.getC_Location_ID());
+		bpLoc.setIsBillTo(true);
+		saveRecord(bpLoc);
+		return bp;
+	}
+
+	/** Seller org VAT {@code DE123456789}; buyer header VAT {@code DE987654321}; no stored VAT IDs yet. */
+	private I_C_Invoice newInvoiceWithHeaderVatIds()
+	{
+		final I_AD_Org sellerOrg = newInstance(I_AD_Org.class);
+		saveRecord(sellerOrg);
+		final I_C_BPartner sellerBP = newBPartnerWithLocation("Seller GmbH", "DE123456789", "DE", "Berlin");
+		sellerBP.setAD_OrgBP_ID(sellerOrg.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(sellerOrg.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		final I_C_BPartner buyerBP = newBPartnerWithLocation("Buyer AG", "DE987654321", "DE", "Hamburg");
+		final I_C_BPartner_Location buyerLoc = de.metas.util.Services.get(de.metas.bpartner.service.IBPartnerDAO.class)
+				.retrieveBPartnerLocations(buyerBP).get(0);
+
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(sellerOrg.getAD_Org_ID());
+		invoice.setDocumentNo("RE-VATID-001");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2026, 6, 2).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+		return invoice;
+	}
+
+	private XmlAssert mapVatIdInvoice(final I_C_Invoice invoice) throws Exception
+	{
+		saveRecord(invoice);
+		final CrossIndustryInvoiceType cii = new CiiMapper(null, null).map(invoice,
+				EInvoiceRecipientConfig.builder().format(EInvoiceFormat.ZUGFeRD).build());
+		return toXmlAssert(cii);
+	}
+
+	/** TC9 / TC11: the buyer VAT ID stored on the invoice wins over the (changed) header VAT ID. */
+	@Test
+	void bt48_storedBuyerVATaxId_wins() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		invoice.setBuyerVATaxID("NL827764364B01");
+
+		mapVatIdInvoice(invoice).valueByXPath(BT48_PATH).as("BT-48").isEqualTo("NL827764364B01");
+	}
+
+	@Test
+	void bt48_nullStored_fallsBackToHeader() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		invoice.setBuyerVATaxID(null);
+
+		mapVatIdInvoice(invoice).valueByXPath(BT48_PATH).as("BT-48").isEqualTo("DE987654321");
+	}
+
+	/** TC17: own registration - stored seller VAT ID, no representative block. */
+	@Test
+	void bt31_ownRegistration_storedSellerVATaxId() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		invoice.setSellerVATaxID("EL094259216");
+
+		final XmlAssert xml = mapVatIdInvoice(invoice);
+		xml.valueByXPath(BT31_PATH).as("BT-31").isEqualTo("EL094259216");
+		xml.nodesByXPath(BG11).as("BG-11").isEmpty();
+	}
+
+	/** TC22(b): warehouse drop-ship route with GR to GR line tax - stored seller VAT ID, no representative block. */
+	@Test
+	void bt31_warehouseDropShip_storedSellerVATaxId() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		invoice.setSellerVATaxID("EL094259216");
+		invoice.setBuyerVATaxID("EL123456783");
+
+		final XmlAssert xml = mapVatIdInvoice(invoice);
+		xml.valueByXPath(BT31_PATH).as("BT-31").isEqualTo("EL094259216");
+		xml.valueByXPath(BT48_PATH).as("BT-48").isEqualTo("EL123456783");
+		xml.nodesByXPath(BG11).as("BG-11").isEmpty();
+	}
+
+	/** TC18: representative - BT-31 stays the org VAT ID; BG-11 carries name, address and the stored VAT ID (BR-56). */
+	@Test
+	void bg11_representative() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		final I_C_BPartner representative = newBPartnerWithLocation("Vertreter SA", "EL000000000", "GR", "Athens");
+		final org.compiere.model.I_C_Fiscal_Representation registration = newInstance(org.compiere.model.I_C_Fiscal_Representation.class);
+		registration.setAD_Org_ID(invoice.getAD_Org_ID());
+		registration.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
+		saveRecord(registration);
+		invoice.setC_Fiscal_Representation_ID(registration.getC_Fiscal_Representation_ID());
+		invoice.setSellerVATaxID("EL998877666");
+
+		final XmlAssert xml = mapVatIdInvoice(invoice);
+		xml.valueByXPath(BT31_PATH).as("BT-31 = org VAT").isEqualTo("DE123456789");
+		xml.valueByXPath(BG11 + "/ram:Name").as("BT-62").isEqualTo("Vertreter SA");
+		xml.valueByXPath(BG11 + "/ram:PostalTradeAddress/ram:CountryID").as("BG-12 country").isEqualTo("GR");
+		xml.valueByXPath(BG11 + "/ram:PostalTradeAddress/ram:CityName").as("BG-12 city").isEqualTo("Athens");
+		xml.valueByXPath(BG11 + "/ram:SpecifiedTaxRegistration/ram:ID").as("BT-63").isEqualTo("EL998877666");
+		xml.valueByXPath(BG11 + "/ram:SpecifiedTaxRegistration/ram:ID/@schemeID").as("BT-63 scheme").isEqualTo("VA");
+	}
+
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException
 	{
 		final JAXBContext ctx = JAXBContext.newInstance(CrossIndustryInvoiceType.class, ObjectFactory.class);

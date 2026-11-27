@@ -76,6 +76,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -561,6 +563,13 @@ public class CiiMapper
 		// BG-4/BG-5 Seller
 		agreement.setSellerTradeParty(buildSellerParty(invoice));
 
+		// BG-11 Seller tax representative (only when the invoice's fiscal representation has a representative)
+		final I_C_BPartner representative = retrieveRepresentative(invoice);
+		if (representative != null)
+		{
+			agreement.setSellerTaxRepresentativeTradeParty(buildSellerTaxRepresentativeParty(invoice, representative));
+		}
+
 		// BG-7/BG-8 Buyer
 		agreement.setBuyerTradeParty(buildBuyerParty(invoice));
 
@@ -606,8 +615,13 @@ public class CiiMapper
 			seller.setSpecifiedLegalOrganization(legalOrg);
 		}
 
-		// BT-31 VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
-		final String vataxId = sellerBP.getVATaxID();
+		// BT-31 VAT identifier (Umsatzsteuer-ID, scheme VA) — the seller's own VAT ID: the VAT ID stored on the
+		// invoice, else the org VATaxID. With a tax representative the stored VAT ID is the representative's
+		// (BT-63) and BT-31 stays the org VATaxID.
+		final I_C_BPartner representative = retrieveRepresentative(invoice);
+		final String vataxId = representative != null
+				? sellerBP.getVATaxID()
+				: coalesceNotBlank(invoice.getSellerVATaxID(), sellerBP.getVATaxID());
 		if (vataxId != null && !vataxId.isEmpty())
 		{
 			final TaxRegistrationType vatReg = new TaxRegistrationType();
@@ -652,6 +666,54 @@ public class CiiMapper
 		seller.setPostalTradeAddress(buildSellerAddress(sellerBP));
 
 		return seller;
+	}
+
+	@Nullable
+	private I_C_BPartner retrieveRepresentative(@NonNull final I_C_Invoice invoice)
+	{
+		if (invoice.getC_Fiscal_Representation_ID() <= 0)
+		{
+			return null;
+		}
+		final I_C_Fiscal_Representation registration = InterfaceWrapperHelper.loadOutOfTrx(invoice.getC_Fiscal_Representation_ID(), I_C_Fiscal_Representation.class);
+		final BPartnerId representativeId = BPartnerId.ofRepoIdOrNull(registration.getC_BPartner_Representative_ID());
+		return representativeId != null ? bPartnerDAO.getById(representativeId) : null;
+	}
+
+	/**
+	 * BG-11: BT-62 representative name, BG-12 representative address (country mandatory),
+	 * BT-63 representative VAT ID (scheme VA, mandatory per BR-56) = the VAT ID stored on the invoice.
+	 */
+	private TradePartyType buildSellerTaxRepresentativeParty(@NonNull final I_C_Invoice invoice, @NonNull final I_C_BPartner representative)
+	{
+		final TradePartyType party = new TradePartyType();
+
+		final String companyName = representative.getCompanyName();
+		party.setName(text(companyName != null && !companyName.isEmpty() ? companyName : representative.getName()));
+
+		party.setPostalTradeAddress(buildSellerAddress(representative));
+
+		final String vatId = coalesceNotBlank(invoice.getSellerVATaxID(), representative.getVATaxID());
+		if (vatId != null)
+		{
+			final TaxRegistrationType vatReg = new TaxRegistrationType();
+			final IDType id = new IDType();
+			id.setValue(vatId);
+			id.setSchemeID("VA");
+			vatReg.setID(id);
+			party.getSpecifiedTaxRegistration().add(vatReg);
+		}
+		return party;
+	}
+
+	@Nullable
+	private static String coalesceNotBlank(@Nullable final String first, @Nullable final String second)
+	{
+		if (first != null && !first.trim().isEmpty())
+		{
+			return first;
+		}
+		return second != null && !second.isEmpty() ? second : null;
 	}
 
 	private TradeAddressType buildSellerAddress(@NonNull final I_C_BPartner sellerBP)
@@ -815,8 +877,9 @@ public class CiiMapper
 					? companyName
 					: buyerBP.getName()));
 
-			// BT-48 Buyer VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
-			final String buyerVataxId = buyerBP.getVATaxID();
+			// BT-48 Buyer VAT identifier (Umsatzsteuer-ID, scheme VA) — source: the VAT ID stored on the invoice,
+			// else the buyer's header VATaxID
+			final String buyerVataxId = coalesceNotBlank(invoice.getBuyerVATaxID(), buyerBP.getVATaxID());
 			if (buyerVataxId != null && !buyerVataxId.isEmpty())
 			{
 				final TaxRegistrationType vatReg = new TaxRegistrationType();
