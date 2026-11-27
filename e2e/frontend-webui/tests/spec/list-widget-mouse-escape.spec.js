@@ -23,7 +23,12 @@ const PAYMENT_RULE = '.form-field-PaymentRule .input-dropdown-container';
 const PAYMENT_TERM = '.form-field-C_PaymentTerm_ID .input-dropdown-container';
 const OPTION = '.input-dropdown-list-option[data-testid^="option-"]';
 
-// Same format as describeActiveElement in QuickInputFocus.js (not exported there).
+/**
+ * Describe the element that holds the cursor, for messages: tag, id, enclosing lookup and whether it is in the quick
+ * input. Same format as describeActiveElement in QuickInputFocus.js (not exported there).
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<string>} e.g. `INPUT in lookup_C_BPartner_ID`, or `none`
+ */
 async function describeActiveElement(page) {
   return await page.evaluate(() => {
     const e = document.activeElement;
@@ -38,18 +43,21 @@ async function describeActiveElement(page) {
 /**
  * Mark (data-pin-next="A") the element that Tab moves the cursor to from the element at `selector`: the next one in
  * the browser's sequential focus order (positive tabindex ascending first, then tabindex 0; document order within
- * each), skipping disabled and not rendered elements and those inside `selector`. Returns its description.
+ * each), skipping disabled and not rendered elements and those in the same form field (`form-field-<Column>`
+ * wrapper) as `selector`. So the marked element is never the body nor part of the field Tab leaves. Returns its
+ * description.
  */
 async function markNextInTabOrder(page, selector) {
   return await page.evaluate((sel) => {
     const from = document.querySelector(sel);
+    const fromField = from.closest('[class*="form-field-"]') || from;
     const tabbable = Array.from(document.querySelectorAll('*')).filter(
       (e) =>
         e.tabIndex >= 0 &&
         !e.disabled &&
         e.getClientRects().length > 0 &&
         getComputedStyle(e).visibility !== 'hidden' &&
-        (e === from || !from.contains(e))
+        (e === from || !fromField.contains(e))
     );
     const ordered = [
       ...tabbable.filter((e) => e.tabIndex > 0).sort((a, b) => a.tabIndex - b.tabIndex),
@@ -182,17 +190,8 @@ testCases.forEach(({ language, label }) => {
       console.log(`Next field after PaymentRule in tab order (${language}): ${expectedNext}`);
 
       await page.keyboard.press('Tab');
+      // The next field is neither the body nor part of PaymentRule (see markNextInTabOrder).
       await expectFocusOn(page.locator('[data-pin-next="A"]'), `after Tab: cursor on the next field (${expectedNext})`);
-      await expect
-        .poll(
-          async () =>
-            await page.evaluate(() => {
-              const e = document.activeElement;
-              return !!e && e !== document.body && !e.closest('.form-field-PaymentRule');
-            }),
-          { timeout: SLOW_ACTION_TIMEOUT, message: 'after Tab: cursor is on the next field, not on body or in PaymentRule' }
-        )
-        .toBe(true);
       const described = await describeActiveElement(page);
       console.log(`Active element after Tab (${language}): ${described}`);
       // Mark the element holding the cursor so the hold check targets exactly it.
