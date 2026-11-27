@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
@@ -36,6 +35,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -45,7 +45,7 @@ import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.impl.ShipmentTaxLocation;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.FiscalRepresentationId;
@@ -58,7 +58,6 @@ import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -84,7 +83,8 @@ import java.util.stream.Collectors;
  *     <li>a reversal, or a credit memo that references the sales invoice it was copied from, gets the values stored on that invoice, as they are (also when empty);
  *     its lines are never resolved again (see {@link #getCopiedFromInvoice(I_C_Invoice)}). Any other copy starts without values ({@code IInvoiceBL#copyFrom})
  *     and is handled like an invoice of its own by the next rules.</li>
- *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing;
+ *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing, unless its doc type overwrites the invoice date on completion:
+ *     then the candidate lines the completion re-taxed are resolved again (see {@link #restampReTaxedCandidateLines});
  *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
  *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows) - unless neither the invoice nor that line uses VAT IDs by delivery.
  *     If the invoice's doc type overwrites the invoice date on completion, the lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
@@ -108,7 +108,7 @@ public class InvoiceVATaxIdStamper
 	@NonNull private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
@@ -141,10 +141,14 @@ public class InvoiceVATaxIdStamper
 		}
 
 		final List<I_C_InvoiceLine> lines = ImmutableList.copyOf(invoiceDAO.retrieveLines(invoice));
-		final Set<Integer> allocatedLineIds = retrieveLineIdsWithAllocation(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		final Set<InvoiceLineId> allocatedLineIds = invoiceCandDAO.retrieveInvoiceLineIdsWithAllocation(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		final LineResolver lineResolver = new LineResolver(invoice);
 		if (!allocatedLineIds.isEmpty())
 		{
+			if (isDateOverwrittenOnCompletion(invoice))
+			{
+				restampReTaxedCandidateLines(invoice, lines, allocatedLineIds, lineResolver);
+			}
 			checkHandAddedExemptLines(invoice, lines, allocatedLineIds, lineResolver);
 		}
 		else
@@ -177,6 +181,54 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
+	 * On a doc type that overwrites the invoice date on completion, the completion has just re-taxed the candidate lines without shipment for the new date
+	 * ({@code MInvoice.completeIt}), which can move them onto or off a registration's tax. Their VAT IDs are resolved again from the location and tax that re-taxed them,
+	 * so the stored values follow the lines' taxes. Lines with a shipment (taxed at the shipment's date) and lines without product (not re-taxed) keep the stored values.
+	 * If the lines no longer agree, the completion fails like a mixed manual invoice.
+	 */
+	private void restampReTaxedCandidateLines(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceLine> lines,
+			@NonNull final Set<InvoiceLineId> allocatedLineIds,
+			@NonNull final LineResolver lineResolver)
+	{
+		final InvoiceVATaxIds stored = getStoredVATaxIds(invoice);
+		final Set<InvoiceVATaxIds> distinctVATaxIds = new LinkedHashSet<>();
+		for (final I_C_InvoiceLine line : lines)
+		{
+			if (line.isDescription() || !isAllocated(line, allocatedLineIds))
+			{
+				continue;
+			}
+
+			if (line.getM_InOutLine_ID() > 0 || line.getM_Product_ID() <= 0)
+			{
+				distinctVATaxIds.add(stored);
+			}
+			else
+			{
+				final InvoiceLineReTaxInput reTaxInput = invoiceBL.getReTaxInput(invoice, line, null);
+				distinctVATaxIds.add(lineResolver.resolve(toTaxLocation(reTaxInput), TaxId.ofRepoId(line.getC_Tax_ID())));
+			}
+		}
+
+		if (distinctVATaxIds.size() > 1)
+		{
+			throw new AdempiereException(MSG_MixedVATaxIds, joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getBuyerVATaxId), joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getSellerVATaxId))
+					.markAsUserValidationError();
+		}
+		if (distinctVATaxIds.size() == 1)
+		{
+			setVATaxIds(invoice, distinctVATaxIds.iterator().next());
+		}
+	}
+
+	private static boolean isAllocated(@NonNull final I_C_InvoiceLine line, @NonNull final Set<InvoiceLineId> allocatedLineIds)
+	{
+		return allocatedLineIds.contains(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()));
+	}
+
+	/**
 	 * A candidate invoice keeps its stored values. Lines with allocations were resolved at invoicing; only the lines added by hand are checked,
 	 * with their tax and, if the completion re-taxes them, with the tax they will get.
 	 * A line is not checked if neither the invoice nor the line uses VAT IDs by delivery (e.g. an invoice prepared before the values were stored).
@@ -184,7 +236,7 @@ public class InvoiceVATaxIdStamper
 	private void checkHandAddedExemptLines(
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final List<I_C_InvoiceLine> lines,
-			@NonNull final Set<Integer> allocatedLineIds,
+			@NonNull final Set<InvoiceLineId> allocatedLineIds,
 			@NonNull final LineResolver lineResolver)
 	{
 		final InvoiceVATaxIds stored = getStoredVATaxIds(invoice);
@@ -192,7 +244,7 @@ public class InvoiceVATaxIdStamper
 
 		for (final I_C_InvoiceLine line : lines)
 		{
-			if (line.isDescription() || allocatedLineIds.contains(line.getC_InvoiceLine_ID()))
+			if (line.isDescription() || isAllocated(line, allocatedLineIds))
 			{
 				continue;
 			}
@@ -317,23 +369,6 @@ public class InvoiceVATaxIdStamper
 		invoice.setBuyerVATaxID(vatTaxIds.getBuyerVATaxId());
 		invoice.setSellerVATaxID(vatTaxIds.getSellerVATaxId());
 		invoice.setC_Fiscal_Representation_ID(RepoIdAwares.toRepoId(vatTaxIds.getFiscalRepresentationId()));
-	}
-
-	@NonNull
-	private Set<Integer> retrieveLineIdsWithAllocation(@NonNull final InvoiceId invoiceId)
-	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(
-						I_C_Invoice_Line_Alloc.COLUMNNAME_C_InvoiceLine_ID,
-						I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID,
-						queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-								.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-								.create())
-				.create()
-				.stream()
-				.map(I_C_Invoice_Line_Alloc::getC_InvoiceLine_ID)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

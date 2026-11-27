@@ -482,3 +482,97 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
     Then validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID     |
       | purchaseInvoiceLine         | purchaseInvoice         | productPO               | 10          | taxPO_DEDE19 |
+
+  @Id:S32533_TC7r8
+  Scenario: doc type that overwrites the invoice date on completion: the new date falls into the Greek registration, the candidate line is re-taxed GR->GR and the invoice stores the Greek seller VAT ID
+    Given metasfresh has date and time 2026-08-20T10:00:00+02:00[Europe/Berlin]
+    And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
+    # the organisation's VAT registration in Greece starts the day after the order and the invoicing
+    And metasfresh contains C_Fiscal_Representation:
+      | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
+      | regGR      | GR                        | EL111111114 | 2026-08-21 | 2026-08-23 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
+      | order      | true    | customerGR               | 2026-08-20  | customerGR_GR                         | customerGR_billing              | wh_dropship                   | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | service                 | 10         |
+    And the order identified by order is completed
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Tax_ID.Identifier |
+      | orderLine                 | order                 | service                 | 10         | taxDEGR0                |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices | DateInvoiced |
+      | invoiceCandidate                  | false                  | 2026-08-20   |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | invoiceLine                 | invoice                 | service                 | 10          | taxDEGR0 |
+    And validate created invoices
+      | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | EL123456783  |               |                            |
+    And the doc type of invoice "invoice" has IsOverwriteDateOnComplete true for this scenario
+
+    # completion sets the invoice date to 2026-08-21, inside the registration: the line is re-taxed GR->GR with the registration's tax
+    When metasfresh has date and time 2026-08-21T10:00:00+02:00[Europe/Berlin]
+    And the invoice identified by invoice is completed
+
+    Then validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceLine                 | invoice                 | service                 | 10          | taxGRGR24 |
+    And validate created invoices
+      | Identifier | DocStatus | DateInvoiced | GrandTotal | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | 2026-08-21   | 620 EUR    | EL123456783  | EL111111114   | regGR                      |
+
+  @Id:S32533_TC7r9
+  Scenario: doc type that overwrites the invoice date on completion: the reversal of a line taxed with the Greek registration after the registration ended keeps the original's tax, tax rows, totals (negated) and VAT IDs
+    Given metasfresh has date and time 2026-08-26T10:00:00+02:00[Europe/Berlin]
+    And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
+    And metasfresh contains C_Fiscal_Representation:
+      | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
+      | regGR      | GR                        | EL111111114 | 2026-08-25 | 2026-08-27 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
+      | order      | true    | customerGR               | 2026-08-26  | customerGR_GR                         | customerGR_billing              | wh_dropship                   | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | service                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices | DateInvoiced |
+      | invoiceCandidate                  | false                  | 2026-08-26   |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    And the doc type of invoice "invoice" has IsOverwriteDateOnComplete true for this scenario
+    And the invoice identified by invoice is completed
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceLine                 | invoice                 | service                 | 10          | taxGRGR24 |
+    And validate created invoices
+      | Identifier | DocStatus | TotalLines | GrandTotal | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | 500        | 620 EUR    | EL123456783  | EL111111114   | regGR                      |
+    And C_InvoiceTax records for invoice "invoice" are matching
+      | C_Tax_ID  | TaxBaseAmt | TaxAmt |
+      | taxGRGR24 | 500        | 120    |
+
+    # the registration has ended: a re-tax of the reversal's line at today's date would give it the DE->GR rate
+    When metasfresh has date and time 2026-08-28T10:00:00+02:00[Europe/Berlin]
+    And the invoice identified by invoice is reversed
+    And the reversal of invoice invoice is identified by reversal
+
+    Then validate created invoices
+      | Identifier | DocStatus | TotalLines | GrandTotal | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | reversal   | RE        | -500       | -620 EUR   | EL123456783  | EL111111114   | regGR                      |
+    And the invoice "reversal" has 1 C_InvoiceTax records
+    And C_InvoiceTax records for invoice "reversal" are matching
+      | C_Tax_ID  | TaxBaseAmt | TaxAmt |
+      | taxGRGR24 | -500       | -120   |

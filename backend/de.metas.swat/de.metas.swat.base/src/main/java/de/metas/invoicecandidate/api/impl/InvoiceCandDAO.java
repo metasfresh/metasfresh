@@ -43,6 +43,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -745,6 +746,23 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				.create()
 				.list(I_C_Invoice_Line_Alloc.class);
+	}
+
+	@Override
+	public ImmutableSet<InvoiceLineId> retrieveInvoiceLineIdsWithAllocation(@NonNull final InvoiceId invoiceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_C_Invoice_Line_Alloc.COLUMNNAME_C_InvoiceLine_ID,
+						I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID,
+						queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+								.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+								.create())
+				.create()
+				.stream()
+				.map(alloc -> InvoiceLineId.ofRepoId(alloc.getC_InvoiceLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**
