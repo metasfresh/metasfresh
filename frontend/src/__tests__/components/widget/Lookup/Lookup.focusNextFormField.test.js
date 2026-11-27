@@ -201,4 +201,44 @@ describe('Lookup — moving on after a sub-field that is not the last one is pic
       expect(onBlurWidget).toHaveBeenCalledTimes(1);
     });
   });
+
+  // E.g. the user is in the address list, clicks back into the partner and picks another partner: the address is
+  // the current sub-field already, so setting it again would not change the address list's `autoFocus`.
+  it('hands on to the next sub-field again when it is already the current one', () => {
+    const onBlurWidget = jest.fn();
+    partnerInput.focus();
+    const wrapper = lookup({ onBlurWidget });
+    wrapper.setState({ property: 'C_BPartner_Location_ID' });
+    const instance = wrapper.instance();
+    const addressListAutoFocusPerRender = [];
+    instance.componentDidUpdate = () =>
+      addressListAutoFocusPerRender.push(
+        findListElement(instance.render(), 'C_BPartner_Location_ID').props
+          .autoFocus
+      );
+
+    instance.setNextProperty('C_BPartner_ID');
+
+    expect(wrapper.state('property')).toBe('C_BPartner_Location_ID');
+    expect(addressListAutoFocusPerRender).toContain(false);
+    expect(
+      addressListAutoFocusPerRender[addressListAutoFocusPerRender.length - 1]
+    ).toBe(true);
+    expect(onBlurWidget).not.toHaveBeenCalled();
+  });
 });
+
+/** Find the rendered List element of a lookup part in a render output (React element tree). */
+function findListElement(element, field) {
+  if (!element || typeof element !== 'object') return null;
+  if (Array.isArray(element)) {
+    for (const child of element) {
+      const found = findListElement(child, field);
+      if (found) return found;
+    }
+    return null;
+  }
+  const props = element.props || {};
+  if (props.lookupList && props.field === field) return element;
+  return findListElement(props.children, field);
+}

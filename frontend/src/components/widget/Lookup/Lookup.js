@@ -139,17 +139,26 @@ export class Lookup extends Component {
         ) {
           hasNextSubField = true;
           const nextProp = properties[nextIndex];
-          this.setState(
-            { property: nextProp.field }, //
-            () => {
-              // The next sub-list takes the cursor from within this lookup (RawList, when its focus flag turns
-              // on). It does not take it from outside the lookup, so move the cursor on to the next form field
-              // only when that sub-list cannot take it.
-              if (!this.canSubFieldTakeFocus(nextProp)) {
-                onBlurWidget && onBlurWidget();
+          const handOverToNextSubField = () =>
+            this.setState(
+              { property: nextProp.field }, //
+              () => {
+                // The next sub-list takes the cursor from within this lookup (RawList, when its focus flag turns
+                // on). It does not take it from outside the lookup, so move the cursor on to the next form field
+                // only when that sub-list cannot take it.
+                if (!this.canSubFieldTakeFocus(nextProp)) {
+                  onBlurWidget && onBlurWidget();
+                }
               }
-            }
-          );
+            );
+          // The sub-list is handed the cursor on the edge of its `autoFocus`. If the next sub-field is the current
+          // one already (e.g. the user went back from the address to the partner and picked another partner),
+          // clear it first, so that the edge fires again.
+          if (this.state.property === nextProp.field) {
+            this.setState({ property: '' }, handOverToNextSubField);
+          } else {
+            handOverToNextSubField();
+          }
         } else if (
           widgetData[widgetData.length - 1].field === currentFieldName
         ) {
