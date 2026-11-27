@@ -1,6 +1,7 @@
 package de.metas.einvoice.cii;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
@@ -19,6 +20,7 @@ import de.metas.einvoice.EInvoiceFormat;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.CrossIndustryInvoiceType;
 import de.metas.einvoice.cii.model.ObjectFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
@@ -28,6 +30,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
@@ -3137,8 +3140,6 @@ public class CiiMapperTest
 				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
 	}
 
-	// ===== Shared helpers =====
-
 	// ===== Stored VAT IDs (BT-48, BT-31, BG-11) =====
 
 	private static final String BT48_PATH = "//ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration[ram:ID/@schemeID='VA']/ram:ID";
@@ -3182,7 +3183,7 @@ public class CiiMapperTest
 		saveRecord(orgInfo);
 
 		final I_C_BPartner buyerBP = newBPartnerWithLocation("Buyer AG", "DE987654321", "DE", "Hamburg");
-		final I_C_BPartner_Location buyerLoc = de.metas.util.Services.get(de.metas.bpartner.service.IBPartnerDAO.class)
+		final I_C_BPartner_Location buyerLoc = Services.get(IBPartnerDAO.class)
 				.retrieveBPartnerLocations(buyerBP).get(0);
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
@@ -3258,13 +3259,43 @@ public class CiiMapperTest
 		xml.nodesByXPath(BG11).as("BG-11").isEmpty();
 	}
 
+	@Test
+	void bt31_nullStored_fallsBackToOrgVatId() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		invoice.setSellerVATaxID(null);
+
+		final XmlAssert xml = mapVatIdInvoice(invoice);
+		xml.valueByXPath(BT31_PATH).as("BT-31").isEqualTo("DE123456789");
+		xml.nodesByXPath(BG11).as("BG-11").isEmpty();
+	}
+
+	/** BR-56: a representative without a stored VAT ID must fail loudly, not yield an invalid e-invoice. */
+	@Test
+	void bg11_representativeWithoutStoredVatId_failsReadably()
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		final I_C_BPartner representative = newBPartnerWithLocation("Vertreter SA", "EL000000000", "GR", "Athens");
+		final I_C_Fiscal_Representation registration = newInstance(I_C_Fiscal_Representation.class);
+		registration.setAD_Org_ID(invoice.getAD_Org_ID());
+		registration.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
+		saveRecord(registration);
+		invoice.setC_Fiscal_Representation_ID(registration.getC_Fiscal_Representation_ID());
+		invoice.setSellerVATaxID(null);
+
+		assertThatThrownBy(() -> mapVatIdInvoice(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("BR-56")
+				.hasMessageContaining("Vertreter SA");
+	}
+
 	/** TC18: representative - BT-31 stays the org VAT ID; BG-11 carries name, address and the stored VAT ID (BR-56). */
 	@Test
 	void bg11_representative() throws Exception
 	{
 		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
 		final I_C_BPartner representative = newBPartnerWithLocation("Vertreter SA", "EL000000000", "GR", "Athens");
-		final org.compiere.model.I_C_Fiscal_Representation registration = newInstance(org.compiere.model.I_C_Fiscal_Representation.class);
+		final I_C_Fiscal_Representation registration = newInstance(I_C_Fiscal_Representation.class);
 		registration.setAD_Org_ID(invoice.getAD_Org_ID());
 		registration.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
 		saveRecord(registration);
@@ -3279,6 +3310,8 @@ public class CiiMapperTest
 		xml.valueByXPath(BG11 + "/ram:SpecifiedTaxRegistration/ram:ID").as("BT-63").isEqualTo("EL998877666");
 		xml.valueByXPath(BG11 + "/ram:SpecifiedTaxRegistration/ram:ID/@schemeID").as("BT-63 scheme").isEqualTo("VA");
 	}
+
+	// ===== Shared helpers =====
 
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException
 	{

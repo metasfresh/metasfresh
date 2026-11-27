@@ -77,7 +77,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Fiscal_Representation;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -86,6 +85,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
@@ -561,10 +561,10 @@ public class CiiMapper
 		}
 
 		// BG-4/BG-5 Seller
-		agreement.setSellerTradeParty(buildSellerParty(invoice));
+		final I_C_BPartner representative = retrieveRepresentative(invoice);
+		agreement.setSellerTradeParty(buildSellerParty(invoice, representative));
 
 		// BG-11 Seller tax representative (only when the invoice's fiscal representation has a representative)
-		final I_C_BPartner representative = retrieveRepresentative(invoice);
 		if (representative != null)
 		{
 			agreement.setSellerTaxRepresentativeTradeParty(buildSellerTaxRepresentativeParty(invoice, representative));
@@ -587,7 +587,7 @@ public class CiiMapper
 
 	// ===== Seller trade party (BG-4/BG-5) =====
 
-	private TradePartyType buildSellerParty(@NonNull final I_C_Invoice invoice)
+	private TradePartyType buildSellerParty(@NonNull final I_C_Invoice invoice, @Nullable final I_C_BPartner representative)
 	{
 		final I_C_BPartner sellerBP = bPartnerDAO.retrieveOrgBPartner(
 				Env.getCtx(),
@@ -618,7 +618,6 @@ public class CiiMapper
 		// BT-31 VAT identifier (Umsatzsteuer-ID, scheme VA) — the seller's own VAT ID: the VAT ID stored on the
 		// invoice, else the org VATaxID. With a tax representative the stored VAT ID is the representative's
 		// (BT-63) and BT-31 stays the org VATaxID.
-		final I_C_BPartner representative = retrieveRepresentative(invoice);
 		final String vataxId = representative != null
 				? sellerBP.getVATaxID()
 				: coalesceNotBlank(invoice.getSellerVATaxID(), sellerBP.getVATaxID());
@@ -663,7 +662,7 @@ public class CiiMapper
 		}
 
 		// BG-5 Seller postal address
-		seller.setPostalTradeAddress(buildSellerAddress(sellerBP));
+		seller.setPostalTradeAddress(buildSellerAddress(sellerBP, "seller"));
 
 		return seller;
 	}
@@ -682,7 +681,8 @@ public class CiiMapper
 
 	/**
 	 * BG-11: BT-62 representative name, BG-12 representative address (country mandatory),
-	 * BT-63 representative VAT ID (scheme VA, mandatory per BR-56) = the VAT ID stored on the invoice.
+	 * BT-63 representative VAT ID (scheme VA, mandatory per BR-56) = the VAT ID stored on the invoice;
+	 * a missing stored VAT ID is an error, not a silently invalid e-invoice.
 	 */
 	private TradePartyType buildSellerTaxRepresentativeParty(@NonNull final I_C_Invoice invoice, @NonNull final I_C_BPartner representative)
 	{
@@ -691,21 +691,24 @@ public class CiiMapper
 		final String companyName = representative.getCompanyName();
 		party.setName(text(companyName != null && !companyName.isEmpty() ? companyName : representative.getName()));
 
-		party.setPostalTradeAddress(buildSellerAddress(representative));
+		party.setPostalTradeAddress(buildSellerAddress(representative, "tax representative"));
 
-		final String vatId = coalesceNotBlank(invoice.getSellerVATaxID(), representative.getVATaxID());
-		if (vatId != null)
+		final String vatId = invoice.getSellerVATaxID();
+		if (vatId == null || vatId.trim().isEmpty())
 		{
-			final TaxRegistrationType vatReg = new TaxRegistrationType();
-			final IDType id = new IDType();
-			id.setValue(vatId);
-			id.setSchemeID("VA");
-			vatReg.setID(id);
-			party.getSpecifiedTaxRegistration().add(vatReg);
+			throw new AdempiereException("Cannot build CII: the invoice has a tax representative (" + representative.getName()
+					+ ") but no seller VAT ID (SellerVATaxID); EN16931 BR-56 requires the representative's VAT ID (BT-63)");
 		}
+		final TaxRegistrationType vatReg = new TaxRegistrationType();
+		final IDType id = new IDType();
+		id.setValue(vatId);
+		id.setSchemeID("VA");
+		vatReg.setID(id);
+		party.getSpecifiedTaxRegistration().add(vatReg);
 		return party;
 	}
 
+	/** The first value unless null/blank, else the second unless null/empty (the second keeps the pre-existing "isEmpty" guard of the header VAT IDs). */
 	@Nullable
 	private static String coalesceNotBlank(@Nullable final String first, @Nullable final String second)
 	{
@@ -716,7 +719,7 @@ public class CiiMapper
 		return second != null && !second.isEmpty() ? second : null;
 	}
 
-	private TradeAddressType buildSellerAddress(@NonNull final I_C_BPartner sellerBP)
+	private TradeAddressType buildSellerAddress(@NonNull final I_C_BPartner sellerBP, @NonNull final String role)
 	{
 		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(sellerBP);
 		I_C_BPartner_Location sellerBPLoc = null;
@@ -734,7 +737,7 @@ public class CiiMapper
 		}
 		if (sellerBPLoc == null)
 		{
-			throw new AdempiereException("Cannot build CII: seller BPartner " + sellerBP.getC_BPartner_ID()
+			throw new AdempiereException("Cannot build CII: " + role + " BPartner " + sellerBP.getC_BPartner_ID()
 					+ " has no postal address (EN16931 BG-5/BG-8 mandatory)");
 		}
 
