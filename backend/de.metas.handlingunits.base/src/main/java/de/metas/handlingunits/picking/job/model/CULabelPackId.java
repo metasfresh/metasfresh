@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.model;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -7,6 +9,7 @@ import javax.annotation.Nullable;
 
 /** The pack ID a CU label carries (scan-each-CU mode): the text that tells one CU of a product and lot from another */
 @Value
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CULabelPackId
 {
 	@NonNull String value;
@@ -19,9 +22,16 @@ public class CULabelPackId
 		return trimmed.isEmpty() ? null : new CULabelPackId(trimmed);
 	}
 
+	/** Like {@link #ofNullable(String)}, but a blank value is refused */
+	@NonNull
 	public static CULabelPackId ofString(@NonNull final String value)
 	{
-		return new CULabelPackId(value);
+		final CULabelPackId packId = ofNullable(value);
+		if (packId == null)
+		{
+			throw new IllegalArgumentException("A pack ID must not be blank");
+		}
+		return packId;
 	}
 
 	@Override

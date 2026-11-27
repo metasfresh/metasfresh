@@ -221,20 +221,19 @@ public class PickingJobPickCommand
 		final I_C_UOM uom = line.getUOM();
 		this.cuQtyEntryPolicy = pickingJobOptions.getCUQtyEntryPolicy();
 		this.cuLabelBooking = CULabelBooking.builder()
-				.policy(cuQtyEntryPolicy)
+				.mode(pickingJobOptions.getCUQtyEntryModeOrDefault())
 				.cuLabelService(cuLabelService)
 				.huService(huService)
 				.lineSupplier(this::getLine)
 				.cuLabel(cuLabel)
 				.cuLabelFormatId(pickingJobOptions.getCULabelFormatId())
-				.modeName(String.valueOf(pickingJobOptions.getCUQtyEntryModeOrDefault()))
 				.build();
 		// label-required modes always book CUs into the open TU: never a whole TU
 		this.isPickWholeTU = isPickWholeTU && cuQtyEntryPolicy.isPickWholeTUAllowed();
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
-		this.pickingUnit = line.getPickingUnit(); // a line in a label-required mode is a CU line
+		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
@@ -269,7 +268,7 @@ public class PickingJobPickCommand
 		else if (this.pickingUnit.isCU())
 		{
 			// Scan each CU: one CU per label, whatever quantity the client sent. One CU = one unit of the line UOM, so the line must be counted in pieces
-			if (cuQtyEntryPolicy.isPackIdRequired() && !X12DE355.EACH.equals(X12DE355.ofCode(uom.getX12DE355())))
+			if (cuQtyEntryPolicy.isOneCUPerLabel() && !X12DE355.EACH.equals(X12DE355.ofCode(uom.getX12DE355())))
 			{
 				throw new AdempiereException(CU_EACH_ONLY_FOR_PIECES_ERROR_MSG);
 			}
@@ -407,8 +406,7 @@ public class PickingJobPickCommand
 		{
 			throw exception.appendParametersToMessage();
 		}
-		logger.warn("Over-pick refused (CU quantity entry mode {}): pickingJobId={}, pickingJobLineId={}, qtyToPick={}, qtyOrdered={}, qtyAlreadyPicked={}",
-				pickingJobOptions.getCUQtyEntryModeOrDefault(), _pickingJob.getId().getRepoId(), getLineId().getRepoId(), qtyToPickCUs, line.getQtyToPick(), qtyAlreadyPicked);
+		logger.warn("Over-pick refused (CU quantity entry mode {}): {}", pickingJobOptions.getCUQtyEntryModeOrDefault(), exception.getParameters());
 		throw exception;
 	}
 

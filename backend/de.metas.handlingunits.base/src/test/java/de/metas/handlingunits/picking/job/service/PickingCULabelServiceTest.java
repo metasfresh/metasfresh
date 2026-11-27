@@ -379,6 +379,13 @@ class PickingCULabelServiceTest
 	}
 
 	@Test
+	void ofString_appliesTheSameRuleAsOfNullable_blankIsRefused()
+	{
+		assertThat(CULabelPackId.ofString(" 12 ")).isEqualTo(CULabelPackId.ofNullable("12"));
+		assertThatThrownBy(() -> CULabelPackId.ofString("  ")).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
 	void formatWithoutPackIdPart_labelEndingBeforeOrInsideAConstant_isAFormatMismatch()
 	{
 		final ScannableCodeFormat gapFormat = formatService.create(ScannableCodeFormatCreateRequest.builder()

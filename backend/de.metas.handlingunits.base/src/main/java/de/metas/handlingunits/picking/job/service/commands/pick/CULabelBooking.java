@@ -6,6 +6,7 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryMode;
 import de.metas.handlingunits.picking.config.mobileui.CUQtyEntryPolicy;
 import de.metas.handlingunits.picking.job.model.CULabelPackId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -37,33 +38,32 @@ final class CULabelBooking
 {
 	private static final Logger logger = LogManager.getLogger(CULabelBooking.class);
 
+	@NonNull private final CUQtyEntryMode mode;
 	@NonNull private final CUQtyEntryPolicy policy;
 	@NonNull private final PickingCULabelService cuLabelService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final Supplier<PickingJobLine> lineSupplier;
 	@Nullable private final ScannedCode cuLabel;
 	@NonNull private final Optional<ScannableCodeFormatId> cuLabelFormatId;
-	@NonNull private final String modeName;
 
 	@Nullable private ResolvedCULabel _resolvedCULabel; // lazy, label-required modes only
 
 	@Builder
 	private CULabelBooking(
-			@NonNull final CUQtyEntryPolicy policy,
+			@NonNull final CUQtyEntryMode mode,
 			@NonNull final PickingCULabelService cuLabelService,
 			@NonNull final PickingJobHUService huService,
 			@NonNull final Supplier<PickingJobLine> lineSupplier,
 			@Nullable final ScannedCode cuLabel,
-			@NonNull final Optional<ScannableCodeFormatId> cuLabelFormatId,
-			@NonNull final String modeName)
+			@NonNull final Optional<ScannableCodeFormatId> cuLabelFormatId)
 	{
-		this.policy = policy;
+		this.mode = mode;
+		this.policy = mode.getPolicy();
 		this.cuLabelService = cuLabelService;
 		this.huService = huService;
 		this.lineSupplier = lineSupplier;
 		this.cuLabel = cuLabel;
 		this.cuLabelFormatId = cuLabelFormatId;
-		this.modeName = modeName;
 	}
 
 	/** Refuses a booking without an open TU, or of a label already picked in the job (when the pack ID is used). No-op when no label is required; the open-TU supplier is then not called. */
@@ -103,14 +103,14 @@ final class CULabelBooking
 			return;
 		}
 
-		final CULabelPackId packId = getResolvedCULabel().getPackId();
+		final CULabelPackId packId = getResolvedCULabel().toCUPackIdentity().getPackId();
 		for (final TU tu : packedHUs.getAllTUs())
 		{
 			for (final TUPart cu : tu.getCUsNotEmpty())
 			{
 				final IAttributeStorage cuAttributes = HUContextHolder.getCurrent().getHUAttributeStorageFactory().getAttributeStorage(cu.toHU());
 				cuAttributes.setSaveOnChange(true);
-				cuAttributes.setValue(AttributeConstants.PackId, packId != null ? packId.getValue() : null);
+				cuAttributes.setValue(AttributeConstants.PackId, packId.getValue());
 			}
 		}
 	}
@@ -118,6 +118,8 @@ final class CULabelBooking
 	/**
 	 * The HU whose QR code the picked HU carries. When a CU is booked as the single CU of its TU, the CU is the picked
 	 * HU and an undo extracts exactly it, so it carries its own QR code; else the TU's code is used.
+	 * Only such a CU gets its own QR code, which is how {@link PickingJobHUService#filterBookedWithLabel} recognizes it:
+	 * change the rule here and that classification (close targets, GRAI completion) changes with it.
 	 */
 	@NonNull
 	HuId getQRCodeOwnerId(@NonNull final TU tu, @NonNull final TUPart cu)
@@ -133,8 +135,8 @@ final class CULabelBooking
 			if (cuLabel == null)
 			{
 				// a contract violation, not an operator error: the mobile app always sends the scanned label in these modes
-				// (reachable with a cached app version after the profile was switched to such a mode): the picker gets the German message, the technical reason goes to the log
-				logger.warn("Pick refused: a CU label is required for a pick in the CU quantity entry mode {}, but the pick came without one", modeName);
+				// (reachable with a cached app version after the profile was switched to such a mode): the picker gets the localized message, the technical reason goes to the log
+				logger.warn("Pick refused: a CU label is required for a pick in the CU quantity entry mode {}, but the pick came without one", mode);
 				throw new AdempiereException(PickingCULabelService.MSG_CU_LABEL_REQUIRED);
 			}
 			_resolvedCULabel = cuLabelService.resolve(lineSupplier.get(), cuLabel, policy, cuLabelFormatId);

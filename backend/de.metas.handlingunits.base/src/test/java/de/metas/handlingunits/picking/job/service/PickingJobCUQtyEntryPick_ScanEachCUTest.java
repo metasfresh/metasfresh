@@ -178,7 +178,7 @@ class PickingJobCUQtyEntryPick_ScanEachCUTest extends CUQtyEntryPickFixture
 				.as("no technical parameters in the message the picker sees")
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked")));
 		assertThat(log).as("the discarded scan is logged with its values")
-				.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_EACH_CU", "pickingJobId=" + jobWhenDone.getId().getRepoId(), "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
+				.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_EACH_CU", "pickingJobId=PickingJobId(repoId=" + jobWhenDone.getId().getRepoId() + ")", "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
 
 		assertThat(cusOf(openTUId(job))).as("still 2 CUs").hasSize(2);
 		assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");

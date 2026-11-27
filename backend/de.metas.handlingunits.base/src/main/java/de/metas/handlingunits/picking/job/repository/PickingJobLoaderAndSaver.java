@@ -896,7 +896,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		}
 
 		// Label-required CU quantity entry modes count CUs, also when the line's packing is a TU packing; the pick command books CUs the same way
-		if (options.getCUQtyEntryPolicy().isLabelRequired())
+		if (options.getCUQtyEntryPolicy().isPickedInCUs())
 		{
 			return PickingUnit.CU;
 		}

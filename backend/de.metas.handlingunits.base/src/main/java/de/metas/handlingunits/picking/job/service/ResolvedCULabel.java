@@ -18,12 +18,12 @@ public class ResolvedCULabel
 	@NonNull ProductId productId;
 	@Nullable String lotNo;
 	@Nullable LocalDate bestBeforeDate;
-	/** only set in {@code SCAN_EACH_CU} mode */
+	/** only set when the policy requires a pack ID */
 	@Nullable CULabelPackId packId;
 
-	/** @return the identity of the CU this label stands for; only valid in {@code SCAN_EACH_CU} mode, where the pack ID is always set */
+	/** @return the identity of the CU this label stands for; only valid when the policy requires a pack ID, where the pack ID is always set */
 	public CUPackIdentity toCUPackIdentity()
 	{
-		return CUPackIdentity.of(productId, lotNo, Check.assumeNotNull(packId, "packId is set in SCAN_EACH_CU"));
+		return CUPackIdentity.of(productId, lotNo, Check.assumeNotNull(packId, "packId is set when the policy requires a pack ID"));
 	}
 }

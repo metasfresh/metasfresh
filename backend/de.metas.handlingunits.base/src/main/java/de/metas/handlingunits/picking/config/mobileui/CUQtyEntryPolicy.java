@@ -29,7 +29,13 @@ public final class CUQtyEntryPolicy
 
 	public boolean isPackIdRequired() {return isPackIdRequired;}
 
+	/** @return true if the line is counted in CUs (one booking = CUs into the open TU), also when its packing is a TU packing */
+	public boolean isPickedInCUs() {return isLabelRequired;}
+
 	/**
+	 * Manual keeps the refusal text it always had (the parameters appended), so existing users see no change.
+	 * In the label-required modes the picker's handheld shows the refusal in a toast of limited height: it shows only the localized message, and the parameters go to the log.
+	 *
 	 * @return true if a refusal shows its parameters to the picker (Manual); false in the label-required modes
 	 */
 	public boolean isRefusalParametersShownToPicker() {return !isLabelRequired;}
@@ -40,5 +46,5 @@ public final class CUQtyEntryPolicy
 	/** @return true if every scanned label books exactly one CU */
 	public boolean isOneCUPerLabel() {return isPackIdRequired;}
 
-	public BigDecimal getQtyToPickCUs(final BigDecimal clientQty) {return isPackIdRequired ? BigDecimal.ONE : clientQty;}
+	public BigDecimal getQtyToPickCUs(final BigDecimal clientQty) {return isOneCUPerLabel() ? BigDecimal.ONE : clientQty;}
 }

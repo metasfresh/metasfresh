@@ -214,6 +214,10 @@ public class PickingJobHUService
 		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? Optional.of(tu) : Optional.empty();
 	}
 
+	/**
+	 * The CUs booked with a label: a CU booked as the single CU of its TU in a label-required mode.
+	 * Recognized by its own QR code, because only {@code CULabelBooking.getQRCodeOwnerId} gives such a CU one, and by sitting in a TU.
+	 */
 	@NonNull
 	public ImmutableSet<HuId> filterBookedWithLabel(@NonNull final Collection<HUInfo> pickedHUInfos)
 	{

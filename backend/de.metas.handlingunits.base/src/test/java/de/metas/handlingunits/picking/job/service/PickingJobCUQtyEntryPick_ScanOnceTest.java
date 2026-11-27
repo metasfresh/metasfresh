@@ -84,7 +84,7 @@ class PickingJobCUQtyEntryPick_ScanOnceTest extends CUQtyEntryPickFixture
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode()).isEqualTo(PickingJobPickCommand.PICK_OVERDELIVERY_BLOCKED_ERROR_MSG.toAD_Message()))
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getMessage()).doesNotContain("pickingJobId", "pickingJobLineId", "qtyToPick", "qtyOrdered", "qtyAlreadyPicked")));
 		assertThat(log).as("the discarded scan is logged with its values")
-				.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_ONCE_ENTER_QTY", "pickingJobId=" + jobWhenDone.getId().getRepoId(), "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
+				.anySatisfy(msg -> assertThat(msg).contains("Over-pick refused", "SCAN_ONCE_ENTER_QTY", "pickingJobId=PickingJobId(repoId=" + jobWhenDone.getId().getRepoId() + ")", "pickingJobLineId=", "qtyToPick=1", "qtyOrdered=2", "qtyAlreadyPicked=2"));
 		assertThat(pickedQtyOfLine(helper.pickingJobService.getById(job.getId()))).as("still 2 picked").isEqualByComparingTo("2");
 	}
 
