@@ -28,14 +28,17 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Project;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class C_Project_StepDef
@@ -85,5 +88,32 @@ public class C_Project_StepDef
 		saveRecord(project);
 
 		row.getAsIdentifier().put(projectTable, project);
+	}
+
+	/**
+	 * Reloads the given C_Project records and asserts their values.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Project_StepDefData
+	 * @cucumber.columns <b>Identifier</b> — (required) the project's alias<br>
+	 * <b>InvoicedAmt</b> — (optional) the amount invoiced against the project (summed up when an invoice of the project is completed)<br>
+	 * @cucumber.example <pre>
+	 * Then validate C_Projects:
+	 *   | Identifier | InvoicedAmt |
+	 *   | project    | 1190        |
+	 * </pre>
+	 */
+	@And("validate C_Projects:")
+	public void validate_c_projects(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateProject);
+	}
+
+	private void validateProject(@NonNull final DataTableRow row)
+	{
+		final I_C_Project project = load(row.getAsIdentifier().lookupNotNullIdIn(projectTable), I_C_Project.class);
+
+		row.getAsOptionalBigDecimal(I_C_Project.COLUMNNAME_InvoicedAmt)
+				.ifPresent(expected -> assertThat(project.getInvoicedAmt()).as("InvoicedAmt").isEqualByComparingTo(expected));
 	}
 }

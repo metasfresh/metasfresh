@@ -1029,8 +1029,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
+		// Set the invoice date of a doc type that overwrites it on completion before anything reads the totals:
+		// the new date can re-tax the lines, and the taxes, totals and pay schedule have to be prepared again from the re-taxed lines
+		final boolean dateInvoicedOverwritten = overwriteDateInvoicedOnComplete();
+
 		// Re-Check
-		if (!m_justPrepared)
+		if (!m_justPrepared || dateInvoicedOverwritten)
 		{
 			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
@@ -1164,15 +1168,37 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	}    // completeIt
 
 	/**
+	 * Sets the invoice date to now if the doc type overwrites it on completion, and saves the invoice,
+	 * so that the lines are re-taxed for the new date (interceptor {@code de.metas.invoice.interceptor.C_Invoice#updateInvoiceLinesTax}).
+	 *
+	 * @return true if the invoice date was changed
+	 */
+	private boolean overwriteDateInvoicedOnComplete()
+	{
+		// prepareIt sets C_DocType_ID from C_DocTypeTarget_ID; this runs before it
+		final int docTypeId = getC_DocTypeTarget_ID() > 0 ? getC_DocTypeTarget_ID() : getC_DocType_ID();
+		if (docTypeId <= 0 || !MDocType.get(getCtx(), docTypeId).isOverwriteDateOnComplete())
+		{
+			return false;
+		}
+
+		final Timestamp now = SystemTime.asTimestamp();
+		if (now.equals(getDateInvoiced()))
+		{
+			return false;
+		}
+
+		setDateInvoiced(now);
+		saveEx();
+		return true;
+	}
+
+	/**
 	 * Set the definite document number after completed
 	 */
 	private void setDefiniteDocumentNo()
 	{
 		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		if (dt.isOverwriteDateOnComplete())
-		{
-			setDateInvoiced(SystemTime.asTimestamp());
-		}
 		if (dt.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);

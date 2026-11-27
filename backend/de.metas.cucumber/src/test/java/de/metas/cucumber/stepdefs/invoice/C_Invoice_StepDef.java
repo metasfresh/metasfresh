@@ -345,6 +345,7 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
+	 *   <li>{@code C_Project_ID} — project identifier ({@code metasfresh contains C_Projects:})</li>
 	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
@@ -960,6 +961,10 @@ public class C_Invoice_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
 				.map(warehouseTable::getId)
 				.ifPresent(warehouseId -> invoice.setM_Warehouse_ID(warehouseId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Project_ID)
+				.map(projectTable::getId)
+				.ifPresent(projectId -> invoice.setC_Project_ID(projectId.getRepoId()));
 
 		invoice.setDateInvoiced(row.getAsLocalDateTimestamp(COLUMNNAME_DateInvoiced));
 		row.getAsOptionalLocalDate(COLUMNNAME_DateAcct)
