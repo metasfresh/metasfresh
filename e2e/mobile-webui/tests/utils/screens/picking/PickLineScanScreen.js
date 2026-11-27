@@ -161,7 +161,7 @@ export const PickLineScanScreen = {
         await expect(page.getByTestId('rescanCULabel-input')).toBeAttached();
         await expect(page.locator('input.input-text-offscreen')).toHaveCount(1);
         // the only barcode icon of the dialog is the one inside "Weiteres TU"
-        await expect(page.locator('.get-qty-dialog [class*="fa-barcode"]')).toHaveCount(1);
+        await expect(GetQuantityDialog.container().locator('[class*="fa-barcode"]')).toHaveCount(1);
         await expect(nextTUButton().locator('[class*="fa-barcode"]')).toHaveCount(1);
         await expect(nextTUButton()).toContainText('Weiteres TU');
     }),

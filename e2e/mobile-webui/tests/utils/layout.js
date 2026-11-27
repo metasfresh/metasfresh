@@ -165,7 +165,7 @@ export const expectLayoutSound = async (label, viewport, scope = ROOT_SCOPE) => 
         await expect.poll(
             async () => {
                 issues = await measure();
-                return issues.filter(isToastIssue).filter((issue) => issue.startsWith('toast still animating'));
+                return issues.filter((issue) => issue.startsWith('toast still animating'));
             },
             { timeout: SLOW_ACTION_TIMEOUT }
         ).toEqual([]).catch(() => {}); // `issues` holds the last measurement: it reports what is still wrong
