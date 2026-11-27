@@ -69,12 +69,12 @@ public class InvoiceVATaxIdService
 
 	/**
 	 * @return {@code false} if no invoice of the given org can use VAT IDs by delivery, so all its invoices store {@link InvoiceVATaxIds#NONE} without looking at their lines:
-	 * the org has no active fiscal representation and no partner location has a VAT ID of its own (one that differs from its partner's).
-	 * Both facts are cached, so this costs no query per invoice or candidate.
+	 * the org has no active fiscal representation and no partner location carries a VAT ID ({@link #hasOwnVATaxId} is then false for every location).
+	 * Both facts are cached, so this costs no query per invoice or candidate. A pure optimisation: whenever it returns {@code false}, resolving would give none as well.
 	 */
 	public boolean isVATaxIdByDeliveryPossible(@NonNull final OrgId orgId)
 	{
-		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentation(orgId) || bpartnerDAO.isAnyLocationWithOwnVATaxId();
+		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentation(orgId) || bpartnerDAO.isAnyLocationWithVATaxId();
 	}
 
 	/**

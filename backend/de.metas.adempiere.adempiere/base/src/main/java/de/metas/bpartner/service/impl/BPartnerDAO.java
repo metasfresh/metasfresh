@@ -538,33 +538,29 @@ public class BPartnerDAO implements IBPartnerDAO
 				"BPartner location not found: {}", bpartnerLocationId);
 	}
 
-	private final CCache<Integer, Boolean> anyLocationWithOwnVATaxIdCache = CCache.<Integer, Boolean>builder()
+	private final CCache<Integer, Boolean> anyLocationWithVATaxIdCache = CCache.<Integer, Boolean>builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
-			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.initialCapacity(1)
 			.build();
 
 	@Override
-	public boolean isAnyLocationWithOwnVATaxId()
+	public boolean isAnyLocationWithVATaxId()
 	{
-		return anyLocationWithOwnVATaxIdCache.getOrLoad(0, () -> queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
+		return anyLocationWithVATaxIdCache.getOrLoad(0, () -> queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
 				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
-				.filter(LocationWithOwnVATaxIdFilter.INSTANCE)
+				.filter(LocationWithVATaxIdFilter.INSTANCE)
 				.create()
 				.anyMatch());
 	}
 
 	/**
-	 * A location whose {@code VATaxID} is not blank and differs from its partner's (both trimmed, blank meaning none).
+	 * A location whose {@code VATaxID} is not blank.
 	 */
-	private static final class LocationWithOwnVATaxIdFilter implements IQueryFilter<I_C_BPartner_Location>, ISqlQueryFilter
+	private static final class LocationWithVATaxIdFilter implements IQueryFilter<I_C_BPartner_Location>, ISqlQueryFilter
 	{
-		private static final LocationWithOwnVATaxIdFilter INSTANCE = new LocationWithOwnVATaxIdFilter();
+		private static final LocationWithVATaxIdFilter INSTANCE = new LocationWithVATaxIdFilter();
 
-		private static final String SQL = "NULLIF(TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + "), '') IS NOT NULL"
-				+ " AND NULLIF(TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + "), '')"
-				+ " IS DISTINCT FROM (SELECT NULLIF(TRIM(bp." + I_C_BPartner.COLUMNNAME_VATaxID + "), '') FROM " + I_C_BPartner.Table_Name + " bp"
-				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = " + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + ")";
+		private static final String SQL = "TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + ") <> ''";
 
 		@Override
 		public String getSql() {return SQL;}
@@ -575,13 +571,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		@Override
 		public boolean accept(final I_C_BPartner_Location location)
 		{
-			final String locationVATaxId = StringUtils.trimBlankToNull(location.getVATaxID());
-			if (locationVATaxId == null)
-			{
-				return false;
-			}
-			final String bpartnerVATaxId = StringUtils.trimBlankToNull(loadOutOfTrx(location.getC_BPartner_ID(), I_C_BPartner.class).getVATaxID());
-			return !locationVATaxId.equals(bpartnerVATaxId);
+			return StringUtils.trimBlankToNull(location.getVATaxID()) != null;
 		}
 	}
 

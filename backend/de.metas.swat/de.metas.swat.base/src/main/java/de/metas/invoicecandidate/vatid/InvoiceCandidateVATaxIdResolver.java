@@ -51,7 +51,7 @@ import java.util.Map;
  * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByDelivery}).
  * <p>
  * Invoicing runs of customers who cannot use VAT IDs by delivery pay for none of this: if the candidate's org has no active fiscal representation
- * and no partner location has a VAT ID of its own, the result is {@link InvoiceVATaxIds#NONE} without looking at the candidate's location or tax
+ * and no partner location carries a VAT ID, the result is {@link InvoiceVATaxIds#NONE} without looking at the candidate's location or tax
  * ({@link InvoiceVATaxIdService#isVATaxIdByDeliveryPossible}, cached).
  * If only the fiscal representation is missing, the line's tax cannot give a seller VAT ID, so it is not looked up.
  */

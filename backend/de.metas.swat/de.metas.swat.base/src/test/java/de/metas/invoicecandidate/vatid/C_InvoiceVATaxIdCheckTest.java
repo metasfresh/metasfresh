@@ -283,14 +283,16 @@ class C_InvoiceVATaxIdCheckTest
 	}
 
 	/**
-	 * A customer without a fiscal representation and without a partner location whose VAT ID differs from its partner's own VAT ID cannot use VAT IDs by delivery:
+	 * A customer without a fiscal representation and without any partner location that carries a VAT ID cannot use VAT IDs by delivery:
 	 * the invoice stores none, and neither its lines nor their taxes are looked at.
 	 */
 	@Test
-	void noFiscalRepresentationAndNoLocationWithOwnVATaxId_storesNoneWithoutTaxLookup()
+	void noFiscalRepresentationAndNoLocationWithVATaxId_storesNoneWithoutTaxLookup()
 	{
 		deliveryNL.setVATaxID(null);
 		save(deliveryNL);
+		billToDE.setVATaxID(null);
+		save(billToDE);
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
 		invoice.setSellerVATaxID(SELLER_VAT);
 		invoice.setC_Fiscal_Representation_ID(FISCAL_REPRESENTATION_ID);

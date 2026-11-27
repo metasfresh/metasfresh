@@ -89,26 +89,35 @@ class InvoiceCandidateVATaxIdResolverTest
 	}
 
 	/**
-	 * A location whose VAT ID is its partner's own VAT ID does not make a customer use VAT IDs by delivery: the candidate is not looked up either.
+	 * The short-circuit only skips work, it never changes a result: a location that carries its partner's own VAT ID is still resolved,
+	 * because it is billed to another partner (e.g. a drop-ship third party or central billing) whose VAT ID differs.
 	 */
 	@Test
-	void noFiscalRepresentationAndOnlyLocationsWithThePartnersVATaxId_noLocationOrTaxLookup()
+	void noFiscalRepresentation_locationWithItsPartnersVATaxId_billedToAnotherPartner_isResolved()
 	{
-		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
-		customer.setVATaxID("DE123456788");
-		save(customer);
-		final I_C_BPartner_Location billTo = newInstance(I_C_BPartner_Location.class);
-		billTo.setC_BPartner_ID(customer.getC_BPartner_ID());
-		billTo.setVATaxID("DE123456788");
-		save(billTo);
+		final I_C_BPartner thirdParty = newInstance(I_C_BPartner.class);
+		thirdParty.setVATaxID("NL112233442B01");
+		save(thirdParty);
+		final I_C_BPartner_Location thirdPartyLocation = newInstance(I_C_BPartner_Location.class);
+		thirdPartyLocation.setC_BPartner_ID(thirdParty.getC_BPartner_ID());
+		thirdPartyLocation.setVATaxID("NL112233442B01");
+		save(thirdPartyLocation);
+		final BPartnerLocationId thirdPartyLocationId = BPartnerLocationId.ofRepoId(thirdParty.getC_BPartner_ID(), thirdPartyLocation.getC_BPartner_Location_ID());
 
-		final InvoiceCandidateVATaxIdResolver resolverWithFailingLookups = newResolverWithFailingLookups(null);
+		final I_C_BPartner billPartner = newInstance(I_C_BPartner.class);
+		billPartner.setVATaxID("DE123456788");
+		save(billPartner);
 
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 		ic.setIsSOTrx(true);
+		ic.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 		save(ic);
 
-		assertThat(resolverWithFailingLookups.resolve(ic, null, resolverWithFailingLookups.newCache())).isEqualTo(InvoiceVATaxIds.NONE);
+		final TaxLocation taxLocation = new TaxLocation(thirdPartyLocationId, OrgId.ofRepoId(ic.getAD_Org_ID()), TimeUtil.parseTimestamp("2026-09-02"), null);
+		final InvoiceCandidateVATaxIdResolver resolverWithFailingTaxLookup = newResolverWithFailingLookups(taxLocation);
+
+		assertThat(resolverWithFailingTaxLookup.resolve(ic, null, resolverWithFailingTaxLookup.newCache()))
+				.isEqualTo(new InvoiceVATaxIds("NL112233442B01", null, null));
 	}
 
 	/**
