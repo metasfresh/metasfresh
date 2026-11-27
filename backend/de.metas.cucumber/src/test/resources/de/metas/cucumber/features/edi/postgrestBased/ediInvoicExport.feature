@@ -1176,7 +1176,7 @@ Feature: EDI INVOIC export via postgREST
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customerNL_billing                | DE123456788    |
-      | customerNL_NL                     | NL827764364B01 |
+      | customerNL_NL                     | NL333333330B01 |
     And metasfresh contains M_Warehouse:
       | Identifier | IsDropShipWarehouse |
       | wh_DE      | N                   |
@@ -1211,7 +1211,7 @@ Feature: EDI INVOIC export via postgREST
       | invoiceCandidate                  | invoice                 | invoice_ID   |
     And validate created invoices
       | Identifier | C_BPartner_Location_ID | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | customerNL_billing     | NL827764364B01 |               |                            |
+      | invoice    | customerNL_billing     | NL333333330B01 |               |                            |
 
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
@@ -1243,11 +1243,11 @@ Feature: EDI INVOIC export via postgREST
       "Partners": [
         {
           "EANCOM_LocationType": "BY",
-          "VATaxID": "NL827764364B01"
+          "VATaxID": "NL333333330B01"
         },
         {
           "EANCOM_LocationType": "IV",
-          "VATaxID": "NL827764364B01"
+          "VATaxID": "NL333333330B01"
         },
         {
           "EANCOM_LocationType": "SU",

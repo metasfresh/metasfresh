@@ -113,7 +113,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     # taxAgentGR: the organisation's fiscal representative in Greece
     And metasfresh contains C_BPartners without locations:
       | Identifier | M_PricingSystem_ID.Identifier | IsCustomer | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier | SO_InvoiceLine_Aggregation_ID.Identifier |
-      | customer   | ps_1                          | Y          | D           | DE369391233 | aggHeader                            | aggLinePerIC                             |
+      | customer   | ps_1                          | Y          | D           | DE111111125 | aggHeader                            | aggLinePerIC                             |
       | thirdParty | ps_1                          | Y          | D           |             |                                      |                                          |
       | customerGR | ps_1                          | Y          | D           |             | aggHeader                            |                                          |
     And metasfresh contains C_BPartners without locations:
@@ -130,8 +130,8 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | taxAgentGR_GR     | 0123456789207 | taxAgentGR               | Y        | Y               | Y        | Y               | location_representative      |
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID     |
-      | customer_billing                  | DE369391233 |
-      | customer_DE                       | DE369391233 |
+      | customer_billing                  | DE111111125 |
+      | customer_DE                       | DE111111125 |
       | customerGR_GR                     | EL094014201 |
 
     # both warehouses are in Germany (default: the organisation's address)
@@ -144,7 +144,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
   Scenario: TC1 + TC11 - the printed invoice shows the stored Dutch VAT ID, also after the address's VAT ID changed
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
-      | customer_NL                       | NL827764364B01 |
+      | customer_NL                       | NL333333330B01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -172,14 +172,14 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | C_BPartner_Location_ID | BuyerVATaxID   |
-      | invoice    | customer_billing       | NL827764364B01 |
+      | invoice    | customer_billing       | NL333333330B01 |
 
     # TC1: the print shows the stored Dutch VAT ID, not the billing partner's German one
     When The jasper process is run
       | Value             | Record_ID |
       | Rechnung (Jasper) | invoice   |
-    Then the PDF archived for the record identified by "invoice" contains text "NL827764364B01"
-    And the PDF archived for the record identified by "invoice" does not contain text "DE369391233"
+    Then the PDF archived for the record identified by "invoice" contains text "NL333333330B01"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE111111125"
 
     # TC11: the VAT ID of the address changes later; the stored value and a reprint stay unchanged
     When update C_BPartner_Location:
@@ -190,10 +190,10 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | Rechnung (Jasper) | invoice   |
     Then validate created invoices
       | Identifier | BuyerVATaxID   |
-      | invoice    | NL827764364B01 |
-    And the PDF archived for the record identified by "invoice" contains text "NL827764364B01"
+      | invoice    | NL333333330B01 |
+    And the PDF archived for the record identified by "invoice" contains text "NL333333330B01"
     And the PDF archived for the record identified by "invoice" does not contain text "NL111111110B01"
-    And the PDF archived for the record identified by "invoice" does not contain text "DE369391233"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE111111125"
 
   @Id:S32533_TC17_Print
   Scenario: TC17 (print) - own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID

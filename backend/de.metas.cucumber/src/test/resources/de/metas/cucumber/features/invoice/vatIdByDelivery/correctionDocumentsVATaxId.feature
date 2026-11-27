@@ -75,7 +75,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_billing                  | DE123456788    |
-      | customer_NL                       | NL827764364B01 |
+      | customer_NL                       | NL333333330B01 |
 
     And metasfresh contains M_Warehouse:
       | Identifier | IsDropShipWarehouse |
@@ -107,7 +107,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | CO        | NL827764364B01 |               |                            |
+      | invoice    | CO        | NL333333330B01 |               |                            |
 
     # the reversal's lines would now resolve the new VAT ID of the Dutch address
     When update C_BPartner_Location:
@@ -118,8 +118,8 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
 
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | RE        | NL827764364B01 |               |                            |
-      | reversal   | RE        | NL827764364B01 |               |                            |
+      | invoice    | RE        | NL333333330B01 |               |                            |
+      | reversal   | RE        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12b
   Scenario: TC12 - a credit memo of an invoice for goods shipped to the Dutch address keeps the Dutch VAT ID, although the address got another VAT ID meanwhile
@@ -147,7 +147,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   |
-      | invoice    | CO        | NL827764364B01 |
+      | invoice    | CO        | NL333333330B01 |
 
     When update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
@@ -159,7 +159,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
 
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | creditMemo | CO        | NL827764364B01 |               |                            |
+      | creditMemo | CO        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12c
   Scenario: TC12 - reversal and credit memo of an invoice for a service to the Dutch address, invoiced immediately without shipment: the Dutch VAT ID
@@ -191,8 +191,8 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | invoiceCandidate_2                | invoice_2               |
     And validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   |
-      | invoice_1  | CO        | NL827764364B01 |
-      | invoice_2  | CO        | NL827764364B01 |
+      | invoice_1  | CO        | NL333333330B01 |
+      | invoice_2  | CO        | NL333333330B01 |
 
     When the invoice identified by invoice_1 is reversed
     And the reversal of invoice invoice_1 is identified by reversal
@@ -203,8 +203,8 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
 
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | reversal   | RE        | NL827764364B01 |               |                            |
-      | creditMemo | CO        | NL827764364B01 |               |                            |
+      | reversal   | RE        | NL333333330B01 |               |                            |
+      | creditMemo | CO        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12d
   Scenario: TC12 - reversal and credit memo of an invoice without stored VAT IDs (partner VAT ID ignored, delivery address without VAT ID) store none either
@@ -295,7 +295,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | handAddedLine               | invoice                 | service                 | 3           | taxDEDE19 |
     And validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | CO        | NL827764364B01 |               |                            |
+      | invoice    | CO        | NL333333330B01 |               |                            |
 
     # the reversal's lines lose the shipment line: the candidate line resolves the Dutch VAT ID from its order line,
     # the line added by hand the German one from the billing address
@@ -304,7 +304,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
 
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | reversal   | RE        | NL827764364B01 |               |                            |
+      | reversal   | RE        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC15
   Scenario: TC15 - the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines
@@ -332,7 +332,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | invoiceCandidate                  | invoice                 |
     And validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   |
-      | invoice    | CO        | NL827764364B01 |
+      | invoice    | CO        | NL333333330B01 |
 
     When the invoice identified by "invoice" is copied as "invoiceCopy"
     Then validate created invoices

@@ -67,11 +67,11 @@ public class InvoiceVATaxIdServiceTest
 	@Test
 	public void nlLocation_noRegistration()
 	{
-		final BPartnerLocationId location = createLocation(nl, "NL827764364B01");
+		final BPartnerLocationId location = createLocation(nl, "NL333333330B01");
 
 		final InvoiceVATaxIds result = service.resolve(taxLocation(location), createTax(true));
 
-		assertThat(result).isEqualTo(new InvoiceVATaxIds("NL827764364B01", null, null));
+		assertThat(result).isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
 	}
 
 	@Test

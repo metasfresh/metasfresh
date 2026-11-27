@@ -1488,7 +1488,7 @@ Feature: EDI_cctop_invoic_v export format
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customerNL_billing                | DE123456788    |
-      | customerNL_NL                     | NL827764364B01 |
+      | customerNL_NL                     | NL333333330B01 |
     And metasfresh contains C_BPartner_EDI_Setting:
       | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier  |
       | customerNL    | false                | true                 | 0123456789999         | edi_setting |
@@ -1526,7 +1526,7 @@ Feature: EDI_cctop_invoic_v export format
       | invoiceCandidate                  | invoice                 | invoice_ID   |
     And validate created invoices
       | Identifier | C_BPartner_Location_ID | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | customerNL_billing     | NL827764364B01 |               |                            |
+      | invoice    | customerNL_billing     | NL333333330B01 |               |                            |
 
     And invoice is EDI exported
       | C_Invoice_ID.Identifier |
@@ -1540,8 +1540,8 @@ Feature: EDI_cctop_invoic_v export format
     And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
       | eancom_locationtype | OPT.VATaxID    |
       | SU                  | DE136695976    |
-      | BY                  | NL827764364B01 |
-      | IV                  | NL827764364B01 |
+      | BY                  | NL333333330B01 |
+      | IV                  | NL333333330B01 |
       | DP                  | DE123456788    |
       | SN                  | DE123456788    |
 

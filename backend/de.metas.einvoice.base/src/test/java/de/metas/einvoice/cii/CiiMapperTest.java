@@ -3219,9 +3219,9 @@ public class CiiMapperTest
 	void bt48_storedBuyerVATaxId_wins() throws Exception
 	{
 		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
-		invoice.setBuyerVATaxID("NL827764364B01");
+		invoice.setBuyerVATaxID("NL333333330B01");
 
-		mapVatIdInvoice(invoice).valueByXPath(BT48_PATH).as("BT-48").isEqualTo("NL827764364B01");
+		mapVatIdInvoice(invoice).valueByXPath(BT48_PATH).as("BT-48").isEqualTo("NL333333330B01");
 	}
 
 	@Test
