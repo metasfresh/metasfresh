@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -173,8 +174,14 @@ public class C_ScannableCode_Format_StepDef
 		}
 		finally
 		{
-			formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
-			formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
+			try
+			{
+				formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
+			}
+			finally
+			{
+				formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
+			}
 		}
 	}
 
@@ -265,7 +272,9 @@ public class C_ScannableCode_Format_StepDef
 
 		if (firstError != null)
 		{
-			final String names = failed.stream().map(f -> f.getName() + " (C_ScannableCode_Format_ID=" + f.getC_ScannableCode_Format_ID() + ")").collect(java.util.stream.Collectors.joining(", "));
+			final String names = failed.stream()
+					.map(f -> f.getName() + " (C_ScannableCode_Format_ID=" + f.getC_ScannableCode_Format_ID() + ")")
+					.collect(Collectors.joining(", "));
 			throw new AdempiereException("Failed to reactivate scannable code formats deactivated by the step; they stay inactive: " + names, firstError);
 		}
 	}
