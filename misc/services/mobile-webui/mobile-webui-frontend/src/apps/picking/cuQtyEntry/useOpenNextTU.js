@@ -5,7 +5,8 @@ import { closePickingTarget, PICKING_TARGET_TIMEOUT_MILLIS, setTUPickingTargetFr
 import { getWFProcess } from '../../../api/launchers';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { PickingTargetType } from '../../../constants/PickingTargetType';
-import { selectPickingTargetScreenLocation } from '../../../routes/picking';
+import { pickingLineScanScreenLocation, selectPickingTargetScreenLocation } from '../../../routes/picking';
+import { rememberPendingScan } from '../redux/PickingActions';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { UserMessageError } from '../../../utils/UserMessageError';
 import { toastErrorFromObj, toastNotification } from '../../../utils/toast';
@@ -83,6 +84,9 @@ export const useOpenNextTU = ({
   packingItemName,
   tuPickingTarget,
   setPickingTarget,
+  next,
+  qrCode,
+  isReturnToScanScreen = false,
 }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
@@ -194,14 +198,31 @@ export const useOpenNextTU = ({
     if (error?.messageKey !== NEXT_TU_BUSY_KEY) toastErrorFromObj(error);
   };
 
-  const onNextTU = () =>
+  /**
+   * "Weiteres TU". On a line without a TU type the picker chooses it in the TU list; the choice leads back to the scan screen
+   * (as a GRAI scan stays on it), and the label and the count the picker had are kept for that trip.
+   * Only where `isReturnToScanScreen` (Scan once); Scan each keeps its way back to the line screen.
+   * @param pendingScan `{ scannedBarcode, qtyEntered }` of the open quantity block; absent when nothing was scanned yet
+   */
+  const onNextTU = (pendingScan) =>
     runExclusive(async () => {
       await closeAndOpenNextTU({
         ...closeOpenTUDeps,
         packingTuPIId,
         packingItemName,
         setTarget: ({ target }) => setPickingTarget({ target }).then((wfProcess) => updateWF(wfProcess)),
-        gotoSelectTarget: () =>
+        gotoSelectTarget: () => {
+          if (isReturnToScanScreen && pendingScan?.scannedBarcode) {
+            dispatch(
+              rememberPendingScan({
+                wfProcessId,
+                activityId,
+                lineId,
+                scannedBarcode: pendingScan.scannedBarcode,
+                qtyEntered: pendingScan.qtyEntered,
+              })
+            );
+          }
           history.push(
             selectPickingTargetScreenLocation({
               applicationId,
@@ -209,8 +230,12 @@ export const useOpenNextTU = ({
               activityId,
               lineId,
               type: PickingTargetType.TU,
+              returnTo: isReturnToScanScreen
+                ? pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, qrCode, next })
+                : undefined,
             })
-          ),
+          );
+        },
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
         showNextTUOpened();

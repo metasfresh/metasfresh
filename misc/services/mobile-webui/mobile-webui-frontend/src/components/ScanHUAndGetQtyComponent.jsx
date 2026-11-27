@@ -35,16 +35,17 @@ const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcod
 const EMPTY_LU_GRAIS = [];
 
 /**
- * @param nextTUActions the node as is, or a function `({ scanner }) => node` for a button that owns the hidden scanner of the
+ * @param nextTUActions the node as is, or a function `({ scanner, pendingScan }) => node` for a button that owns the hidden scanner of the
  *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
  *   The first scan screen shows it only when `isBookedOnScan` (a scan books right away, there is no quantity block); otherwise it is shown in the quantity block only.
  *   The pop-up's rescan scanner exists ONLY through the function form: a plain node adds no scanner, so a line that is repeated-booking
  *   but passes no function has no rescan.
  * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
+ * @param pendingScan `{ scannedBarcode, qtyEntered }`, the label scanned and the count typed so far in the quantity block; undefined on the scan step
  * @return the node to render, or undefined when there are no next-TU actions
  */
-const renderNextTUActions = (nextTUActions, scanner) =>
-  typeof nextTUActions === 'function' ? nextTUActions({ scanner }) : nextTUActions;
+const renderNextTUActions = (nextTUActions, scanner, pendingScan) =>
+  typeof nextTUActions === 'function' ? nextTUActions({ scanner, pendingScan }) : nextTUActions;
 
 // With `isBookedOnScan` there is no quantity block: the scan step shows the next-TU actions and a Close button.
 // Otherwise nothing is shown before the first scan.
@@ -508,13 +509,17 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
-          nextTUActions={renderNextTUActions(
-            nextTUActions,
-            // the label rescan (new lot / best-before, next TU by its GRAI) is read by the hidden scanner of the "next TU" button
-            isRepeatedBooking
-              ? { resolveScannedBarcode: handleResolveHUScannedBarcode, onResolvedResult: onCULabelRescanned }
-              : undefined
-          )}
+          nextTUActions={({ qtyEntered }) =>
+            renderNextTUActions(
+              nextTUActions,
+              // the label rescan (new lot / best-before, next TU by its GRAI) is read by the hidden scanner of the "next TU" button
+              isRepeatedBooking
+                ? { resolveScannedBarcode: handleResolveHUScannedBarcode, onResolvedResult: onCULabelRescanned }
+                : undefined,
+              // what the screen keeps while the picker is away choosing the TU type
+              { scannedBarcode: resolvedBarcodeData.scannedBarcode, qtyEntered }
+            )
+          }
           //
           getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}

@@ -7,6 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
+import { PickingGraiScanPanel } from "../../utils/screens/picking/PickingGraiScanPanel";
 import { SelectPickTargetTUScreen } from "../../utils/screens/picking/SelectPickTargetTUScreen";
 import { PickGraiScreen } from "../../utils/screens/picking/PickGraiScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -686,12 +687,11 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-        // the choice leads back to the line screen with the TU open; "Pack HU" goes on to the label scan
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.tapPickHUButton();
+        // the choice leads back to the scan screen with the TU open, the scanned label and the entered count kept (as after a GRAI scan): no new label scan
         await PickLineScanScreen.waitForScreen();
-        await scanLabel(labelOf({ masterdata }));
-        await book({ qty: 4, expectedQtyTarget: 8 });
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
         await PickGraiScreen.expectNotShown();
     });
 
@@ -699,11 +699,10 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.tapPickHUButton();   // a new round: nothing is remembered, the label is scanned again
-        await PickLineScanScreen.waitForScreen();
-        await scanLabel(labelOf({ masterdata }));
-        await book({ qty: 4, expectedQtyTarget: 4 });
+        await PickLineScanScreen.waitForScreen();   // the label of the first TU is kept: no new label scan
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 4 });
         await PickGraiScreen.expectNotShown();
     });
 
@@ -712,9 +711,7 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
         await GetQuantityDialog.clickDoneStayOpen();
         await PickGraiScreen.expectNotShown();
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.goBack();
-        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.waitForScreen(); // the scan screen was entered from the job screen (next=pickingJob), also after the TU list: the done line leads back there
     });
 
     await test.step('"Fertigstellen" is refused while TUs without GRAI exist, and completes once every TU has one', async () => {
@@ -723,6 +720,62 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await addGraiToTUsInHUManager({ masterdata, tus: ['tu1', 'tu2'] });
         await PickingJobScreen.complete();
         await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('line without a TU type: a GRAI scanned on the "Gebinde" list opens that TU and leads back to the scan screen with the label and the count kept', async ({ page }) => {
+    allureMeta('Open TU first, line without a TU type');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 12, graiRequired: 'Y', piItemProduct: null }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const grai = masterdata.packingInstructions.G1.grai;
+    await startJob(masterdata, { qtyToDeliver: 12 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await GetQuantityDialog.typeQtyEntered(4);
+    await PickLineScanScreen.nextTU();
+    await SelectPickTargetTUScreen.waitForScreen();
+    await PickingGraiScanPanel.scanGrai({ graiString: grai });
+    await PickLineScanScreen.waitForScreen();
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.expectQtyEntered(4);
+    await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('line without a TU type: the count kept for the "Gebinde" trip is offered for the first booking only, the next round offers the normal count capped by the open quantity', async ({ page }) => {
+    allureMeta('Open TU first, line without a TU type');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 6, graiRequired: 'Y', piItemProduct: null }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const tuName = masterdata.packingInstructions.P1_20x4.tuName;
+    await startJob(masterdata, { qtyToDeliver: 6 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await GetQuantityDialog.typeQtyEntered(4);
+
+    await test.step('"Next TU", the picker chooses the TU type, back with the kept count: the first booking takes it', async () => {
+        await PickLineScanScreen.nextTU();
+        await SelectPickTargetTUScreen.waitForScreen();
+        await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
+        await PickLineScanScreen.waitForScreen();
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 2 });
+    });
+
+    await test.step('the next round offers the last typed count capped by the open quantity (2), not the kept count (4)', async () => {
+        await GetQuantityDialog.expectQtyEntered(2);
+        await GetQuantityDialog.clickDoneStayOpen();   // the line is done: back to the job screen
+        await PickingJobScreen.waitForScreen();
     });
 });
 

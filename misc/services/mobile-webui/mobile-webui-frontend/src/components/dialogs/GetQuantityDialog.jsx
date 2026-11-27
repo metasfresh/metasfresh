@@ -524,7 +524,9 @@ const GetQuantityDialog = ({
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
-              {nextTUActions}
+              {typeof nextTUActions === 'function'
+                ? nextTUActions({ qtyEntered: qtyInfos.toNumberOrString(qtyInfo) })
+                : nextTUActions}
             </div>
           </form>
         )}
@@ -586,7 +588,8 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
-  nextTUActions: PropTypes.node,
+  /** the node as is, or a function `({ qtyEntered }) => node` for a button that needs the count typed so far */
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   customQRCodeFormats: PropTypes.array,
 
   // Callbacks

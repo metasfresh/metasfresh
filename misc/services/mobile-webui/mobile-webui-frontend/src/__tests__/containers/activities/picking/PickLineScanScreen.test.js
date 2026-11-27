@@ -13,6 +13,7 @@ import {
   isInlineGraiCaptureEnabled,
   computeQtyUnitProps,
   computeScannedBarcodeParam,
+  computeSuggestedQtyOnScan,
   computeOpenTUHeaderEntries,
   computePickFromHUQRCode,
   computeSourceHUQRCode,
@@ -349,5 +350,33 @@ describe('PickingLineScanScreen: Manual product mismatch stays synchronous', () 
     }).toThrow(expect.objectContaining({ messageKey: 'activities.picking.qrcode.differentProduct' }));
     expect(returned).toBeUndefined();
     expect(mockDispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('PickingLineScanScreen: back from the TU list ("Weiteres TU" on a line without TU type)', () => {
+  const pendingScan = { scannedBarcode: 'LABEL#1', qtyEntered: 4 };
+
+  it('the kept label is scanned again on its own, no matter the hop param', () => {
+    expect(
+      computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY, pendingScan })
+    ).toBe('LABEL#1');
+  });
+
+  it('without a kept scan nothing changes: a label mode never reads the hop as a scan', () => {
+    expect(
+      computeScannedBarcodeParam({ qrCode: 'HU#1#{}', cuQtyEntryPolicy: POLICY.SCAN_ONCE_ENTER_QTY, pendingScan: null })
+    ).toBeUndefined();
+  });
+
+  it('the kept count is offered again, over the count suggested from the last booking', () => {
+    expect(computeSuggestedQtyOnScan({ pendingScan, suggestedQty: 7 })).toBe(4);
+    expect(computeSuggestedQtyOnScan({ pendingScan: null, suggestedQty: 7 })).toBe(7);
+    expect(computeSuggestedQtyOnScan({ pendingScan: null, suggestedQty: undefined })).toBeUndefined();
+    expect(
+      computeSuggestedQtyOnScan({ pendingScan: { scannedBarcode: 'L', qtyEntered: '4,5' }, suggestedQty: 7 })
+    ).toBe(4.5);
+    expect(computeSuggestedQtyOnScan({ pendingScan: { scannedBarcode: 'L', qtyEntered: '' }, suggestedQty: 7 })).toBe(
+      7
+    );
   });
 });
