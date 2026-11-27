@@ -14,6 +14,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from "../../utils/screens/huManager/HUManagerScreen";
 import { GRAIScreen } from "../../utils/screens/huManager/GRAIScreen";
+import { BarcodeScannerComponent } from "../../utils/components/BarcodeScannerComponent";
 import { allureMeta, book, graiTuType, createMasterdata, restoreSysconfigsAfterEach, GRAI_8003_PREFIX, labelOf, MSG_NO_OPEN_TU, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
 import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { delayRequests, delayResponses, hangRequests } from "../../utils/network";
@@ -794,8 +795,9 @@ test('Scan each CU: GRAI scan with a slow request, a CU label scanned right afte
     await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
 
     const restoreTargetSpeed = await delayRequests({ urlPattern: /\/picking\/job\/[^/]+\/target/, method: 'POST', delayMs: 4000 });
-    await PickLineScanScreen.typeQRCode(grai);   // does not wait for the crate
-    await PickLineScanScreen.typeQRCode(packLabelOf({ masterdata, lot, packId: 2 }));
+    // both scans end with Enter (the release reader buffers consecutive scans); neither waits for the crate
+    await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: grai });
+    await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: packLabelOf({ masterdata, lot, packId: 2 }) });
     await restoreTargetSpeed();
     await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
 

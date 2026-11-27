@@ -243,7 +243,8 @@ export const PickLineScanScreen = {
         await PickLineScanScreen.waitForScreen();
         // language-independent and not satisfied by an older toast: mark the success toasts shown now, wait for one that is not marked
         await page.locator('.Toastify__toast--success').evaluateAll((toasts) => toasts.forEach((toast) => toast.setAttribute('data-before-scan', 'true')));
-        await PickLineScanScreen.typeQRCode(graiString);
+        // terminated with Enter: an unflushed GRAI would swallow the next scan's keys (the release reader buffers consecutive scans)
+        await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: graiString });
         await expect(page.locator('.Toastify__toast--success:not([data-before-scan])')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
