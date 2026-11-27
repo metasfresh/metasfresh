@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '../../playwright.config';
+import { CHROME_LAUNCH_ARGS, test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
@@ -76,20 +76,11 @@ async function optionKey(option) {
   return testId.replace(/^option-/, '');
 }
 
-// Scrollbars are hidden by default in Playwright's Chromium, so the scrollbar pin turns them on. `args` is a copy
-// of `projects["Desktop Chrome"].use.launchOptions.args` in e2e/frontend-webui/playwright.config.js: keep them in sync.
+// Scrollbars are hidden by default in Playwright's Chromium, so the scrollbar pin turns them on. `test.use` replaces
+// the project's launchOptions, so the project's args are passed again.
 test.use({
   launchOptions: {
-    args: [
-      '--no-sandbox',
-      '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080',
-      '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests',
-      '--disable-site-isolation-trials',
-      '--disable-web-security',
-      '--ignore-certificate-errors',
-      '--allow-insecure-localhost',
-      '--allow-running-insecure-content',
-    ],
+    args: CHROME_LAUNCH_ARGS,
     ignoreDefaultArgs: ['--hide-scrollbars'],
   },
 });
@@ -105,7 +96,7 @@ testCases.forEach(({ language, label }) => {
       allure.epic('E0100: Sales');
       allure.tag('F50000: Frontend WebUI');
       allure.tag('F50000');
-      allure.tag('F00100: Sales Order Window');
+      allure.tag('F00100: Sales Order');
       allure.tag('F00100');
       allure.story(story);
       allure.severity('critical');

@@ -11,6 +11,18 @@ const UAT_CAPTURE_SIZE = (() => {
   return { width, height };
 })();
 
+/** The Chromium launch args of the 'Desktop Chrome' project; a spec that overrides `launchOptions` reuses them. */
+export const CHROME_LAUNCH_ARGS = [
+  '--no-sandbox', // Avoids sandboxing issues inside Docker
+  '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080', // Treats it as a secure origin
+  '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
+  '--disable-site-isolation-trials', // Helps disable security sandboxing
+  '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
+  '--ignore-certificate-errors', // Ignores SSL certificate errors
+  '--allow-insecure-localhost', // Allows HTTP on local addresses
+  '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
+];
+
 export default defineConfig({
   testDir: './tests',
   workers: 1, // Sequential execution for test data isolation
@@ -102,16 +114,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         ...(isUatCapture ? { viewport: UAT_CAPTURE_SIZE } : {}),
         launchOptions: {
-          args: [
-            '--no-sandbox', // Avoids sandboxing issues inside Docker
-            '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080', // Treats it as a secure origin
-            '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
-            '--disable-site-isolation-trials', // Helps disable security sandboxing
-            '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
-            '--ignore-certificate-errors', // Ignores SSL certificate errors
-            '--allow-insecure-localhost', // Allows HTTP on local addresses
-            '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
-          ],
+          args: CHROME_LAUNCH_ARGS,
         },
       },
     },
