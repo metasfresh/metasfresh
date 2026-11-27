@@ -16,6 +16,7 @@ import { reducer as settings } from '../../../../reducers/settings';
 import { toQtyEntryBehaviorProps } from '../../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 import translations_de from '../../../../utils/translations_de';
 import { POLICY } from '../../../../__testSupport__/picking/testPolicies';
+import { rememberPendingScan } from '../../../../apps/picking/redux/PickingActions';
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
@@ -36,7 +37,8 @@ jest.mock('../../../../api/picking', () => ({
   PICKING_TARGET_TIMEOUT_MILLIS: 20000,
 }));
 jest.mock('../../../../api/launchers', () => ({ getWFProcess: jest.fn() }));
-jest.mock('../../../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({ push: jest.fn() }) }));
+const mockPush = jest.fn();
+jest.mock('../../../../hooks/useMobileNavigation', () => ({ useMobileNavigation: () => ({ push: mockPush }) }));
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({ ...jest.requireActual('react-redux'), useDispatch: () => mockDispatch }));
 
@@ -251,16 +253,18 @@ describe('useOpenNextTU', () => {
       wfProcessId: 'wf',
       activityId: 'a',
       lineId: 'l',
-      packingTuPIId: TU_TYPE_ID,
+      packingTuPIId: exposed.packingTuPIId === undefined ? TU_TYPE_ID : exposed.packingTuPIId,
       packingItemName: 'TU',
+      next: exposed.next,
+      isReturnToScanScreen: exposed.isReturnToScanScreen,
       tuPickingTarget: exposed.tuPickingTarget ?? null,
       setPickingTarget: exposed.setPickingTarget,
     });
     exposed.nextTU = nextTU;
     return null;
   };
-  const setup = (setPickingTarget, tuPickingTarget = null) => {
-    const exposed = { setPickingTarget, tuPickingTarget };
+  const setup = (setPickingTarget, tuPickingTarget = null, extra = {}) => {
+    const exposed = { setPickingTarget, tuPickingTarget, ...extra };
     render(<Harness exposed={exposed} />);
     return exposed;
   };
@@ -302,6 +306,60 @@ describe('useOpenNextTU', () => {
       await first;
     });
     expect(toastErrorFromObj).not.toHaveBeenCalled();
+  });
+
+  describe('line without a TU type: the scan and the count survive the trip to the TU list', () => {
+    const SCAN = { scannedBarcode: 'LABEL#1', qtyEntered: 4 };
+    const tuListLocation = (extra = '') =>
+      '/picking/wf/wf/selectPickTarget/a/l/tu?returnTo=' +
+      encodeURIComponent('/picking/wf/wf/pick/A/a/L/l/scanner' + extra);
+
+    it('keeps the label and the count, opens the TU list that returns to the scan screen', async () => {
+      const exposed = setup(jest.fn(), null, { packingTuPIId: null, isReturnToScanScreen: true });
+      await act(async () => {
+        await exposed.nextTU.onNextTU(SCAN);
+      });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        rememberPendingScan({ wfProcessId: 'wf', activityId: 'a', lineId: 'l', ...SCAN })
+      );
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith(tuListLocation());
+    });
+
+    it('the return location keeps the "next" step of the scan screen', async () => {
+      const exposed = setup(jest.fn(), null, { packingTuPIId: null, next: 'pickingJob', isReturnToScanScreen: true });
+      await act(async () => {
+        await exposed.nextTU.onNextTU(SCAN);
+      });
+      expect(mockPush).toHaveBeenCalledWith(tuListLocation('?next=pickingJob'));
+    });
+
+    it('nothing to keep (before the first scan, Scan each): only the return location', async () => {
+      const exposed = setup(jest.fn(), null, { packingTuPIId: null, isReturnToScanScreen: true });
+      await act(async () => {
+        await exposed.nextTU.onNextTU();
+      });
+      expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: rememberPendingScan({}).type }));
+      expect(mockPush).toHaveBeenCalledWith(tuListLocation());
+    });
+
+    it('Scan each: the plain TU list (back to the line screen as before), nothing kept', async () => {
+      const exposed = setup(jest.fn(), null, { packingTuPIId: null });
+      await act(async () => {
+        await exposed.nextTU.onNextTU(SCAN);
+      });
+      expect(mockPush).toHaveBeenCalledWith('/picking/wf/wf/selectPickTarget/a/l/tu');
+      expect(mockDispatch).not.toHaveBeenCalled();
+    });
+
+    it('a line with a TU type opens the TU at once: nothing kept, no navigation', async () => {
+      const exposed = setup(jest.fn().mockResolvedValue({}));
+      await act(async () => {
+        await exposed.nextTU.onNextTU(SCAN);
+      });
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(mockDispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: rememberPendingScan({}).type }));
+    });
   });
 
   it('success: shows the opened TU in a notification', async () => {

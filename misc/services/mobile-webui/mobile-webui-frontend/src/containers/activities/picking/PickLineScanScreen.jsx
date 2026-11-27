@@ -21,7 +21,7 @@
  */
 
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import {
@@ -69,7 +69,7 @@ import {
   MANUAL_POLICY,
   toQtyEntryBehaviorProps,
 } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
-import { rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
+import { forgetPendingScan, rememberCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { getCUEntry } from '../../../reducers/wfProcesses/picking';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 
@@ -82,6 +82,7 @@ const PickLineScanScreen = () => {
     back: pickingLineScreenLocation,
   });
 
+  const dispatch = useDispatch();
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
   const next = urlParams.get('next');
@@ -147,7 +148,18 @@ const PickLineScanScreen = () => {
 
   const isLabelRequiredLine = cuQtyEntryPolicy.isLabelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
+  // back from the TU list ("Weiteres TU" on a line without a TU type): the label and the count the picker had are shown again.
+  // Taken once, when the screen opens, and used up at once, so a later visit of the screen starts clean.
+  const [pendingScan] = useState(() => cuEntry?.pendingScan ?? null);
+  useEffect(() => {
+    if (pendingScan) {
+      dispatch(forgetPendingScan({ wfProcessId, activityId }));
+    }
+  }, []);
+
   const nextTU = useOpenNextTU({
+    next,
+    isReturnToScanScreen: cuQtyEntryPolicy.isScanOnce,
     applicationId,
     wfProcessId,
     activityId,
@@ -235,7 +247,7 @@ const PickLineScanScreen = () => {
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       // the source HU of the hop from the line screen is never a CU label
-      scannedBarcode={computeScannedBarcodeParam({ qrCode, cuQtyEntryPolicy })}
+      scannedBarcode={computeScannedBarcodeParam({ qrCode, cuQtyEntryPolicy, pendingScan })}
       graiScanEnabled={isInlineGraiCapture}
       existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
@@ -250,12 +262,16 @@ const PickLineScanScreen = () => {
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
       {...toQtyEntryBehaviorProps(cuQtyEntryPolicy)}
-      suggestedQty={suggestedQty}
+      suggestedQty={computeSuggestedQtyOnScan({ pendingScan, suggestedQty })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextTUActions={
         isLabelRequiredLine
-          ? ({ scanner }) => (
-              <OpenNextTUButton isProcessing={nextTU.isProcessing} onNextTU={nextTU.onNextTU} scanner={scanner} />
+          ? ({ scanner, pendingScan: scanToKeep }) => (
+              <OpenNextTUButton
+                isProcessing={nextTU.isProcessing}
+                onNextTU={() => nextTU.onNextTU(scanToKeep)}
+                scanner={scanner}
+              />
             )
           : undefined
       }
@@ -295,8 +311,15 @@ export const computeQtyUnitProps = ({ pickingUnit, packingItemName }) =>
     : { qtyCaptionKey: 'general.Qty', packingItemName: null };
 
 // @VisibleForTesting
-export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_POLICY }) =>
-  cuQtyEntryPolicy.isLabelRequired ? undefined : qrCode;
+export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_POLICY, pendingScan }) =>
+  cuQtyEntryPolicy.isLabelRequired ? pendingScan?.scannedBarcode ?? undefined : qrCode;
+
+/** The count offered when the scan screen opens: the one kept for the trip to the TU list, else the one suggested from the last booking */
+// @VisibleForTesting
+export const computeSuggestedQtyOnScan = ({ pendingScan, suggestedQty }) => {
+  const kept = pendingScan?.qtyEntered;
+  return kept != null && kept !== '' && !Number.isNaN(Number(kept)) ? Number(kept) : suggestedQty;
+};
 
 /** The HU the PICK event takes the CUs from (`huQRCode`) */
 // @VisibleForTesting

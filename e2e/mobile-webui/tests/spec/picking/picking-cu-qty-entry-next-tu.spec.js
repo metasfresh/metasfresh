@@ -686,12 +686,11 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-        // the choice leads back to the line screen with the TU open; "Pack HU" goes on to the label scan
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.tapPickHUButton();
+        // the choice leads back to the scan screen with the TU open, the scanned label and the entered count kept (as after a GRAI scan): no new label scan
         await PickLineScanScreen.waitForScreen();
-        await scanLabel(labelOf({ masterdata }));
-        await book({ qty: 4, expectedQtyTarget: 8 });
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
         await PickGraiScreen.expectNotShown();
     });
 
@@ -699,11 +698,10 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.nextTU();
         await SelectPickTargetTUScreen.waitForScreen();
         await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.tapPickHUButton();   // a new round: nothing is remembered, the label is scanned again
-        await PickLineScanScreen.waitForScreen();
-        await scanLabel(labelOf({ masterdata }));
-        await book({ qty: 4, expectedQtyTarget: 4 });
+        await PickLineScanScreen.waitForScreen();   // the label of the first TU is kept: no new label scan
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(4);
+        await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 4 });
         await PickGraiScreen.expectNotShown();
     });
 

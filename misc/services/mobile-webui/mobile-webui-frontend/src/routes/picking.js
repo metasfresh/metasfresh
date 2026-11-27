@@ -26,9 +26,17 @@ export const reopenClosedLUScreenLocation = ({ applicationId, wfProcessId, activ
   return `${baseUrl}/reopen-lu/${activityId}${lineId ? `/${lineId}` : ''}`;
 };
 
-export const selectPickingTargetScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, type }) => {
+/** @param returnTo where the choice leads to, instead of the back location of the screen (e.g. the scan screen "Weiteres TU" was tapped on) */
+export const selectPickingTargetScreenLocation = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  type,
+  returnTo,
+}) => {
   const baseUrl = pickingJobLocation({ applicationId, wfProcessId });
-  return `${baseUrl}/selectPickTarget/${activityId}${lineId ? `/${lineId}` : ''}/${type}`;
+  return toUrl(`${baseUrl}/selectPickTarget/${activityId}${lineId ? `/${lineId}` : ''}/${type}`, { returnTo });
 };
 
 export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
