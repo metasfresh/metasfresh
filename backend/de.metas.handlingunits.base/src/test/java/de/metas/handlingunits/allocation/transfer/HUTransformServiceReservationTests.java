@@ -32,6 +32,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.util.HUTracerInstance;
@@ -352,6 +353,38 @@ public class HUTransformServiceReservationTests
 	// =========================================================
 	// Reservation guard tests
 	// =========================================================
+
+	@Test
+	public void husToNewSingleCU_reservedPieceSkipped_oneCUOfTheRest()
+	{
+		final LUTUProducerDestinationTestSupport data = testsBase.getData();
+
+		final I_M_HU reservedPiece = testsBase.createStandaloneSaladCU(FOUR);
+		reservedPiece.setIsReserved(true);
+		InterfaceWrapperHelper.save(reservedPiece);
+		final I_M_HU piece1 = testsBase.createStandaloneSaladCU(THREE);
+		final I_M_HU piece2 = testsBase.createStandaloneSaladCU(THREE);
+
+		final HUsToNewCUsRequest request = HUsToNewCUsRequest.builder()
+				.sourceHU(reservedPiece)
+				.sourceHU(piece1)
+				.sourceHU(piece2)
+				.productId(data.helper.pSaladProductId)
+				.qtyCU(Quantity.of(FIVE, data.helper.uomKg))
+				.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+				.build();
+
+		final I_M_HU singleCU = huTransformService.husToNewSingleCU(request);
+
+		assertThat(singleCU).isTopLevelHU();
+		assertThat(singleCU).hasStorage(data.helper.pSaladProductId, Quantity.of(FIVE, data.helper.uomKg));
+		assertThat(singleCU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
+		assertThat(IHandlingUnitsBL.extractLocatorIdOrNull(singleCU)).isEqualTo(testsBase.getStandaloneCUMasterData().locatorId);
+		assertThat(singleCU.getC_BPartner_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerId.getRepoId());
+		assertThat(singleCU.getC_BPartner_Location_ID()).isEqualTo(testsBase.getStandaloneCUMasterData().bpartnerLocationId);
+		assertThat(reservedPiece).hasStorage(data.helper.pSaladProductId, Quantity.of(FOUR, data.helper.uomKg));
+		assertThat(piece2).hasStorage(data.helper.pSaladProductId, Quantity.of(ONE, data.helper.uomKg));
+	}
 
 	/**
 	 * A VHU that is directly reserved must not be transformable via cuToNewCU.

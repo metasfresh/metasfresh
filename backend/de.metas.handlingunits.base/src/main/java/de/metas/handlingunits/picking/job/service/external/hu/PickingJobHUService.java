@@ -1,18 +1,24 @@
 package de.metas.handlingunits.picking.job.service.external.hu;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.ParentLUPIsQuery;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -22,6 +28,7 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.DummyGRAIProvider;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
@@ -49,6 +56,8 @@ import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobW
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -66,8 +75,12 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.scannable_code.format.ScannableCodeFormat;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
+import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceRepository;
 import de.metas.workplace.WorkplaceService;
@@ -90,10 +103,13 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -113,7 +129,8 @@ public class PickingJobHUService
 						HULabelService.newInstanceForUnitTesting(),
 						new HUReservationService(new HUReservationRepository()),
 						InventoryService.newInstanceForUnitTesting(),
-						new HUGraiService(new HUPIGraiRepository())));
+						new HUGraiService(new HUPIGraiRepository()),
+						ScannableCodeFormatService.newInstanceForUnitTesting()));
 	}
 
 	private static final AdMessageKey MSG_GRAI_ATTRIBUTE_NOT_SUPPORTED_BY_TU_TYPE = AdMessageKey.of("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
@@ -122,6 +139,7 @@ public class PickingJobHUService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final IHUPIAttributesDAO huPIAttributesDAO = Services.get(IHUPIAttributesDAO.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
@@ -132,11 +150,164 @@ public class PickingJobHUService
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUGraiService huGraiService;
+	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
+
+	/** The GRAI snapshots of the picked HUs; a CU booked with a label is replaced by its TU, which carries the GRAI. */
+	@VisibleForTesting
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
+	{
+		return huGraiService.getSnapshots(toGraiCarrierHuIds(huIds, cusBookedWithLabel));
+	}
+
+	/** The GRAI snapshots of what was picked on the given lines. */
+	@NonNull
+	public HUGraiSnapshotsCollection getGraiSnapshotsOfPicked(@NonNull final Collection<PickingJobLine> lines)
+	{
+		final ImmutableSet<HuId> pickedHUIds = lines.stream().flatMap(line -> line.getPickedHUIds().stream()).collect(ImmutableSet.toImmutableSet());
+		final ImmutableList<HUInfo> pickedHUInfos = lines.stream().flatMap(line -> line.getPickedHUInfos().stream()).collect(ImmutableList.toImmutableList());
+		return getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(pickedHUIds, filterBookedWithLabel(pickedHUInfos));
+	}
+
+	private Set<HuId> toGraiCarrierHuIds(@NonNull final Set<HuId> huIds, @NonNull final Set<HuId> cusBookedWithLabel)
+	{
+		final HashMap<HuItemId, HuId> carrierHuIdByParentItemId = new HashMap<>();
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		for (final I_M_HU hu : handlingUnitsBL.getByIds(huIds))
+		{
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			if (cusBookedWithLabel.contains(huId))
+			{
+				if (hu.getM_HU_Item_Parent_ID() <= 0)
+				{
+					throw new AdempiereException("HU " + huId.getRepoId() + " is booked with a label but has no parent item, so there is no TU to carry the GRAI");
+				}
+				result.add(computeOncePerParentItem(carrierHuIdByParentItemId, hu, this::getTUIdOrSelf));
+			}
+			else
+			{
+				result.add(huId);
+			}
+		}
+		return result.build();
+	}
+
+	private boolean isCUInTU(@NonNull final I_M_HU hu)
+	{
+		return handlingUnitsBL.isVirtual(hu)
+				&& !handlingUnitsBL.isAggregateHU(hu)
+				&& getTU(hu).isPresent();
+	}
+
+	/**
+	 * CUs of the same TU share their parent item, hence the answer: walk up once per parent item, not once per CU.
+	 * The HU must have a parent item.
+	 */
+	private static <T> T computeOncePerParentItem(@NonNull final Map<HuItemId, T> memo, @NonNull final I_M_HU hu, @NonNull final Function<I_M_HU, T> compute)
+	{
+		return memo.computeIfAbsent(HuItemId.ofRepoId(hu.getM_HU_Item_Parent_ID()), parentItemId -> compute.apply(hu));
+	}
 
 	@NonNull
-	public HUGraiSnapshotsCollection getGraiSnapshots(@NonNull final Set<HuId> huIds)
+	private Optional<I_M_HU> getTU(@NonNull final I_M_HU hu)
 	{
-		return huGraiService.getSnapshots(huIds);
+		final I_M_HU tu = handlingUnitsBL.getTransportUnitHU(hu);
+		return tu != null && handlingUnitsBL.isTransportUnit(tu) ? Optional.of(tu) : Optional.empty();
+	}
+
+	/**
+	 * The CUs booked with a label: a CU booked as the single CU of its TU in a label-required mode.
+	 * Recognized by its own QR code and by sitting in a TU. Note: every CU picked into a TU carries its own QR code
+	 * ({@code PickingJobPickCommand#toPickingJobStepPickedToHU}), whatever the CU quantity entry mode, so a CU picked into a TU in Manual mode is recognized too.
+	 */
+	@NonNull
+	public ImmutableSet<HuId> filterBookedWithLabel(@NonNull final Collection<HUInfo> pickedHUInfos)
+	{
+		return filterCUsInTU(filterAssignedToOwnQRCode(pickedHUInfos));
+	}
+
+	@NonNull
+	public ImmutableSet<HuId> filterCUsInTU(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final HashMap<HuItemId, Boolean> isCUInTUByParentItemId = new HashMap<>();
+		return handlingUnitsBL.getByIds(huIds).stream()
+				.filter(hu -> hu.getM_HU_Item_Parent_ID() > 0
+						&& computeOncePerParentItem(isCUInTUByParentItemId, hu, this::isCUInTU))
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** one batch query; a QR code shared by several HUs is no error */
+	@NonNull
+	private ImmutableSet<HuId> filterAssignedToOwnQRCode(@NonNull final Collection<HUInfo> huInfos)
+	{
+		if (huInfos.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableMap<HUQRCodeUniqueId, HUQRCodeAssignment> assignmentsByQRCodeId = Maps.uniqueIndex(
+				huQRCodesService.getHUAssignmentsByQRCodeIfExist(huInfos.stream().map(HUInfo::getQrCode).collect(ImmutableSet.toImmutableSet())),
+				HUQRCodeAssignment::getId);
+
+		return huInfos.stream()
+				.filter(huInfo -> {
+					final HUQRCodeAssignment assignment = assignmentsByQRCodeId.get(huInfo.getQrCode().getId());
+					return assignment != null && assignment.isAssignedToHuId(huInfo.getId());
+				})
+				.map(HUInfo::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	private HuId getTUIdOrSelf(@NonNull final I_M_HU hu)
+	{
+		return HuId.ofRepoId(getTU(hu).orElse(hu).getM_HU_ID());
+	}
+
+	/** @return true if one of the job's picked HUs of that product carries this lot and pack ID */
+	public boolean isAlreadyPickedInJob(@NonNull final PickingJob job, @NonNull final CUPackIdentity cu)
+	{
+		final ImmutableSet<HuId> pickedHUIds = job.getPickedHuIdsOfProduct(cu.getProductId());
+		if (pickedHUIds.isEmpty())
+		{
+			return false;
+		}
+
+		// the picked HUs are CUs inside TUs: not top level
+		final ImmutableSet<HuId> huIdsWithPackId = handlingUnitsBL.createHUQueryBuilder()
+				.setOnlyTopLevelHUs(false)
+				.addOnlyHUIds(pickedHUIds)
+				.addOnlyWithAttribute(AttributeConstants.PackId, cu.getPackId().getValue())
+				.listIds();
+		if (huIdsWithPackId.isEmpty())
+		{
+			return false;
+		}
+
+		final IHUContext huContext = huContextFactory.createMutableHUContext();
+		final String lotNoNorm = StringUtils.trimBlankToNull(cu.getLotNo());
+		return handlingUnitsBL.getByIds(huIdsWithPackId).stream()
+				.anyMatch(hu -> hasLotNo(huContext, hu, lotNoNorm));
+	}
+
+	private static boolean hasLotNo(@NonNull final IHUContext huContext, @NonNull final I_M_HU hu, @Nullable final String lotNoNorm)
+	{
+		final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final String huLotNo = attributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+				? StringUtils.trimBlankToNull(attributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+				: null;
+		return Objects.equals(huLotNo, lotNoNorm);
+	}
+
+	public Optional<ScannableCodeFormat> getScannableCodeFormat(@NonNull final ScannableCodeFormatId formatId)
+	{
+		return scannableCodeFormatService.getById(formatId);
 	}
 
 	public void generateMissingGRAIs(@NonNull final HUGraiSnapshotsCollection snapshots, @NonNull final DummyGRAIProvider nextGraiProvider)
@@ -419,6 +590,15 @@ public class PickingJobHUService
 	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
 		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	/** The TU packing instructions the given packing names; {@code null} for the virtual packing (no TU). */
+	@Nullable
+	public HuPackingInstructionsId getPackingTuPIId(@NonNull final HUPIItemProduct packingInfo)
+	{
+		return packingInfo.getId().isVirtualHU()
+				? null
+				: handlingUnitsBL.getPackingInstructionsId(packingInfo.getPiItemId());
 	}
 
 	public IHUQRCode parsePickFromScannedCode(final ScannedCode pickFromScannedCode) {return huQRCodesService.parse(pickFromScannedCode);}

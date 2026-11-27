@@ -1,0 +1,189 @@
+import { allure } from 'allure-playwright';
+import { Backend } from './screens/Backend';
+import { LoginScreen } from './screens/LoginScreen';
+import { ApplicationsListScreen } from './screens/ApplicationsListScreen';
+import { PickingJobsListScreen } from './screens/picking/PickingJobsListScreen';
+import { PickingJobScreen } from './screens/picking/PickingJobScreen';
+import { PickLineScanScreen } from './screens/picking/PickLineScanScreen';
+import { GetQuantityDialog } from './screens/picking/GetQuantityDialog';
+import { PickingJobLineScreen } from './screens/picking/PickingJobLineScreen';
+import { PickingJobStepScreen } from './screens/picking/PickingJobStepScreen';
+import { SelectPickTargetLUScreen } from './screens/picking/SelectPickTargetLUScreen';
+import { MESSAGES } from './cuQtyEntryMessages';
+import { buildCULabel, buildCULabelFormat, defaultBestBefore, uniqueGTIN, uniqueLot, uniqueProductValue } from './cuLabel';
+
+export const MODE_SCAN_ONCE = 'SCAN_ONCE_ENTER_QTY';
+export const MODE_MANUAL = 'MANUAL';
+export const BEST_BEFORE = defaultBestBefore();
+export const SOURCE_QTY = 80; // 20 TUs x 4 pieces
+export const GRAI_8003_PREFIX = '8003076132640030951';
+export const MSG_NO_OPEN_TU = MESSAGES.noOpenTU.en;
+
+export const LAUNCHERS_LIMIT_SYSCONFIGS = { 'WorkflowRestAPIService.LaunchersLimit': '1000' };
+
+/**
+ * Backend.createMasterdata, which on this branch line already remembers the sysconfig rows it overwrote (as a list of
+ * rows) and lets the page fixture restore them after every test. Kept under its old name for the specs that call it.
+ */
+export const createMasterdataRememberingSysconfigs = async (args) => await Backend.createMasterdata(args);
+
+/** No-op: the page fixture restores the sysconfigs after every test (see Backend.restoreSysconfigsChangedByTest). Kept for the specs that call it. */
+export const restoreSysconfigsAfterEach = (_test) => {};
+
+export const uniqueFormatName = () => `cuqe-so-${uniqueProductValue()}`;
+
+export const createMasterdata = async ({
+                                           formatName,
+                                           orders,
+                                           customers = [],
+                                           profileMode = MODE_SCAN_ONCE,
+                                           packingInstructions = {},
+                                           products = {},
+                                           pickTo = ['TU'],
+                                           sysconfigs = {},
+                                           anonymousPickHUsOnTheFly = false,
+                                           allowCompletingPartialPickingJob = false,
+                                           language = 'en_US',
+                                           formats = [{ name: formatName, withPackId: false }],
+                                       }) => {
+    const bpartners = {};
+    const salesOrders = {};
+    orders.forEach(({ key, qty, graiRequired, piItemProduct = 'P1_4CU' }) => {
+        bpartners[`cust${key}`] = graiRequired ? { graiRequired } : {};
+        salesOrders[`SO_${key}`] = {
+            bpartner: `cust${key}`,
+            warehouse: 'wh',
+            datePromised: '2025-03-01T00:00:00.000+02:00',
+            lines: [{ product: 'P1', qty, ...(piItemProduct ? { piItemProduct } : {}) }]
+        };
+    });
+    const slots = {};
+    orders.forEach((_, idx) => { slots[`slot${idx + 1}`] = {}; });
+
+    return await createMasterdataRememberingSysconfigs({
+        language,
+        request: {
+            sysconfigs: { ...LAUNCHERS_LIMIT_SYSCONFIGS, ...sysconfigs },
+            login: { user: { language } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "product",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    anonymousPickHUsOnTheFly,
+                    showPromptWhenOverPicking: false,
+                    allowCompletingPartialPickingJob,
+                    pickTo,
+                    ...(profileMode ? { cuQtyEntryMode: profileMode } : {}),
+                    cuLabelFormatName: formatName,
+                    customers,
+                }
+            },
+            customQRCodeFormats: formats.map(({ name, withPackId = false }) => buildCULabelFormat({ name, withPackId })),
+            bpartners,
+            warehouses: { "wh": {} },
+            pickingSlots: slots,
+            products: {
+                // product value of 7 characters, as on the real CU label
+                "P1": { price: 1, randomValue: { size: 7, isIncludeDigits: true } },
+                ...products,
+            },
+            packingInstructions: {
+                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4 },
+                ...packingInstructions,
+            },
+            handlingUnits: {
+                "P1_HU": { product: 'P1', warehouse: 'wh', packingInstructions: 'P1_20x4' },
+            },
+            salesOrders,
+        }
+    });
+};
+
+/** Logs the masterdata's user in and starts the application */
+export const login = async (masterdata, application = 'picking') => {
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication(application);
+};
+
+export const BP_LOCATION_ORDER = { warehouse: 'wh', datePromised: '2025-03-01T00:00:00.000+02:00' };
+
+/** Sales-order job of SO1 (launcher found by document no) */
+export const startSalesOrderJob = async (masterdata) => {
+    await login(masterdata);
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    return await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+};
+
+/** @param {{qtyToDeliver: number, scanPickFrom?: boolean}} params `scanPickFrom: false`: the source HU ("Pick from") is not scanned */
+export const startJob = async (masterdata, { qtyToDeliver, scanPickFrom = true }) => {
+    await login(masterdata);
+    await PickingJobsListScreen.waitForScreen();
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver, productId: masterdata.products.P1.id });
+    if (scanPickFrom) {
+        await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
+    }
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    return { pickingJobId };
+};
+
+/** Opens the scan screen of a Scan once line with nothing picked yet (source HU known */
+export const openLine = async ({ index }) => {
+    await PickingJobScreen.clickLineButton({ index });
+    await PickLineScanScreen.waitForScreen();
+    await PickLineScanScreen.expectCUQtyEntryMode(MODE_SCAN_ONCE);
+};
+
+export const setLUTarget = async ({ lu }) => {
+    await PickLineScanScreen.goBack();
+    await PickingJobLineScreen.clickLUTargetButton();
+    await SelectPickTargetLUScreen.clickLUButton({ lu });
+    await PickingJobLineScreen.waitForScreen();
+    await PickingJobLineScreen.tapPickHUButton();
+    await PickLineScanScreen.waitForScreen();
+};
+
+export const unpackFirstBooking = async ({ fromLineScreen = false } = {}) => {
+    if (fromLineScreen) {
+        await PickingJobLineScreen.waitForScreen();
+    } else {
+        await PickLineScanScreen.goBack(); // lands on the line screen, which lists the picked HUs
+    }
+    await PickingJobLineScreen.clickStepButton({ index: 0 });
+    await PickingJobStepScreen.unpick();
+    await PickingJobLineScreen.goBack(); // the unpick leaves on the line screen
+};
+
+/** Scan once */
+export const scanLabel = async (label) => {
+    await PickLineScanScreen.scanCULabel(label);
+    await GetQuantityDialog.waitForDialog();
+};
+
+export const labelOf = ({ masterdata, gtin = uniqueGTIN(), lot = uniqueLot(), packId = 1, bestBefore = BEST_BEFORE }) =>
+    buildCULabel({ gtin, productValue: masterdata.products.P1.productCode, lot, bestBefore, packId });
+
+/** Types the count and presses OK */
+export const book = async ({ qty, expectedQtyTarget }) => {
+    await GetQuantityDialog.typeQtyEntered(qty);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget });
+};
+
+export const allureMeta = (story) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story(story);
+    allure.severity('normal');
+};
+
+/** Packing instructions of a GRAI-mapped TU type of P1 (`extra`: further packing instruction fields) */
+export const graiTuType = (key, extra = {}) => ({ [key]: { tu: `TU_${key}`, product: 'P1', qtyCUsPerTU: 4, graiMapping: true, ...extra } });
+
+// a CU booked into a bare TU: the shipment schedule records the TU, VHU_ID stays null (PickingJobPickCommand)
+export const qtyPickedRow = ({ qty, tu }) => ({ qtyPicked: `${qty} PCE`, qtyTUs: 1, qtyLUs: 0, vhu: '-', tu, lu: '-', processed: false, shipmentLineId: '-' });
+
+export { uniqueLot };

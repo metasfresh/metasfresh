@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.scannable_code;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
@@ -8,34 +9,46 @@ import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Steps to define scannable code formats and to check how a scanned code is parsed with them.
  * <p>
- * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier} (required), {@code Name} (required).
+ * Step {@code metasfresh contains C_ScannableCode_Format:} columns: {@code Identifier} (required), {@code Name} (required),
+ * {@code IsUnrelated} (optional, default {@code false}; {@code true} = a stand-in for a format that exists independently of the scenario, e.g. one added by a customer migration).
  * <p>
  * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns, all plain names (no {@code .Identifier} suffix):
  * required: {@code C_ScannableCode_Format_ID} (the format identifier), {@code StartNo}, {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID});
  * optional: {@code EndNo} (empty or {@code 0} = open end), {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
+ * <p>
+ * Step {@code parse scanned code and expect:} parses with the scenario's own formats only: while it runs, every other active format (an unrelated one,
+ * or one that already exists in the database, e.g. from a migration) is deactivated and afterwards restored.
+ * Formats are global ({@link HUQRCodesService#parse} tries all active ones, the first that reads the code wins), so otherwise the result would depend on the database's content.
  * <p>
  * Step {@code parse scanned code and expect:} columns: required: {@code ScannedCode};
  * optional: {@code IsMatching} (default {@code true}; {@code false} = the result is not a custom code, or no reader recognizes the code at all),
@@ -67,13 +80,25 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private static final String DESCRIPTION_CUCUMBER = "created by cucumber step C_ScannableCode_Format_StepDef";
 
+	/**
+	 * Marks the formats created as {@code IsUnrelated}: they are active during the scenario, but are not "the scenario's formats".
+	 */
+	private static final String DESCRIPTION_CUCUMBER_UNRELATED = "created by cucumber step C_ScannableCode_Format_StepDef (unrelated to the scenario)";
+
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ScannableCodeFormatService formatService = SpringContextHolder.instance.getBean(ScannableCodeFormatService.class);
 
 	/**
 	 * A format and its parts are created together ({@link ScannableCodeFormatService#create}), so the names wait here until the parts step.
 	 */
 	private final Map<String, String> pendingFormatNames = new LinkedHashMap<>();
+	private final Set<String> unrelatedFormatIdentifiers = new HashSet<>();
+
+	/**
+	 * Formats deactivated by {@link #parseScannedCodeAndExpect(DataTable)} and not yet reactivated.
+	 */
+	private ImmutableSet<ScannableCodeFormatId> deactivatedFormatIds = ImmutableSet.of();
 
 	/**
 	 * Declares the formats (identifier + {@code Name}); they are created by the parts step.
@@ -83,9 +108,14 @@ public class C_ScannableCode_Format_StepDef
 	@Given("metasfresh contains C_ScannableCode_Format:")
 	public void createFormats(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> pendingFormatNames.put(
-				row.getAsIdentifier().getAsString(),
-				row.getAsString(I_C_ScannableCode_Format.COLUMNNAME_Name)));
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String identifier = row.getAsIdentifier().getAsString();
+			pendingFormatNames.put(identifier, row.getAsString(I_C_ScannableCode_Format.COLUMNNAME_Name));
+			if (row.getAsOptionalBoolean("IsUnrelated").orElseFalse())
+			{
+				unrelatedFormatIdentifiers.add(identifier);
+			}
+		});
 	}
 
 	/**
@@ -111,9 +141,10 @@ public class C_ScannableCode_Format_StepDef
 				.map(C_ScannableCode_Format_StepDef::toPart)
 				.collect(ImmutableList.toImmutableList());
 
+		final boolean isUnrelated = unrelatedFormatIdentifiers.remove(formatIdentifier);
 		formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name(name)
-				.description(DESCRIPTION_CUCUMBER)
+				.description(isUnrelated ? DESCRIPTION_CUCUMBER_UNRELATED : DESCRIPTION_CUCUMBER)
 				.parts(parts)
 				.build());
 	}
@@ -136,7 +167,22 @@ public class C_ScannableCode_Format_StepDef
 	public void deleteCreatedFormats()
 	{
 		pendingFormatNames.clear();
-		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
+		unrelatedFormatIdentifiers.clear();
+		try
+		{
+			reactivateDeactivatedFormats(); // retries formats that the step could not reactivate
+		}
+		finally
+		{
+			try
+			{
+				formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
+			}
+			finally
+			{
+				formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
+			}
+		}
 	}
 
 	/**
@@ -147,7 +193,77 @@ public class C_ScannableCode_Format_StepDef
 	@Given("parse scanned code and expect:")
 	public void parseScannedCodeAndExpect(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::parseAndExpect);
+		Throwable primaryFailure = null;
+		try
+		{
+			deactivateFormatsNotOfTheScenario();
+			DataTableRows.of(dataTable).forEach(this::parseAndExpect);
+		}
+		catch (final Throwable t)
+		{
+			primaryFailure = t;
+			throw t;
+		}
+		finally
+		{
+			try
+			{
+				reactivateDeactivatedFormats();
+			}
+			catch (final RuntimeException e)
+			{
+				// must not replace the scenario's own failure
+				if (primaryFailure == null)
+				{
+					throw e;
+				}
+				primaryFailure.addSuppressed(e);
+			}
+		}
+	}
+
+	/**
+	 * Makes the scenario's own formats the only active ones: a format that is not one of the scenario's (e.g. added by a migration) could read the same codes
+	 * and, depending on the order in which formats are tried, change the result. Test isolation only; the expectations are not touched.
+	 */
+	private void deactivateFormatsNotOfTheScenario()
+	{
+		// NotEquals also matches a format without a description (CompareQueryFilter)
+		final List<I_C_ScannableCode_Format> formats = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, DESCRIPTION_CUCUMBER)
+				.create()
+				.list();
+
+		// remembered BEFORE the first save: each save commits on its own, so a failure half way must still be restored by the reactivation
+		deactivatedFormatIds = formats.stream()
+				.map(format -> ScannableCodeFormatId.ofRepoId(format.getC_ScannableCode_Format_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final I_C_ScannableCode_Format format : formats)
+		{
+			format.setIsActive(false);
+			InterfaceWrapperHelper.saveRecord(format);
+		}
+	}
+
+	/**
+	 * Reactivates the formats that were deactivated; if that fails they stay remembered, so that the {@code @After} retries.
+	 */
+	private void reactivateDeactivatedFormats()
+	{
+		if (!deactivatedFormatIds.isEmpty())
+		{
+			queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+					.addInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, deactivatedFormatIds)
+					.create()
+					.stream()
+					.forEach(record -> {
+						record.setIsActive(true);
+						InterfaceWrapperHelper.saveRecord(record);
+					});
+		}
+		deactivatedFormatIds = ImmutableSet.of();
 	}
 
 	private void parseAndExpect(@NonNull final DataTableRow row)

@@ -17,6 +17,7 @@ import {
 } from '../../../utils/picking';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
+import { forgetCUEntry } from '../../../apps/picking/redux/PickingActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
@@ -26,6 +27,7 @@ import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
+import { getCUQtyEntryPolicy } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -50,6 +52,7 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    cuQtyEntryPolicy,
     additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
@@ -63,6 +66,7 @@ const PickLineScreen = () => {
     qtyToPick,
     qtyPicked,
     additionalHeaderProperties,
+    isLiveRefresh: cuQtyEntryPolicy.isLabelRequired,
   });
 
   const onPickFromManufacturingOrderClicked = () => {
@@ -89,7 +93,11 @@ const PickLineScreen = () => {
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  const onScanButtonClick = () =>
+  // every way into the line's scan screen starts a new round: nothing is remembered from the last one (the open TU stays open)
+  const startNewRound = () => dispatch(forgetCUEntry({ wfProcessId, activityId }));
+
+  const onScanButtonClick = () => {
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -98,8 +106,10 @@ const PickLineScreen = () => {
         lineId,
       })
     );
+  };
 
   const onPickButtonClick = () => {
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -112,6 +122,7 @@ const PickLineScreen = () => {
   };
 
   const onPickQtyButtonClick = () => {
+    startNewRound();
     history.push(
       pickingLineScanScreenLocation({
         applicationId,
@@ -221,6 +232,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    cuQtyEntryPolicy: getCUQtyEntryPolicy(line),
     additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
@@ -235,8 +247,23 @@ export const useHeaderUpdate = ({
   qtyToPick,
   qtyPicked,
   additionalHeaderProperties,
+  rootDataAttributes,
+  isLiveRefresh = false,
 }) => {
   const dispatch = useDispatch();
+  // fixed-length deps: null in Manual (refresh on url/caption only), a value key in the label-required modes
+  const liveKey = isLiveRefresh
+    ? JSON.stringify([
+        pickingSlot?.caption,
+        pickingUnit,
+        packingItemName,
+        uom,
+        qtyToPick,
+        qtyPicked,
+        rootDataAttributes ?? null,
+        additionalHeaderProperties?.entries ?? null,
+      ])
+    : null;
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
@@ -268,9 +295,10 @@ export const useHeaderUpdate = ({
           },
           ...(additionalHeaderProperties?.entries || []),
         ],
+        rootDataAttributes,
       })
     );
-  }, [url, caption]);
+  }, [url, caption, liveKey]);
 };
 
 export default PickLineScreen;

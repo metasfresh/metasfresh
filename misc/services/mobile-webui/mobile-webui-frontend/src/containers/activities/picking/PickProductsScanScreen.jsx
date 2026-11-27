@@ -11,6 +11,8 @@ import { isNoReadAttributes } from '../../../reducers/wfProcesses/picking/getRea
 import { useDispatch } from 'react-redux';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 import * as api from '../../../api/picking';
+import { forgetCUEntry } from '../../../apps/picking/redux/PickingActions';
+import { getCUQtyEntryPolicy } from '../../../apps/picking/cuQtyEntry/cuQtyEntryPolicy';
 
 const PickProductsScanScreen = () => {
   const { applicationId, wfProcessId, activityId } = useScreenDefinition({
@@ -49,7 +51,9 @@ export const usePickProductsScan = ({ applicationId, wfProcessId, activityId }) 
       throw { messageKey: 'activities.picking.noMatchingLines' };
     }
 
+    // opening the line's scan screen from the job screen starts a new round: nothing is remembered from the last one
     const openDialogScreen = () => {
+      dispatch(forgetCUEntry({ wfProcessId, activityId }));
       history.push(
         pickingLineScanScreenLocation({
           applicationId,
@@ -64,7 +68,9 @@ export const usePickProductsScan = ({ applicationId, wfProcessId, activityId }) 
 
     const line = getLineByIdFromActivity(activity, lineId);
     const qtyToPickRemaining = getQtyToPickRemainingForLine({ line });
-    if (qtyToPickRemaining === 1 && !isCatchWeight({ line }) && isNoReadAttributes({ activity })) {
+    // a line that needs its label scanned is never booked directly: the scan screen reads the label
+    const isLabelRequired = getCUQtyEntryPolicy(line).isLabelRequired;
+    if (!isLabelRequired && qtyToPickRemaining === 1 && !isCatchWeight({ line }) && isNoReadAttributes({ activity })) {
       return dispatch(
         postStepPickedThunk({
           history,

@@ -1,12 +1,60 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
+import {
+  FORGET_CU_ENTRY,
+  FORGET_PENDING_SCAN,
+  REMEMBER_CU_ENTRY,
+  REMEMBER_PENDING_SCAN,
+} from '../../apps/picking/redux/PickingActionTypes';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 
-// export const pickingReducer = ({ draftState, action }) => {
-//   return draftState;
-// };
+export const pickingReducer = ({ draftState, action }) => {
+  switch (action.type) {
+    case REMEMBER_CU_ENTRY: {
+      const { wfProcessId, activityId, lineId, lastTypedQty } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty };
+      }
+      return draftState;
+    }
+    case REMEMBER_PENDING_SCAN: {
+      const { wfProcessId, activityId, lineId, scannedBarcode, qtyEntered } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        const previous = draftActivity.dataStored.cuEntry;
+        const lastTypedQty = previous?.lineId === lineId ? previous.lastTypedQty : undefined;
+        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty, pendingScan: { scannedBarcode, qtyEntered } };
+      }
+      return draftState;
+    }
+    case FORGET_PENDING_SCAN: {
+      const { wfProcessId, activityId } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored?.cuEntry) {
+        delete draftActivity.dataStored.cuEntry.pendingScan;
+      }
+      return draftState;
+    }
+    case FORGET_CU_ENTRY: {
+      const { wfProcessId, activityId } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        delete draftActivity.dataStored.cuEntry;
+      }
+      return draftState;
+    }
+    default:
+      return draftState;
+  }
+};
+
+export const getCUEntry = ({ activity, lineId }) => {
+  const cuEntry = activity?.dataStored?.cuEntry;
+  return cuEntry && cuEntry.lineId === lineId ? cuEntry : null;
+};
 
 const extractDraftMapKeys = (draftMap) => {
   return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
@@ -205,6 +253,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
   draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
   draftActivityDataStored.isCompleteJobAutomatically = fromPickingJob.completeJobAutomatically;
+  draftActivityDataStored.isQuickPackAllAllowed = fromPickingJob.quickPackAllAllowed ?? false;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //

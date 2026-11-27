@@ -1,10 +1,14 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.util.OptionalBoolean;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -37,6 +41,10 @@ public class PickingJobOptions
 	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
+	/** null = not set (customer: use the profile's) */
+	@Getter(AccessLevel.NONE) @Nullable CUQtyEntryMode cuQtyEntryMode;
+	/** null = not set (customer: use the profile's) */
+	@Nullable ScannableCodeFormatId cuLabelFormatId;
 
 	@Builder(toBuilder = true)
 	private PickingJobOptions(
@@ -59,7 +67,9 @@ public class PickingJobOptions
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final OptionalBoolean completeJobAutomatically,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
-			@Nullable final PickingLineSortBy pickingLineSortBy)
+			@Nullable final PickingLineSortBy pickingLineSortBy,
+			@Nullable final CUQtyEntryMode cuQtyEntryMode,
+			@Nullable final ScannableCodeFormatId cuLabelFormatId)
 	{
 		this.aggregationType = aggregationType;
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
@@ -81,11 +91,25 @@ public class PickingJobOptions
 		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
+		this.cuQtyEntryMode = cuQtyEntryMode;
+		this.cuLabelFormatId = cuLabelFormatId;
 	}
 
 	public Optional<PickingLineGroupBy> getPickingLineGroupBy() {return Optional.ofNullable(pickingLineGroupBy);}
 
 	public Optional<PickingLineSortBy> getPickingLineSortBy() {return Optional.ofNullable(pickingLineSortBy);}
+
+	@NonNull
+	public CUQtyEntryMode getCUQtyEntryModeOrDefault() {return CoalesceUtil.coalesceNotNull(cuQtyEntryMode, CUQtyEntryMode.DEFAULT);}
+
+	@NonNull
+	public CUQtyEntryPolicy getCUQtyEntryPolicy() {return getCUQtyEntryModeOrDefault().getPolicy();}
+
+	public Optional<CUQtyEntryMode> getCUQtyEntryMode() {return Optional.ofNullable(cuQtyEntryMode);}
+
+	public Optional<ScannableCodeFormatId> getCULabelFormatId() {return Optional.ofNullable(cuLabelFormatId);}
+
+	public boolean isStrictlyAllowed(@NonNull final PickToStructure pickToStructure) {return allowedPickToStructures.isStrictlyAllowed(pickToStructure);}
 
 	public PickingJobOptions fallbackTo(@NonNull final PickingJobOptions fallback)
 	{
@@ -95,6 +119,8 @@ public class PickingJobOptions
 				.pickingSlotRequired(this.pickingSlotRequired.ifUnknown(fallback.getPickingSlotRequired()))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
 				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
+				.cuQtyEntryMode(CoalesceUtil.coalesce(this.cuQtyEntryMode, fallback.cuQtyEntryMode))
+				.cuLabelFormatId(CoalesceUtil.coalesce(this.cuLabelFormatId, fallback.cuLabelFormatId))
 				.build();
 
 		return Objects.equals(this, newValue) ? this : newValue;

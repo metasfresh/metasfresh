@@ -66,6 +66,8 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean showQtyAvailableForLines;
 		@Nullable Boolean showPromptWhenOverPicking;
 		@Nullable Boolean warnShelfLifeUndercut;
+		@Nullable String cuQtyEntryMode;
+		@Nullable String cuLabelFormatName;
 
 		@Nullable List<Customer> customers;
 		
@@ -79,6 +81,8 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+			@Nullable String cuQtyEntryMode;
+			@Nullable String cuLabelFormatName;
 		}
 
 		@Value

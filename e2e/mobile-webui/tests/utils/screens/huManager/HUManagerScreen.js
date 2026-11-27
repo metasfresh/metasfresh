@@ -75,6 +75,18 @@ export const HUManagerScreen = {
         await HUMoveScreen.move({ qrCode });
     }),
 
+    /** Opens the change quantity dialog and leaves it open */
+    openChangeQtyDialog: async () => await test.step(`${NAME} - Open change quantity dialog`, async () => {
+        await HUManagerScreen.clickButton({ testId: 'change-qty-button' });
+        await ChangeHUQtyDialog.waitForDialog();
+    }),
+
+    /** Opens the move screen and leaves it open */
+    openMoveScreen: async () => await test.step(`${NAME} - Open move screen`, async () => {
+        await HUManagerScreen.clickButton({ testId: 'move-button' });
+        await HUMoveScreen.waitForScreen();
+    }),
+
     changeQty: async ({ expectQtyEntered, qtyEntered, description }) => await test.step(`${NAME} - Change Qty`, async () => {
         await HUManagerScreen.clickButton({ testId: 'change-qty-button' });
         await ChangeHUQtyDialog.waitForDialog();
