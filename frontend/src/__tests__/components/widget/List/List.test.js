@@ -204,4 +204,40 @@ describe('ListWidget component', () => {
       wrapper.detach();
     });
   });
+
+  // E.g. the user leaves a lookup sub-list while its options are loading and comes back before they arrive.
+  it('opens its options when it is left and entered again before they arrive', async () => {
+    let answer;
+    dropdownRequest.mockImplementationOnce(
+      () => new Promise((resolve) => (answer = resolve))
+    );
+    const wrapper = shallow(
+      <ListWidget
+        {...createDummyProps({
+          properties: { field: 'AD_User_ID' },
+          mainProperty: { field: 'AD_User_ID' },
+          lookupList: true,
+          doNotOpenOnFocus: false,
+        })}
+      />
+    );
+    const instance = wrapper.instance();
+
+    instance.handleFocus();
+    instance.handleBlur();
+    instance.handleFocus();
+    answer({
+      data: {
+        values: [
+          { key: '1', caption: 'Contact A' },
+          { key: '2', caption: 'Contact B' },
+        ],
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(dropdownRequest).toHaveBeenCalledTimes(1);
+    expect(wrapper.state('listFocused')).toBe(true);
+    expect(wrapper.state('listToggled')).toBe(true);
+  });
 });

@@ -235,12 +235,16 @@ export class ListWidget extends Component {
           // cursor has moved on, or the list declined the focus (a lookup sub-list while the cursor
           // is outside the lookup). Focusing again here would only be declined again, and that
           // decline would clear the list and ask for the options once more, without end.
+          // Unless the list holds the focus again (left and entered again before the options
+          // arrived): then the intent stands.
           const wasLeftSinceRequest = this.blurCount !== blurCountAtRequest;
+          const isFocusIntentValid =
+            !wasLeftSinceRequest || this.state.listFocused;
 
           if (values.length === 0 && lastProperty) {
             disableAutofocus();
           } else if (
-            ((ignoreFocus && !wasLeftSinceRequest) || this.state.autoFocus) &&
+            ((ignoreFocus && isFocusIntentValid) || this.state.autoFocus) &&
             values &&
             values.length > 1
           ) {
