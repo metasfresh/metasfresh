@@ -21,29 +21,14 @@ export const MSG_NO_OPEN_TU = MESSAGES.noOpenTU.en;
 
 export const LAUNCHERS_LIMIT_SYSCONFIGS = { 'WorkflowRestAPIService.LaunchersLimit': '1000' };
 
-let sysconfigsToRestore = new Map();
+/**
+ * Backend.createMasterdata, which on this branch line already remembers the sysconfig rows it overwrote (as a list of
+ * rows) and lets the page fixture restore them after every test. Kept under its old name for the specs that call it.
+ */
+export const createMasterdataRememberingSysconfigs = async (args) => await Backend.createMasterdata(args);
 
-/** Backend.createMasterdata that remembers the sysconfig values it overwrote */
-export const createMasterdataRememberingSysconfigs = async (args) => {
-    const masterdata = await Backend.createMasterdata(args);
-    for (const [name, value] of Object.entries(masterdata.previousSysconfigs ?? {})) {
-        if (!sysconfigsToRestore.has(name)) {
-            sysconfigsToRestore.set(name, value); // the first call of the test holds the values before the test
-        }
-    }
-    return masterdata;
-};
-
-/** Call once at the top level of a spec file that creates masterdata through this module */
-export const restoreSysconfigsAfterEach = (test) => {
-    test.afterEach(async () => {
-        const sysconfigs = Object.fromEntries(sysconfigsToRestore);
-        sysconfigsToRestore = new Map();
-        if (Object.keys(sysconfigs).length > 0) {
-            await Backend.setSysconfigs(sysconfigs);
-        }
-    });
-};
+/** No-op: the page fixture restores the sysconfigs after every test (see Backend.restoreSysconfigsChangedByTest). Kept for the specs that call it. */
+export const restoreSysconfigsAfterEach = (_test) => {};
 
 export const uniqueFormatName = () => `cuqe-so-${uniqueProductValue()}`;
 

@@ -169,12 +169,14 @@ export const BarcodeScannerComponent = {
                     document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
                 }
                 const valueAfter = document.querySelector(selector)?.value;
-                if (valueAfter === valueBefore) {
+                // The reader shows a scan in progress either by writing the keys into the input or (without echoing them) by marking the panel.
+                const echoedInInput = valueAfter !== valueBefore;
+                if (!echoedInInput && !document.querySelector('.hardware-mode-panel.scan-in-progress')) {
                     return { sent: false }; // no listener saw the keys: nothing was collected
                 }
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
                 document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
-                return { sent: true, collected: valueAfter };
+                return { sent: true, collected: echoedInInput ? valueAfter : code };
             }, { code: scannedCode, selector });
 
             if (result.sent) {
