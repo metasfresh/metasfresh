@@ -144,7 +144,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC2
-  Scenario: goods shipped to the German address: the invoice stores the German VAT ID
+  Scenario: goods shipped to the German address that carries the partner's own VAT ID: nothing is stored, the invoice shows the German VAT ID as before
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_DE                           | customer_billing                | wh_DE                         | F            |
@@ -167,12 +167,23 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate                  | invoice                 |
+    # the address's VAT ID is the partner's: the invoice shows it without a stored value
     And validate created invoices
       | Identifier | BuyerVATaxID |
-      | invoice    | DE123456788  |
+      | invoice    |              |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEDE19 |
+
+    # the printed invoice shows the German VAT ID
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    Then the PDF archived for the record identified by "invoice" contains text "DE123456788"
 
   @Id:S32533_TC3
   Scenario: delivery address without VAT ID: no buyer VAT ID is stored, so the invoice shows the partner's VAT ID as before
@@ -442,14 +453,25 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | icDE                              | invoiceDE               |
       | icNL                              | invoiceNL               |
+    # the German address carries the partner's own VAT ID: its invoice stores nothing and shows that VAT ID
     And validate created invoices
       | Identifier | BuyerVATaxID   |
-      | invoiceDE  | DE123456788    |
+      | invoiceDE  |                |
       | invoiceNL  | NL123456782B01 |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceLineDE               | invoiceDE               | service                 | 10          | taxDEDE19 |
       | invoiceLineNL               | invoiceNL               | service                 | 5           | taxDENL0  |
+
+    # the printed German invoice shows the German VAT ID
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoiceDE |
+    Then the PDF archived for the record identified by "invoiceDE" contains text "DE123456788"
 
   @Id:S32533_TC10b
   Scenario: the German line is put into the Dutch line's invoicing group by hand: still two invoices
@@ -478,14 +500,25 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | icDE                              | invoiceDE               |
       | icNL                              | invoiceNL               |
+    # the German address carries the partner's own VAT ID: its invoice stores nothing and shows that VAT ID
     And validate created invoices
       | Identifier | BuyerVATaxID   |
-      | invoiceDE  | DE123456788    |
+      | invoiceDE  |                |
       | invoiceNL  | NL123456782B01 |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceLineDE               | invoiceDE               | service                 | 10          | taxDEDE19 |
       | invoiceLineNL               | invoiceNL               | service                 | 5           | taxDENL0  |
+
+    # the printed German invoice shows the German VAT ID
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoiceDE |
+    Then the PDF archived for the record identified by "invoiceDE" contains text "DE123456788"
 
   @Id:S32533_TC13
   Scenario: order drop-shipped to a Dutch third party: the invoice stores the third party's VAT ID

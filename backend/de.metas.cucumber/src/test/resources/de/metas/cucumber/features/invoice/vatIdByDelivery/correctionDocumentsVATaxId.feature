@@ -307,7 +307,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | reversal   | RE        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC15
-  Scenario: the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines
+  Scenario: the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines, here none
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -339,8 +339,17 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | Identifier  | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
       | invoiceCopy | DR        |              |               |                            |
 
-    # the copied line has neither shipment line nor order line, so it was taxed from the German billing address with its own VAT ID
+    # the copied line has neither shipment line nor order line, so it was taxed from the German billing address,
+    # whose VAT ID is the partner's own: nothing is stored and the copy shows the partner's VAT ID
     When the invoice identified by invoiceCopy is completed
     Then validate created invoices
       | Identifier  | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoiceCopy | CO        | DE123456788  |               |                            |
+      | invoiceCopy | CO        |              |               |                            |
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID   |
+      | Rechnung (Jasper) | invoiceCopy |
+    Then the PDF archived for the record identified by "invoiceCopy" contains text "DE123456788"

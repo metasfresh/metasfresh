@@ -262,6 +262,40 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" does not contain text "DE333333339"
     And the PDF archived for the record identified by "invoice" does not contain text "DE444444443"
 
+  @Id:S32533_TC3_AddressWithPartnerVAT
+  Scenario: one partner, one ship-to address carrying the partner's own VAT ID and one without VAT ID: one invoice without stored values, printed with the partner's VAT ID
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
+      | order      | true    | customer                 | 2026-09-02  | customer_DE                           | customer_billing                | wh_DE                         | I           |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Location_ID.Identifier |
+      | orderLineVAT   | order                 | service                 | 10         | customer_DE                       |
+      | orderLineNoVAT | order                 | service                 | 5          | customer_DE_noVAT                 |
+    And the order identified by order is completed
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | icVAT                             | orderLineVAT              | 10           |
+      | icNoVAT                           | orderLineNoVAT            | 5            |
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | icVAT, icNoVAT                    |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | icVAT                             | invoice                 |
+    And validate created invoices
+      | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    |              |               |                            |
+    And validate invoice lines for invoice:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceLineVAT              | service                 | 10          | taxDEDE19 |
+      | invoiceLineNoVAT            | service                 | 5           | taxDEDE19 |
+
+    # both lines show the partner's VAT ID, so they share the invoice; without stored values the print shows it
+    When The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    Then the PDF archived for the record identified by "invoice" contains text "DE111111125"
+
   @Id:S32533_TC17_Print
   Scenario: own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID
     Given metasfresh has date and time 2026-05-12T10:00:00+02:00[Europe/Berlin]

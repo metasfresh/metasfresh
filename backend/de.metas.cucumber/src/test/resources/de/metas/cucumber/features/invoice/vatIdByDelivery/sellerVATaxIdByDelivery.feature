@@ -341,14 +341,25 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | icDE                              | invoiceDE               |
       | icGR                              | invoiceGR               |
+    # the German address carries the partner's own VAT ID and no registration applies: the German invoice stores nothing and shows that VAT ID
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoiceDE  | DE123456788  |               |                            |
+      | invoiceDE  |              |               |                            |
       | invoiceGR  | DE123456788  | EL123456783   | regGR                      |
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceLineDE               | invoiceDE               | service                 | 10          | taxDEDE19 |
       | invoiceLineGR               | invoiceGR               | service                 | 5           | taxDEGR24 |
+
+    # the printed German invoice shows the partner's VAT ID
+    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
+    And update AD_Client
+      | Identifier | StoreArchiveOnFileSystem |
+      | 1000000    | false                    |
+    And The jasper process is run
+      | Value             | Record_ID   |
+      | Rechnung (Jasper) | invoiceDE   |
+    Then the PDF archived for the record identified by "invoiceDE" contains text "DE123456788"
 
   @Id:S32533_TC24
   Scenario: registration in Greece, but the German-stock line gets the tax-free EU supply rate: no seller VAT ID (the main one)
