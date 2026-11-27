@@ -13,6 +13,8 @@ import RawList from './RawList';
 
 export class ListWidget extends Component {
   previousValue = '';
+  // Counts focus-outs; lets a response tell whether the list was left after its request was sent.
+  blurCount = 0;
 
   constructor(props) {
     super(props);
@@ -144,6 +146,8 @@ export class ListWidget extends Component {
     //   props: this.props,
     // });
 
+    const blurCountAtRequest = this.blurCount;
+
     this.setState(
       {
         list: [],
@@ -227,10 +231,16 @@ export class ListWidget extends Component {
             });
           }
 
+          // A focus-out after the request was sent cancels its "focus when loaded" intent: the
+          // cursor has moved on, or the list declined the focus (a lookup sub-list while the cursor
+          // is outside the lookup). Focusing again here would only be declined again, and that
+          // decline would clear the list and ask for the options once more, without end.
+          const wasLeftSinceRequest = this.blurCount !== blurCountAtRequest;
+
           if (values.length === 0 && lastProperty) {
             disableAutofocus();
           } else if (
-            (ignoreFocus || this.state.autoFocus) &&
+            ((ignoreFocus && !wasLeftSinceRequest) || this.state.autoFocus) &&
             values &&
             values.length > 1
           ) {
@@ -253,6 +263,8 @@ export class ListWidget extends Component {
 
   handleBlur = () => {
     const { isMultiselect, field, onBlur } = this.props;
+
+    this.blurCount++;
 
     if (isMultiselect) {
       // Avoid clearing the list if is a multiselect component,

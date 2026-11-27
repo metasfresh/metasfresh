@@ -167,7 +167,8 @@ export class RawList0 extends PureComponent {
     // If the flag turns on while the user has moved the cursor out of the lookup (e.g. Alt+Q put it in the
     // quick entry while the hand-over to this sub-list ran), the cursor stays there and the flag is dropped
     // as on a focus-out (`onBlur`), so this list does not open its dropdown, whose key handler listens on the
-    // whole page, behind the cursor.
+    // whole page, behind the cursor. The focus-out also cancels List's pending "focus when the options arrive",
+    // so the arriving options do not raise the flag again.
     if (this.props.isFocused && !this.props.readonly) {
       const { wrapperElement, onBlur } = this.props;
       const hasFlagTurnedOn = !prevProps.isFocused;
