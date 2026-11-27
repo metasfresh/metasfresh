@@ -128,8 +128,11 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 
     await test.step('"Schließen": the line is closed, nothing is asked', async () => {
         await PickingJobLineScreen.clickCloseButton();
-        await PickingJobLineScreen.expectReOpenButtonVisible();
+        await PickingJobScreen.waitForScreen();      // closing leads back to the job screen (release: history.goBack() is called)
         await GetQuantityDialog.expectNotShown();   // no reject reason / quantity dialog
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
+        await PickingJobLineScreen.expectReOpenButtonVisible();
     });
 
     await test.step('"Wieder öffnen": the line is open again', async () => {
@@ -139,6 +142,9 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
 
     await test.step('closed again, the job completes', async () => {
         await PickingJobLineScreen.clickCloseButton();
+        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await PickingJobLineScreen.waitForScreen();
         await PickingJobLineScreen.expectReOpenButtonVisible();
         await PickingJobLineScreen.goBack();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '10 Stk', qtyPicked: '6 Stk' });
@@ -194,7 +200,8 @@ test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the coun
         },
         hus: {
             // both bookings sit in the one TU, on the lot of each scanned label
-            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' }, cus: [{ qty: '6 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '4 PCE', attributes: { 'Lot-Nummer': lot } }] },
+            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' }, // the CUs' creation order is not the booking order: told apart by the TU total and the two booking rows above
+            cus: [{ attributes: { 'Lot-Nummer': lot } }, { attributes: { 'Lot-Nummer': lot } }] },
         },
     });
 });

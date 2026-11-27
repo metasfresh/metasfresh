@@ -180,7 +180,8 @@ test('open TU holding 3, count 5 (needs two source TUs) books ONE CU of 5 into i
             }
         },
         hus: {
-            tu1: { storages: { P1: '8 PCE' }, cus: [{ qty: '3 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '5 PCE', attributes: { 'Lot-Nummer': lot } }] },
+            tu1: { storages: { P1: '8 PCE' }, // the order of the two CUs is not the order of the bookings (the 5 is split off the source first), so the CUs are told apart by the TU total and the two booking rows above
+            cus: [{ attributes: { 'Lot-Nummer': lot } }, { attributes: { 'Lot-Nummer': lot } }] },
         },
     });
 });

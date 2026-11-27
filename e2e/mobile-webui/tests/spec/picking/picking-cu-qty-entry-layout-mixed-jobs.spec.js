@@ -62,6 +62,9 @@ for (const viewport of PHONE_VIEWPORTS) {
 
                 // close short, no reject reason asked; reopen
                 await PickingJobLineScreen.clickCloseButton();
+                await PickingJobScreen.waitForScreen(); // closing leads back to the job screen (release: history.goBack() is called)
+                await PickingJobScreen.clickLineButton({ index: 1 });
+                await PickingJobLineScreen.waitForScreen();
                 await PickingJobLineScreen.expectReOpenButtonVisible();
                 await GetQuantityDialog.expectNotShown();
                 await layout('Once line screen, line closed short ("Wieder oeffnen" shown)');
@@ -70,7 +73,6 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await PickingJobLineScreen.expectCloseButtonVisible();
                 await layout('Once line screen, line reopened');
                 await PickingJobLineScreen.clickCloseButton();
-                await PickingJobLineScreen.goBack();
                 await PickingJobScreen.waitForScreen();
                 await layout('Once job screen, line closed short (ready to complete)');
             });
