@@ -21,13 +21,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PickingJobOptionsWriterTest
+class PickingJobOptionsRepositoryTest
 {
 	private static final ScannableCodeFormatId FORMAT_1 = ScannableCodeFormatId.ofRepoId(301);
 	private static final ScannableCodeFormatId FORMAT_2 = ScannableCodeFormatId.ofRepoId(302);
 
 	private MobileUIPickingUserProfileRepository repository;
-	private PickingJobOptionsWriter writer;
+	private PickingJobOptionsRepository jobOptionsRepository;
 	private I_MobileUI_UserProfile_Picking profile;
 
 	@BeforeEach
@@ -35,7 +35,7 @@ class PickingJobOptionsWriterTest
 	{
 		AdempiereTestHelper.get().init();
 		repository = new MobileUIPickingUserProfileRepository();
-		writer = new PickingJobOptionsWriter();
+		jobOptionsRepository = new PickingJobOptionsRepository();
 
 		profile = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		profile.setName("test profile");
@@ -68,12 +68,12 @@ class PickingJobOptionsWriterTest
 		InterfaceWrapperHelper.saveRecord(existing);
 		final PickingJobOptionsId id = PickingJobOptionsId.ofRepoId(existing.getMobileUI_UserProfile_Picking_Job_ID());
 
-		writer.updatePickingJobOptionsCUQtyEntry(id, CUQtyEntryMode.SCAN_EACH_CU, FORMAT_2);
+		jobOptionsRepository.updatePickingJobOptionsCUQtyEntry(id, CUQtyEntryMode.SCAN_EACH_CU, FORMAT_2);
 		assertThat(load(id).getCUQtyEntryMode()).isEqualTo(X_MobileUI_UserProfile_Picking.CUQTYENTRYMODE_SCAN_EACH_CU);
 		assertThat(load(id).getC_ScannableCode_Format_ID()).isEqualTo(FORMAT_2.getRepoId());
 		assertThat(load(id).isAllowSkippingRejectedReason()).isTrue();
 
-		writer.updatePickingJobOptionsCUQtyEntry(id, null, null);
+		jobOptionsRepository.updatePickingJobOptionsCUQtyEntry(id, null, null);
 		assertThat(load(id).getCUQtyEntryMode()).isNull();
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(load(id).isAllowSkippingRejectedReason()).isTrue();
@@ -83,10 +83,10 @@ class PickingJobOptionsWriterTest
 	void deleteUnusedPickingJobOptions_deletesOnlyUnreferencedRowsWithThePrefix()
 	{
 		final PickingJobOptions options = repository.getProfile().getDefaultPickingJobOptions();
-		final PickingJobOptionsId referenced = writer.createPickingJobOptions("E2E customer used", options);
-		writer.createPickingJobOptions("E2E customer unused", options);
-		final PickingJobOptionsId otherName = writer.createPickingJobOptions("Customer config unused", options);
-		final PickingJobOptionsId prefixInTheMiddle = writer.createPickingJobOptions("X E2E customer unused", options);
+		final PickingJobOptionsId referenced = jobOptionsRepository.createPickingJobOptions("E2E customer used", options);
+		jobOptionsRepository.createPickingJobOptions("E2E customer unused", options);
+		final PickingJobOptionsId otherName = jobOptionsRepository.createPickingJobOptions("Customer config unused", options);
+		final PickingJobOptionsId prefixInTheMiddle = jobOptionsRepository.createPickingJobOptions("X E2E customer unused", options);
 
 		final I_MobileUI_UserProfile_Picking_BPartner customer = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_BPartner.class);
 		customer.setMobileUI_UserProfile_Picking_ID(profile.getMobileUI_UserProfile_Picking_ID());
@@ -94,7 +94,7 @@ class PickingJobOptionsWriterTest
 		customer.setMobileUI_UserProfile_Picking_Job_ID(referenced.getRepoId());
 		InterfaceWrapperHelper.saveRecord(customer);
 
-		writer.deleteUnusedPickingJobOptions("E2E customer ");
+		jobOptionsRepository.deleteUnusedPickingJobOptions("E2E customer ");
 
 		assertThat(countJobRecords()).isEqualTo(3);
 		assertThat(load(referenced)).isNotNull();
@@ -106,10 +106,10 @@ class PickingJobOptionsWriterTest
 	void unlinkCULabelFormats_clearsProfileAndJobRowsOfTheGivenFormatsOnly()
 	{
 		final PickingJobOptions options = repository.getProfile().getDefaultPickingJobOptions();
-		final PickingJobOptionsId job1 = writer.createPickingJobOptions("j1", options.toBuilder().cuLabelFormatId(FORMAT_1).build());
-		final PickingJobOptionsId job2 = writer.createPickingJobOptions("j2", options.toBuilder().cuLabelFormatId(FORMAT_2).build());
+		final PickingJobOptionsId job1 = jobOptionsRepository.createPickingJobOptions("j1", options.toBuilder().cuLabelFormatId(FORMAT_1).build());
+		final PickingJobOptionsId job2 = jobOptionsRepository.createPickingJobOptions("j2", options.toBuilder().cuLabelFormatId(FORMAT_2).build());
 
-		writer.unlinkCULabelFormats(ImmutableList.of(FORMAT_1));
+		jobOptionsRepository.unlinkCULabelFormats(ImmutableList.of(FORMAT_1));
 
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(InterfaceWrapperHelper.load(profile.getMobileUI_UserProfile_Picking_ID(), I_MobileUI_UserProfile_Picking.class).getC_ScannableCode_Format_ID())).isNull();
 		assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(job1).getC_ScannableCode_Format_ID())).isNull();
@@ -124,7 +124,7 @@ class PickingJobOptionsWriterTest
 		{
 			final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
 
-			final PickingJobOptionsId id = writer.createPickingJobOptions(
+			final PickingJobOptionsId id = jobOptionsRepository.createPickingJobOptions(
 					"E2E customer 1",
 					profileOptions.toBuilder().cuQtyEntryMode(CUQtyEntryMode.SCAN_EACH_CU).cuLabelFormatId(FORMAT_2).build());
 
@@ -144,7 +144,7 @@ class PickingJobOptionsWriterTest
 		{
 			final PickingJobOptions profileOptions = repository.getProfile().getDefaultPickingJobOptions();
 
-			final PickingJobOptionsId id = writer.createPickingJobOptions("E2E customer 2", profileOptions.toBuilder().cuQtyEntryMode(null).cuLabelFormatId(null).build());
+			final PickingJobOptionsId id = jobOptionsRepository.createPickingJobOptions("E2E customer 2", profileOptions.toBuilder().cuQtyEntryMode(null).cuLabelFormatId(null).build());
 
 			assertThat(load(id).getCUQtyEntryMode()).isNull();
 			assertThat(ScannableCodeFormatId.ofRepoIdOrNull(load(id).getC_ScannableCode_Format_ID())).isNull();

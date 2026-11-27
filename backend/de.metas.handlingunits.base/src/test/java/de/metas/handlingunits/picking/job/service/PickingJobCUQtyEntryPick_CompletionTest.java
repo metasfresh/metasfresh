@@ -98,7 +98,7 @@ class PickingJobCUQtyEntryPick_CompletionTest extends CUQtyEntryPickFixture
 		setCustomerGraiRequired(GRAIRequired.Yes);
 		final HUInfo source = sourceTU("QR-GRAI-R");
 		final PickingJob job = pick(openTUFromLinePacking(newJob().create()), source, "5", null, false, null);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HUs are the CUs in the TU (leaf CUs, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(openTUId(job)));
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HUs are the CUs in the TU (leaf CUs, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(openTUId(job))).hasSize(2);
 
 		setProfile(CUQtyEntryMode.SCAN_EACH_CU);
 
@@ -168,7 +168,7 @@ class PickingJobCUQtyEntryPick_CompletionTest extends CUQtyEntryPickFixture
 		setCustomerGraiRequired(GRAIRequired.Yes);
 		final HUInfo source = sourceTU("QR-GRAI-M");
 		final PickingJob job = pick(openTUFromLinePacking(newJob().create()), source, "5", null, false, null);
-		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HUs are the CUs in the TU (leaf CUs, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(openTUId(job)));
+		assertThat(CollectionUtils.singleElement(job.getLines()).getPickedHUIds()).as("Manual: the picked HUs are the CUs in the TU (leaf CUs, as for unpick-to-floor)").containsExactlyInAnyOrderElementsOf(cuIdsOf(openTUId(job))).hasSize(2);
 
 		assertThatThrownBy(() -> helper.pickingJobService.complete(job))
 				.isInstanceOf(AdempiereException.class)

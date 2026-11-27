@@ -897,7 +897,7 @@ GetQuantityDialog.propTypes = {
   isRepeatedBooking: PropTypes.bool,
   /** lot and best-before are always shown and come from outside (e.g. a scanned label) */
   isLotAndBestBeforeShownReadOnly: PropTypes.bool,
-  /** Enter / the Done button submit the form; false = only the explicit buttons book */
+  /** true = submitting the form (Enter in a field or Done) books; false = the submit itself books nothing, only Done's click does (Enter in a field still reaches Done through the browser's implicit click on the default button) */
   isSubmitOnEnter: PropTypes.bool,
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,

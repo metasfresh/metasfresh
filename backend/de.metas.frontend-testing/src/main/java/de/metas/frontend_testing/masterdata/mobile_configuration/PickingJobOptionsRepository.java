@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** Masterdata writes of the mobile UI frontend tests on the picking job options rows and the profile's CU label format. Only the frontend tests change these rows this way. */
-public final class PickingJobOptionsWriter
+/** Repository for the masterdata writes of the mobile UI frontend tests on the picking job options rows and the profile's CU label format. Only the frontend tests change these rows this way. */
+public final class PickingJobOptionsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

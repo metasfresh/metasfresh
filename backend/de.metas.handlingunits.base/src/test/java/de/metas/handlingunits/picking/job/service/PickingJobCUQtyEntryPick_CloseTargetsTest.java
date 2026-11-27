@@ -71,7 +71,7 @@ class PickingJobCUQtyEntryPick_CloseTargetsTest extends CUQtyEntryPickFixture
 		final BPartnerId customerAId = customerAId();
 		helper.updateMobileProfile(profile -> {
 			// A job options row replaces the profile's options for the customer, so it repeats the profile's values and differs only in CU mode and label format.
-			// Written by hand: the production writer (PickingJobOptionsWriter) lives in frontend-testing, which this module cannot depend on.
+			// Written by hand: the frontend tests' writer (PickingJobOptionsRepository) lives in frontend-testing, which this module cannot depend on.
 			final I_MobileUI_UserProfile_Picking profileRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MobileUI_UserProfile_Picking.class).create().firstOnlyNotNull(I_MobileUI_UserProfile_Picking.class);
 			final I_MobileUI_UserProfile_Picking_Job optionsRecordA = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
 			optionsRecordA.setName("customer A label-required mode");
