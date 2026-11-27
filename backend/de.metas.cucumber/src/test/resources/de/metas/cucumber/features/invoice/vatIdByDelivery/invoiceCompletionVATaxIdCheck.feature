@@ -160,8 +160,8 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | customer      | customer_billing       | pl_DE          | Ausgangsrechnung        | 2026-10-02   | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_OrderLine_ID | C_Tax_ID |
-      | invoiceL1  | invoice      | service      | 5 PCE       | orderLine_NL   | taxDENL0 |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_OrderLine_ID | C_Tax_ID$set |
+      | invoiceL1  | invoice      | service      | 5 PCE       | orderLine_NL   | taxDENL0     |
     And the invoice identified by invoice is completed
     Then validate created invoices
       | Identifier | DocStatus | BuyerVATaxID   |
