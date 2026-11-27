@@ -352,7 +352,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return IDocument.STATUS_Invalid;
 
 		final List<I_M_ShippingPackage> lines = getLines(true);
-		if (lines.isEmpty())
+		if (lines.isEmpty() && !Services.get(IShipperTransportationBL.class).isManualTransportOrder(this))
 		{
 			throw AdempiereException.noLines();
 		}
