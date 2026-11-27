@@ -65,8 +65,7 @@ public class InvoiceLineTaxLocationProviders
 	public static InvoiceLineTaxLocationProviders newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(InvoiceLineTaxLocationProviders.class, () -> new InvoiceLineTaxLocationProviders(Optional.empty()));
+		return get();
 	}
 
 	public Optional<TaxLocationAndFromCountry> getTaxLocation(@NonNull final I_C_InvoiceLine invoiceLine)
