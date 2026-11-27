@@ -9,6 +9,7 @@ import { ORDER_LINE_TAB_ID, createMasterdata } from '../utils/OrderLineHarness';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getTabRows } from '../utils/WebAPIValidation';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
+import { recordAndHoldCursor } from '../utils/QuickInputFocus';
 
 /**
  * Cell editing on the sales order-line grid (de_DE; the list-cell tests also en_US): the grid shows its columns, a Lookup cell
@@ -429,15 +430,6 @@ async function describeCursorCell(page) {
   });
 }
 
-/** Record where the cursor is, then assert the same element still holds it 1000 ms later. */
-async function recordAndHoldCursor(page, what) {
-  const now = await describeCursorCell(page);
-  console.log(`OBSERVED cursor ${what}: ${now}`);
-  await page.waitForTimeout(1000);
-  expect(await describeCursorCell(page), `${what}: the cursor stays where it was (was ${now})`).toBe(now);
-  return now;
-}
-
 /** @returns {boolean} true if the described cursor is in a grid cell other than the list cell */
 const isInAnotherGridCell = (cursor) => cursor.includes('in cell-') && !cursor.includes(`cell-${LIST_COLUMN}`);
 
@@ -456,7 +448,7 @@ async function expectCursorMovesTo(page, what, isExpected, expectedPlace) {
       { timeout: SLOW_ACTION_TIMEOUT, message: `${what}: the cursor moves to ${expectedPlace}` }
     )
     .toBe(expectedPlace);
-  return await recordAndHoldCursor(page, what);
+  return await recordAndHoldCursor(page, what, describeCursorCell);
 }
 
 const listLanguages = [
@@ -527,7 +519,7 @@ listLanguages.forEach(({ language, label }) => {
       await expect.poll(() => savedListKey(recordId), { timeout: SLOW_ACTION_TIMEOUT, message: 'the picked value is saved' }).toBe(key);
       // the barrier of flushPendingUiTasks requests a missing favicon (a 404 console.error), so settle on two frames instead
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-      const afterPick = await recordAndHoldCursor(page, 'after the keyboard pick');
+      const afterPick = await recordAndHoldCursor(page, 'after the keyboard pick', describeCursorCell);
       expect(afterPick, `after the pick the cursor is in the list cell: ${afterPick}`).toContain(`cell-${LIST_COLUMN}`);
       expect(afterPick, `after the pick the cursor is not in a header lookup: ${afterPick}`).not.toContain('lookup_');
 
@@ -564,7 +556,7 @@ listLanguages.forEach(({ language, label }) => {
       // Escape closes by TableRow unmounting the editor (not by RawList's own Escape path, which
       // list-widget-mouse-escape.spec.js pins on the header PaymentRule list); the cursor is recorded straight away,
       // with no click, and must stay there.
-      const afterEscape = await recordAndHoldCursor(page, 'after Escape');
+      const afterEscape = await recordAndHoldCursor(page, 'after Escape', describeCursorCell);
       expect(afterEscape, 'after Escape the cursor is on the list cell itself').toBe(`TD in cell-${LIST_COLUMN}`);
 
       for (const waitMs of [0, 1000]) {

@@ -241,6 +241,22 @@ export async function describeActiveElement(page) {
   });
 }
 
+/**
+ * Record where the cursor is, then assert the same element still holds it 1000 ms later.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} what the moment, for the log and the failure message (e.g. 'after Escape')
+ * @param {function(import('@playwright/test').Page): Promise<string>} describeCursor describes the element that
+ *        holds the cursor; two descriptions are equal when the same element holds it
+ * @returns {Promise<string>} the description of the cursor
+ */
+export async function recordAndHoldCursor(page, what, describeCursor) {
+  const now = await describeCursor(page);
+  console.log(`OBSERVED cursor ${what}: ${now}`);
+  await page.waitForTimeout(1000);
+  expect(await describeCursor(page), `${what}: the cursor stays where it was (was ${now})`).toBe(now);
+  return now;
+}
+
 /** Wait until the given element has the focus. */
 export async function expectFocusOn(locator, description) {
   const page = locator.page();

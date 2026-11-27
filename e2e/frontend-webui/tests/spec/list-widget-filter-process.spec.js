@@ -8,6 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getTabRows, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { recordAndHoldCursor } from '../utils/QuickInputFocus';
 
 /**
  * Pins (must pass on today's code): a list widget used by keyboard in a view filter and in a process
@@ -39,15 +40,6 @@ async function describeCursor(page) {
     const testId = e.getAttribute('data-testid');
     return `${e.tagName}${e.id ? '#' + e.id : ''}${testId ? '[' + testId + ']' : ''}${column ? ' in field ' + column : ''} (${panel})`;
   });
-}
-
-/** Record where the cursor is, then assert the same element still holds it 1000 ms later. */
-async function recordAndHoldCursor(page, what) {
-  const now = await describeCursor(page);
-  console.log(`OBSERVED cursor ${what}: ${now}`);
-  await page.waitForTimeout(1000);
-  expect(await describeCursor(page), `${what}: the cursor stays where it was (was ${now})`).toBe(now);
-  return now;
 }
 
 const twoFrames = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
@@ -139,12 +131,12 @@ languages.forEach(({ language, label }) => {
       await pickKeyByKeyboard(page, 'DR');
       await twoFrames(page);
       // observed today (EN + DE): the cursor stays in the list; Tab then moves it to the next filter field
-      expect(await recordAndHoldCursor(page, 'after the DocStatus pick'), 'after the pick the cursor stays in the DocStatus list').toBe(
+      expect(await recordAndHoldCursor(page, 'after the DocStatus pick', describeCursor), 'after the pick the cursor stays in the DocStatus list').toBe(
         'DIV in field DocStatus (filter panel)'
       );
       await page.keyboard.press('Tab');
       await twoFrames(page);
-      expect(await recordAndHoldCursor(page, 'after Tab from the DocStatus list'), 'Tab moves the cursor to the next filter field and it stays there').toBe(
+      expect(await recordAndHoldCursor(page, 'after Tab from the DocStatus list', describeCursor), 'Tab moves the cursor to the next filter field and it stays there').toBe(
         'INPUT in field CreatedBy (filter panel)'
       );
 
@@ -189,12 +181,12 @@ languages.forEach(({ language, label }) => {
 
       await pickKeyByKeyboard(page, 'S');
       await twoFrames(page);
-      expect(await recordAndHoldCursor(page, 'after the credit status pick'), 'after the pick the cursor stays in the credit status list').toBe(
+      expect(await recordAndHoldCursor(page, 'after the credit status pick', describeCursor), 'after the pick the cursor stays in the credit status list').toBe(
         'DIV in field setCreditStatus (process dialog)'
       );
       await page.keyboard.press('Tab');
       await twoFrames(page);
-      expect(await recordAndHoldCursor(page, 'after Tab from the credit status list'), 'Tab leaves the list for the Cancel button of the dialog and the cursor stays there').toBe(
+      expect(await recordAndHoldCursor(page, 'after Tab from the credit status list', describeCursor), 'Tab leaves the list for the Cancel button of the dialog and the cursor stays there').toBe(
         'BUTTON[process-modal-cancel-button] (process dialog)'
       );
 

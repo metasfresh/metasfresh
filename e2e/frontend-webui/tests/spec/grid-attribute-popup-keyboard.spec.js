@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { recordAndHoldCursor } from '../utils/QuickInputFocus';
 
 /**
  * Pins (must pass on today's code): the attribute popup ("Merkmale") opened from an order-line grid
@@ -39,15 +40,6 @@ async function describeCursor(page) {
     const group = e.closest('.form-group');
     return `${e.tagName} in popup field ${group ? groups.indexOf(group) : '?'}`;
   });
-}
-
-/** Record where the cursor is, then assert the same element still holds it 1000 ms later. */
-async function recordAndHoldCursor(page, what) {
-  const now = await describeCursor(page);
-  console.log(`OBSERVED cursor ${what}: ${now}`);
-  await page.waitForTimeout(1000);
-  expect(await describeCursor(page), `${what}: the cursor stays where it was (was ${now})`).toBe(now);
-  return now;
 }
 
 const languages = [
@@ -148,7 +140,7 @@ languages.forEach(({ language, label }) => {
       await expect(popup.locator('.input-dropdown-container'), 'the popup shows both list attributes').toHaveCount(2, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      expect(await recordAndHoldCursor(page, 'popup just opened'), 'the popup opens with the first list').toBe(FIRST_LIST);
+      expect(await recordAndHoldCursor(page, 'popup just opened', describeCursor), 'the popup opens with the first list').toBe(FIRST_LIST);
 
       /** ArrowDown opens the focused list, ArrowDown highlights an option, Enter picks it; returns the picked key. */
       const pickByKeyboard = async () => {
@@ -167,26 +159,26 @@ languages.forEach(({ language, label }) => {
       const keyA = await pickByKeyboard();
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
       await expect(popup, 'popup open after the first pick').toBeVisible();
-      expect(await recordAndHoldCursor(page, 'after the first list pick'), 'after the first pick the cursor stays in the first list').toBe(FIRST_LIST);
+      expect(await recordAndHoldCursor(page, 'after the first list pick', describeCursor), 'after the first pick the cursor stays in the first list').toBe(FIRST_LIST);
 
       await page.keyboard.press('Tab');
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
       await expect(popup, 'popup open after Tab').toBeVisible();
-      expect(await recordAndHoldCursor(page, 'after Tab from the first list'), 'Tab moves the cursor to the second list').toBe(SECOND_LIST);
+      expect(await recordAndHoldCursor(page, 'after Tab from the first list', describeCursor), 'Tab moves the cursor to the second list').toBe(SECOND_LIST);
 
       const keyB = await pickByKeyboard();
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
       await expect(popup, 'popup open after the second pick').toBeVisible();
-      expect(await recordAndHoldCursor(page, 'after the second list pick'), 'after the second pick the cursor stays in the second list').toBe(SECOND_LIST);
+      expect(await recordAndHoldCursor(page, 'after the second list pick', describeCursor), 'after the second pick the cursor stays in the second list').toBe(SECOND_LIST);
 
       await page.keyboard.press('Tab');
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
       await expect(popup, 'popup open after the second Tab').toBeVisible();
-      expect(await recordAndHoldCursor(page, 'after Tab from the second list'), 'Tab moves the cursor to the text attribute').toBe(TEXT_FIELD);
+      expect(await recordAndHoldCursor(page, 'after Tab from the second list', describeCursor), 'Tab moves the cursor to the text attribute').toBe(TEXT_FIELD);
 
       await page.keyboard.type(typedText);
       await expect(popup, 'popup open after typing').toBeVisible();
-      expect(await recordAndHoldCursor(page, 'after typing the text'), 'typing keeps the cursor in the text attribute').toBe(TEXT_FIELD);
+      expect(await recordAndHoldCursor(page, 'after typing the text', describeCursor), 'typing keeps the cursor in the text attribute').toBe(TEXT_FIELD);
       const completed = page.waitForRequest(
         (request) => request.method() === 'POST' && /\/pattribute\/[^/]+\/complete$/.test(new URL(request.url()).pathname),
         { timeout: SLOW_ACTION_TIMEOUT }
