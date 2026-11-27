@@ -1407,3 +1407,276 @@ Feature: EDI_cctop_invoic_v export format
       | expDesadv                    | ProductNo | BUYER-9501    |
       | expDesadv                    | GTIN_CU   | 4013000000511 |
       | expDesadv                    | EAN_CU    | 4013000000512 |
+
+
+  @Id:S32533_TC9_NL_XML
+  Scenario: INVOIC XML of an invoice for goods shipped to the Dutch address declares the stored buyer VAT ID on the buyer and invoice parties and the organisation's VAT ID as sender
+    Given metasfresh has date and time 2026-09-02T10:00:00+02:00[Europe/Berlin]
+    And the org partner of organisation 1000000 has VATaxID 'DE136695976' for this scenario
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceList | pricingSystem      | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | salesPLV   | salesPriceList |
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | type_1                           | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name               | EXP_Processor_Type_ID.Identifier |
+      | ep_1                        | ediExportProcessor | type_1                           |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name     | EntityType | EXP_Processor_ID.Identifier |
+      | rs_1                                 | rabbitMQ | U          | ep_1                        |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | rs_1                                 |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue |
+      | ep_1                        | exchangeName   | ediExport      |
+      | ep_1                        | routingKey     | ediExport      |
+      | ep_1                        | isDurableQueue | true           |
+    And all periods are open
+    And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
+    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
+    And metasfresh contains C_Aggregations:
+      | Identifier | TableName           | EntityType                | AggregationUsageLevel |
+      | aggHeader  | C_Invoice_Candidate | de.metas.invoicecandidate | H                     |
+    And metasfresh contains C_AggregationItems:
+      | Identifier | C_Aggregation_ID.Identifier | EntityType                | Type | ColumnName          |
+      | aggOrg     | aggHeader                   | de.metas.invoicecandidate | COL  | AD_Org_ID           |
+      | aggBillBP  | aggHeader                   | de.metas.invoicecandidate | COL  | Bill_BPartner_ID    |
+      | aggBillLoc | aggHeader                   | de.metas.invoicecandidate | COL  | Bill_Location_ID    |
+      | aggCurr    | aggHeader                   | de.metas.invoicecandidate | COL  | C_Currency_ID       |
+      | aggDocType | aggHeader                   | de.metas.invoicecandidate | COL  | C_DocTypeInvoice_ID |
+      | aggSOTrx   | aggHeader                   | de.metas.invoicecandidate | COL  | IsSOTrx             |
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | TypeOfDestCountry   | RequiresTaxCertificate |
+      | taxDENL0   | taxCategory      | 0    | DE                       | NL                        | WITHIN_COUNTRY_AREA | true                   |
+      | taxDENL19  | taxCategory      | 19   | DE                       | NL                        | WITHIN_COUNTRY_AREA | false                  |
+      | taxDEDE19  | taxCategory      | 19   | DE                       | DE                        | DOMESTIC            |                        |
+    And metasfresh contains M_PriceLists
+      | Identifier       | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceListNL | pricingSystem      | NL           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID   |
+      | salesPLVNL | salesPriceListNL |
+    And metasfresh contains M_Products:
+      | Identifier         | Value              | Name               |
+      | product_S32533_NL_XML  | product_S32533_NL_XML  | product_S32533_NL_XML  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLV               | product_S32533_NL_XML | 5.00     | PCE      | taxCategory      |
+      | salesPLVNL             | product_S32533_NL_XML | 5.00     | PCE      | taxCategory      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City  |
+      | location_billing         | DE          | Hauptstr. 1  | 53179      | Bonn      |
+      | location_NL              | NL          | Straat 1     | 1011AA     | Amsterdam |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier |
+      | customerNL | Y          | N        | pricingSystem      | D           | DE123456788 | aggHeader                            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | customerNL_billing  | 0123456789201 | customerNL    | N        | N               | Y        | Y               | location_billing             |
+      | customerNL_NL       | 0123456789204 | customerNL    | Y        | Y               | N        | N               | location_NL                  |
+    And update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | VATaxID        |
+      | customerNL_billing                | DE123456788    |
+      | customerNL_NL                     | NL827764364B01 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier  |
+      | customerNL | false                | true                 | 0123456789999         | edi_setting |
+    And metasfresh contains M_Warehouse:
+      | Identifier | IsDropShipWarehouse |
+      | wh_DE      | N                   |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2026-09-02   | wh_DE          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID      | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product_S32533_NL_XML | 0       | 10       | PCE          |
+    And the inventory identified by inventory is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order      | true    | customerNL    | 2026-09-02  | customerNL_NL                         | customerNL_billing              | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered |
+      | orderLine  | order                 | product_S32533_NL_XML | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCandidate                  |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | invoiceCandidate                  | invoice                 | invoice_ID   |
+    And validate created invoices
+      | Identifier | C_BPartner_Location_ID | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | customerNL_billing     | NL827764364B01 |               |                            |
+
+    And invoice is EDI exported
+      | C_Invoice_ID.Identifier |
+      | invoice                 |
+    And RabbitMQ receives a EDI_cctop_invoic_v
+      | EDI_cctop_invoic_v_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | ic_1                             | ep_1                        | routingKey                   |
+    And validate EDI_cctop_invoic_v:
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.VATaxID |
+      | ic_1                             | DE136695976 |
+    And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
+      | eancom_locationtype | OPT.VATaxID |
+      | SU | DE136695976 |
+      | BY | NL827764364B01 |
+      | IV | NL827764364B01 |
+      | DP | DE123456788 |
+      | SN | DE123456788 |
+
+
+  @Id:S32533_TC9_GR_XML
+  Scenario: INVOIC XML of a Greek invoice with an own registration declares the registration's VAT ID as sender and as supplier party VAT ID
+    Given metasfresh has date and time 2026-05-12T10:00:00+02:00[Europe/Berlin]
+    And the org partner of organisation 1000000 has VATaxID 'DE136695976' for this scenario
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier     | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceList | pricingSystem      | DE           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | salesPLV   | salesPriceList |
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | type_1                           | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name               | EXP_Processor_Type_ID.Identifier |
+      | ep_1                        | ediExportProcessor | type_1                           |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name     | EntityType | EXP_Processor_ID.Identifier |
+      | rs_1                                 | rabbitMQ | U          | ep_1                        |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | rs_1                                 |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue |
+      | ep_1                        | exchangeName   | ediExport      |
+      | ep_1                        | routingKey     | ediExport      |
+      | ep_1                        | isDurableQueue | true           |
+    And all periods are open
+    And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
+    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
+    And metasfresh contains C_Aggregations:
+      | Identifier | TableName           | EntityType                | AggregationUsageLevel |
+      | aggHeader  | C_Invoice_Candidate | de.metas.invoicecandidate | H                     |
+    And metasfresh contains C_AggregationItems:
+      | Identifier | C_Aggregation_ID.Identifier | EntityType                | Type | ColumnName          |
+      | aggOrg     | aggHeader                   | de.metas.invoicecandidate | COL  | AD_Org_ID           |
+      | aggBillBP  | aggHeader                   | de.metas.invoicecandidate | COL  | Bill_BPartner_ID    |
+      | aggBillLoc | aggHeader                   | de.metas.invoicecandidate | COL  | Bill_Location_ID    |
+      | aggCurr    | aggHeader                   | de.metas.invoicecandidate | COL  | C_Currency_ID       |
+      | aggDocType | aggHeader                   | de.metas.invoicecandidate | COL  | C_DocTypeInvoice_ID |
+      | aggSOTrx   | aggHeader                   | de.metas.invoicecandidate | COL  | IsSOTrx             |
+    And metasfresh contains C_TaxCategory
+      | Identifier  |
+      | taxCategory |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | TypeOfDestCountry   | RequiresTaxCertificate | IsFiscalRepresentation | SeqNo |
+      | taxDEGR24  | taxCategory      | 24   | DE                       | GR                        | WITHIN_COUNTRY_AREA |                        | true                   | 10    |
+      | taxDEGR0   | taxCategory      | 0    | DE                       | GR                        | WITHIN_COUNTRY_AREA | true                   | false                  | 10    |
+    And metasfresh contains M_PriceLists
+      | Identifier       | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | salesPriceListGR | pricingSystem      | GR           | EUR           | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID   |
+      | salesPLVGR | salesPriceListGR |
+    And metasfresh contains M_Products:
+      | Identifier | Value      | Name       |
+      | product_S32533_TC9_GR_XML | product_S32533_TC9_GR_XML | product_S32533_TC9_GR_XML |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | salesPLVGR             | product_S32533_TC9_GR_XML | 5.00     | PCE      | taxCategory      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
+      | location_GR              | GR          | Odos 1       | 10431      | Athens   |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier |
+      | customerGR | Y          | N        | pricingSystem      | D           |             | aggHeader                            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier    | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | customerGR_GR | 0123456789301 | customerGR    | Y        | Y               | Y        | Y               | location_GR                  |
+    And update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | VATaxID     |
+      | customerGR_GR                     | EL111111114 |
+    And metasfresh contains C_Fiscal_Representation:
+      | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
+      | regGR      | GR                        | EL094259216 | 2026-05-11 | 2026-05-13 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier  |
+      | customerGR | false                | true                 | 0123456789999         | edi_setting |
+    And metasfresh contains M_Warehouse:
+      | Identifier | IsDropShipWarehouse |
+      | wh_DE      | N                   |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2026-05-12   | wh_DE          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product_S32533_TC9_GR_XML | 0       | 10       | PCE          |
+    And the inventory identified by inventory is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order      | true    | customerGR    | 2026-05-12  | customerGR_GR                         | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | orderLine  | order                 | product_S32533_TC9_GR_XML | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCandidate                  |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | REST.Context |
+      | invoiceCandidate                  | invoice                 | invoice_ID   |
+    And validate created invoices
+      | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | EL111111114  | EL094259216 | regGR                      |
+
+    And invoice is EDI exported
+      | C_Invoice_ID.Identifier |
+      | invoice                 |
+    And RabbitMQ receives a EDI_cctop_invoic_v
+      | EDI_cctop_invoic_v_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | ic_1                             | ep_1                        | routingKey                   |
+    And validate EDI_cctop_invoic_v:
+      | EDI_cctop_invoic_v_ID.Identifier | OPT.VATaxID |
+      | ic_1                             | EL094259216 |
+    And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
+      | eancom_locationtype | OPT.VATaxID |
+      | SU | EL094259216 |
+      | BY | EL111111114 |
+      | IV | EL111111114 |
+      | DP | null |
+      | SN | null |
+
