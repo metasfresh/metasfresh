@@ -29,8 +29,8 @@ import org.compiere.model.I_C_ScannableCode_Format_Part;
 
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
