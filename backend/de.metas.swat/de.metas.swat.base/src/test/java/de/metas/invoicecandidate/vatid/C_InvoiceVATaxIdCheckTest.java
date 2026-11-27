@@ -447,7 +447,7 @@ class C_InvoiceVATaxIdCheckTest
 		return bpartner;
 	}
 
-	private int createDocType(final String docBaseType)
+	private static int createDocType(final String docBaseType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType(docBaseType);
@@ -455,7 +455,7 @@ class C_InvoiceVATaxIdCheckTest
 		return docType.getC_DocType_ID();
 	}
 
-	private int createCountry(final String countryCode)
+	private static int createCountry(final String countryCode)
 	{
 		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setCountryCode(countryCode);

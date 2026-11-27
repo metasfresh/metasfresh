@@ -53,7 +53,6 @@ import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -242,16 +241,10 @@ public class InvoiceVATaxIdStamper
 	@Nullable
 	private TaxId predictReTaxTax(@NonNull final I_C_InvoiceLine line, @NonNull final InvoiceLineReTaxInput reTaxInput)
 	{
-		if (line.getM_Product_ID() <= 0)
-		{
-			return null;
-		}
-
-		final TaxCategoryId taxCategoryId = CoalesceUtil.coalesceSuppliers(
-				() -> TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()),
-				() -> invoiceLineBL.getTaxCategoryId(line));
-		final Tax tax = taxDAO.getBy(invoiceLineBL.createTaxQuery(reTaxInput, taxCategoryId));
-		return tax != null ? tax.getTaxId() : null;
+		return invoiceLineBL.createReTaxQuery(line, reTaxInput)
+				.map(taxDAO::getBy)
+				.map(Tax::getTaxId)
+				.orElse(null);
 	}
 
 	@NonNull

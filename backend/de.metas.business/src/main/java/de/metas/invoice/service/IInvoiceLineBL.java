@@ -34,6 +34,7 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -64,6 +65,14 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * The tax query of the given re-tax inputs (see {@link IInvoiceBL#getReTaxInput}) and tax category; {@link #createShipmentTaxQuery} builds the same query.
 	 */
 	TaxQuery createTaxQuery(InvoiceLineReTaxInput reTaxInput, @Nullable TaxCategoryId taxCategoryId);
+
+	/**
+	 * The tax query with which {@link #setTaxForInvoiceLine} re-taxes the given line: the given inputs and the line's tax category,
+	 * else (looked up, not set on the line) the one of its charge, pricing or order line ({@link #getTaxCategoryId}); read-only.
+	 *
+	 * @return empty if the re-tax leaves the line alone (no product)
+	 */
+	Optional<TaxQuery> createReTaxQuery(org.compiere.model.I_C_InvoiceLine il, InvoiceLineReTaxInput reTaxInput);
 
 	/**
 	 * @return true if invoice line's prices are locked (i.e. should be the same as linked OrderLine)

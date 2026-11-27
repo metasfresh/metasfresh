@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
@@ -81,7 +82,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -160,7 +160,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final CountryId countryFromId = invoiceBL.getFromCountryId(invoice, il);
 		final WarehouseId warehouseId = invoiceBL.getFromWarehouseId(invoice, il);
 
-		return setTaxForInvoiceLine(il, invoice, taxCategoryId -> createShipmentTaxQuery(io, countryFromId, warehouseId, taxCategoryId));
+		return setTaxForInvoiceLine(il, invoice, InvoiceLineReTaxInput.ofShipment(io, countryFromId, warehouseId));
 	}
 
 	@Override
@@ -197,38 +197,50 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
 
-		return setTaxForInvoiceLine(il, invoice, taxCategoryId -> createTaxQuery(reTaxInput, taxCategoryId));
+		return setTaxForInvoiceLine(il, invoice, reTaxInput);
 	}
 
-	/**
-	 * @param taxQueryFactory builds the tax query from the line's tax category
-	 */
+	@Override
+	@NonNull
+	public Optional<TaxQuery> createReTaxQuery(@NonNull final org.compiere.model.I_C_InvoiceLine il, @NonNull final InvoiceLineReTaxInput reTaxInput)
+	{
+		if (il.getM_Product_ID() <= 0)
+		{
+			// this might be the case if a descriptional il refers to an iol.
+			return Optional.empty();
+		}
+
+		// NOTE: we can retrieve the tax category only if we have a product
+		final TaxCategoryId taxCategoryId = CoalesceUtil.coalesceSuppliers(
+				() -> TaxCategoryId.ofRepoIdOrNull(il.getC_TaxCategory_ID()),
+				() -> getTaxCategoryId(il));
+		return Optional.of(createTaxQuery(reTaxInput, taxCategoryId));
+	}
+
 	private boolean setTaxForInvoiceLine(
 			@NonNull final org.compiere.model.I_C_InvoiceLine il,
 			@NonNull final I_C_Invoice invoice,
-			@NonNull final Function<TaxCategoryId, TaxQuery> taxQueryFactory)
+			@NonNull final InvoiceLineReTaxInput reTaxInput)
 	{
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
-			TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(il.getC_TaxCategory_ID());
-			if (taxCategoryId == null && il.getM_Product_ID() > 0)
+			final TaxQuery taxQuery = createReTaxQuery(il, reTaxInput).orElse(null);
+			if (taxQuery == null)
 			{
-				// NOTE: we can retrieve the tax category only if we have a product
-				taxCategoryId = getTaxCategoryId(il);
-				il.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
-			}
-
-			if (il.getM_Product_ID() <= 0)
-			{
-				// this might be the case if a descriptional il refers to an iol.
 				logger.debug(il + "has M_Product_ID=" + il.getM_Product_ID() + ": returning");
 				return false;
 			}
 
-			final TaxQuery taxQuery = taxQueryFactory.apply(taxCategoryId);
+			final TaxCategoryId taxCategoryId = taxQuery.getTaxCategoryId();
+			if (il.getC_TaxCategory_ID() <= 0)
+			{
+				// the tax category was looked up from the line's pricing
+				il.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
+			}
+
 			final Tax tax = taxDAO.getBy(taxQuery);
 
 			if (tax == null)
