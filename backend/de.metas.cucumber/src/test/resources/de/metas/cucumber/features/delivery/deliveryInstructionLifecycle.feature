@@ -196,6 +196,17 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionEmpty              | shipper_DHL             | customer                       | customerLocation               | DR            |
 
+    # a manual transport order is not exempt from the empty-allocation guard
+    When update transport order
+      | M_ShipperTransportation_ID | OPT.IsManualOrder |
+      | deliveryInstructionEmpty   | true              |
+    And completing the M_ShipperTransportation identified by deliveryInstructionEmpty is refused:
+      | ErrorAdMessage                                                                 |
+      | de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction |
+    Then validate M_ShipperTransportation:
+      | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
+      | deliveryInstructionEmpty              | shipper_DHL             | customer                       | customerLocation               | DR            |
+
   @Id:S31608_TC23
   Scenario: A delivery instruction carrying a closed delivery planning cannot be completed
 

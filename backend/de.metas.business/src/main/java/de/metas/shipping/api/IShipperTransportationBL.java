@@ -38,4 +38,10 @@ public interface IShipperTransportationBL extends ISingletonService
 	 * does not stay permanently linked to a transport order it no longer has any active package on.
 	 */
 	void unlinkShipmentIfOrphaned(@Nullable InOutId inOutId, @Nullable ShipperTransportationId shipperTransportationId);
+
+	/**
+	 * @return {@code true} if the given document is a transport order (not a delivery instruction) flagged as manual order,
+	 * i.e. one that may be completed without lines.
+	 */
+	boolean isManualTransportOrder(@NonNull I_M_ShipperTransportation shipperTransportation);
 }

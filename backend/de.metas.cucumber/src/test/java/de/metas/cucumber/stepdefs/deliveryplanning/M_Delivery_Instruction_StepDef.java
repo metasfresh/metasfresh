@@ -298,17 +298,18 @@ public class M_Delivery_Instruction_StepDef
 
 	/**
 	 * Drives a document action on the delivery instruction - the same {@code Complete} / {@code Re-Activate} /
-	 * {@code Void} buttons a planner presses on the instruction's own window, which is what makes the allocations
-	 * follow (or stay put).
+	 * {@code Void} / {@code Close} buttons a planner presses on the instruction's own window. Complete, Re-Activate and Void are the
+	 * ones that make the allocations follow (or stay put); Close has no delivery-instruction guard.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * When the M_ShipperTransportation identified by deliveryInstruction is voided
+	 * When the M_ShipperTransportation identified by deliveryInstruction is closed
 	 * </pre>
 	 */
-	@When("^the M_ShipperTransportation identified by (.*) is (completed|reactivated|voided)$")
+	@When("^the M_ShipperTransportation identified by (.*) is (completed|reactivated|voided|closed)$")
 	public void deliveryInstruction_docAction(@NonNull final String deliveryInstructionIdentifier, @NonNull final String action)
 	{
 		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionTable.get(deliveryInstructionIdentifier);
@@ -319,8 +320,8 @@ public class M_Delivery_Instruction_StepDef
 	}
 
 	/**
-	 * Presses {@code Complete}, {@code Re-Activate} or {@code Void} on the delivery instruction expecting it to be
-	 * REFUSED, and asserts which rejection came back. All three are guarded, so all three need the refusal form.
+	 * Presses {@code Complete}, {@code Re-Activate}, {@code Void} or {@code Close} on the delivery instruction expecting it to be
+	 * REFUSED, and asserts which rejection came back. Complete, Re-Activate and Void are guarded for a delivery instruction (Close is not), so those need the refusal form.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -334,7 +335,7 @@ public class M_Delivery_Instruction_StepDef
 	 *   | de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction |
 	 * </pre>
 	 */
-	@When("^(completing|reactivating|voiding) the M_ShipperTransportation identified by (.*) is refused:$")
+	@When("^(completing|reactivating|voiding|closing) the M_ShipperTransportation identified by (.*) is refused:$")
 	public void deliveryInstruction_docAction_is_refused(
 			@NonNull final String action,
 			@NonNull final String deliveryInstructionIdentifier,
@@ -461,6 +462,8 @@ public class M_Delivery_Instruction_StepDef
 				return StepDefDocAction.reactivated;
 			case "voiding":
 				return StepDefDocAction.voided;
+			case "closing":
+				return StepDefDocAction.closed;
 			default:
 				throw new AdempiereException("Unsupported action for M_ShipperTransportation: " + action);
 		}
@@ -479,6 +482,9 @@ public class M_Delivery_Instruction_StepDef
 				break;
 			case voided:
 				documentBL.processEx(deliveryInstruction, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case closed:
+				documentBL.processEx(deliveryInstruction, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unsupported action for M_ShipperTransportation: " + action);

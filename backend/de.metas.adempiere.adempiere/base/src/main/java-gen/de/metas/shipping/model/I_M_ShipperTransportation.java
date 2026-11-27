@@ -683,6 +683,31 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
 
 	/**
+	 * Set Manual order.
+	 * Transport order without a shipment;
+ can be completed without lines.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualOrder (boolean IsManualOrder);
+
+	/**
+	 * Get Manual order.
+	 * Transport order without a shipment;
+ can be completed without lines.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualOrder();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsManualOrder = new ModelColumn<>(I_M_ShipperTransportation.class, "IsManualOrder", null);
+	String COLUMNNAME_IsManualOrder = "IsManualOrder";
+
+	/**
 	 * Set WE Notice.
 	 * Has the container planning been completed?
 	 *
