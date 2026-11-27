@@ -248,7 +248,7 @@ class OLCandOrderFactory
 				.locationAdapter(order)
 				.setFrom(candidateOfGroup.getBPartnerInfo());
 
-		// the effective bill info falls back to the buyer's bill-to location if the olc has no value set
+		// without a bill partner/location of its own, the effective bill info falls back to the buyer's effective location, preferring a bill-to location
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
@@ -379,15 +379,7 @@ class OLCandOrderFactory
 
 		customColumnService.copyCustomColumns(candidateOfGroup.unbox(), I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
 
-		final I_C_OLCand unboxedCandidate = candidateOfGroup.unbox();
-		if (unboxedCandidate.getBill_BPartner_ID() > 0 && unboxedCandidate.getBill_Location_ID() > 0)
-		{
-			try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
-			{
-				save(order);
-			}
-		}
-		else
+		try (final IAutoCloseable ignored = candidateOfGroup.isBillLocationExplicit() ? OrderBillLocationProvidedMarker.temporaryMark(order) : IAutoCloseable.NOP)
 		{
 			save(order);
 		}

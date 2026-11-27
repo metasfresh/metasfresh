@@ -598,6 +598,34 @@ public class OrderTest
 		Assertions.assertEquals(memberLoc.getC_BPartner_Location_ID(), order.getBill_Location_ID());
 	}
 
+	/**
+	 * The marker applies to the save it wraps only: a later unmarked save that changes the order location
+	 * re-derives the invoice location from the new location's bill-to relation.
+	 */
+	@Test
+	public void setBillBPartner_reResolvesBillLocation_onUnmarkedSaveAfterMarkedSave()
+	{
+		final I_C_BPartner member = createMemberInPlainGroup();
+		final I_C_BPartner_Location locA = createBPartnerLocation(member);
+		final I_C_BPartner_Location regionalA = createBPartnerLocation(member);
+		final I_C_BPartner_Location locB = createBPartnerLocation(member);
+		final I_C_BPartner_Location regionalB = createBPartnerLocation(member);
+		createBillToRelation(locA, regionalA);
+		createBillToRelation(locB, regionalB);
+
+		final I_C_Order order = createSalesOrder(member, locA, member, locA);
+		try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
+		{
+			save(order);
+		}
+		Assertions.assertEquals(locA.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+
+		order.setC_BPartner_Location_ID(locB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(regionalB.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
 	private I_C_BPartner createMemberInPlainGroup()
 	{
 		return createBPartnerInGroup("member", createPlainBPGroup());

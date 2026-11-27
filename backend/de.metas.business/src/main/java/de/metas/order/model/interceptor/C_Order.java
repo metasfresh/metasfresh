@@ -766,24 +766,12 @@ public class C_Order
 			return;
 		}
 
-		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory) —
-		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
-		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
-		// (re)resolved, and neither is the bill partner resolved for the previous order location.
-		// An invoice address marked as provided by an order candidate (OrderBillLocationProvidedMarker)
-		// is kept even when it names the order's own partner.
+		// Keep a bill partner that was provided programmatically (e.g. by OLCandOrderFactory):
+		// - an invoice address marked as provided by an order candidate (OrderBillLocationProvidedMarker), even when it names the order's own partner, or
+		// - a bill partner DIFFERENT from the order's own partner, unless it was resolved for the previous order location.
+		// The standard own-bill-to default (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still (re)resolved.
 		// On a UI action we always (re)resolve.
-		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
-		if (!InterfaceWrapperHelper.isUIAction(order)
-				&& providedBillBPartnerId != null
-				&& OrderBillLocationProvidedMarker.isMarked(order))
-		{
-			return;
-		}
-		if (!InterfaceWrapperHelper.isUIAction(order)
-				&& providedBillBPartnerId != null
-				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId)
-				&& !isBillPartnerResolvedForPreviousLocation(order))
+		if (isProvidedBillBPartnerToKeep(order, bPartnerId))
 		{
 			return;
 		}
@@ -800,6 +788,15 @@ public class C_Order
 			// the new location resolves to nothing => don't keep the previous location's bill partner; use the partner's own bill-to
 			orderBL.setBillLocation(order);
 		}
+	}
+
+	private boolean isProvidedBillBPartnerToKeep(@NonNull final I_C_Order order, @NonNull final BPartnerId bPartnerId)
+	{
+		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		return !InterfaceWrapperHelper.isUIAction(order)
+				&& providedBillBPartnerId != null
+				&& (OrderBillLocationProvidedMarker.isMarked(order)
+				|| (!BPartnerId.equals(providedBillBPartnerId, bPartnerId) && !isBillPartnerResolvedForPreviousLocation(order)));
 	}
 
 	private static boolean isOnlyBPartnerLocationChanged(@NonNull final I_C_Order order)
