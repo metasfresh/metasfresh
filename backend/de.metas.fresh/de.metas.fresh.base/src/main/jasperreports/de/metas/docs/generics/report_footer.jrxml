@@ -27,9 +27,12 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<parameter name="IsFactoringPartner" class="java.lang.String"/>
+	<parameter name="c_invoice_id" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[optional: the sales invoice whose footer is printed; null for every other document]]></parameterDescription>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * 
-FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id},$P{IsFactoringPartner})
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id => $P{org_id}, p_isFactoringPartner => $P{IsFactoringPartner}, p_c_invoice_id => $P{c_invoice_id})
 ;]]>
 	</queryString>
 	<field name="org_name" class="java.lang.String">
@@ -108,6 +111,18 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id},$
 		<property name="com.jaspersoft.studio.field.name" value="url"/>
 		<property name="com.jaspersoft.studio.field.label" value="url"/>
 	</field>
+	<field name="taxrep_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxrep_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxrep_name"/>
+	</field>
+	<field name="taxrep_address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxrep_address"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxrep_address"/>
+	</field>
+	<field name="taxrep_vataxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxrep_vataxid"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxrep_vataxid"/>
+	</field>
 	<variable name="conditions" class="java.lang.String">
 		<variableExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></variableExpression>
 		<initialValueExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></initialValueExpression>
@@ -116,7 +131,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id},$
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="60" splitType="Stretch">
+		<band height="61" splitType="Stretch">
 			<line>
 				<reportElement key="line-1" x="43" y="13" width="508" height="1" forecolor="#A9A9A9" uuid="810cf2ef-38ec-4fbf-8c6f-3791cc38a16f"/>
 			</line>
@@ -186,6 +201,17 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id},$
 					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgEmail} + " " +$F{email}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-taxrep" positionType="Float" x="89" y="52" width="417" height="9" uuid="3f6c2a1e-8b4d-4c7a-9e5f-1a2b3c4d5e6f">
+					<printWhenExpression><![CDATA[$F{taxrep_name} != null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{fiscalrepresentative} + ": " + $F{taxrep_name}
++ ($F{taxrep_address} != null ? ", " + $F{taxrep_address} : "")
++ ($F{taxrep_vataxid} != null ? " | " + $R{vataxid} + " " + $F{taxrep_vataxid} : "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
