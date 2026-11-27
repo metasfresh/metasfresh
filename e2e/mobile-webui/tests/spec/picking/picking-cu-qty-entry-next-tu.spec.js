@@ -710,9 +710,7 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
         await GetQuantityDialog.clickDoneStayOpen();
         await PickGraiScreen.expectNotShown();
-        await PickingJobLineScreen.waitForScreen();
-        await PickingJobLineScreen.goBack();
-        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.waitForScreen(); // the scan screen was entered from the job screen (next=pickingJob), also after the TU list: the done line leads back there
     });
 
     await test.step('"Fertigstellen" is refused while TUs without GRAI exist, and completes once every TU has one', async () => {
