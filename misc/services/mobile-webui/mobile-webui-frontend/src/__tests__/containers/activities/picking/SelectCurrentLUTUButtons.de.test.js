@@ -25,7 +25,7 @@ jest.mock('../../../../reducers/wfProcesses/picking/useCurrentPickTarget', () =>
   useCurrentPickingTargetInfo: () => mockInfo,
 }));
 
-// the component dispatches the carrier advise result (release line), so it needs a store
+// the component dispatches the carrier advise result, so it needs a store
 const renderButtons = () =>
   render(
     <Provider store={createStore(() => ({}))}>

@@ -2,7 +2,7 @@ import { test } from '../../playwright.config';
 import { expect } from '@playwright/test';
 import { GetQuantityDialog } from '../utils/screens/picking/GetQuantityDialog';
 
-// the rule of get-qty-dialog.scss .table-container: `max-height: 70vh` (release line) vs the forced `height: 70vh` (the "huge gap" defect)
+// the rule of get-qty-dialog.scss .table-container: `max-height: 70vh` vs the forced `height: 70vh` (the "huge gap" defect)
 const pageWith = (heightRule) => `
 <style>
     body { margin: 0; }

@@ -1,7 +1,5 @@
 package de.metas.frontend_testing.expectations;
 
-import java.util.function.Function;
-import de.metas.quantity.Quantity;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -24,6 +22,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,11 +48,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
+import static java.util.Collections.nCopies;
 
 @Builder
 class AssertHUExpectationsCommand
@@ -573,7 +574,7 @@ class AssertHUExpectationsCommand
 		}
 
 		final ArrayList<A> unused = new ArrayList<>(actuals);
-		final ArrayList<A> result = new ArrayList<>(java.util.Collections.nCopies(expectations.size(), (A)null));
+		final ArrayList<A> result = new ArrayList<>(nCopies(expectations.size(), (A)null));
 		for (int i = 0; i < expectations.size(); i++)
 		{
 			final Quantity expectedQty = expectedQtyOf.apply(expectations.get(i));

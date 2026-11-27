@@ -39,8 +39,8 @@ class PickingJobCUQtyEntryPick_ManualAndLUTest extends CUQtyEntryPickFixture
 		job = helper.pickingJobService.setTUPickingTarget(job, targetScope(job), TUPickingTarget.ofExistingHU(tuId, helper.huService.getQRCodeByHuId(tuId)));
 		job = pick(job, source2, "3", null, false, LOT_B);
 
-		// On the release line the Manual pick records the leaf CU (unpick-to-floor), so the lot goes on the booked CU only:
-		// the overwrite of earlier CUs (caveat K5 on soft_panda_hotfix) does not happen here.
+		// The Manual pick records the leaf CU (unpick-to-floor), so the lot goes on the booked CU only:
+		// earlier CUs are not overwritten.
 		assertThat(cusOf(tuId)).extracting(this::lotOf).as("each CU keeps the lot of its own booking").containsExactlyInAnyOrder(LOT_A, LOT_B);
 		assertThat(lotOf(handlingUnitsBL.getById(tuId))).as("the TU is not stamped with the second booking's lot").isNull();
 	}

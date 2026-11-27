@@ -48,7 +48,7 @@ describe('GetQuantityDialog (Manual): submit and default buttons', () => {
     expect(payloads(onQtyChange)).toEqual([false]);
   });
 
-  // On the release line DialogButton is a plain button unless it opts in to submit (#26569), so in Manual only Done
+  // DialogButton is a plain button unless it opts in to submit (#26569), so in Manual only Done
   // submits the form: Enter books without closing the target.
   it('with an LU target, only the Done button is a submit button: Enter books without closing the target', () => {
     renderManual({ onQtyChange: jest.fn(() => Promise.resolve()), isShowCloseTargetButton: true });

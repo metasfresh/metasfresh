@@ -75,6 +75,6 @@ describe('ScanHUAndGetQtyComponent: what "Weiteres TU" hands over to the screen 
     });
     expect(resolveScannedBarcode).toHaveBeenCalledWith('RAW-A', undefined);
     expect(screen.queryByTestId('scanHUBarcode-input')).toBeNull(); // no new scan asked
-    expect(countInput()).toHaveValue('4'); // the quantity field is a text input on the release line
+    expect(countInput()).toHaveValue('4'); // the quantity field is a text input
   });
 });

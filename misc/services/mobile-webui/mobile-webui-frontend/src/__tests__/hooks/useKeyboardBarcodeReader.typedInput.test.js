@@ -90,7 +90,7 @@ describe('useKeyboardBarcodeReader: next to a typed input', () => {
     expect(onReadDone).not.toHaveBeenCalled();
   });
 
-  // On the release line the reader closes the burst on the slow key and then treats that key like any first key typed
+  // The reader closes the burst on the slow key and then treats that key like any first key typed
   // into the field: it is left to the field, and the Enter after it is the field's (no read).
   it('a key typed after a scanner burst is not glued to the burst, also with a slow scan speed of the instance: the burst is read as AB, the later key is left to the typed input', () => {
     const onReadDone = jest.fn();

@@ -52,7 +52,7 @@ test('a scan sent to a listening reader is delivered exactly once', async ({ pag
     await expect.poll(() => page.evaluate(() => window.__scanned)).toEqual(['ABCDEFGHIJ12', 'KLMNOPQRST34']);
 });
 
-// release line: the reader buffers the keys without echoing them and marks the scanner's input (visible or invisible scanner)
+// a reader that buffers the keys without echoing them and marks the scanner's input (visible or invisible scanner)
 const PAGE_WITH_NON_ECHO_READER = (inputAttrs) => `
 <input id="input-text" ${inputAttrs} data-scan-in-progress="false" />
 <script>
