@@ -372,6 +372,9 @@ describe('PickingLineScanScreen: back from the TU list ("Weiteres TU" on a line 
     expect(computeSuggestedQtyOnScan({ pendingScan, suggestedQty: 7 })).toBe(4);
     expect(computeSuggestedQtyOnScan({ pendingScan: null, suggestedQty: 7 })).toBe(7);
     expect(computeSuggestedQtyOnScan({ pendingScan: null, suggestedQty: undefined })).toBeUndefined();
+    expect(computeSuggestedQtyOnScan({ pendingScan: { scannedBarcode: 'L', qtyEntered: '4,5' }, suggestedQty: 7 })).toBe(
+      4.5
+    );
     expect(computeSuggestedQtyOnScan({ pendingScan: { scannedBarcode: 'L', qtyEntered: '' }, suggestedQty: 7 })).toBe(
       7
     );

@@ -7,6 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
+import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
 import { SelectPickTargetTUScreen } from "../../utils/screens/picking/SelectPickTargetTUScreen";
 import { PickGraiScreen } from "../../utils/screens/picking/PickGraiScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -720,6 +721,30 @@ test('line without a TU type: first booking refused, "Next TU" opens the "Gebind
         await PickingJobScreen.complete();
         await Backend.expect({ pickings: { [pickingJobId]: { docStatus: 'Completed' } } });
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('line without a TU type: a GRAI scanned on the "Gebinde" list opens that TU and leads back to the scan screen with the label and the count kept', async ({ page }) => {
+    allureMeta('Open TU first, line without a TU type');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 12, graiRequired: 'Y', piItemProduct: null }],
+        packingInstructions: graiTuType('G1'),
+    });
+    const grai = masterdata.packingInstructions.G1.grai;
+    await startJob(masterdata, { qtyToDeliver: 12 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata }));
+    await GetQuantityDialog.typeQtyEntered(4);
+    await PickLineScanScreen.nextTU();
+    await SelectPickTargetTUScreen.waitForScreen();
+    await PickingGraiScanPanel.scanGrai({ graiString: grai });
+    await PickLineScanScreen.waitForScreen();
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.expectQtyEntered(4);
+    await PickLineScanScreen.expectOpenTUCaption(masterdata.packingInstructions.G1.tuName);
+    await GetQuantityDialog.clickDoneStayOpen({ expectedQtyTarget: 8 });
 });
 
 /** The same three line packings in Scan each CU */

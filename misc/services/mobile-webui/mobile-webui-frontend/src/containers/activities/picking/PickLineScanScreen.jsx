@@ -48,7 +48,7 @@ import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation, pickingLineScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { toNumberOrZero } from '../../../utils/numbers';
+import { toNumberOrNaN, toNumberOrZero } from '../../../utils/numbers';
 import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
@@ -159,6 +159,7 @@ const PickLineScanScreen = () => {
 
   const nextTU = useOpenNextTU({
     next,
+    qrCode, // the return to this screen keeps the source HU of the pick
     isReturnToScanScreen: cuQtyEntryPolicy.isScanOnce,
     applicationId,
     wfProcessId,
@@ -317,8 +318,10 @@ export const computeScannedBarcodeParam = ({ qrCode, cuQtyEntryPolicy = MANUAL_P
 /** The count offered when the scan screen opens: the one kept for the trip to the TU list, else the one suggested from the last booking */
 // @VisibleForTesting
 export const computeSuggestedQtyOnScan = ({ pendingScan, suggestedQty }) => {
-  const kept = pendingScan?.qtyEntered;
-  return kept != null && kept !== '' && !Number.isNaN(Number(kept)) ? Number(kept) : suggestedQty;
+  // the typed text, so a locale decimal ("4,5") is read as such
+  const typed = pendingScan?.qtyEntered;
+  const kept = typed == null || `${typed}`.trim() === '' ? Number.NaN : toNumberOrNaN(typed);
+  return Number.isNaN(kept) ? suggestedQty : kept;
 };
 
 /** The HU the PICK event takes the CUs from (`huQRCode`) */

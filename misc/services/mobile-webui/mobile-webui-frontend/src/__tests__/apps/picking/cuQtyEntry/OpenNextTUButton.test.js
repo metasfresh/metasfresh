@@ -256,6 +256,7 @@ describe('useOpenNextTU', () => {
       packingTuPIId: exposed.packingTuPIId === undefined ? TU_TYPE_ID : exposed.packingTuPIId,
       packingItemName: 'TU',
       next: exposed.next,
+      qrCode: exposed.qrCode,
       isReturnToScanScreen: exposed.isReturnToScanScreen,
       tuPickingTarget: exposed.tuPickingTarget ?? null,
       setPickingTarget: exposed.setPickingTarget,
@@ -332,6 +333,14 @@ describe('useOpenNextTU', () => {
         await exposed.nextTU.onNextTU(SCAN);
       });
       expect(mockPush).toHaveBeenCalledWith(tuListLocation('?next=pickingJob'));
+    });
+
+    it('the return location keeps the source HU of the scan screen (pick on the fly, job-level HU scan)', async () => {
+      const exposed = setup(jest.fn(), null, { packingTuPIId: null, qrCode: 'HU#1', isReturnToScanScreen: true });
+      await act(async () => {
+        await exposed.nextTU.onNextTU(SCAN);
+      });
+      expect(mockPush).toHaveBeenCalledWith(tuListLocation('?qrCode=HU%231'));
     });
 
     it('nothing to keep (before the first scan, Scan each): only the return location', async () => {

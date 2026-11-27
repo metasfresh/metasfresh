@@ -85,6 +85,7 @@ export const useOpenNextTU = ({
   tuPickingTarget,
   setPickingTarget,
   next,
+  qrCode,
   isReturnToScanScreen = false,
 }) => {
   const dispatch = useDispatch();
@@ -230,7 +231,7 @@ export const useOpenNextTU = ({
               lineId,
               type: PickingTargetType.TU,
               returnTo: isReturnToScanScreen
-                ? pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, next })
+                ? pickingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, qrCode, next })
                 : undefined,
             })
           );
