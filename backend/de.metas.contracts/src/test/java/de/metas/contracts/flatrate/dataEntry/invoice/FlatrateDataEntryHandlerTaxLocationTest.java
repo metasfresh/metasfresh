@@ -72,7 +72,7 @@ public class FlatrateDataEntryHandlerTaxLocationTest
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(dropShipLocationId);
 		assertThat(result.getOrgId()).isEqualTo(fixture.getOrgId());
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-31 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-31 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 	}
 
@@ -83,7 +83,7 @@ public class FlatrateDataEntryHandlerTaxLocationTest
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(billToLocationId);
 		assertThat(result.getOrgId()).isEqualTo(fixture.getOrgId());
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-31 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-31 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 	}
 

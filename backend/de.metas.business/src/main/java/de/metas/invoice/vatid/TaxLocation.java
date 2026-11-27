@@ -31,9 +31,11 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * Where, by whom and when a line is taxed: the delivery partner location, the org, the tax date
@@ -44,7 +46,7 @@ public class TaxLocation
 {
 	@NonNull BPartnerLocationId bpartnerLocationId;
 	@NonNull OrgId orgId;
-	@NonNull Timestamp taxDate;
+	@NonNull Instant taxDate;
 
 	/**
 	 * The ship-from country the line was taxed with; {@code null} = not known (a re-tax then keeps its default).
@@ -78,18 +80,23 @@ public class TaxLocation
 			@Nullable final CountryId fromCountryId,
 			@Nullable final WarehouseId warehouseId)
 	{
-		this.bpartnerLocationId = bpartnerLocationId;
-		this.orgId = orgId;
-		this.taxDate = taxDate;
-		this.fromCountryId = fromCountryId;
-		this.warehouseId = warehouseId;
-		this.locationCaptureId = null;
+		this(bpartnerLocationId, orgId, TimeUtil.asInstantNonNull(taxDate), fromCountryId, warehouseId);
+	}
+
+	public TaxLocation(
+			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@NonNull final OrgId orgId,
+			@NonNull final Instant taxDate,
+			@Nullable final CountryId fromCountryId,
+			@Nullable final WarehouseId warehouseId)
+	{
+		this(bpartnerLocationId, orgId, taxDate, fromCountryId, warehouseId, null);
 	}
 
 	private TaxLocation(
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@NonNull final OrgId orgId,
-			@NonNull final Timestamp taxDate,
+			@NonNull final Instant taxDate,
 			@Nullable final CountryId fromCountryId,
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final LocationId locationCaptureId)

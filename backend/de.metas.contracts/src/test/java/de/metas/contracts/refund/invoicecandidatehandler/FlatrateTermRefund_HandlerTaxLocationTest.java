@@ -95,7 +95,7 @@ public class FlatrateTermRefund_HandlerTaxLocationTest
 
 		assertThat(withDateOrdered.getBpartnerLocationId()).isEqualTo(billLocationId);
 		assertThat(withDateOrdered.getOrgId()).isEqualTo(fixture.getOrgId());
-		assertThat(withDateOrdered.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00"));
+		assertThat(withDateOrdered.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00").toInstant());
 		assertThat(withDateOrdered.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 
 		ic.setDateOrdered(null);
@@ -105,7 +105,7 @@ public class FlatrateTermRefund_HandlerTaxLocationTest
 
 		assertThat(withDateToInvoice.getBpartnerLocationId()).isEqualTo(billLocationId);
 		assertThat(withDateToInvoice.getOrgId()).isEqualTo(fixture.getOrgId());
-		assertThat(withDateToInvoice.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-09 00:00:00"));
+		assertThat(withDateToInvoice.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-09 00:00:00").toInstant());
 		assertThat(withDateToInvoice.getFromCountryId()).isEqualTo(fixture.getOrgCountryId());
 	}
 

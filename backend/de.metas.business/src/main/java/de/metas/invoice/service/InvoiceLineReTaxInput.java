@@ -31,9 +31,10 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * The inputs of the tax query with which an invoice line is (re-)taxed.
@@ -43,7 +44,7 @@ import java.sql.Timestamp;
 public class InvoiceLineReTaxInput
 {
 	@NonNull OrgId orgId;
-	@NonNull Timestamp taxDate;
+	@NonNull Instant taxDate;
 	@NonNull CountryId countryFromId;
 	@Nullable WarehouseId warehouseId;
 	@NonNull BPartnerLocationAndCaptureId taxLocation;
@@ -59,7 +60,7 @@ public class InvoiceLineReTaxInput
 	{
 		return builder()
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
-				.taxDate(shipment.getMovementDate())
+				.taxDate(TimeUtil.asInstantNonNull(shipment.getMovementDate()))
 				.countryFromId(countryFromId)
 				.warehouseId(warehouseId)
 				.taxLocation(InOutDocumentLocationAdapterFactory.locationAdapter(shipment).getBPartnerLocationAndCaptureId())

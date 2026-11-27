@@ -1553,7 +1553,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final InvoiceLineReTaxInput.InvoiceLineReTaxInputBuilder reTaxInput = InvoiceLineReTaxInput.builder()
 				.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
-				.taxDate(CoalesceUtil.coalesceNotNull(dateInvoicedOverride, invoice.getDateInvoiced()))
+				.taxDate(TimeUtil.asInstantNonNull(CoalesceUtil.coalesceNotNull(dateInvoicedOverride, invoice.getDateInvoiced())))
 				.isSOTrx(invoice.isSOTrx());
 
 		final TaxLocationAndFromCountry deliveryTaxLocation = invoice.isSOTrx() ? getDeliveryTaxLocation(invoiceLine).orElse(null) : null;

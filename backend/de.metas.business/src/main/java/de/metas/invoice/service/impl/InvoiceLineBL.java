@@ -183,7 +183,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.warehouseId(reTaxInput.getWarehouseId())
 				.orgId(reTaxInput.getOrgId())
 				.bPartnerLocationId(reTaxInput.getTaxLocation())
-				.dateOfInterest(reTaxInput.getTaxDate())
+				.dateOfInterest(TimeUtil.asTimestampNotNull(reTaxInput.getTaxDate()))
 				.taxCategoryId(taxCategoryId)
 				.soTrx(SOTrx.ofBoolean(reTaxInput.isSOTrx()))
 				.build();

@@ -99,7 +99,7 @@ public class C_OLCand_HandlerTaxLocationTest
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(dropShipLocationId);
 		assertThat(result.getOrgId()).isEqualTo(orgId);
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(orgCountryId);
 	}
 
@@ -114,7 +114,7 @@ public class C_OLCand_HandlerTaxLocationTest
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(buyerLocationId);
 		assertThat(result.getOrgId()).isEqualTo(orgId);
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-06 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-06 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(orgCountryId);
 	}
 
@@ -128,7 +128,7 @@ public class C_OLCand_HandlerTaxLocationTest
 
 		final TaxLocation result = new C_OLCand_Handler().getTaxLocation(createIC(olCand)).orElseThrow(AssertionError::new);
 
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-05 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-05 00:00:00").toInstant());
 	}
 
 	private I_C_OLCand createOLCand()

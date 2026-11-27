@@ -104,7 +104,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(otherLocationId);
 		assertThat(result.getOrgId().getRepoId()).isEqualTo(inOut.getAD_Org_ID());
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-04 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(warehouseCountryId);
 	}
 
@@ -135,7 +135,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 
 		final TaxLocation result = handlerBL.getTaxLocation(ic, null);
 
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-05 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-05 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isNotNull();
 	}
 
@@ -163,7 +163,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(otherLocationId); // the IC has billLocationId
 		assertThat(result.getOrgId()).isEqualTo(orgId);
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-06 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-06 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(warehouseCountryId);
 	}
 
@@ -186,7 +186,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(billLocationId);
 		assertThat(result.getOrgId()).isEqualTo(warehouseOrgId);
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-07 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-07 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isEqualTo(warehouseCountryId);
 	}
 
@@ -253,7 +253,7 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 
 		assertThat(result.getBpartnerLocationId()).isEqualTo(billLocationId);
 		assertThat(result.getOrgId()).isEqualTo(orgId);
-		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-08 00:00:00"));
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-08 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isNull(); // not known: a re-tax keeps its default
 	}
 

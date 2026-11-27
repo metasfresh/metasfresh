@@ -1,5 +1,7 @@
 package de.metas.organization;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -12,6 +14,7 @@ public class FiscalRepresentationId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	@NonNull
 	public static FiscalRepresentationId ofRepoId(final int repoId)
 	{
@@ -30,6 +33,7 @@ public class FiscalRepresentationId implements RepoIdAware
 	}
 
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;

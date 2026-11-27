@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Fiscal_Representation;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -78,7 +79,7 @@ public class InvoiceVATaxIdService
 		}
 
 		final CountryId destCountryId = bpartnerDAO.getCountryId(taxLocation.getBpartnerLocationId());
-		final Optional<I_C_Fiscal_Representation> registration = fiscalRepresentationBL.getFiscalRepresentation(destCountryId, taxLocation.getOrgId(), taxLocation.getTaxDate());
+		final Optional<I_C_Fiscal_Representation> registration = fiscalRepresentationBL.getFiscalRepresentation(destCountryId, taxLocation.getOrgId(), TimeUtil.asTimestampNotNull(taxLocation.getTaxDate()));
 		if (!registration.isPresent())
 		{
 			return new InvoiceVATaxIds(buyerVATaxId, null, null);
