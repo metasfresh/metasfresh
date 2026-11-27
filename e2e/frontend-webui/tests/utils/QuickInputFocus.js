@@ -199,7 +199,8 @@ function currentRecordId(page) {
     .pop();
 }
 
-async function waitForOrderSaved(page) {
+/** Wait until the URL carries the order's record id and the order is saved. Returns the record id. */
+export async function waitForOrderSaved(page) {
   await expect
     .poll(() => currentRecordId(page), { timeout: SLOW_ACTION_TIMEOUT, message: 'order URL carries a record id' })
     .toMatch(/^\d+$/);
@@ -219,10 +220,11 @@ async function waitForOrderSaved(page) {
 }
 
 /**
- * Customer picked by keyboard: the cursor is in the partner input after Alt+N; type the code,
- * wait for the highlighted option, Enter. No Tab, no click. Returns the record id.
+ * Customer typed and confirmed by keyboard: the cursor is in the partner input after Alt+N; type the code,
+ * wait for the highlighted option, Enter. No Tab, no click. Returns right after the Enter, without waiting
+ * for the order to be saved or for the header to hand the cursor on to address and contact.
  */
-export async function pickCustomerByKeyboard({ bpartnerCode }) {
+export async function typeCustomerAndEnter({ bpartnerCode }) {
   const page = global.currentPage;
   const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
   await partnerInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -233,7 +235,12 @@ export async function pickCustomerByKeyboard({ bpartnerCode }) {
     timeout: SLOW_ACTION_TIMEOUT,
   });
   await page.keyboard.press('Enter');
-  return await waitForOrderSaved(page);
+}
+
+/** Customer picked by keyboard ({@link typeCustomerAndEnter}), then wait until the order is saved. Returns the record id. */
+export async function pickCustomerByKeyboard({ bpartnerCode }) {
+  await typeCustomerAndEnter({ bpartnerCode });
+  return await waitForOrderSaved(global.currentPage);
 }
 
 /** Customer picked by mouse from the lookup list (minOptions: options that must be shown first). No Tab. Returns the record id. */
@@ -256,6 +263,20 @@ export async function pickCustomerByMouse({ searchText, bpartnerCode, minOptions
 }
 
 /**
+ * Wait for the response of the header contact list request (GET .../AD_User_ID/dropdown), the last request of the
+ * header's walk partner -> address -> contact after a customer pick (customer with one address). Arm it before the pick.
+ * The returned promise never leaves an unhandled rejection behind, but rejects when awaited after a timeout.
+ */
+export function waitForContactListResponse(page) {
+  const contactList = page.waitForResponse(
+    (r) => r.request().method() === 'GET' && /\/AD_User_ID\/dropdown\/?$/.test(new URL(r.url()).pathname),
+    { timeout: SLOW_ACTION_TIMEOUT * 3 }
+  );
+  contactList.catch(() => {}); // a failing pick must not leave this wait as an unhandled rejection
+  return contactList;
+}
+
+/**
  * Run the customer pick and wait for the observable end of the header's walk after it: the response of the
  * contact list request (GET .../AD_User_ID/dropdown), which the walk partner -> address -> contact sends last,
  * then two animation frames. The response wait is armed before the pick, because the request can be sent
@@ -266,11 +287,7 @@ export async function pickCustomerByMouse({ searchText, bpartnerCode, minOptions
  */
 export async function pickCustomerAndSettle(pick) {
   const page = global.currentPage;
-  const contactList = page.waitForResponse(
-    (r) => r.request().method() === 'GET' && /\/AD_User_ID\/dropdown\/?$/.test(new URL(r.url()).pathname),
-    { timeout: SLOW_ACTION_TIMEOUT * 3 }
-  );
-  contactList.catch(() => {}); // a failing pick must not leave this wait as an unhandled rejection
+  const contactList = waitForContactListResponse(page);
   const result = await pick();
   await contactList;
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));

@@ -13,6 +13,9 @@ import {
   pickCustomerByKeyboard,
   pickCustomerByMouse,
   pickCustomerAndSettle,
+  typeCustomerAndEnter,
+  waitForOrderSaved,
+  waitForContactListResponse,
   enterLinesKeyboardOnly,
   closeQuickInputAndComplete,
   expectFocusOn,
@@ -258,6 +261,72 @@ async function expectRowsAndCompleted(windowId, recordId) {
 
 const products = (masterdata) => PRODUCT_KEYS.map((k) => masterdata.products[k].productCode);
 
+// One address: after the partner the header hands the cursor on to the address (filled by itself) and then to
+// the contact. With two contacts the contact list also opens its dropdown.
+const ONE_ADDRESS_TWO_CONTACTS = {
+  locations: { LOC1: { city: 'Bonn', postal: '53111', address1: 'A 1', countryCode: 'DE' } },
+  contacts: MULTI_CUSTOMER.contacts,
+};
+
+// Answer time of the header address list request. On a local stack the header finishes the hand-over partner ->
+// address -> contact about 150 ms after the partner is saved, before a key press can follow; on a remote server the
+// round trips take longer. This delay stands in for that latency, so Alt+Q comes while the hand-over still runs.
+const ADDRESS_LIST_DELAY_MS = 1500;
+
+/**
+ * Keyboard-only clerk in one go: partner typed, Enter, Alt+Q as soon as the batch entry toggle is there, without
+ * waiting for the order to be saved or for the header to move on to address and contact. The cursor must be in
+ * Produkt and stay there once the header has finished that hand-over; then the lines are entered keyboard only.
+ */
+async function runAltQBeforeHeaderHandOver(page, { language, customer }) {
+  tagAllure({
+    language,
+    packingInstructionsField: 'N',
+    story: 'Quick entry opened with Alt+Q while the header still moves on from the partner to address and contact keeps the cursor',
+  });
+  const { recorder, masterdata } = await loginForSalesOrder({
+    language,
+    packingInstructionsField: 'N',
+    customers: { CUSTOMER1: customer },
+  });
+  await SalesOrderPage.goto();
+  await SalesOrderPage.clickNew();
+
+  await page.route(/\/field\/C_BPartner_Location_ID\/dropdown\/?(\?.*)?$/, async (route) => {
+    await new Promise((r) => setTimeout(r, ADDRESS_LIST_DELAY_MS));
+    await route.continue();
+  });
+  const contactList = waitForContactListResponse(page);
+  let isHandOverDone = false;
+  contactList.then(() => (isHandOverDone = true));
+  await typeCustomerAndEnter({ bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode });
+  await page.getByTestId('batch-entry-toggle').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  expect(isHandOverDone, 'setup: the header hand-over to the contact is still running at Alt+Q').toBe(false);
+  const { productInput } = await openQuickEntryByAltQ(page);
+  await expectFocusOn(productInput, 'opened: cursor in Produkt');
+
+  await contactList;
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await expectFocusHeld(productInput, 3000, 'after the header moved on to address and contact: cursor stays in Produkt');
+
+  const windowId = SALES_ORDER_WINDOW_ID;
+  const recordId = await waitForOrderSaved(page);
+  const headerContact = async () => (await getRecordData(windowId, recordId)).fieldsByName?.AD_User_ID?.value?.key ?? null;
+  const contactBefore = await headerContact();
+  await enterLinesKeyboardOnly({
+    recorder,
+    windowId,
+    recordId,
+    products: products(masterdata),
+    qtys: QTYS,
+    packingInstructionsField: 'N',
+  });
+  await closeQuickInputAndComplete({ recorder, windowId, recordId });
+  await expectRowsAndCompleted(windowId, recordId);
+  // Keys typed in the quick entry must not have picked another header contact.
+  expect(await headerContact(), 'header contact unchanged by the keys typed in the quick entry').toBe(contactBefore);
+}
+
 testCases.forEach(({ language, label }) => {
   test.describe(`Quick entry keyboard focus (${label})`, () => {
     test(`keyboard, no packing-instruction field (${label})`, async ({ page }) => {
@@ -403,6 +472,15 @@ testCases.forEach(({ language, label }) => {
       expect(where.inHeaderLookup, `Tab after Alt+Q: ${landed}`).toBe(false);
       await page.evaluate(() => document.activeElement.setAttribute('data-qikf-tab-landed', 'true'));
       await expectFocusHeld(page.locator('[data-qikf-tab-landed="true"]'), 1000, 'Tab after Alt+Q');
+    });
+
+    [
+      { customer: {}, customerLabel: 'one address' },
+      { customer: ONE_ADDRESS_TWO_CONTACTS, customerLabel: 'one address and two contacts' },
+    ].forEach(({ customer, customerLabel }) => {
+      test(`keyboard partner, Enter, Alt+Q in one go, ${customerLabel} (${label})`, async ({ page }) => {
+        await runAltQBeforeHeaderHandOver(page, { language, customer });
+      });
     });
 
     [
