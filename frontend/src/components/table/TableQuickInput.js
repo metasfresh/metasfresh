@@ -261,10 +261,10 @@ class TableQuickInput extends PureComponent {
   };
 
   /**
-   * Decides whether the first field (or, after loading, the first field with errors) takes the cursor when this quick input
-   * is shown. Decided once per quick input (`quickInputId`: the opened one, then each new one after a line was
-   * added), when first asked; later calls return that decision, not the current focus. A quick input the tab opened by itself does not take the cursor from an element
-   * outside it.
+   * Decides whether the first field (or, after loading, the first field with errors) takes the cursor when this
+   * quick input is shown. Decided once per quick input (`quickInputId`: the opened one, then each new one after a
+   * line was added), when first asked; later calls return that decision, not the current focus. A quick input the
+   * tab opened by itself does not take the cursor from an element outside it.
    * @returns {boolean}
    */
   shouldFocusFirstField = () => {
