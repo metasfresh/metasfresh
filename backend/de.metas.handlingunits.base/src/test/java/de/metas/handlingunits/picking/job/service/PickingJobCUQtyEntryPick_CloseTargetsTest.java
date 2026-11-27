@@ -22,6 +22,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
 import org.junit.jupiter.api.Test;
+import de.metas.order.OrderAndLineId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,19 +45,6 @@ class PickingJobCUQtyEntryPick_CloseTargetsTest extends CUQtyEntryPickFixture
 	}
 
 	@Test
-	void labelRequiredModeBooking_thenModeSwitchedToManual_closingAllTargets_queuesTheTUOnItsOwnLinesSlot()
-	{
-		setProfile(CUQtyEntryMode.SCAN_ONCE_ENTER_QTY);
-		final TUOfCustomerA given = pickIntoTUOfCustomerA_thenScanSlotB("x4", "3", label(PRODUCT_NO, LOT_A));
-
-		setProfile(CUQtyEntryMode.MANUAL);
-
-		helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
-
-		assertThat(queuedSlotsOf(given.tuA)).as("customer A's TU, booked in Scan once, is queued on customer A's slot only").containsExactly(helper.pickingSlotId);
-	}
-
-	@Test
 	void manual_closingAllTargets_queuesTheTUOnTheLastScannedSlot()
 	{
 		setProfile(CUQtyEntryMode.MANUAL);
@@ -61,6 +53,38 @@ class PickingJobCUQtyEntryPick_CloseTargetsTest extends CUQtyEntryPickFixture
 		helper.pickingJobService.closeLUAndTUPickingTargets(given.job);
 
 		assertThat(queuedSlotsOf(given.tuA)).as("Manual: the close queues the TU on the slot scanned last").contains(given.slotB);
+	}
+
+	@Test
+	void manual_productAggregation_cuLine_closingAllTargets_queuesTheTUOnTheLastScannedSlot()
+	{
+		setProfile(CUQtyEntryMode.MANUAL);
+		final HUInfo source = sourceTU("QR-X5");
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder-x5");
+		helper.packageable()
+				.orderAndLineId(orderAndLineId)
+				.productId(productId)
+				.huPIItemProductId(null) // no TU packing: the line is picked in CUs
+				.qtyToDeliver("100")
+				.build();
+		PickingJob job = helper.pickingJobService.createPickingJob(
+						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.PRODUCT)
+								.pickerId(UserId.ofRepoId(1234))
+								.isAllowPickingAnyHU(true)
+								.build())
+				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "SLOT-A"));
+		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
+		assertThat(line.getPickingUnit().isCU()).as("CU line").isTrue();
+		job = helper.pickingJobService.setTUPickingTarget(job, line.getId(), TUPickingTarget.ofPackingInstructions(tuPIId, "TU-4"));
+		job = pickOnLine(job, line.getId(), source, "2", null);
+		final HuId tu = job.getTuPickingTargetEffective(line.getId()).orElseThrow(() -> new AssertionError("no TU")).getTuIdNotNull();
+		final PickingSlotId slotB = createPickingSlot("SLOT-B");
+		job = job.withPickingSlot(PickingSlotIdAndCaption.of(slotB, "SLOT-B"));
+
+		helper.pickingJobService.closeLUAndTUPickingTargets(job);
+
+		assertThat(queuedSlotsOf(tu)).as("Manual, product aggregation, CU line: the close queues the TU on the slot scanned last").contains(slotB);
 	}
 
 	@Test

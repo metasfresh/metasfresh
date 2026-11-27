@@ -698,20 +698,6 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return streamLines().filter(lineFilter).collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean hasLine(@NonNull final Predicate<PickingJobLine> lineFilter)
-	{
-		return streamLines().anyMatch(lineFilter);
-	}
-
-	public ImmutableSet<HUInfo> getPickedHUInfos(@NonNull final Predicate<PickingJobLine> lineFilter)
-	{
-		return streamLines()
-				.filter(lineFilter)
-				.map(PickingJobLine::getPickedHUInfos)
-				.flatMap(List::stream)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	public ImmutableSet<PPOrderId> getManufacturingOrderIds()
 	{
 		return streamLines()
