@@ -7,7 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
+import { PickingGraiScanPanel } from "../../utils/screens/picking/PickingGraiScanPanel";
 import { SelectPickTargetTUScreen } from "../../utils/screens/picking/SelectPickTargetTUScreen";
 import { PickGraiScreen } from "../../utils/screens/picking/PickGraiScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
