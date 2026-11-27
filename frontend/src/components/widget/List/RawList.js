@@ -156,13 +156,27 @@ export class RawList0 extends PureComponent {
     // On focus gained (via props)
     // Edge-only re-take: a composed lookup's sub-list (e.g. the contact of a business partner) is flagged
     // `isFocused` from its first render and must not pull the cursor back on every re-render once it has
-    // moved elsewhere. Take the focus only when: the flag just turned on, the field just became editable
-    // while flagged (GL Journal batch entry, first field D/C), or the cursor was lost to nowhere
-    // (document.body / null, e.g. mouse pick then keyboard continue). The first two cases may take the focus
-    // from another element; on any other re-render it is never taken from another element.
+    // moved elsewhere. Take the focus only when:
+    // - the flag just turned on and the cursor is not outside the enclosing lookup (`wrapperElement`): the
+    //   lookup hands the cursor on from the previous sub-field. A list that is not part of a lookup (no
+    //   `wrapperElement`) takes it from any element;
+    // - the field just became editable while flagged (GL Journal batch entry, first field D/C); this may take
+    //   the focus from any element;
+    // - the cursor was lost to nowhere (document.body / null, e.g. mouse pick then keyboard continue).
+    // On any other re-render it is never taken from another element.
+    // If the flag turns on while the user has moved the cursor out of the lookup (e.g. Alt+Q put it in the
+    // quick entry while the hand-over to this sub-list ran), the cursor stays there and the flag is dropped
+    // as on a focus-out (`onBlur`), so this list does not open its dropdown, whose key handler listens on the
+    // whole page, behind the cursor.
     if (this.props.isFocused && !this.props.readonly) {
-      if (
-        !prevProps.isFocused ||
+      const { wrapperElement, onBlur } = this.props;
+      const hasFlagTurnedOn = !prevProps.isFocused;
+      const isCursorOutsideLookup =
+        !!wrapperElement && isCursorHeldOutside(wrapperElement);
+      if (hasFlagTurnedOn && isCursorOutsideLookup && !prevProps.readonly) {
+        onBlur();
+      } else if (
+        hasFlagTurnedOn ||
         prevProps.readonly ||
         isCursorHeldByNothing()
       ) {

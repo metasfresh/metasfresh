@@ -142,7 +142,12 @@ export class Lookup extends Component {
           this.setState(
             { property: nextProp.field }, //
             () => {
-              onBlurWidget && onBlurWidget();
+              // The next sub-list takes the cursor from within this lookup (RawList, when its focus flag turns
+              // on). It does not take it from outside the lookup, so move the cursor on to the next form field
+              // only when that sub-list cannot take it.
+              if (!this.canSubFieldTakeFocus(widgetData[nextIndex])) {
+                onBlurWidget && onBlurWidget();
+              }
             }
           );
         } else if (
@@ -164,6 +169,21 @@ export class Lookup extends Component {
     }
 
     return hasNextSubField;
+  };
+
+  /**
+   * @param {?object} subFieldData the sub-field's entry of `widgetData`
+   * @returns {boolean} true if the sub-field, once it is the current property, is editable and gets `autoFocus`
+   *          (same conditions as in {@link renderSingleLookupPart_List})
+   */
+  canSubFieldTakeFocus = (subFieldData) => {
+    const { isInputEmpty, autofocusDisabled } = this.state;
+    return (
+      !!subFieldData &&
+      !subFieldData.readonly &&
+      !isInputEmpty &&
+      !autofocusDisabled
+    );
   };
 
   isCursorInLookup = () =>

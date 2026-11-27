@@ -85,3 +85,84 @@ describe('Lookup — moving on after the last sub-field is picked', () => {
     expect(document.activeElement).toBe(elsewhere);
   });
 });
+
+/**
+ * After a sub-field that is not the last one is picked (business partner → address), the next sub-list gets the
+ * cursor from within the lookup. The cursor is not first sent to the next field of the form: from there the
+ * sub-list would have to take it from outside the lookup, which it must not do (Alt+Q may have put the cursor in
+ * the quick entry while the pick was being saved).
+ */
+describe('Lookup — moving on after a sub-field that is not the last one is picked', () => {
+  const properties = [
+    { field: 'C_BPartner_ID', source: 'lookup', caption: 'Partner' },
+    { field: 'C_BPartner_Location_ID', source: 'list', caption: 'Address' },
+    { field: 'AD_User_ID', source: 'list', caption: 'Contact' },
+  ];
+  // The business partner is picked (has a value).
+  const widgetDataWithAddress = (isAddressReadonly) => [
+    {
+      field: 'C_BPartner_ID',
+      value: { key: '1', caption: 'Partner 1' },
+      readonly: false,
+      mandatory: true,
+    },
+    {
+      field: 'C_BPartner_Location_ID',
+      value: null,
+      readonly: isAddressReadonly,
+      mandatory: true,
+    },
+    { field: 'AD_User_ID', value: null, readonly: false, mandatory: false },
+  ];
+
+  let lookupEl, partnerInput;
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    lookupEl = document.createElement('div');
+    partnerInput = document.createElement('input');
+    lookupEl.append(partnerInput);
+    document.body.append(lookupEl);
+  });
+
+  const lookup = ({ onBlurWidget, isAddressReadonly = false }) => {
+    const wrapper = shallow(
+      <Lookup
+        properties={properties}
+        widgetData={widgetDataWithAddress(isAddressReadonly)}
+        windowType="143"
+        entity="window"
+        onChange={jest.fn()}
+        onSelectBarcode={jest.fn()}
+        onScanBarcode={jest.fn()}
+        onBlurWidget={onBlurWidget}
+      />
+    );
+    wrapper.instance().setWrapperElement(lookupEl);
+    return wrapper;
+  };
+
+  it('hands on to the next sub-field and keeps the cursor in the lookup when the next sub-field is editable', () => {
+    const onBlurWidget = jest.fn();
+    partnerInput.focus();
+    const wrapper = lookup({ onBlurWidget });
+
+    const hasNextSubField = wrapper.instance().setNextProperty('C_BPartner_ID');
+
+    expect(hasNextSubField).toBe(true);
+    expect(wrapper.state('property')).toBe('C_BPartner_Location_ID');
+    expect(onBlurWidget).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(partnerInput);
+  });
+
+  it('moves the cursor on to the next form field when the next sub-field is read-only', () => {
+    const onBlurWidget = jest.fn();
+    partnerInput.focus();
+    const wrapper = lookup({ onBlurWidget, isAddressReadonly: true });
+
+    wrapper.instance().setNextProperty('C_BPartner_ID');
+
+    expect(wrapper.state('property')).toBe('C_BPartner_Location_ID');
+    expect(onBlurWidget).toHaveBeenCalledTimes(1);
+  });
+});

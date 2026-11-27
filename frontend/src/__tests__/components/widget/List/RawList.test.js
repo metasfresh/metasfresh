@@ -435,8 +435,8 @@ describe('RawList component', () => {
           { attachTo: container }
         );
 
-      // E.g. a composed lookup hands the focus from the business partner to its location sub-list.
-      it('takes the focus from another field when the flag turns on', () => {
+      // A list that is not part of a lookup (no wrapperElement) keeps taking the focus from another field.
+      it('takes the focus from another field when the flag turns on and it is not part of a lookup', () => {
         const wrapper = mountAttached({ isFocused: false });
         otherInput.focus();
 
@@ -446,6 +446,89 @@ describe('RawList component', () => {
           wrapper.find('.input-dropdown-container').getDOMNode()
         );
         wrapper.detach();
+      });
+
+      // A sub-list of a composed lookup: `lookupWrapper` stands for the lookup's wrapperElement, which holds
+      // the previous sub-field (e.g. the business partner input) and this list.
+      describe('as a sub-list of a lookup', () => {
+        let lookupWrapper;
+        let previousSubField;
+        let listContainer;
+
+        beforeEach(() => {
+          lookupWrapper = document.createElement('div');
+          previousSubField = document.createElement('input');
+          listContainer = document.createElement('div');
+          lookupWrapper.appendChild(previousSubField);
+          lookupWrapper.appendChild(listContainer);
+          document.body.appendChild(lookupWrapper);
+        });
+
+        afterEach(() => {
+          document.body.removeChild(lookupWrapper);
+        });
+
+        const mountInLookup = (props) =>
+          mount(
+            <RawListBare
+              {...createDummyProps(
+                {
+                  ...fixtures.data1.widgetProps,
+                  isToggled: false,
+                  tabIndex: 0,
+                  readonly: false,
+                  wrapperElement: lookupWrapper,
+                  ...props,
+                },
+                fixtures.data1.listData
+              )}
+            />,
+            { attachTo: listContainer }
+          );
+
+        // E.g. the lookup hands the focus from the business partner to its location sub-list.
+        it('takes the focus from the previous sub-field when the flag turns on', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({ isFocused: false, onBlur });
+          previousSubField.focus();
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          expect(onBlur).not.toHaveBeenCalled();
+          wrapper.detach();
+        });
+
+        // E.g. a mouse pick of the previous sub-field left the cursor on the body.
+        it('takes the focus from the body when the flag turns on', () => {
+          const wrapper = mountInLookup({ isFocused: false });
+          document.activeElement.blur();
+          expect(document.activeElement).toBe(document.body);
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(
+            wrapper.find('.input-dropdown-container').getDOMNode()
+          );
+          wrapper.detach();
+        });
+
+        // E.g. Alt+Q put the cursor in the quick entry while the header still hands over to the contact sub-list.
+        // The flag is dropped as on a focus-out (onBlur), so the sub-list does not open its dropdown, whose key
+        // handler listens page-wide, behind the cursor.
+        it('does not take the focus from an element outside the lookup when the flag turns on, and drops the flag', () => {
+          const onBlur = jest.fn();
+          const wrapper = mountInLookup({ isFocused: false, onBlur });
+          otherInput.focus();
+
+          wrapper.setProps({ isFocused: true });
+
+          expect(document.activeElement).toBe(otherInput);
+          expect(onBlur).toHaveBeenCalledTimes(1);
+          wrapper.detach();
+        });
       });
 
       // E.g. a mouse pick left the cursor on the body and the user continues with the keyboard.
