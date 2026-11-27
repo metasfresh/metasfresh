@@ -24,6 +24,7 @@ package de.metas.organization.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.IFiscalRepresentationBL;
@@ -45,6 +46,9 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final CCache<OrgId, Boolean> orgsWithActiveFiscalRepresentationCache = CCache.<OrgId, Boolean>builder()
+			.tableName(I_C_Fiscal_Representation.Table_Name)
+			.build();
 
 	public void updateCountryId(final I_C_Fiscal_Representation fiscalRep)
 	{
@@ -105,11 +109,11 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 	@Override
 	public boolean hasAnyActiveFiscalRepresentation(@NonNull final OrgId orgId)
 	{
-		return queryBL.createQueryBuilder(I_C_Fiscal_Representation.class)
+		return orgsWithActiveFiscalRepresentationCache.getOrLoad(orgId, () -> queryBL.createQueryBuilderOutOfTrx(I_C_Fiscal_Representation.class)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.anyMatch();
+				.anyMatch());
 	}
 
 	@Override

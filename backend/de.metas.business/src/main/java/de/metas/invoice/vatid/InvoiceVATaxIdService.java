@@ -31,6 +31,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.IFiscalRepresentationBL;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VATIdentifier;
@@ -64,6 +65,16 @@ public class InvoiceVATaxIdService
 	{
 		Adempiere.assertUnitTestMode();
 		return SpringContextHolder.getBeanOrSupply(InvoiceVATaxIdService.class, InvoiceVATaxIdService::new);
+	}
+
+	/**
+	 * @return {@code false} if no invoice of the given org can use VAT IDs by delivery, so all its invoices store {@link InvoiceVATaxIds#NONE} without looking at their lines:
+	 * the org has no active fiscal representation and no partner location has a VAT ID of its own (one that differs from its partner's).
+	 * Both facts are cached, so this costs no query per invoice or candidate.
+	 */
+	public boolean isVATaxIdByDeliveryPossible(@NonNull final OrgId orgId)
+	{
+		return fiscalRepresentationBL.hasAnyActiveFiscalRepresentation(orgId) || bpartnerDAO.isAnyLocationWithOwnVATaxId();
 	}
 
 	/**

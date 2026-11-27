@@ -77,6 +77,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
@@ -536,13 +538,51 @@ public class BPartnerDAO implements IBPartnerDAO
 				"BPartner location not found: {}", bpartnerLocationId);
 	}
 
+	private final CCache<Integer, Boolean> anyLocationWithOwnVATaxIdCache = CCache.<Integer, Boolean>builder()
+			.tableName(I_C_BPartner_Location.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
+			.initialCapacity(1)
+			.build();
+
 	@Override
-	public boolean isAnyLocationWithVATaxId()
+	public boolean isAnyLocationWithOwnVATaxId()
 	{
-		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+		return anyLocationWithOwnVATaxIdCache.getOrLoad(0, () -> queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
 				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.filter(LocationWithOwnVATaxIdFilter.INSTANCE)
 				.create()
-				.anyMatch();
+				.anyMatch());
+	}
+
+	/**
+	 * A location whose {@code VATaxID} is not blank and differs from its partner's (both trimmed, blank meaning none).
+	 */
+	private static final class LocationWithOwnVATaxIdFilter implements IQueryFilter<I_C_BPartner_Location>, ISqlQueryFilter
+	{
+		private static final LocationWithOwnVATaxIdFilter INSTANCE = new LocationWithOwnVATaxIdFilter();
+
+		private static final String SQL = "NULLIF(TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + "), '') IS NOT NULL"
+				+ " AND NULLIF(TRIM(" + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_VATaxID + "), '')"
+				+ " IS DISTINCT FROM (SELECT NULLIF(TRIM(bp." + I_C_BPartner.COLUMNNAME_VATaxID + "), '') FROM " + I_C_BPartner.Table_Name + " bp"
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + " = " + I_C_BPartner_Location.Table_Name + "." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + ")";
+
+		@Override
+		public String getSql() {return SQL;}
+
+		@Override
+		public List<Object> getSqlParams(final Properties ctx) {return ImmutableList.of();}
+
+		@Override
+		public boolean accept(final I_C_BPartner_Location location)
+		{
+			final String locationVATaxId = StringUtils.trimBlankToNull(location.getVATaxID());
+			if (locationVATaxId == null)
+			{
+				return false;
+			}
+			final String bpartnerVATaxId = StringUtils.trimBlankToNull(loadOutOfTrx(location.getC_BPartner_ID(), I_C_BPartner.class).getVATaxID());
+			return !locationVATaxId.equals(bpartnerVATaxId);
+		}
 	}
 
 	@Override

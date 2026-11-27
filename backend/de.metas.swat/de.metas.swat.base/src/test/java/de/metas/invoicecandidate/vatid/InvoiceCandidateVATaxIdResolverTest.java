@@ -89,6 +89,29 @@ class InvoiceCandidateVATaxIdResolverTest
 	}
 
 	/**
+	 * A location whose VAT ID is its partner's own VAT ID does not make a customer use VAT IDs by delivery: the candidate is not looked up either.
+	 */
+	@Test
+	void noFiscalRepresentationAndOnlyLocationsWithThePartnersVATaxId_noLocationOrTaxLookup()
+	{
+		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setVATaxID("DE123456788");
+		save(customer);
+		final I_C_BPartner_Location billTo = newInstance(I_C_BPartner_Location.class);
+		billTo.setC_BPartner_ID(customer.getC_BPartner_ID());
+		billTo.setVATaxID("DE123456788");
+		save(billTo);
+
+		final InvoiceCandidateVATaxIdResolver resolverWithFailingLookups = newResolverWithFailingLookups(null);
+
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setIsSOTrx(true);
+		save(ic);
+
+		assertThat(resolverWithFailingLookups.resolve(ic, null, resolverWithFailingLookups.newCache())).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
 	 * Without a fiscal representation of the org no line tax can give a seller VAT ID: the buyer VAT ID of the delivery address is resolved without looking up the line's tax.
 	 */
 	@Test

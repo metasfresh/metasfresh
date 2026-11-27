@@ -6,10 +6,11 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
   A manually created sales invoice gets its buyer and seller VAT IDs at completion, from the addresses its
   lines were taxed with; lines with different VAT IDs on one manual invoice are rejected. A manual invoice none of
   whose lines resolves a VAT ID of an address or a fiscal representation completes as before and stores none.
-  A prepared candidate invoice (created by invoicing with "complete invoices" = N) keeps the VAT IDs it got
-  from its candidates; a line added to it by hand is taxed from the billing address (or, with the order line's tax,
-  from the order line's delivery address) and is accepted, unless its tax - or the tax a doc type that overwrites
-  the invoice date gives it at completion - is exempt on a VAT ID other than the one the invoice shows.
+  A prepared candidate invoice (created by invoicing with "complete invoices" = N) gets the VAT IDs of its
+  candidate lines at completion (as at invoicing, unless their taxes changed meanwhile); a line added to it by
+  hand is taxed from the billing address (or, with the order line's tax, from the order line's delivery address)
+  and is accepted, unless its tax - or the tax a doc type that overwrites the invoice date gives it at completion -
+  is exempt on a VAT ID other than the one the invoice shows.
 
   Customer (German head office) is billed in Germany and receives goods in Germany and in the Netherlands;
   the Dutch address carries its own VAT ID. Customer AT is billed in Austria (Austrian VAT ID) and receives
@@ -297,7 +298,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10v
-  Scenario: a prepared candidate invoice without stored VAT IDs (prepared before they were stored) completes with an exempt line added by hand, as before
+  Scenario: a prepared candidate invoice without stored VAT IDs (prepared before they were stored) gets the Dutch VAT ID of its candidate line at completion, so an exempt line added by hand on the Austrian VAT ID is rejected
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |
@@ -328,10 +329,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     When metasfresh contains C_InvoiceLines
       | Identifier    | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
       | handAddedLine | invoice      | service      | 3 PCE       | taxDEAT0 |
-    And the invoice identified by invoice is completed
-    Then validate created invoices
-      | Identifier | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | CO        |              |               |                            |
+    Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10vi
   Scenario: a doc type that overwrites the invoice date on completion would re-tax a line added by hand to an exempt rate on the Austrian VAT ID: completion is rejected

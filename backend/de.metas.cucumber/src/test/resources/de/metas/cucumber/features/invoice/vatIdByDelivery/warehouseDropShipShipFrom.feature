@@ -11,6 +11,8 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
   The rule must hold on every tax path of the line: the order line, the invoice line created from the
   shipment, and an invoice line added by hand to an invoice that names the drop-ship warehouse. Without a
   registration in the destination country, from a normal warehouse, or with the switch off, nothing changes.
+  Changing the warehouse of a drafted invoice to or from the drop-ship warehouse re-taxes its lines, and the
+  seller VAT ID and fiscal representation the invoice stores follow the new tax.
 
   The registration is valid 2026-07-11 .. 2026-07-13 only, so it does not affect any other feature.
 
@@ -249,3 +251,105 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
     Then validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
       | invoiceL1                   | invoice                 | product                 | 10          | taxGRGR24 |
+
+  @Id:S32533_TC25vii
+  Scenario: the warehouse of a drafted invoice for goods shipped from the German warehouse to Greece is changed to the drop-ship warehouse: the line is re-taxed GR->GR and the invoice stores the registration
+    Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2026-07-12   | wh_DE          |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product                 | 0       | 10       | PCE          |
+    And the inventory identified by inventory is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | order      | true    | customerGR               | 2026-07-12  | customerGR_GR                         | wh_DE                         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
+      | invoiceCandidate                  | false                  |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR0 |
+    And validate created invoices
+      | Identifier | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    |               |                            |
+
+    When update C_Invoice:
+      | Identifier | M_Warehouse_ID |
+      | invoice    | wh_dropship    |
+    And the invoice identified by invoice is completed
+
+    Then validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceL1                   | invoice                 | product                 | 10          | taxGRGR24 |
+    And validate created invoices
+      | Identifier | DocStatus | GrandTotal | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | 1240 EUR   | EL999999999   | regGR                      |
+
+  @Id:S32533_TC25viii
+  Scenario: the warehouse of a drafted invoice for goods shipped from the drop-ship warehouse to Greece is changed to the German warehouse: the line is re-taxed DE->GR and the invoice no longer stores the registration
+    Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory                 | 2026-07-12   | wh_dropship    |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product                 | 0       | 10       | PCE          |
+    And the inventory identified by inventory is completed
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
+      | order      | true    | customerGR               | 2026-07-12  | customerGR_GR                         | wh_dropship                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
+      | invoiceCandidate                  | false                  |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
+      | invoiceCandidate                  | invoice                 | IP            |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceL1                   | invoice                 | product                 | 10          | taxGRGR24 |
+    And validate created invoices
+      | Identifier | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | EL999999999   | regGR                      |
+
+    When update C_Invoice:
+      | Identifier | M_Warehouse_ID |
+      | invoice    | wh_DE          |
+    And the invoice identified by invoice is completed
+
+    Then validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR0 |
+    And validate created invoices
+      | Identifier | DocStatus | GrandTotal | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | 1000 EUR   |               |                            |

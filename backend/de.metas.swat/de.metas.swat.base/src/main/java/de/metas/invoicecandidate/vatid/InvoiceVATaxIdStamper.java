@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
@@ -45,7 +46,10 @@ import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.impl.ShipmentTaxLocation;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.FiscalRepresentationId;
@@ -77,21 +81,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Stores or checks the buyer VAT ID, seller VAT ID and fiscal representation of a sales invoice before it is completed.
- * The first matching rule wins:
+ * Stores the buyer VAT ID, seller VAT ID and fiscal representation of a sales invoice before it is completed, from its final line taxes ("the VAT ID follows the tax").
  * <ol>
- *     <li>a reversal, or a credit memo that references the sales invoice it was copied from, gets the values stored on that invoice, as they are (also when empty);
- *     its lines are never resolved again (see {@link #getCopiedFromInvoice(I_C_Invoice)}). Any other copy starts without values ({@code IInvoiceBL#copyFrom})
- *     and is handled like an invoice of its own by the next rules.</li>
- *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing, unless its doc type overwrites the invoice date on completion:
- *     then the candidate lines the completion re-taxed are resolved again (see {@link #restampReTaxedCandidateLines});
- *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
+ *     <li>a reversal gets the values stored on the reversed invoice, as they are (also when empty): it keeps that invoice's taxes, its lines are not resolved again.</li>
+ *     <li>if the invoice's org cannot use VAT IDs by delivery ({@link InvoiceVATaxIdService#isVATaxIdByDeliveryPossible}), the invoice stores none and no line is looked at.</li>
+ *     <li>an invoice with lines created from invoice candidates gets the values its candidate lines resolve to with their final taxes, from the location and date that taxed them
+ *     (see {@link #getCandidateLineTaxLocation}); so a date or warehouse change that re-taxed them, by hand or on completion, also changes the stored values.
+ *     The values resolved at invoicing only decided which candidates share an invoice.
+ *     A line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to these values
  *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows) - unless neither the invoice nor that line uses VAT IDs by delivery.
- *     If the invoice's doc type overwrites the invoice date on completion, the lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
+ *     If the invoice's doc type overwrites the invoice date on completion, the hand-added lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
  *     the date is overwritten at the start of the completion, before this check ({@code MInvoice.completeIt}), so normally the lines already carry that tax and the prediction finds the same one.</li>
- *     <li>a manual invoice gets the values its lines resolve to, and all lines must resolve to the same values;
- *     lines that do not use VAT IDs by delivery resolve to none, so an invoice of only such lines stores none and completes as before</li>
+ *     <li>any other invoice (manual invoices, copies, credit memos) gets the values its lines resolve to. A line of a credit memo that still has the tax of the sales invoice line it credits
+ *     was taxed where that line was, so it resolves to the values stored on the credited invoice (also when empty); a re-taxed one resolves from its own tax location.
+ *     Lines that do not use VAT IDs by delivery resolve to none, so an invoice of only such lines stores none and completes as before.</li>
  * </ol>
+ * In each case, lines that resolve different values block the completion.
  * A line is resolved from the location that taxed it and from its tax (see {@link LineResolver#getTaxLocation(I_C_InvoiceLine)}),
  * with the same rule as invoice candidates ({@link InvoiceVATaxIdService#resolveIfByDelivery}).
  */
@@ -109,6 +114,8 @@ public class InvoiceVATaxIdStamper
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
@@ -132,11 +139,17 @@ public class InvoiceVATaxIdStamper
 			return;
 		}
 
-		final I_C_Invoice copiedFromInvoice = getCopiedFromInvoice(invoice);
-		if (copiedFromInvoice != null)
+		final InvoiceId reversedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getReversal_ID());
+		if (reversedInvoiceId != null)
 		{
-			// the copy's lines were resolved when the original was completed; re-resolving them from today's master data could block the copy or change its values
-			setVATaxIds(invoice, getStoredVATaxIds(copiedFromInvoice));
+			// a reversal keeps the reversed invoice's taxes (it is never re-taxed), so it also keeps its values
+			setVATaxIds(invoice, getStoredVATaxIds(invoiceBL.getById(reversedInvoiceId)));
+			return;
+		}
+
+		if (!invoiceVATaxIdService.isVATaxIdByDeliveryPossible(OrgId.ofRepoId(invoice.getAD_Org_ID())))
+		{
+			setVATaxIds(invoice, InvoiceVATaxIds.NONE);
 			return;
 		}
 
@@ -145,54 +158,43 @@ public class InvoiceVATaxIdStamper
 		final LineResolver lineResolver = new LineResolver(invoice);
 		if (!allocatedLineIds.isEmpty())
 		{
-			if (isDateOverwrittenOnCompletion(invoice))
-			{
-				restampReTaxedCandidateLines(invoice, lines, allocatedLineIds, lineResolver);
-			}
+			stampCandidateInvoice(invoice, lines, allocatedLineIds, lineResolver);
 			checkHandAddedExemptLines(invoice, lines, allocatedLineIds, lineResolver);
 		}
 		else
 		{
-			stampManualInvoice(invoice, lines, lineResolver);
+			stampManualInvoice(invoice, lines, lineResolver, getCreditedSalesInvoice(invoice));
 		}
 	}
 
 	/**
-	 * @return the sales invoice the given one was copied from, if its VAT IDs come from there: the reversed invoice of a reversal,
-	 * or the credited invoice of a credit memo that references it; {@code null} otherwise.
+	 * @return the sales invoice a credit memo credits (references), {@code null} otherwise.
 	 * A referenced purchase invoice (e.g. the purchase credit memo of a sales counter document) has no stored values and gives {@code null}.
 	 */
 	@Nullable
-	private I_C_Invoice getCopiedFromInvoice(@NonNull final I_C_Invoice invoice)
+	private I_C_Invoice getCreditedSalesInvoice(@NonNull final I_C_Invoice invoice)
 	{
-		InvoiceId copiedFromInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getReversal_ID());
-		if (copiedFromInvoiceId == null)
+		final InvoiceId creditedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
+		if (creditedInvoiceId == null || !invoiceBL.isCreditMemo(invoice))
 		{
-			final InvoiceId creditedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
-			if (creditedInvoiceId == null || !invoiceBL.isCreditMemo(invoice))
-			{
-				return null;
-			}
-			copiedFromInvoiceId = creditedInvoiceId;
+			return null;
 		}
 
-		final I_C_Invoice copiedFromInvoice = invoiceBL.getById(copiedFromInvoiceId);
-		return copiedFromInvoice.isSOTrx() ? copiedFromInvoice : null;
+		final I_C_Invoice creditedInvoice = invoiceBL.getById(creditedInvoiceId);
+		return creditedInvoice.isSOTrx() ? creditedInvoice : null;
 	}
 
 	/**
-	 * On a doc type that overwrites the invoice date on completion, the completion has just re-taxed the candidate lines without shipment for the new date
-	 * ({@code MInvoice.completeIt}), which can move them onto or off a registration's tax. Their VAT IDs are resolved again from the location and tax that re-taxed them,
-	 * so the stored values follow the lines' taxes. Lines with a shipment (taxed at the shipment's date) and lines without product (not re-taxed) keep the stored values.
-	 * If the lines no longer agree, the completion fails like a mixed manual invoice.
+	 * Stores the values the candidate lines resolve to with their final taxes: a line with a shipment line from its shipment's location (see {@code MInvoiceLine.setTax}),
+	 * any other one from {@link #getCandidateLineTaxLocation}.
+	 * If the lines do not agree, the completion fails like a mixed manual invoice.
 	 */
-	private void restampReTaxedCandidateLines(
+	private void stampCandidateInvoice(
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final List<I_C_InvoiceLine> lines,
 			@NonNull final Set<InvoiceLineId> allocatedLineIds,
 			@NonNull final LineResolver lineResolver)
 	{
-		final InvoiceVATaxIds stored = getStoredVATaxIds(invoice);
 		final Set<InvoiceVATaxIds> distinctVATaxIds = new LinkedHashSet<>();
 		for (final I_C_InvoiceLine line : lines)
 		{
@@ -201,26 +203,33 @@ public class InvoiceVATaxIdStamper
 				continue;
 			}
 
-			if (line.getM_InOutLine_ID() > 0 || line.getM_Product_ID() <= 0)
-			{
-				distinctVATaxIds.add(stored);
-			}
-			else
-			{
-				final InvoiceLineReTaxInput reTaxInput = invoiceBL.getReTaxInput(invoice, line, null);
-				distinctVATaxIds.add(lineResolver.resolve(toTaxLocation(reTaxInput), TaxId.ofRepoId(line.getC_Tax_ID())));
-			}
+			final TaxId lineTaxId = TaxId.ofRepoId(line.getC_Tax_ID());
+			final TaxLocation taxLocation = line.getM_InOutLine_ID() > 0
+					? lineResolver.getShipmentTaxLocation(InOutLineId.ofRepoId(line.getM_InOutLine_ID()))
+					: getCandidateLineTaxLocation(invoice, line, lineTaxId);
+			distinctVATaxIds.add(lineResolver.resolve(taxLocation, lineTaxId));
 		}
 
-		if (distinctVATaxIds.size() > 1)
+		setUniqueVATaxIds(invoice, distinctVATaxIds);
+	}
+
+	/**
+	 * The location and date that taxed a candidate line without shipment line: its first candidate's tax location (the one it was resolved with at invoicing, at the candidate's tax date)
+	 * if the line still has that candidate's tax; else the line was re-taxed (after a date or warehouse change, or on completion), with the inputs of {@link IInvoiceBL#getReTaxInput}.
+	 */
+	@NonNull
+	private TaxLocation getCandidateLineTaxLocation(@NonNull final I_C_Invoice invoice, @NonNull final I_C_InvoiceLine line, @NonNull final TaxId lineTaxId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(line); // ordered by C_Invoice_Candidate_ID
+		if (!invoiceCandidates.isEmpty())
 		{
-			throw new AdempiereException(MSG_MixedVATaxIds, joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getBuyerVATaxId), joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getSellerVATaxId))
-					.markAsUserValidationError();
+			final I_C_Invoice_Candidate firstCandidate = invoiceCandidates.get(0);
+			if (lineTaxId.equals(invoiceCandBL.getTaxEffective(firstCandidate).getTaxId()))
+			{
+				return invoiceCandidateHandlerBL.getTaxLocation(firstCandidate, null);
+			}
 		}
-		if (distinctVATaxIds.size() == 1)
-		{
-			setVATaxIds(invoice, distinctVATaxIds.iterator().next());
-		}
+		return toTaxLocation(invoiceBL.getReTaxInput(invoice, line, null));
 	}
 
 	private static boolean isAllocated(@NonNull final I_C_InvoiceLine line, @NonNull final Set<InvoiceLineId> allocatedLineIds)
@@ -229,9 +238,9 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * A candidate invoice keeps its stored values. Lines with allocations were resolved at invoicing; only the lines added by hand are checked,
+	 * The lines added by hand to a candidate invoice are checked against the values its candidate lines resolved to,
 	 * with their tax and, if the completion re-taxes them, with the tax they will get.
-	 * A line is not checked if neither the invoice nor the line uses VAT IDs by delivery (e.g. an invoice prepared before the values were stored).
+	 * A line is not checked if neither the invoice nor the line uses VAT IDs by delivery.
 	 */
 	private void checkHandAddedExemptLines(
 			@NonNull final I_C_Invoice invoice,
@@ -332,13 +341,18 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * All non-description lines must resolve to the same values, which are stored; no line stores none.
+	 * All non-description lines must resolve to the same values, which are stored; an invoice without such lines stores none.
+	 *
+	 * @param creditedInvoice the sales invoice the given credit memo credits, if any: a line that still has the tax of the line it credits resolves to that invoice's stored values
 	 */
 	private void stampManualInvoice(
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final List<I_C_InvoiceLine> lines,
-			@NonNull final LineResolver lineResolver)
+			@NonNull final LineResolver lineResolver,
+			@Nullable final I_C_Invoice creditedInvoice)
 	{
+		final Map<InvoiceLineId, TaxId> creditedLineTaxIds = creditedInvoice != null ? getLineTaxIds(creditedInvoice) : ImmutableMap.of();
+
 		final Set<InvoiceVATaxIds> distinctVATaxIds = new LinkedHashSet<>();
 		for (final I_C_InvoiceLine line : lines)
 		{
@@ -346,7 +360,12 @@ public class InvoiceVATaxIdStamper
 			{
 				continue;
 			}
-			distinctVATaxIds.add(lineResolver.resolve(line));
+
+			final InvoiceLineId creditedLineId = InvoiceLineId.ofRepoIdOrNull(line.getRef_InvoiceLine_ID());
+			final boolean isTaxedLikeCreditedLine = creditedInvoice != null
+					&& creditedLineId != null
+					&& TaxId.ofRepoId(line.getC_Tax_ID()).equals(creditedLineTaxIds.get(creditedLineId));
+			distinctVATaxIds.add(isTaxedLikeCreditedLine ? getStoredVATaxIds(creditedInvoice) : lineResolver.resolve(line));
 		}
 
 		if (distinctVATaxIds.isEmpty())
@@ -354,14 +373,32 @@ public class InvoiceVATaxIdStamper
 			setVATaxIds(invoice, InvoiceVATaxIds.NONE);
 			return;
 		}
+		setUniqueVATaxIds(invoice, distinctVATaxIds);
+	}
 
+	@NonNull
+	private Map<InvoiceLineId, TaxId> getLineTaxIds(@NonNull final I_C_Invoice invoice)
+	{
+		return invoiceDAO.retrieveLines(invoice)
+				.stream()
+				.filter(line -> line.getC_Tax_ID() > 0)
+				.collect(ImmutableMap.toImmutableMap(line -> InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), line -> TaxId.ofRepoId(line.getC_Tax_ID())));
+	}
+
+	/**
+	 * Stores the one value set of the given ones; fails if there are several, leaves the invoice alone if there are none.
+	 */
+	private static void setUniqueVATaxIds(@NonNull final I_C_Invoice invoice, @NonNull final Set<InvoiceVATaxIds> distinctVATaxIds)
+	{
 		if (distinctVATaxIds.size() > 1)
 		{
 			throw new AdempiereException(MSG_MixedVATaxIds, joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getBuyerVATaxId), joinDistinct(distinctVATaxIds, InvoiceVATaxIds::getSellerVATaxId))
 					.markAsUserValidationError();
 		}
-
-		setVATaxIds(invoice, distinctVATaxIds.iterator().next());
+		if (distinctVATaxIds.size() == 1)
+		{
+			setVATaxIds(invoice, distinctVATaxIds.iterator().next());
+		}
 	}
 
 	private static void setVATaxIds(@NonNull final I_C_Invoice invoice, @NonNull final InvoiceVATaxIds vatTaxIds)
@@ -453,11 +490,7 @@ public class InvoiceVATaxIdStamper
 			final InOutLineId shipmentLineId = InOutLineId.ofRepoIdOrNull(line.getM_InOutLine_ID());
 			if (shipmentLineId != null)
 			{
-				final InOutId shipmentId = InOutId.ofRepoId(inOutDAO.getLineByIdInTrx(shipmentLineId).getM_InOut_ID());
-				return shipmentTaxLocations.computeIfAbsent(shipmentId, id -> {
-					final I_M_InOut shipment = inOutDAO.getById(id);
-					return ShipmentTaxLocation.of(shipment, OrgId.ofRepoId(shipment.getAD_Org_ID()));
-				});
+				return getShipmentTaxLocation(shipmentLineId);
 			}
 
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID());
@@ -479,6 +512,16 @@ public class InvoiceVATaxIdStamper
 						null);
 			}
 			return billToTaxLocation;
+		}
+
+		@NonNull
+		private TaxLocation getShipmentTaxLocation(@NonNull final InOutLineId shipmentLineId)
+		{
+			final InOutId shipmentId = InOutId.ofRepoId(inOutDAO.getLineByIdInTrx(shipmentLineId).getM_InOut_ID());
+			return shipmentTaxLocations.computeIfAbsent(shipmentId, id -> {
+				final I_M_InOut shipment = inOutDAO.getById(id);
+				return ShipmentTaxLocation.of(shipment, OrgId.ofRepoId(shipment.getAD_Org_ID()));
+			});
 		}
 
 		/**

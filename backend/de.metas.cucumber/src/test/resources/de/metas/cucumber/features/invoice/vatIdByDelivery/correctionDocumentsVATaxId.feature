@@ -5,7 +5,8 @@
 Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do not
   The reversal of a sales invoice and a credit memo that references it show the buyer VAT ID, seller VAT ID and
   fiscal representation stored on that invoice, as they are (also when they are empty), even if their lines
-  would resolve other VAT IDs from today's master data and even without shipment lines.
+  would resolve other VAT IDs from today's master data and even without shipment lines. A credit memo whose
+  lines are re-taxed gets the VAT IDs of its new taxes instead (see reTaxOnInvoiceDateChange.feature).
   A plain copy of an invoice does not carry the stored values; it gets its own when it is completed.
 
   A German customer is billed at its German head office (VAT ID on the partner and the billing address) and

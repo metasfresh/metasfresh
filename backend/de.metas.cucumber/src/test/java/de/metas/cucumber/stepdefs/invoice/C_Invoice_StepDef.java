@@ -368,7 +368,14 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_Invoice_ID} — identifier of the credited invoice</li>
 	 *   <li>{@code CreditMemo.PriceEntered} — optional; sets this price on every credit memo line. If absent, the lines keep the credited invoice's prices</li>
 	 *   <li>{@code CreditMemo.IsCreditedInvoiceReinvoicable} — optional, default {@code false}; {@code true} gives the credited quantities back to their invoice candidates</li>
+	 *   <li>{@code CreditMemo.IsReferenceOriginalOrder} — optional, default {@code false}; {@code true} keeps the credited lines' order lines on the credit memo lines
+	 *   (as the "create credit memo" process does when asked to), so a re-tax of the credit memo uses the order lines' delivery addresses</li>
 	 * </ul>
+	 * <pre>
+	 * And create credit memo for C_Invoice
+	 *   | CreditMemo | C_Invoice_ID | CreditMemo.IsReferenceOriginalOrder |
+	 *   | creditMemo | invoice      | true                                |
+	 * </pre>
 	 */
 	@And("create credit memo for C_Invoice")
 	public void create_credit_memo_for_invoice(@NonNull final DataTable dataTable)
@@ -379,6 +386,7 @@ public class C_Invoice_StepDef
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 					final Optional<BigDecimal> creditMemoLineAmt = row.getAsOptionalBigDecimal("CreditMemo.PriceEntered");
 					final boolean creditedInvoiceReinvoicable = row.getAsOptionalBoolean("CreditMemo.IsCreditedInvoiceReinvoicable").orElseFalse();
+					final boolean referenceOriginalOrder = row.getAsOptionalBoolean("CreditMemo.IsReferenceOriginalOrder").orElseFalse();
 					final DocTypeId creditMemoDocTypeId = docTypeBL.getDocTypeId(
 							DocTypeQuery.builder()
 									.docBaseType(invoice.isSOTrx() ? DocBaseType.SalesCreditMemo : DocBaseType.PurchaseCreditMemo)
@@ -391,7 +399,7 @@ public class C_Invoice_StepDef
 					final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
 							.docTypeId(creditMemoDocTypeId)
 							.completeAndAllocate(false)
-							.referenceOriginalOrder(false)
+							.referenceOriginalOrder(referenceOriginalOrder)
 							.referenceInvoice(true)
 							.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
@@ -1004,6 +1012,23 @@ public class C_Invoice_StepDef
 		restTestContext.setIntVariableFromRow(row, invoice::getC_Invoice_ID);
 	}
 
+	/**
+	 * Updates drafted invoices; a date or warehouse change re-taxes their lines (see {@code de.metas.invoice.interceptor.C_Invoice}).
+	 * <p>
+	 * Columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_ID.Identifier} (or {@code Identifier}) — the invoice</li>
+	 *   <li>{@code OPT.DateInvoiced} — optional, the new invoice date</li>
+	 *   <li>{@code M_Warehouse_ID} — optional, identifier of the new warehouse</li>
+	 *   <li>{@code C_PaymentTerm_ID} — optional, the new payment term</li>
+	 *   <li>{@code BuyerVATaxID}, {@code SellerVATaxID}, {@code C_Fiscal_Representation_ID} — optional; a present column with an empty cell sets NULL</li>
+	 * </ul>
+	 * <pre>
+	 * When update C_Invoice:
+	 *   | Identifier | M_Warehouse_ID |
+	 *   | invoice    | wh_dropship    |
+	 * </pre>
+	 */
 	@And("update C_Invoice:")
 	public void update_C_Invoice(@NonNull final DataTable dataTable)
 	{
@@ -1032,6 +1057,10 @@ public class C_Invoice_StepDef
 
 		// a present column with an empty cell sets NULL; an absent column leaves the value alone
 		final DataTableRow tableRow = DataTableRow.builder().lineNo(0).values(row).build();
+		// a warehouse change re-taxes the lines (see de.metas.invoice.interceptor.C_Invoice)
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> invoice.setM_Warehouse_ID(warehouseId.getRepoId()));
 		if (hasColumn(tableRow, COLUMNNAME_BuyerVATaxID))
 		{
 			invoice.setBuyerVATaxID(getNullableString(tableRow, COLUMNNAME_BuyerVATaxID));

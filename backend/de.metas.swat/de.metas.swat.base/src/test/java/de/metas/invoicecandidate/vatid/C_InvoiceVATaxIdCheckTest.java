@@ -22,11 +22,14 @@
 
 package de.metas.invoicecandidate.vatid;
 
+import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.location.ICountryAreaBL;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.SOPOType;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -50,6 +53,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -138,7 +142,7 @@ class C_InvoiceVATaxIdCheckTest
 	void handAddedLineWithOrderLine_taxFromOrderLine_usesOrderLineLocation()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 
 		final I_C_InvoiceLine handAddedLine = createLine(invoice, taxDENL0Exempt);
 		handAddedLine.setC_OrderLine_ID(createOrderLine(deliveryNL, taxDENL0Exempt).getC_OrderLine_ID());
@@ -155,7 +159,7 @@ class C_InvoiceVATaxIdCheckTest
 	void handAddedLineWithOrderLine_reTaxedTax_usesOrderLineLocation()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 
 		final I_C_InvoiceLine handAddedLine = createProductLine(invoice, taxDENL0Exempt);
 		handAddedLine.setC_OrderLine_ID(createOrderLine(deliveryNL, taxDEDE19).getC_OrderLine_ID());
@@ -172,7 +176,7 @@ class C_InvoiceVATaxIdCheckTest
 	{
 		final I_C_Tax taxDEDE0Exempt = createTax(true, deId, deId);
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 
 		final I_C_InvoiceLine handAddedLine = createProductLine(invoice, taxDEDE0Exempt);
 		handAddedLine.setC_OrderLine_ID(createOrderLine(deliveryNL, taxDENL0Exempt).getC_OrderLine_ID());
@@ -204,7 +208,7 @@ class C_InvoiceVATaxIdCheckTest
 		invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		invoice.setM_Warehouse_ID(warehouseDEId);
 		save(invoice);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 		createProductLine(invoice, taxDEAT19);
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
@@ -224,7 +228,7 @@ class C_InvoiceVATaxIdCheckTest
 	void handAddedLineWithShipment_usesShipmentLocation()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 
 		final I_C_InvoiceLine handAddedLine = createLine(invoice, taxDENL0Exempt);
 		handAddedLine.setM_InOutLine_ID(createShipmentLine(deliveryNL).getM_InOutLine_ID());
@@ -240,7 +244,7 @@ class C_InvoiceVATaxIdCheckTest
 	void handAddedExemptLineWithoutShipment_otherVATaxId_fails()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 		createLine(invoice, taxDENL0Exempt);
 
 		assertThatThrownBy(() -> stamper.stampOrCheck(invoice))
@@ -249,35 +253,81 @@ class C_InvoiceVATaxIdCheckTest
 	}
 
 	/**
-	 * Candidate lines agree with the stored VAT IDs by construction; this one would resolve to the German bill-to, yet it is not checked.
+	 * The stored values follow the candidate lines' final taxes: here the invoice was prepared without values (e.g. its date was changed by hand and its line re-taxed),
+	 * and its line shipped to the Dutch address resolves the Dutch VAT ID at completion.
 	 */
 	@Test
-	void candidateLine_isNotChecked()
+	void candidateLine_storedValuesFollowTheLine()
+	{
+		final I_C_Invoice invoice = createInvoice(null);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
+
+		stamper.stampOrCheck(invoice);
+
+		assertThat(invoice.getBuyerVATaxID()).isEqualTo(NL_VAT);
+	}
+
+	/**
+	 * Candidate lines that resolve different VAT IDs at completion (e.g. after a re-tax) block the completion, like the lines of a manual invoice.
+	 */
+	@Test
+	void candidateLines_differentVATaxIds_fail()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
+		createCandidateLine(invoice, taxDENL0Exempt, createLocation(createBPartner(AT_VAT), atId, AT_VAT));
 
-		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
+		assertThatThrownBy(() -> stamper.stampOrCheck(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_MixedVATaxIds");
+	}
+
+	/**
+	 * A customer without a fiscal representation and without a partner location whose VAT ID differs from its partner's own VAT ID cannot use VAT IDs by delivery:
+	 * the invoice stores none, and neither its lines nor their taxes are looked at.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationWithOwnVATaxId_storesNoneWithoutTaxLookup()
+	{
+		deliveryNL.setVATaxID(null);
+		save(deliveryNL);
+		final I_C_Invoice invoice = createInvoice(NL_VAT);
+		invoice.setSellerVATaxID(SELLER_VAT);
+		invoice.setC_Fiscal_Representation_ID(FISCAL_REPRESENTATION_ID);
+		save(invoice);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
+		createLine(invoice, taxDENL0Exempt);
+
+		final ITaxDAO taxDAO = Mockito.mock(ITaxDAO.class);
+		Services.registerService(ITaxDAO.class, taxDAO);
+		final InvoiceVATaxIdStamper stamperWithMockedTaxDAO = new InvoiceVATaxIdStamper(new InvoiceVATaxIdService());
+
+		stamperWithMockedTaxDAO.stampOrCheck(invoice);
+
+		assertThat(invoice.getBuyerVATaxID()).isNull();
+		assertThat(invoice.getSellerVATaxID()).isNull();
+		assertThat(invoice.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+		Mockito.verifyZeroInteractions(taxDAO);
 	}
 
 	@Test
 	void lineWithoutCertificateTax_isNotChecked()
 	{
 		final I_C_Invoice invoice = createInvoice(NL_VAT);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
 		createLine(invoice, taxDEDE19);
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
 	}
 
 	/**
-	 * A candidate invoice prepared before the VAT IDs were stored completes as before.
+	 * A candidate invoice prepared before the VAT IDs were stored, whose lines do not use VAT IDs by delivery, completes as before.
 	 */
 	@Test
 	void notStampedInvoice_isNotChecked()
 	{
 		final I_C_Invoice invoice = createInvoice(null);
-		createCandidateLine(invoice, taxDENL0Exempt);
+		createCandidateLine(invoice, taxDENL0Exempt, billToDE);
 		createLine(invoice, taxDENL0Exempt);
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
@@ -308,12 +358,34 @@ class C_InvoiceVATaxIdCheckTest
 	void creditMemo_getsOriginalVATaxIds()
 	{
 		final I_C_Invoice original = createStampedInvoice();
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
 		final I_C_Invoice creditMemo = createCreditMemo(original);
-		createLineForShipment(creditMemo, billToDE);
-		createLineForShipment(creditMemo, deliveryNL);
+		// the credited line's tax: the line was taxed where the credited line was, whatever its own references resolve today
+		createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
 
 		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
 		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * A credit memo whose line was re-taxed (e.g. its completion overwrote the date after the registration ended) gets the values of its own line's tax, like any invoice.
+	 */
+	@Test
+	void creditMemo_reTaxedLine_getsItsOwnVATaxIds()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		final I_C_InvoiceLine creditMemoLine = createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
+		creditMemoLine.setC_Tax_ID(taxDEDE19.getC_Tax_ID());
+		creditMemoLine.setM_InOutLine_ID(createShipmentLine(deliveryNL).getM_InOutLine_ID());
+		save(creditMemoLine);
+
+		stamper.stampOrCheck(creditMemo);
+
+		assertThat(creditMemo.getBuyerVATaxID()).isEqualTo(NL_VAT);
+		assertThat(creditMemo.getSellerVATaxID()).isNull();
+		assertThat(creditMemo.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
 	}
 
 	/**
@@ -324,8 +396,11 @@ class C_InvoiceVATaxIdCheckTest
 	void creditMemoOfNotStampedInvoice_staysEmpty()
 	{
 		final I_C_Invoice original = createInvoice(null);
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
 		final I_C_Invoice creditMemo = createCreditMemo(original);
-		createLineForShipment(creditMemo, deliveryNL);
+		final I_C_InvoiceLine creditMemoLine = createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
+		creditMemoLine.setM_InOutLine_ID(createShipmentLine(deliveryNL).getM_InOutLine_ID());
+		save(creditMemoLine);
 
 		stamper.stampOrCheck(creditMemo);
 
@@ -390,6 +465,14 @@ class C_InvoiceVATaxIdCheckTest
 		return creditMemo;
 	}
 
+	private I_C_InvoiceLine createCreditMemoLine(final I_C_Invoice creditMemo, final I_C_InvoiceLine creditedLine, final I_C_Tax tax)
+	{
+		final I_C_InvoiceLine line = createLine(creditMemo, tax);
+		line.setRef_InvoiceLine_ID(creditedLine.getC_InvoiceLine_ID());
+		save(line);
+		return line;
+	}
+
 	private static void assertOriginalVATaxIds(final I_C_Invoice invoice)
 	{
 		assertThat(invoice.getBuyerVATaxID()).isEqualTo(NL_VAT);
@@ -442,7 +525,7 @@ class C_InvoiceVATaxIdCheckTest
 	void invoiceWithoutStoredValues_handAddedExemptLineByDelivery_fails()
 	{
 		final I_C_Invoice invoice = createInvoice(null);
-		createCandidateLine(invoice, taxDEDE19);
+		createCandidateLine(invoice, taxDEDE19, billToDE);
 
 		final I_C_InvoiceLine handAddedLine = createLine(invoice, taxDENL0Exempt);
 		handAddedLine.setM_InOutLine_ID(createShipmentLine(deliveryNL).getM_InOutLine_ID());
@@ -472,9 +555,14 @@ class C_InvoiceVATaxIdCheckTest
 		return invoice;
 	}
 
-	private void createCandidateLine(final I_C_Invoice invoice, final I_C_Tax tax)
+	/**
+	 * A candidate line for a shipment to the given location, i.e. taxed from that location.
+	 */
+	private void createCandidateLine(final I_C_Invoice invoice, final I_C_Tax tax, final I_C_BPartner_Location delivery)
 	{
 		final I_C_InvoiceLine line = createLine(invoice, tax);
+		line.setM_InOutLine_ID(createShipmentLine(delivery).getM_InOutLine_ID());
+		save(line);
 
 		final I_C_Invoice_Line_Alloc alloc = newInstance(I_C_Invoice_Line_Alloc.class);
 		alloc.setAD_Org_ID(orgId);

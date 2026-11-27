@@ -44,7 +44,7 @@ public interface IFiscalRepresentationBL extends ISingletonService
 	Optional<I_C_Fiscal_Representation> getFiscalRepresentation(@NonNull CountryId countryId, @NonNull OrgId orgId, @NonNull Timestamp date);
 
 	/**
-	 * @return true if the given org has any active registration, in whatever country and validity period
+	 * @return true if the given org has any active registration, in whatever country and validity period; cached until a registration changes
 	 */
 	boolean hasAnyActiveFiscalRepresentation(@NonNull OrgId orgId);
 
