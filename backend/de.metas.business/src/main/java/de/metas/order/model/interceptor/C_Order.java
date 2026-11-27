@@ -58,6 +58,7 @@ import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
+import de.metas.order.location.OrderBillLocationProvidedMarker;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
@@ -769,8 +770,16 @@ public class C_Order
 		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
 		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
 		// (re)resolved, and neither is the bill partner resolved for the previous order location.
+		// An invoice address marked as provided by an order candidate (OrderBillLocationProvidedMarker)
+		// is kept even when it names the order's own partner.
 		// On a UI action we always (re)resolve.
 		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		if (!InterfaceWrapperHelper.isUIAction(order)
+				&& providedBillBPartnerId != null
+				&& OrderBillLocationProvidedMarker.isMarked(order))
+		{
+			return;
+		}
 		if (!InterfaceWrapperHelper.isUIAction(order)
 				&& providedBillBPartnerId != null
 				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId)
