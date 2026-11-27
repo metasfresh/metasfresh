@@ -298,7 +298,10 @@ async function runAltQBeforeHeaderHandOver(page, { language, customer }) {
   });
   const contactList = waitForContactListResponse(page);
   let isHandOverDone = false;
-  contactList.then(() => (isHandOverDone = true));
+  contactList.then(
+    () => (isHandOverDone = true),
+    () => {} // awaited below; a timeout fails the test there
+  );
   await typeCustomerAndEnter({ bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode });
   await page.getByTestId('batch-entry-toggle').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   expect(isHandOverDone, 'setup: the header hand-over to the contact is still running at Alt+Q').toBe(false);
@@ -306,8 +309,20 @@ async function runAltQBeforeHeaderHandOver(page, { language, customer }) {
   await expectFocusOn(productInput, 'opened: cursor in Produkt');
 
   await contactList;
+  // A contact list that declines the cursor must stay declined: it must neither ask for its options again and again
+  // nor open its dropdown behind the cursor.
+  let contactListRequestsAfterHandOver = 0;
+  const countContactListRequest = (request) => {
+    if (request.method() === 'GET' && /\/AD_User_ID\/dropdown\/?$/.test(new URL(request.url()).pathname)) {
+      contactListRequestsAfterHandOver++;
+    }
+  };
+  page.on('request', countContactListRequest);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await expectFocusHeld(productInput, 3000, 'after the header moved on to address and contact: cursor stays in Produkt');
+  page.off('request', countContactListRequest);
+  expect(contactListRequestsAfterHandOver, 'contact list not asked for again and again after the hand-over').toBeLessThanOrEqual(1);
+  await expect(page.locator('.input-dropdown-list'), 'no dropdown open behind the cursor').toHaveCount(0);
 
   const windowId = SALES_ORDER_WINDOW_ID;
   const recordId = await waitForOrderSaved(page);
