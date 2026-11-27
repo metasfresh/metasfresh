@@ -127,7 +127,7 @@ class PickingJobCUQtyEntryPick_UndoTest extends CUQtyEntryPickFixture
 		final HuId tuId = openTUId(job);
 		final HuId cu1Id = HuId.ofRepoId(cuWithPackId(tuId, "1").getM_HU_ID());
 
-		setProfile(CUQtyEntryMode.MANUAL); // the decision follows the picked HU (a CU booked in a TU), not the profile of today
+		setProfile(CUQtyEntryMode.MANUAL); // the decision follows the picked HU (a CU booked in a TU), not the current profile
 		job = undo(job, cu1Id, source.getQrCode(), null);
 
 		final TUPickingTarget target = openTUTarget(job);
