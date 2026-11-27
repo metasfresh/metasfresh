@@ -192,6 +192,7 @@
 | Scenario | Test |
 |---|---|
 | Scan one GRAI → TU auto-created with GRAI attribute | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI whose resolved TU also has a capacity row without product (M_HU_PI_Item_Product.M_Product_ID null, IsAllowAnyProduct=N) → row skipped, TU created with GRAI attribute | `picking/picking-grai-scan.spec.js` |
 | Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error | `picking/picking-grai-scan.spec.js` |
 | Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error | `picking/picking-grai-scan.spec.js` |
 | Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list | `picking/picking-grai-scan.spec.js` |

@@ -29,6 +29,14 @@ public class JsonPackingInstructionsRequest
 	@Nullable BigDecimal qtyCUsPerTU;
 	@Nullable EAN13 tu_ean;
 
+	/**
+	 * When true, the TU's material item gets, next to the regular capacity row for {@link #product}, a second
+	 * {@code M_HU_PI_Item_Product} with no product ({@code M_Product_ID} null) and {@code IsAllowAnyProduct=N}.
+	 * The {@code M_HU_PI_Item_Product} model interceptor accepts such a row, and it occurs in real master data.
+	 * Requires {@link #tu}.
+	 */
+	boolean tuProductlessItemProduct;
+
 	//
 	// LU
 	@Nullable Identifier lu;
