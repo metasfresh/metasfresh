@@ -30,23 +30,23 @@ test('scan IDs 1 and 2 book one CU each into the open TU, a rescan of ID 1 is wa
     await test.step('first scan books one CU of 1, no quantity block', async () => {
         await scanPack(packLabelOf({ masterdata, lot, packId: 1 }));
         await Backend.expect({
-            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } },
-            hus: { vhu1: { storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': lot, PackId: '1' } } },
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
+            hus: { tu1: { cus: [{ qty: '1 PCE', attributes: { 'Lot-Nummer': lot, PackId: '1' } }] } },
         });
     });
 
     await test.step('second scan = a second CU in the same TU', async () => {
         await scanPack(packLabelOf({ masterdata, lot, packId: 2 }));
         await Backend.expect({
-            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
-            hus: { tu1: { storages: { P1: '2 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }] }, vhu2: { attributes: { PackId: '2' } } },
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
+            hus: { tu1: { storages: { P1: '2 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE', attributes: { PackId: '2' } }] } },
         });
     });
 
     await test.step('the same CU again is warned, nothing is booked', async () => {
         await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, lot, packId: 1 }), MSG_ALREADY_PICKED(1));
         await Backend.expect({
-            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
+            pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
         });
     });
 
@@ -56,7 +56,7 @@ test('scan IDs 1 and 2 book one CU each into the open TU, a rescan of ID 1 is wa
         await PickingJobScreen.complete();
         await Backend.expect({
             pickings: { [pickingJobId]: { docStatus: 'Completed', shipmentSchedules: { P1: { qtyPicked: [
-                { qtyPicked: '1 PCE', vhu: 'vhu1', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu2', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: 'vhu3', tu: 'tu1', processed: true },
+                { qtyPicked: '1 PCE', vhu: '-', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: '-', tu: 'tu1', processed: true }, { qtyPicked: '1 PCE', vhu: '-', tu: 'tu1', processed: true },
             ] } } } },
         });
     });
@@ -77,7 +77,7 @@ test('a scan after the line is done books nothing: the picker re-enters the fini
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 Stk', qtyPicked: '3 Stk' });
 
-    const threeBooked = [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' })];
+    const threeBooked = [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })];
 
     await test.step('re-enter the done line via "HU verpacken", scan a fourth CU: refused, nothing is booked', async () => {
         await PickingJobScreen.clickLineButton({ index: 1 });
@@ -104,8 +104,8 @@ test('a second lot on the same line books a CU with that lot; the first CU keeps
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 1 }));
     await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 1 })); // same pack ID, other lot = another CU
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
-        hus: { vhu1: { attributes: { 'Lot-Nummer': lotA } }, vhu2: { attributes: { 'Lot-Nummer': lotB } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
+        hus: { tu1: { cus: [{ attributes: { 'Lot-Nummer': lotA } }, { attributes: { 'Lot-Nummer': lotB } }] } },
     });
 });
 
@@ -130,7 +130,7 @@ test('the same CU in two jobs: job 1 picked it, job 2 books it without a warning
     await openScanEachLine({ index: 1 });
     await scanPack(label); // no warning
     await PickingJobScreen.waitForScreen();
-    await Backend.expect({ pickings: { [job2Id]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
+    await Backend.expect({ pickings: { [job2Id]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -149,7 +149,7 @@ test('"Unpack" of a booked CU, then the same label books again without a warning
     await PickingJobScreen.clickLineButton({ index: 1 });
     await PickLineScanScreen.waitForScreen();
     await scanPack(label); // booked again, no warning
-    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -174,7 +174,7 @@ test('TU opened by GRAI scan: "Unpack" of the TU\'s only CU, then the same label
     await PickLineScanScreen.waitForScreen();
     await scanPack(label); // booked again, no warning, into the still open GRAI TU
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
         hus: { tu1: { storages: { P1: '1 PCE' }, attributes: { GRAI: grai } } },
     });
 });
@@ -194,7 +194,7 @@ test('the TU\'s first CU: a rescan is warned; "Unpack" frees only that CU (the o
 
     await unpackFirstBooking(); // the step list holds the first booking at index 0
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
         hus: { tu1: { storages: { P1: '1 PCE' } } },
     });
     await PickingJobScreen.clickLineButton({ index: 1 });   // the other CU is still picked: the line screen opens
@@ -203,7 +203,7 @@ test('the TU\'s first CU: a rescan is warned; "Unpack" frees only that CU (the o
     await PickLineScanScreen.waitForScreen();
     await scanPack(first);
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' })] } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
     });
 });
 
@@ -220,12 +220,9 @@ test('lots A, A, B: 3 CUs, the TU has no lot (mixed), PackId on no TU, the first
     await scanPack(packLabelOf({ masterdata, lot: lotA, packId: 2 }));
     await scanPack(packLabelOf({ masterdata, lot: lotB, packId: 3 }));
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu3', tu: 'tu1' })] } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
         hus: {
-            tu1: { qtyTUs: 1, storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }, { qty: '1 PCE' }], attributes: { 'Lot-Nummer': null, PackId: null } },
-            vhu1: { attributes: { 'Lot-Nummer': lotA, PackId: '1' } },
-            vhu2: { attributes: { 'Lot-Nummer': lotA, PackId: '2' } },
-            vhu3: { attributes: { 'Lot-Nummer': lotB, PackId: '3' } },
+            tu1: { qtyTUs: 1, storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE', attributes: { 'Lot-Nummer': lotA, PackId: '1' } }, { qty: '1 PCE', attributes: { 'Lot-Nummer': lotA, PackId: '2' } }, { qty: '1 PCE', attributes: { 'Lot-Nummer': lotB, PackId: '3' } }], attributes: { 'Lot-Nummer': null, PackId: null } },
         },
     });
 });
@@ -306,8 +303,8 @@ test('Scan each CU: a label the format rejects is refused and nothing is booked,
         await scanPack(validLabel);
     });
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } },
-        hus: { vhu1: { attributes: { 'Lot-Nummer': lot, PackId: '1' } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } },
+        hus: { tu1: { cus: [{ attributes: { 'Lot-Nummer': lot, PackId: '1' } }] } },
     });
 });
 
@@ -324,7 +321,7 @@ test('Scan each CU: a label scan without an open TU is refused with the open-a-T
 
     await PickLineScanScreen.openTU();
     await scanPack(label);
-    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -338,7 +335,7 @@ test('Scan each CU: customer GRAI required: no pick-time GRAI screen; (i) first 
     await PickLineScanScreen.scanCULabelRefused(label, MSG_NO_OPEN_TU);
     await PickLineScanScreen.openTU();
     await scanPack(label);
-    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' })] } } } } });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -354,7 +351,7 @@ test('Scan each CU: TU packing line: first scan refused without a TU; "Next TU",
         await scanPack(packLabelOf({ masterdata, packId }));
     }
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2, 3].map((n) => qtyPickedRow({ qty: 1, vhu: `vhu${n}`, tu: 'tu1' })) } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2, 3].map(() => qtyPickedRow({ qty: 1, tu: 'tu1' })) } } } },
         hus: { tu1: { qtyTUs: 1, storages: { P1: '3 PCE' }, cus: [{ qty: '1 PCE' }, { qty: '1 PCE' }, { qty: '1 PCE' }] } },
     });
 });
@@ -369,7 +366,7 @@ test('Scan each CU: line whose packing is "TU x 4 Stk", TU open: a second CU is 
     await scanPack(packLabelOf({ masterdata, packId: 1 }));
     await scanPack(packLabelOf({ masterdata, packId: 2 }));
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2].map((n) => qtyPickedRow({ qty: 1, vhu: `vhu${n}`, tu: 'tu1' })) } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [1, 2].map(() => qtyPickedRow({ qty: 1, tu: 'tu1' })) } } } },
     });
 });
 
@@ -382,7 +379,7 @@ test('counters 9 and 10 give pack IDs "9" and "10" through the open-end pack-ID 
     await openScanEachLine({ index: 1 });
     await scanPack(packLabelOf({ masterdata, packId: 9 }));
     await scanPack(packLabelOf({ masterdata, packId: 10 }));
-    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu1' })] } } } }, hus: { vhu1: { attributes: { PackId: '9' } }, vhu2: { attributes: { PackId: '10' } } } });
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu1' })] } } } }, hus: { tu1: { cus: [{ attributes: { PackId: '9' } }, { attributes: { PackId: '10' } }] } } });
 });
 
 // noinspection JSUnusedLocalSymbols

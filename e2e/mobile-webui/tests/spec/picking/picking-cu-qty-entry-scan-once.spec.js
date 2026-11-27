@@ -41,7 +41,7 @@ test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) bo
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
                     }
                 }
             }
@@ -49,7 +49,6 @@ test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) bo
         hus: {
             // the TU holds exactly one CU of 5, with lot and best-before of the label
             tu1: { storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } }] },
-            vhu1: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } },
         },
     });
 });
@@ -113,7 +112,7 @@ test('Scan once: OK without an open TU is refused, nothing is booked; after "Nex
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
                 }
             }
         },
@@ -136,7 +135,7 @@ test('the CUs come from the "Kommissionieren aus" HU; the source pallet drops by
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
                 }
             }
         },
@@ -173,17 +172,15 @@ test('open TU holding 3, count 5 (needs two source TUs) books ONE CU of 5 into i
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu2', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
                         ]
                     }
                 }
             }
         },
         hus: {
-            tu1: { storages: { P1: '8 PCE' } },
-            vhu1: { storages: { P1: '3 PCE' }, attributes: { 'Lot-Nummer': lot } },
-            vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot } },
+            tu1: { storages: { P1: '8 PCE' }, cus: [{ qty: '3 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '5 PCE', attributes: { 'Lot-Nummer': lot } }] },
         },
     });
 });
@@ -209,7 +206,7 @@ test('a count smaller than the open quantity is not a rejection', async ({ page 
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "4 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
                 }
             }
         },
@@ -240,8 +237,8 @@ test('the booking that reaches the open quantity finishes the line and goes back
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "8 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "2 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu2', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "8 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "2 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
                         ]
                     }
                 }
@@ -313,8 +310,8 @@ test('on a line whose packing is a TU packing, a SECOND CU booking into the open
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu2', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
                         ]
                     }
                 }

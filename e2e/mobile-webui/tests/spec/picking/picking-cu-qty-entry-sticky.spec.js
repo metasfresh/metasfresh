@@ -60,9 +60,9 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }),
-                            qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' }),
-                            qtyPickedRow({ qty: 2, vhu: 'vhu3', tu: 'tu3' }),
+                            qtyPickedRow({ qty: 5, tu: 'tu1' }),
+                            qtyPickedRow({ qty: 5, tu: 'tu2' }),
+                            qtyPickedRow({ qty: 2, tu: 'tu3' }),
                         ]
                     }
                 }
@@ -70,12 +70,9 @@ test('the count is pinned per line (12 -> 5, 5, MIN(5, 2) = 2), booked on the la
         },
         hus: {
             // TUs 2 and 3 were booked without a scan, on the lot of the one label scanned in TU 1
-            vhu1: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lotA } },
-            vhu2: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lotA } },
-            vhu3: { storages: { P1: '2 PCE' }, attributes: { 'Lot-Nummer': lotA } },
-            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' } },
-            tu2: { qtyTUs: 1, storages: { P1: '5 PCE' } },
-            tu3: { qtyTUs: 1, storages: { P1: '2 PCE' } },
+            tu1: { qtyTUs: 1, storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lotA } }] },
+            tu2: { qtyTUs: 1, storages: { P1: '5 PCE' }, cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lotA } }] },
+            tu3: { qtyTUs: 1, storages: { P1: '2 PCE' }, cus: [{ qty: '2 PCE', attributes: { 'Lot-Nummer': lotA } }] },
         },
     });
 });
@@ -102,7 +99,7 @@ test('a label of another lot scanned in the open block replaces the remembered l
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 5, tu: 'tu2' })] }
                 }
             }
         },
@@ -191,15 +188,13 @@ test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the coun
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 6, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 4, vhu: 'vhu2', tu: 'tu1' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 6, tu: 'tu1' }), qtyPickedRow({ qty: 4, tu: 'tu1' })] }
                 }
             }
         },
         hus: {
             // both bookings sit in the one TU, on the lot of each scanned label
-            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' } },
-            vhu1: { storages: { P1: '6 PCE' }, attributes: { 'Lot-Nummer': lot } },
-            vhu2: { storages: { P1: '4 PCE' }, attributes: { 'Lot-Nummer': lot } },
+            tu1: { qtyTUs: 1, storages: { P1: '10 PCE' }, cus: [{ qty: '6 PCE', attributes: { 'Lot-Nummer': lot } }, { qty: '4 PCE', attributes: { 'Lot-Nummer': lot } }] },
         },
     });
 });

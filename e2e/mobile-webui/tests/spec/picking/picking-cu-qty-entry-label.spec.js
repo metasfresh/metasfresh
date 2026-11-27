@@ -120,16 +120,15 @@ test('buyer A: Scan once reads the label with the profile format without PackId 
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu2', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' },
                         ]
                     },
                 }
             }
         },
         hus: {
-            vhu1: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
-            vhu2: { attributes: { 'Lot-Nummer': lot, 'PackId': null } },
+            tu1: { cus: [{ attributes: { 'Lot-Nummer': lot, 'PackId': null } }, { attributes: { 'Lot-Nummer': lot, 'PackId': null } }] },
         },
     });
 });
@@ -198,13 +197,13 @@ test('label of the line product opens the quantity block, books lot and best-bef
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "5 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
                     },
                 }
             }
         },
         hus: {
-            vhu1: { storages: { P1: '5 PCE' }, attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } },
+            tu1: { cus: [{ qty: '5 PCE', attributes: { 'Lot-Nummer': lot, 'HU_BestBeforeDate': BEST_BEFORE } }] },
         },
     });
 });
@@ -239,7 +238,7 @@ test('product match uses the label product part against M_Product.Value, the GTI
             [pickingJobId]: {
                 shipmentSchedules: {
                     P1: {
-                        qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: 'vhu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                        qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
                     },
                 }
             }

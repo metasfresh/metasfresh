@@ -49,7 +49,7 @@ test('GRAI scan with a TU open (customer GRAI not required): the open TU is clos
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 5, tu: 'tu2' })] }
                 }
             }
         },
@@ -86,7 +86,7 @@ test('GRAI scan with a slow request (count typed and OK pressed before the crate
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 5, tu: 'tu2' })] }
                 }
             }
         },
@@ -124,7 +124,7 @@ test('GRAI scan with a slow answer (crate opened, its answer late; count typed a
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 5, tu: 'tu2' })] }
                 }
             }
         },
@@ -160,7 +160,7 @@ test('GRAI of a TU type without capacity for the product is refused; the open TU
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 3, tu: 'tu1' })] }
                 }
             }
         },
@@ -207,7 +207,7 @@ test('GRAI of a TU type without capacity, slow refusal (count typed and OK press
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 3, tu: 'tu1' })] }
                 }
             }
         },
@@ -241,7 +241,7 @@ test('"Next TU" button with a slow request (count typed and OK pressed before th
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 3, tu: 'tu2' })] }
                 }
             }
         },
@@ -291,7 +291,7 @@ test('GRAI scan whose request hangs (no answer at all): the request times out, o
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 3, tu: 'tu1' })] }
                 }
             }
         },
@@ -338,7 +338,7 @@ test('"Next TU" button whose request hangs (no answer at all): the request times
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu1' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' }), qtyPickedRow({ qty: 3, tu: 'tu1' })] }
                 }
             }
         },
@@ -379,9 +379,9 @@ test('count confirmed first (OK pressed, its answer late), crate GRAI scanned me
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }),
-                            qtyPickedRow({ qty: 5, vhu: 'vhu2', tu: 'tu1' }),
-                            qtyPickedRow({ qty: 3, vhu: 'vhu3', tu: 'tu2' }),
+                            qtyPickedRow({ qty: 5, tu: 'tu1' }),
+                            qtyPickedRow({ qty: 5, tu: 'tu1' }),
+                            qtyPickedRow({ qty: 3, tu: 'tu2' }),
                         ]
                     }
                 }
@@ -431,9 +431,9 @@ test('"Next TU" opens a TU of the line\'s TU type in one tap (no "Gebinde" list)
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' }),
-                            qtyPickedRow({ qty: 3, vhu: 'vhu2', tu: 'tu2' }),
-                            qtyPickedRow({ qty: 4, vhu: 'vhu3', tu: 'tu3' }),
+                            qtyPickedRow({ qty: 5, tu: 'tu1' }),
+                            qtyPickedRow({ qty: 3, tu: 'tu2' }),
+                            qtyPickedRow({ qty: 4, tu: 'tu3' }),
                         ]
                     }
                 }
@@ -471,7 +471,7 @@ test('Scan once: customer GRAI required, no pick-time GRAI screen: first booking
     });
 
     await Backend.expect({
-        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' })] } } } },
+        pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' })] } } } },
         hus: { tu1: { qtyTUs: 1, storages: { P1: '5 PCE' } } },
     });
 });
@@ -509,7 +509,7 @@ test('mixed job (customer GRAI required + customer not required): the GRAI custo
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
-                shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 8, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 4, vhu: 'vhu2', tu: 'tu2' })] } }
+                shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 8, tu: 'tu1' }), qtyPickedRow({ qty: 4, tu: 'tu2' })] } }
             }
         },
         hus: {
@@ -562,7 +562,7 @@ test('customer GRAI required, TU opened with "Next TU": "Fertigstellen" is refus
         pickings: {
             [pickingJobId]: {
                 docStatus: 'Drafted',
-                shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 5, vhu: 'vhu1', tu: 'tu1' })] } },
+                shipmentSchedules: { P1: { qtyPicked: [qtyPickedRow({ qty: 5, tu: 'tu1' })] } },
             }
         },
         hus: { tu1: { qtyTUs: 1, storages: { P1: '5 PCE' } } },
@@ -581,13 +581,12 @@ const expectEveryPickedHUIsACUInATU = async ({ pickingJobId, tus, docStatus }) =
             [pickingJobId]: {
                 ...(docStatus ? { docStatus } : {}),
                 shipmentSchedules: {
-                    P1: { qtyPicked: tus.map(({ qty }, idx) => qtyPickedRow({ qty, vhu: `vhu${idx + 1}`, tu: `tu${idx + 1}` })) }
+                    P1: { qtyPicked: tus.map(({ qty }, idx) => qtyPickedRow({ qty, tu: `tu${idx + 1}` })) }
                 }
             }
         },
         hus: Object.fromEntries(tus.flatMap(({ qty, grai }, idx) => [
             [`tu${idx + 1}`, { qtyTUs: 1, storages: { P1: `${qty} PCE` }, cus: [{ qty: `${qty} PCE` }], ...(grai !== undefined ? { attributes: { GRAI: grai } } : {}) }],
-            [`vhu${idx + 1}`, { storages: { P1: `${qty} PCE` } }],
         ])),
     });
 };
@@ -804,7 +803,7 @@ test('Scan each CU: GRAI scan with a slow request, a CU label scanned right afte
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [qtyPickedRow({ qty: 1, vhu: 'vhu1', tu: 'tu1' }), qtyPickedRow({ qty: 1, vhu: 'vhu2', tu: 'tu2' })] }
+                    P1: { qtyPicked: [qtyPickedRow({ qty: 1, tu: 'tu1' }), qtyPickedRow({ qty: 1, tu: 'tu2' })] }
                 }
             }
         },
