@@ -23,6 +23,9 @@ const ORDER_LINE_GRID_ROWS = '.table-flex-wrapper table tbody tr';
  * fallbacks (xhr_streaming, eventsource, htmlfile, xhr and jsonp polling; SockJS falls back when the WebSocket
  * handshake fails, e.g. through a busy dev-server proxy) from the page, where an init script hands each received
  * SockJS message to the test.
+ * @param {import('@playwright/test').Page} page the page, before its first navigation
+ * @returns {Promise<{frames: Object[], responses: Object[], parseErrors: number}>} the recorder; its lists grow while
+ *   the page runs
  */
 export async function installDocumentEventRecorder(page) {
   const recorder = { frames: [], responses: [], parseErrors: 0 };
@@ -116,6 +119,8 @@ export async function installDocumentEventRecorder(page) {
         return eventSource;
       };
       window.EventSource.prototype = NativeEventSource.prototype;
+      // keeps the static CONNECTING / OPEN / CLOSED constants
+      Object.setPrototypeOf(window.EventSource, NativeEventSource);
     }
 
     // htmlfile and jsonp: the response calls the receiver SockJS registers in window._jp (htmlfile:
@@ -219,7 +224,12 @@ async function isFocused(locator) {
   return await locator.evaluate((el) => el === document.activeElement, undefined, { timeout: 1000 }).catch(() => false);
 }
 
-/** Describe the active element, for failure messages. */
+/**
+ * Describe the element that holds the cursor, for failure messages: tag, id, enclosing lookup and whether it is in
+ * the quick input.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<string>} e.g. `INPUT in lookup_C_BPartner_ID`, or `none`
+ */
 export async function describeActiveElement(page) {
   return await page.evaluate(() => {
     const e = document.activeElement;

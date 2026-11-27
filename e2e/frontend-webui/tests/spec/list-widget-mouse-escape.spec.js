@@ -8,7 +8,13 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { getRecordData } from '../utils/WebAPIValidation';
-import { pickCustomerByMouse, pickCustomerAndSettle, expectFocusOn, expectFocusHeld } from '../utils/QuickInputFocus';
+import {
+  pickCustomerByMouse,
+  pickCustomerAndSettle,
+  expectFocusOn,
+  expectFocusHeld,
+  describeActiveElement,
+} from '../utils/QuickInputFocus';
 
 /**
  * Pins (must pass on today's code): in the sales order header a mouse click on a list field opens its
@@ -24,33 +30,20 @@ const PAYMENT_TERM = '.form-field-C_PaymentTerm_ID .input-dropdown-container';
 const OPTION = '.input-dropdown-list-option[data-testid^="option-"]';
 
 /**
- * Describe the element that holds the cursor, for messages: tag, id, enclosing lookup and whether it is in the quick
- * input. Same format as describeActiveElement in QuickInputFocus.js (not exported there).
- * @param {import('@playwright/test').Page} page
- * @returns {Promise<string>} e.g. `INPUT in lookup_C_BPartner_ID`, or `none`
- */
-async function describeActiveElement(page) {
-  return await page.evaluate(() => {
-    const e = document.activeElement;
-    if (!e) return 'none';
-    const lookup = e.closest('[id^="lookup_"]');
-    return `${e.tagName}${e.id ? '#' + e.id : ''}${lookup ? ' in ' + lookup.id : ''}${
-      e.closest('.quick-input-container') ? ' (quick input)' : ''
-    }`;
-  });
-}
-
-/**
  * Mark (data-pin-next="A") the element that Tab moves the cursor to from the element at `selector`: the next one in
  * the browser's sequential focus order (positive tabindex ascending first, then tabindex 0; document order within
  * each), skipping disabled and not rendered elements and those in the same form field (`form-field-<Column>`
- * wrapper) as `selector`. So the marked element is never the body nor part of the field Tab leaves. Returns its
- * description.
+ * wrapper) as `selector`. So the marked element is never the body nor part of the field Tab leaves.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fieldSelector the field's wrapper, e.g. `.form-field-PaymentRule`
+ * @param {string} selector the element inside that field that holds the cursor before Tab
+ * @returns {Promise<string>} the marked element's description (`<TAG> in form-field-<Column>`), or `none` when no
+ *   element follows in the tab order
  */
-async function markNextInTabOrder(page, selector) {
-  return await page.evaluate((sel) => {
+async function markNextInTabOrder(page, fieldSelector, selector) {
+  return await page.evaluate(([fieldSel, sel]) => {
     const from = document.querySelector(sel);
-    const fromField = from.closest('[class*="form-field-"]') || from;
+    const fromField = from.closest(fieldSel) || from;
     const tabbable = Array.from(document.querySelectorAll('*')).filter(
       (e) =>
         e.tabIndex >= 0 &&
@@ -68,7 +61,7 @@ async function markNextInTabOrder(page, selector) {
     next.setAttribute('data-pin-next', 'A');
     const field = next.closest('[class*="form-field-"]');
     return `${next.tagName}${field ? ' in ' + (field.className.match(/form-field-[A-Za-z0-9_]+/) || [''])[0] : ''}`;
-  }, selector);
+  }, [fieldSelector, selector]);
 }
 
 async function savedKey(recordId, column) {
@@ -186,7 +179,7 @@ testCases.forEach(({ language, label }) => {
       await pickSaved;
       await expectFocusOn(page.locator(PAYMENT_RULE), 'after the pick: cursor back in PaymentRule');
       await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
-      const expectedNext = await markNextInTabOrder(page, PAYMENT_RULE);
+      const expectedNext = await markNextInTabOrder(page, '.form-field-PaymentRule', PAYMENT_RULE);
       console.log(`Next field after PaymentRule in tab order (${language}): ${expectedNext}`);
 
       await page.keyboard.press('Tab');
