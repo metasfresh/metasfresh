@@ -6,32 +6,32 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.util.Services;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.ad.dao.IQueryBL;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,7 +44,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Step {@code metasfresh contains C_ScannableCode_Format_Part:} columns, all plain names (no {@code .Identifier} suffix):
  * required: {@code C_ScannableCode_Format_ID} (the format identifier), {@code StartNo}, {@code DataType} (the reference list code, e.g. {@code PRODUCT_CODE}, {@code PACK_ID});
  * optional: {@code EndNo} (empty or {@code 0} = open end), {@code ConstantValue}, {@code DateFormat} (pattern, e.g. {@code yyMMdd}, stored in {@code DataFormat}).
- * <p>
  * <p>
  * Step {@code parse scanned code and expect:} parses with the scenario's own formats only: while it runs, every other active format (an unrelated one,
  * or one that already exists in the database, e.g. from a migration) is deactivated and afterwards restored.
@@ -96,6 +95,11 @@ public class C_ScannableCode_Format_StepDef
 	private final Set<String> unrelatedFormatIdentifiers = new HashSet<>();
 
 	/**
+	 * Formats deactivated by {@link #parseScannedCodeAndExpect(DataTable)} and not yet reactivated.
+	 */
+	private final List<I_C_ScannableCode_Format> deactivatedFormats = new ArrayList<>();
+
+	/**
 	 * Declares the formats (identifier + {@code Name}); they are created by the parts step.
 	 *
 	 * @see #createParts(DataTable)
@@ -136,9 +140,10 @@ public class C_ScannableCode_Format_StepDef
 				.map(C_ScannableCode_Format_StepDef::toPart)
 				.collect(ImmutableList.toImmutableList());
 
+		final boolean isUnrelated = unrelatedFormatIdentifiers.remove(formatIdentifier);
 		formatService.create(ScannableCodeFormatCreateRequest.builder()
 				.name(name)
-				.description(unrelatedFormatIdentifiers.remove(formatIdentifier) ? DESCRIPTION_CUCUMBER_UNRELATED : DESCRIPTION_CUCUMBER)
+				.description(isUnrelated ? DESCRIPTION_CUCUMBER_UNRELATED : DESCRIPTION_CUCUMBER)
 				.parts(parts)
 				.build());
 	}
@@ -161,6 +166,7 @@ public class C_ScannableCode_Format_StepDef
 	public void deleteCreatedFormats()
 	{
 		pendingFormatNames.clear();
+		reactivateDeactivatedFormats(); // normally already done by the step; here for a step that was interrupted
 		unrelatedFormatIdentifiers.clear();
 		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
 		formatService.delete(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER_UNRELATED).build());
@@ -174,14 +180,14 @@ public class C_ScannableCode_Format_StepDef
 	@Given("parse scanned code and expect:")
 	public void parseScannedCodeAndExpect(@NonNull final DataTable dataTable)
 	{
-		final List<I_C_ScannableCode_Format> deactivated = deactivateFormatsNotOfTheScenario();
 		try
 		{
+			deactivateFormatsNotOfTheScenario();
 			DataTableRows.of(dataTable).forEach(this::parseAndExpect);
 		}
 		finally
 		{
-			reactivate(deactivated);
+			reactivateDeactivatedFormats();
 		}
 	}
 
@@ -189,9 +195,8 @@ public class C_ScannableCode_Format_StepDef
 	 * Makes the scenario's own formats the only active ones: a format that is not one of the scenario's (e.g. added by a migration) could read the same codes
 	 * and, being tried first, change the result. Test isolation only; the expectations are not touched.
 	 */
-	private List<I_C_ScannableCode_Format> deactivateFormatsNotOfTheScenario()
+	private void deactivateFormatsNotOfTheScenario()
 	{
-		final List<I_C_ScannableCode_Format> deactivated = new ArrayList<>();
 		queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -200,17 +205,41 @@ public class C_ScannableCode_Format_StepDef
 				.forEach(format -> {
 					format.setIsActive(false);
 					InterfaceWrapperHelper.save(format);
-					deactivated.add(format);
+					deactivatedFormats.add(format); // remembered only after the save, so that a failing save leaves nothing half-done unrecorded
 				});
-		return deactivated;
 	}
 
-	private static void reactivate(@NonNull final List<I_C_ScannableCode_Format> formats)
+	/**
+	 * Reactivates every format that was deactivated; a format that fails does not stop the others and does not hide the scenario's own error.
+	 */
+	private void reactivateDeactivatedFormats()
 	{
-		formats.forEach(format -> {
-			format.setIsActive(true);
-			InterfaceWrapperHelper.save(format);
-		});
+		RuntimeException firstError = null;
+		for (final I_C_ScannableCode_Format format : deactivatedFormats)
+		{
+			try
+			{
+				format.setIsActive(true);
+				InterfaceWrapperHelper.save(format);
+			}
+			catch (final RuntimeException e)
+			{
+				if (firstError == null)
+				{
+					firstError = e;
+				}
+				else
+				{
+					firstError.addSuppressed(e);
+				}
+			}
+		}
+		deactivatedFormats.clear();
+
+		if (firstError != null)
+		{
+			throw new AdempiereException("Failed to reactivate scannable code formats deactivated by the step; they stay inactive", firstError);
+		}
 	}
 
 	private void parseAndExpect(@NonNull final DataTableRow row)
