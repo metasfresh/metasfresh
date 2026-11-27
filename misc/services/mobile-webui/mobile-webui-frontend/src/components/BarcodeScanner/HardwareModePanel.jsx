@@ -63,13 +63,16 @@ const HardwareModePanel = ({
   useEffect(() => {
     isCoexistingWithTypedInputRef.current = isCoexistingWithTypedInput;
   }, [isCoexistingWithTypedInput]);
+  // the scanner leaves the focus where the operator types (reads the live values, so it is also right in a timer)
+  const isFocusLeftToTypedField = () =>
+    isCoexistingWithTypedInputRef.current && isOperatorTypingElsewhere(inputTextRef.current);
 
   // Refocus the offscreen <input> after every render — necessary for IME-style configs (the
   // input is editable, OS expects focus to route InputConnection). Skipped for keystroke-wedge
   // configs (readOnly + inputMode=none) which capture at window level and don't need focus.
   // Always skipped when `disabled` so the visible ManualModePanel input keeps its focus.
   useEffect(() => {
-    if (disabled || (isCoexistingWithTypedInput && isOperatorTypingElsewhere(inputTextRef.current))) return;
+    if (disabled || isFocusLeftToTypedField()) return;
     if (hardwareInputMode !== 'none' && !isHardwareInputReadOnly) {
       inputTextRef?.current?.focus();
     }
@@ -78,7 +81,7 @@ const HardwareModePanel = ({
   // Mount-time focus for DataWedge IME (inputMode=none) — establishes InputConnection once;
   // the window-level hook handles subsequent scans.
   useEffect(() => {
-    if (disabled || (isCoexistingWithTypedInput && isOperatorTypingElsewhere(inputTextRef.current))) return;
+    if (disabled || isFocusLeftToTypedField()) return;
     // next to a typed-in field only an IME config (editable input) needs the focus; a read-only input is read at window level
     if (hardwareInputMode === 'none' && !(isCoexistingWithTypedInput && isHardwareInputReadOnly)) {
       inputTextRef?.current?.focus();
@@ -178,7 +181,7 @@ const HardwareModePanel = ({
       // later. If the user switched into MANUAL during the window, we must NOT yank focus
       // back from the visible manual input.
       if (disabledRef.current) return;
-      if (isCoexistingWithTypedInputRef.current && isOperatorTypingElsewhere(inputTextRef.current)) return;
+      if (isFocusLeftToTypedField()) return;
       inputTextRef?.current?.focus();
     }, 2000);
   };

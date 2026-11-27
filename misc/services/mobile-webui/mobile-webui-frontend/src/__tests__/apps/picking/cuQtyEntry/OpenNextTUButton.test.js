@@ -374,16 +374,17 @@ describe('useOpenNextTU', () => {
   });
 
   describe('runExclusive: the in-flight flags are released whatever the opening does', () => {
-    it('a synchronous throw of the opening: the error is shown and the next tap opens a TU again', async () => {
+    it('a synchronous throw of the opening reaches the caller and the next tap opens a TU again', async () => {
       const error = new Error('sync boom');
       const setPickingTarget = jest.fn().mockResolvedValue({});
       const exposed = setup(setPickingTarget);
       await act(async () => {
-        await exposed.nextTU.runExclusive(() => {
-          throw error;
-        });
+        await expect(
+          exposed.nextTU.runExclusive(() => {
+            throw error;
+          })
+        ).rejects.toBe(error);
       });
-      expect(toastErrorFromObj).toHaveBeenCalledWith(error);
       await act(async () => {
         await exposed.nextTU.onNextTU();
       });
@@ -391,16 +392,13 @@ describe('useOpenNextTU', () => {
       expect(toastNotification).toHaveBeenCalledTimes(1);
     });
 
-    it('a synchronous throw of the opening, rethrow mode (scanner): the error reaches the caller and the next scan is not refused as busy', async () => {
+    it('a synchronous throw of the opening (scanner): the error reaches the caller and the next scan is not refused as busy', async () => {
       const exposed = setup(jest.fn());
       await act(async () => {
         await expect(
-          exposed.nextTU.runExclusive(
-            () => {
-              throw new Error('sync boom');
-            },
-            { isRethrow: true }
-          )
+          exposed.nextTU.runExclusive(() => {
+            throw new Error('sync boom');
+          })
         ).rejects.toThrow('sync boom');
       });
       await act(async () => {

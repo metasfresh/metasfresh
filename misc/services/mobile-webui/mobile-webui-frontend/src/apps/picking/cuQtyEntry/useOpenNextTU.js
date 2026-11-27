@@ -40,6 +40,16 @@ const NEXT_TU_TOAST_POSITION = 'top-center';
 /** One "New TU opened" message at a time: opening several TUs in a row replaces it, so they never pile up over the pop-up */
 const NEXT_TU_TOAST_KEY = 'picking.nextTUOpened';
 
+/** A second opening while one is in flight is refused with this message key */
+const NEXT_TU_BUSY_KEY = 'picking.nextTUBusy';
+
+const showNextTUOpened = () =>
+  toastNotification({
+    plainMessage: trl('picking.nextTUOpened'),
+    position: NEXT_TU_TOAST_POSITION,
+    replaceKey: NEXT_TU_TOAST_KEY,
+  });
+
 const hasTUPackingInstructions = (packingTuPIId) => packingTuPIId != null; // null and absent alike
 
 /** Closes the open TU target (if any), then opens a new TU of the line's TU packing, or goes to the target selection when the line has no TU packing. */
@@ -103,7 +113,7 @@ export const useOpenNextTU = ({
   );
 
   /**
-   * Runs one TU opening at a time; a second call while one is in flight is refused (`isRethrow`: with a UserMessageError, so a scanner reports an error instead of a success; otherwise silently).
+   * Runs one TU opening at a time; a second call while one is in flight is refused with a UserMessageError ({@link NEXT_TU_BUSY_KEY}), so a scanner reports an error instead of a success.
    * While the opening is in flight, its promise is kept in `openingRef` for {@link bookAfterTUOpened}, which needs the raw promise of `action` (it settles when the opening settles).
    * An opening requested while a booking is in flight (see {@link bookAfterTUOpened}) starts only after the booking's answer is in:
    * the count confirmed first stays in the TU that was open, and the booking's older job state cannot arrive after the opening's newer one and show the previous TU as open.
@@ -111,17 +121,15 @@ export const useOpenNextTU = ({
    * (the booking request itself has no timeout) ends the wait with a "Connection error", the opening is not started and the busy flags are released.
    * An opening that timed out may have been applied by the server (close + open are not idempotent), so the job is reloaded and shown: the screen then shows the TU that is really open.
    * The in-flight flags are released whatever happens: `action` may return a rejected promise or throw synchronously.
-   * A failure of the opening is shown as an error toast and swallowed; with `isRethrow` it is rethrown to the caller instead (a scanner shows it) and no toast is shown here.
+   * A failure of the opening is rethrown to the caller, which shows it (a scanner reports it, the button toasts it).
    * @param {() => Promise<void>|void} action the opening
-   * @param {{isRethrow?: boolean}} options
    * @returns {Promise<void>} settles when the opening settled
    */
   const runExclusive = useCallback(
-    async (action, { isRethrow = false } = {}) => {
+    async (action) => {
       if (isInFlightRef.current) {
-        // a scan must not report success for a TU that was not opened.
-        if (isRethrow) throw new UserMessageError('picking.nextTUBusy');
-        return;
+        // a scan must not report success for a TU that was not opened
+        throw new UserMessageError(NEXT_TU_BUSY_KEY);
       }
       isInFlightRef.current = true;
       setProcessing(true);
@@ -135,8 +143,7 @@ export const useOpenNextTU = ({
         if (isTimeout(error)) {
           refreshJob();
         }
-        if (isRethrow) throw error;
-        toastErrorFromObj(error);
+        throw error;
       } finally {
         openingRef.current = null;
         isInFlightRef.current = false;
@@ -182,6 +189,11 @@ export const useOpenNextTU = ({
       : trackBooking();
   }, []);
 
+  // a tap while an opening is in flight is ignored; any other failure is shown
+  const ignoreBusyElseToast = (error) => {
+    if (error?.messageKey !== NEXT_TU_BUSY_KEY) toastErrorFromObj(error);
+  };
+
   const onNextTU = () =>
     runExclusive(async () => {
       await closeAndOpenNextTU({
@@ -201,26 +213,15 @@ export const useOpenNextTU = ({
           ),
       });
       if (hasTUPackingInstructions(packingTuPIId)) {
-        toastNotification({
-          plainMessage: trl('picking.nextTUOpened'),
-          position: NEXT_TU_TOAST_POSITION,
-          replaceKey: NEXT_TU_TOAST_KEY,
-        });
+        showNextTUOpened();
       }
-    });
+    }).catch(ignoreBusyElseToast);
 
   const onGraiScanned = (graiString) =>
-    runExclusive(
-      async () => {
-        await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
-        toastNotification({
-          plainMessage: trl('picking.nextTUOpened'),
-          position: NEXT_TU_TOAST_POSITION,
-          replaceKey: NEXT_TU_TOAST_KEY,
-        });
-      },
-      { isRethrow: true }
-    );
+    runExclusive(async () => {
+      await setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString }).then((wfProcess) => updateWF(wfProcess));
+      showNextTUOpened();
+    });
 
   // runExclusive: @VisibleForTesting
   return { isProcessing, onNextTU, onGraiScanned, bookAfterTUOpened, runExclusive };

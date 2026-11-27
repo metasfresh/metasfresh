@@ -37,17 +37,17 @@ const EMPTY_LU_GRAIS = [];
 /**
  * @param nextTUActions the node as is, or a function `({ scanner }) => node` for a button that owns the hidden scanner of the
  *   quantity block (see OpenNextTUButton). `scanner` is undefined on the first scan screen, which has its own visible scanner.
- *   The first scan screen shows it only when a scan books right away (Scan each CU); Scan once shows it in the pop-up only.
+ *   The first scan screen shows it only when `isBookedOnScan` (a scan books right away, there is no quantity block); otherwise it is shown in the quantity block only.
  *   The pop-up's rescan scanner exists ONLY through the function form: a plain node adds no scanner, so a line that is repeated-booking
- *   but passes no function has no rescan (today every scan-once line passes it, see PickLineScanScreen).
+ *   but passes no function has no rescan.
  * @param scanner `{ resolveScannedBarcode, onResolvedResult }` or undefined
  * @return the node to render, or undefined when there are no next-TU actions
  */
 const renderNextTUActions = (nextTUActions, scanner) =>
   typeof nextTUActions === 'function' ? nextTUActions({ scanner }) : nextTUActions;
 
-// Scan each CU (isBookedOnScan) has no pop-up: its scan screen is the only place for "Weiteres TU", next to "Schließen".
-// Scan once opens its crate in the quantity pop-up (the refusal comes at OK), so this scan screen shows no "Weiteres TU" before the first scan.
+// With `isBookedOnScan` there is no quantity block: the scan step shows the next-TU actions and a Close button.
+// Otherwise nothing is shown before the first scan.
 const HUScanActionButtons = ({ nextTUActions, isBookedOnScan, onCloseDialog }) => {
   if (!isBookedOnScan) return null;
 
@@ -510,7 +510,7 @@ const ScanHUAndGetQtyComponent = ({
           isShowCloseTargetButton={isShowCloseTargetButton}
           nextTUActions={renderNextTUActions(
             nextTUActions,
-            // the label rescan (new lot / best-before, next crate by its code) is read by the hidden scanner of the "next TU" button
+            // the label rescan (new lot / best-before, next TU by its GRAI) is read by the hidden scanner of the "next TU" button
             isRepeatedBooking
               ? { resolveScannedBarcode: handleResolveHUScannedBarcode, onResolvedResult: onCULabelRescanned }
               : undefined
