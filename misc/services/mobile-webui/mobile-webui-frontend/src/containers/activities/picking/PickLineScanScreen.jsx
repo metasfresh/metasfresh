@@ -149,8 +149,11 @@ const PickLineScanScreen = () => {
   const isLabelRequiredLine = cuQtyEntryPolicy.isLabelRequired;
   const qtyUnitProps = computeQtyUnitProps({ pickingUnit, packingItemName });
   // back from the TU list ("Weiteres TU" on a line without a TU type): the label and the count the picker had are shown again.
-  // Taken once, when the screen opens, and used up at once, so a later visit of the screen starts clean.
+  // Taken once, when the screen opens (the redux copy is dropped at once, so a later visit of the screen starts clean).
+  // The kept count is offered for the first booking only: it is cleared in `onResult`, so the next round is offered
+  // the normal suggestion (last typed count, capped by the open quantity).
   const [pendingScan] = useState(() => cuEntry?.pendingScan ?? null);
+  const [isKeptQtyUsed, setKeptQtyUsed] = useState(false);
   useEffect(() => {
     if (pendingScan) {
       dispatch(forgetPendingScan({ wfProcessId, activityId }));
@@ -226,7 +229,10 @@ const PickLineScanScreen = () => {
   });
 
   // a count confirmed while a TU is being opened (button or GRAI scan) goes into that TU
-  const onResult = (result) => nextTU.bookAfterTUOpened(() => postQtyPicked(result));
+  const onResult = (result) => {
+    setKeptQtyUsed(true);
+    return nextTU.bookAfterTUOpened(() => postQtyPicked(result));
+  };
 
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {
@@ -263,7 +269,7 @@ const PickLineScanScreen = () => {
       customQRCodeFormats={customQRCodeFormats}
       readAttributes={readAttributes}
       {...toQtyEntryBehaviorProps(cuQtyEntryPolicy)}
-      suggestedQty={computeSuggestedQtyOnScan({ pendingScan, suggestedQty })}
+      suggestedQty={computeSuggestedQtyOnScan({ pendingScan: isKeptQtyUsed ? null : pendingScan, suggestedQty })}
       isShowCloseTargetButton={!!luPickingTarget}
       nextTUActions={
         isLabelRequiredLine

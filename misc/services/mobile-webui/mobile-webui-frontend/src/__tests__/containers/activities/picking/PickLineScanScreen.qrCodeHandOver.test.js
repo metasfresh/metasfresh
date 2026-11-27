@@ -9,6 +9,8 @@ const PickLineScanScreen = require('../../../../containers/activities/picking/Pi
 
 const mockHistory = { push: jest.fn(), replace: jest.fn(), goBack: jest.fn() };
 let mockScanProps;
+let mockCUEntry;
+let mockSuggestedQty = null;
 
 jest.mock('../../../../utils/ui_trace', () => ({
   trace: jest.fn(),
@@ -59,7 +61,7 @@ jest.mock('../../../../reducers/wfProcesses', () => ({
   }),
   getQtyRejectedReasonsFromActivity: () => [],
 }));
-jest.mock('../../../../reducers/wfProcesses/picking', () => ({ getCUEntry: () => undefined }));
+jest.mock('../../../../reducers/wfProcesses/picking', () => ({ getCUEntry: () => mockCUEntry }));
 jest.mock('../../../../reducers/wfProcesses/picking/useCurrentPickTarget', () => ({
   useCurrentPickingTargetInfo: () => ({ luPickingTarget: undefined, tuPickingTarget: undefined }),
 }));
@@ -68,7 +70,7 @@ jest.mock('../../../../reducers/wfProcesses/picking/getReadAttributesFromActivit
 }));
 jest.mock('../../../../utils/picking', () => ({
   computeCUEntryToRemember: jest.fn(),
-  computeSuggestedQty: () => null,
+  computeSuggestedQty: () => mockSuggestedQty,
   getNextEligibleLineToPick: jest.fn(),
   getQtyPickedOrRejectedTotalForLine: () => 0,
   getQtyToPickForLine: () => 5,
@@ -83,6 +85,8 @@ jest.mock('../../../../components/ScanHUAndGetQtyComponent', () => (props) => {
 describe('PickLineScanScreen: the source HU of the hop from the line screen (URL param qrCode) survives the trip to the TU list', () => {
   beforeEach(() => {
     mockHistory.push.mockClear();
+    mockCUEntry = undefined;
+    mockSuggestedQty = null;
     window.history.pushState({}, '', '/scanner?next=pickingJob&qrCode=HU%231');
   });
   afterAll(() => window.history.pushState({}, '', '/'));
@@ -102,5 +106,26 @@ describe('PickLineScanScreen: the source HU of the hop from the line screen (URL
     const url = mockHistory.push.mock.calls[0][0];
     const returnTo = new URLSearchParams(url.split('?')[1]).get('returnTo');
     expect(returnTo).toBe('/picking/wf/wf/pick/A/a/L/l/scanner?next=pickingJob&qrCode=HU%231');
+  });
+
+  it('the count kept for the trip is offered once: after a booking the normal capped suggestion is offered again (open 10, kept 6, booked 6, open 4 -> 4)', async () => {
+    mockCUEntry = { pendingScan: { scannedBarcode: 'LABEL#1', qtyEntered: '6' } };
+    mockSuggestedQty = 4; // what the normal rule gives once 6 are booked (last typed count capped by the open quantity)
+    render(
+      <Provider store={createStore((state = {}) => state)}>
+        <PickLineScanScreen />
+      </Provider>
+    );
+    expect(mockScanProps.suggestedQty).toBe(6);
+
+    await act(async () => {
+      try {
+        await mockScanProps.onResult({ qtyEnteredAndValidated: 6, scannedBarcode: 'LABEL#1' });
+      } catch (e) {
+        // the booking itself (API) is not under test here, only that the kept count is used up
+      }
+    });
+
+    expect(mockScanProps.suggestedQty).toBe(4);
   });
 });
