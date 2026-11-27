@@ -41,11 +41,13 @@ public class OrderBillLocationProvidedMarker
 			"BillLocationProvided",
 			Boolean.class);
 
+	/** Marks this very order instance until the returned closeable is closed; use it around the save that must keep the supplied invoice address. */
 	public static IAutoCloseable temporaryMark(@NonNull final I_C_Order order)
 	{
 		return BILL_LOCATION_PROVIDED.temporarySetValue(order, Boolean.TRUE);
 	}
 
+	/** Returns whether this order instance is currently marked. */
 	public static boolean isMarked(@NonNull final I_C_Order order)
 	{
 		return BILL_LOCATION_PROVIDED.is(order, Boolean.TRUE);

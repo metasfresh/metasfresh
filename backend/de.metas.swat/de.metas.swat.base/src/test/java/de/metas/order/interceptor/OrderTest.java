@@ -525,7 +525,8 @@ public class OrderTest
 	}
 
 	/**
-	 * A marked invoice location of the order's own partner is kept when the bill-to relation of the order location points to the location itself.
+	 * A marked invoice location of the order's own partner is kept
+	 * when the bill-to relation of the order location points to the location itself.
 	 */
 	@Test
 	public void setBillBPartner_keepsMarkedBillLocation_whenOrderLocationHasSelfRelation()
@@ -548,7 +549,8 @@ public class OrderTest
 	}
 
 	/**
-	 * Without the marker, an invoice location of the order's own partner is not treated as provided: the bill-to relation of the order location applies.
+	 * Without the marker, an invoice location of the order's own partner is not treated as provided:
+	 * the bill-to relation of the order location applies.
 	 */
 	@Test
 	public void setBillBPartner_appliesBillToRelation_whenSameBPartnerBillLocationNotMarked()
