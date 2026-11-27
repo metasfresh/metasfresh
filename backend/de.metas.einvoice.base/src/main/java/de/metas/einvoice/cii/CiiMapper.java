@@ -67,6 +67,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.FiscalRepresentationId;
+import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
@@ -76,7 +78,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -168,6 +169,7 @@ public class CiiMapper
 	private static final String DATE_FORMAT_102 = "102";
 
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -669,13 +671,10 @@ public class CiiMapper
 	}
 
 	@Nullable
-	private static I_C_Fiscal_Representation retrieveFiscalRepresentation(@NonNull final I_C_Invoice invoice)
+	private I_C_Fiscal_Representation retrieveFiscalRepresentation(@NonNull final I_C_Invoice invoice)
 	{
-		if (invoice.getC_Fiscal_Representation_ID() <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.loadOutOfTrx(invoice.getC_Fiscal_Representation_ID(), I_C_Fiscal_Representation.class);
+		final FiscalRepresentationId fiscalRepresentationId = FiscalRepresentationId.ofRepoIdOrNull(invoice.getC_Fiscal_Representation_ID());
+		return fiscalRepresentationId != null ? fiscalRepresentationBL.getById(fiscalRepresentationId) : null;
 	}
 
 	@Nullable
@@ -703,7 +702,8 @@ public class CiiMapper
 
 		// the same address as the printed footer: the location the registration links, by its ID
 		party.setPostalTradeAddress(registration.getC_BPartner_Location_ID() > 0
-				? buildAddress(repo.getLocation(InterfaceWrapperHelper.loadOutOfTrx(registration.getC_BPartner_Location_ID(), I_C_BPartner_Location.class).getC_Location_ID()))
+				? buildAddress(repo.getLocation(bPartnerDAO.getBPartnerLocationByIdEvenInactiveNotNull(
+						BPartnerLocationId.ofRepoId(registration.getC_BPartner_Representative_ID(), registration.getC_BPartner_Location_ID())).getC_Location_ID()))
 				: buildSellerAddress(representative, "tax representative"));
 
 		final String vatId = invoice.getSellerVATaxID();
