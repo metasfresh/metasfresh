@@ -11,7 +11,12 @@ import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
+import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,6 +24,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
+import org.compiere.model.I_AD_Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -300,7 +306,7 @@ class ScannableCodeFormatRepositoryTest
 		}
 
 		@Test
-		void alreadyInactiveFormats_areNotReturned_andNotActivatedByTheCaller()
+		void alreadyInactiveFormats_areNotReturned_soTheyStayInactiveAfterActivate()
 		{
 			create("mine1", "mine");
 			final ScannableCodeFormatId inactive = create("inactive", "foreign");
@@ -308,7 +314,51 @@ class ScannableCodeFormatRepositoryTest
 
 			final ImmutableSet<ScannableCodeFormatId> secondRun = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
 
-			assertThat(secondRun).doesNotContain(inactive).isEmpty();
+			assertThat(secondRun).isEmpty();
+			repository.activate(secondRun);
+			assertThat(activeNames()).containsExactly("mine1");
+			assertThat(repository.getById(inactive)).isEmpty();
+		}
+
+		/**
+		 * Fails the deactivation of the format with the given name, to test that a half-done deactivation is rolled back.
+		 */
+		class FailDeactivationOf extends AbstractModelInterceptor
+		{
+			private final String name;
+
+			FailDeactivationOf(final String name) {this.name = name;}
+
+			@Override
+			protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+			{
+				engine.addModelChange(I_C_ScannableCode_Format.Table_Name, this);
+			}
+
+			@Override
+			public void onModelChange(final Object model, final ModelChangeType changeType)
+			{
+				final I_C_ScannableCode_Format record = InterfaceWrapperHelper.create(model, I_C_ScannableCode_Format.class);
+				if (changeType == ModelChangeType.BEFORE_CHANGE && !record.isActive() && name.equals(record.getName()))
+				{
+					throw new AdempiereException("test: deactivation of " + name + " fails");
+				}
+			}
+		}
+
+		@Test
+		void aFailingDeactivation_rollsBackTheFormatsAlreadyDeactivated()
+		{
+			create("kept", "mine");
+			create("other1", "foreign");
+			create("other2", "foreign");
+			create("other3", "foreign");
+			Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new FailDeactivationOf("other2"));
+
+			assertThatThrownBy(() -> repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build()))
+					.hasMessageContaining("deactivation of other2 fails");
+
+			assertThat(activeNames()).containsExactlyInAnyOrder("kept", "other1", "other2", "other3");
 		}
 
 		@Test

@@ -90,12 +90,9 @@ public class ScannableCodeFormatRepository
 	 */
 	public ImmutableSet<ScannableCodeFormatId> deactivateAllExcept(@NonNull final ScannableCodeFormatQuery keepQuery)
 	{
-		// all clients, like getAll(): every active format takes part in a scan, so every active format not kept must be deactivated
+		// the keep query ignores the client (unlike delete): every active format of any client takes part in a scan, like in getAll()
 		final IQueryBuilder<I_C_ScannableCode_Format> keepSqlQuery = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class).addOnlyActiveRecordsFilter();
-		if (keepQuery.getDescription() != null)
-		{
-			keepSqlQuery.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, keepQuery.getDescription());
-		}
+		addQueryFilters(keepSqlQuery, keepQuery);
 		final ImmutableSet<ScannableCodeFormatId> keepIds = keepSqlQuery.create().idsAsSet(ScannableCodeFormatId::ofRepoId);
 
 		final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
@@ -155,12 +152,17 @@ public class ScannableCodeFormatRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH);
 
+		addQueryFilters(sqlQuery, query);
+
+		return sqlQuery;
+	}
+
+	private static void addQueryFilters(@NonNull final IQueryBuilder<I_C_ScannableCode_Format> sqlQuery, @NonNull final ScannableCodeFormatQuery query)
+	{
 		if (query.getDescription() != null)
 		{
 			sqlQuery.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, query.getDescription());
 		}
-
-		return sqlQuery;
 	}
 
 	public void deleteParts(@NotNull final ScannableCodeFormatId formatId)
