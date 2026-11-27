@@ -169,22 +169,21 @@ export const BarcodeScannerComponent = {
                     document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
                 }
                 const valueAfter = document.querySelector(selector)?.value;
-                // Where the reader shows a scan in progress depends on the branch line: it either writes the keys into the
-                // input, or (without echoing them) marks the visible panel with .scan-in-progress. An invisible scanner
-                // (offscreen input only, e.g. the "Next TU" button) shows neither: there the attached input is the only signal.
+                // The reader either echoes the keys into the input (hotfix line) or, without echoing them, marks the
+                // scanner's own input with data-scan-in-progress (release line; set for visible and invisible scanners).
+                const input = document.querySelector(selector);
                 const echoedInInput = valueAfter !== valueBefore;
-                const panel = document.querySelector('.hardware-mode-panel');
-                const markedInProgress = !!panel?.classList.contains('scan-in-progress');
-                if (!echoedInInput && panel && !markedInProgress) {
+                const markedInProgress = input?.dataset.scanInProgress === 'true';
+                if (!echoedInInput && !markedInProgress) {
                     return { sent: false }; // no listener saw the keys: nothing was collected
                 }
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
                 document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
-                return { sent: true, collected: echoedInInput ? valueAfter : code };
+                return { sent: true, collected: echoedInInput ? valueAfter : null };
             }, { code: scannedCode, selector });
 
             if (result.sent) {
-                if (result.collected !== scannedCode) {
+                if (result.collected !== null && result.collected !== scannedCode) {
                     throw new Error(`The scanner collected '${result.collected}' instead of the scanned code '${scannedCode}'`);
                 }
                 return;

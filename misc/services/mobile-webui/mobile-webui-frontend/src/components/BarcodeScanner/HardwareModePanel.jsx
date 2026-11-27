@@ -205,6 +205,8 @@ const HardwareModePanel = ({
       onKeyDown={preventEnterFromSubmittingForm}
       onKeyUp={handleInputTextKeyPress}
       data-testid={testId ?? 'qrCode-input'}
+      // test hook: the reader hook has taken up keys of a scan (set for visible AND invisible scanners)
+      data-scan-in-progress={isReadInProgress ? 'true' : 'false'}
     />
   );
 

@@ -51,3 +51,36 @@ test('a scan sent to a listening reader is delivered exactly once', async ({ pag
 
     await expect.poll(() => page.evaluate(() => window.__scanned)).toEqual(['ABCDEFGHIJ12', 'KLMNOPQRST34']);
 });
+
+// release line: the reader buffers the keys without echoing them and marks the scanner's input (visible or invisible scanner)
+const PAGE_WITH_NON_ECHO_READER = (inputAttrs) => `
+<input id="input-text" ${inputAttrs} data-scan-in-progress="false" />
+<script>
+    window.__scanned = [];
+    window.__keysSeen = 0;
+    setTimeout(() => {
+        let buffer = '';
+        const input = document.getElementById('input-text');
+        window.addEventListener('keydown', (event) => {
+            window.__keysSeen++;
+            if (event.key === 'Enter') {
+                if (buffer) window.__scanned.push(buffer);
+                buffer = '';
+                input.dataset.scanInProgress = 'false';
+                return;
+            }
+            buffer += event.key;
+            input.dataset.scanInProgress = 'true';
+        });
+    }, 300);
+</script>
+`;
+
+test('a non-echoing reader (invisible scanner, other scanner panel present) gets the scan delivered exactly once', async ({ page }) => {
+    await page.setContent('<div class="hardware-mode-panel"></div>' + PAGE_WITH_NON_ECHO_READER('data-testid="rescanCULabel-input"'));
+
+    await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: 'ABCDEFGHIJ12', testId: 'rescanCULabel-input' });
+
+    await expect.poll(() => page.evaluate(() => window.__scanned)).toEqual(['ABCDEFGHIJ12']);
+    expect(await page.evaluate(() => window.__keysSeen)).toBe('ABCDEFGHIJ12'.length + 1);
+});
