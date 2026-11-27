@@ -267,7 +267,7 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Where, by whom and when the given candidate (when it has no shipment line) is taxed, exactly as this handler's tax code determines the candidate's tax.
 	 *
-	 * @return empty (default) if this handler has no tax location of its own; the caller then falls back to the candidate's bill location, org and {@code DateOrdered}
+	 * @return empty (default) if this handler has no tax location of its own; the caller then falls back to the candidate's bill location, org and {@code DateOrdered} (else {@code PresetDateInvoiced}, else {@code DateInvoiced})
 	 */
 	default Optional<TaxLocation> getTaxLocation(@NonNull final I_C_Invoice_Candidate ic)
 	{

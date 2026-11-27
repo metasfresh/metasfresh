@@ -27,6 +27,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
@@ -72,6 +73,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -589,7 +591,23 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				.orElseGet(() -> new TaxLocation(
 						InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
 						OrgId.ofRepoId(ic.getAD_Org_ID()),
-						ic.getDateOrdered(),
+						getFallbackTaxDate(ic),
 						null));
+	}
+
+	/**
+	 * {@code DateOrdered}, else {@code PresetDateInvoiced}, else {@code DateInvoiced}; fails if the candidate has none of them.
+	 */
+	@NonNull
+	private static Timestamp getFallbackTaxDate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final Timestamp taxDate = CoalesceUtil.coalesce(ic.getDateOrdered(), ic.getPresetDateInvoiced(), ic.getDateInvoiced());
+		if (taxDate == null)
+		{
+			throw new AdempiereException("The invoice candidate has no DateOrdered, PresetDateInvoiced or DateInvoiced to determine its tax date")
+					.appendParametersToMessage()
+					.setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID());
+		}
+		return taxDate;
 	}
 }

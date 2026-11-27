@@ -39,6 +39,7 @@ import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -60,6 +61,7 @@ import java.sql.Timestamp;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Where, by whom and when an invoice candidate is taxed, and with which ship-from country (see {@link TaxLocation}).
@@ -255,6 +257,46 @@ public class InvoiceCandidateTaxLocationTest extends AbstractICTestSupport
 		assertThat(result.getOrgId()).isEqualTo(orgId);
 		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-08 00:00:00").toInstant());
 		assertThat(result.getFromCountryId()).isNull(); // not known: a re-tax keeps its default
+	}
+
+	@Test
+	void otherHandler_noDateOrdered_fallsBackToPresetDateInvoiced()
+	{
+		final I_C_Invoice_Candidate ic = createIC(plainHandler);
+		ic.setDateOrdered(null);
+		ic.setPresetDateInvoiced(Timestamp.valueOf("2026-03-09 00:00:00"));
+		ic.setDateInvoiced(Timestamp.valueOf("2026-03-10 00:00:00"));
+		save(ic);
+
+		final TaxLocation result = handlerBL.getTaxLocation(ic, null);
+
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-09 00:00:00").toInstant());
+	}
+
+	@Test
+	void otherHandler_noDateOrderedNorPreset_fallsBackToDateInvoiced()
+	{
+		final I_C_Invoice_Candidate ic = createIC(plainHandler);
+		ic.setDateOrdered(null);
+		ic.setDateInvoiced(Timestamp.valueOf("2026-03-10 00:00:00"));
+		save(ic);
+
+		final TaxLocation result = handlerBL.getTaxLocation(ic, null);
+
+		assertThat(result.getTaxDate()).isEqualTo(Timestamp.valueOf("2026-03-10 00:00:00").toInstant());
+	}
+
+	@Test
+	void otherHandler_noDateAtAll_failsNamingTheCandidate()
+	{
+		final I_C_Invoice_Candidate ic = createIC(plainHandler);
+		ic.setDateOrdered(null);
+		save(ic);
+
+		assertThatThrownBy(() -> handlerBL.getTaxLocation(ic, null))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("DateOrdered")
+				.hasMessageContaining(String.valueOf(ic.getC_Invoice_Candidate_ID()));
 	}
 
 	private I_AD_OrgInfo loadOrgInfo()
