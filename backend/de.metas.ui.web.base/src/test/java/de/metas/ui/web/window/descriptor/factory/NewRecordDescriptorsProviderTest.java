@@ -70,4 +70,20 @@ class NewRecordDescriptorsProviderTest
 		// C_BPartner new-record descriptor is registered (and thus resolvable at runtime).
 		assertThat(provider.getNewRecordDescriptorOrNull(I_C_BPartner.Table_Name)).isNotNull();
 	}
+
+	@Test
+	void onApplicationReady_noWindowId_doesNotRegister()
+	{
+		final DocumentDescriptorFactory documentDescriptors = Mockito.mock(DocumentDescriptorFactory.class);
+		final BPartnerQuickInputService bpartnerQuickInputService = Mockito.mock(BPartnerQuickInputService.class);
+		Mockito.when(bpartnerQuickInputService.getNewBPartnerWindowId())
+				.thenReturn(Optional.empty());
+
+		final NewRecordDescriptorsProvider provider = new NewRecordDescriptorsProvider(documentDescriptors, bpartnerQuickInputService);
+		provider.registerBuiltInDescriptors();
+
+		// When no quick-input window is configured the handler takes the warn branch and registers nothing,
+		// so the C_BPartner descriptor stays unresolvable (rather than a half-built descriptor being stored).
+		assertThat(provider.getNewRecordDescriptorOrNull(I_C_BPartner.Table_Name)).isNull();
+	}
 }
