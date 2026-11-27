@@ -156,8 +156,8 @@ test('book 6 of 10, close the line short: 4 stay open, no reject reason asked, "
             [pickingJobId]: {
                 docStatus: 'Completed',
                 // closing books nothing: the 6 stay the only booking, the open 4 are not rejected or picked
-                // a bare TU: the release line records the TU, VHU_ID and LU stay null
-                shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: "6 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }] } },
+                // a bare TU: the release line records the TU, VHU_ID stays null; the completed job carries its LU
+                shipmentSchedules: { P1: { qtyPicked: [{ qtyPicked: "6 PCE", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }] } },
             }
         },
     });
