@@ -25,8 +25,8 @@ package de.metas.invoicecandidate.vatid;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -86,13 +86,14 @@ import java.util.stream.Collectors;
  *     and is handled like an invoice of its own by the next rules.</li>
  *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing;
  *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
- *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows).
+ *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows) - unless neither the invoice nor that line uses VAT IDs by delivery.
  *     If the invoice's doc type overwrites the invoice date on completion, the lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
  *     the date is overwritten at the start of the completion, before this check ({@code MInvoice.completeIt}), so normally the lines already carry that tax and the prediction finds the same one.</li>
- *     <li>a manual invoice gets the values its lines resolve to, and all lines must resolve to the same values -
- *     but only if at least one line resolves a VAT ID of an address or a fiscal representation; otherwise it stores none and completes as before</li>
+ *     <li>a manual invoice gets the values its lines resolve to, and all lines must resolve to the same values;
+ *     lines that do not use VAT IDs by delivery resolve to none, so an invoice of only such lines stores none and completes as before</li>
  * </ol>
- * A line is resolved from the location that taxed it and from its tax (see {@link LineResolver#getTaxLocation(I_C_InvoiceLine)}).
+ * A line is resolved from the location that taxed it and from its tax (see {@link LineResolver#getTaxLocation(I_C_InvoiceLine)}),
+ * with the same rule as invoice candidates ({@link InvoiceVATaxIdService#resolveIfByDelivery}).
  */
 @Component
 @RequiredArgsConstructor
@@ -101,7 +102,7 @@ public class InvoiceVATaxIdStamper
 	private static final AdMessageKey MSG_MixedVATaxIds = AdMessageKey.of("C_Invoice_MixedVATaxIds");
 	private static final AdMessageKey MSG_ExemptLineVATaxIdMismatch = AdMessageKey.of("C_Invoice_ExemptLineVATaxIdMismatch");
 	private static final String NO_VALUE = "-";
-	
+
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
@@ -176,8 +177,9 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * A candidate invoice keeps its stored values; an invoice without stored buyer VAT ID was not stamped (e.g. prepared before the values were stored) and is not checked.
-	 * Lines with allocations were resolved at invoicing; only the lines added by hand are checked, with their tax and, if the completion re-taxes them, with the tax they will get.
+	 * A candidate invoice keeps its stored values. Lines with allocations were resolved at invoicing; only the lines added by hand are checked,
+	 * with their tax and, if the completion re-taxes them, with the tax they will get.
+	 * A line is not checked if neither the invoice nor the line uses VAT IDs by delivery (e.g. an invoice prepared before the values were stored).
 	 */
 	private void checkHandAddedExemptLines(
 			@NonNull final I_C_Invoice invoice,
@@ -186,11 +188,6 @@ public class InvoiceVATaxIdStamper
 			@NonNull final LineResolver lineResolver)
 	{
 		final InvoiceVATaxIds stored = getStoredVATaxIds(invoice);
-		if (stored.getBuyerVATaxId() == null)
-		{
-			return;
-		}
-
 		final boolean isReTaxedOnCompletion = isDateOverwrittenOnCompletion(invoice);
 
 		for (final I_C_InvoiceLine line : lines)
@@ -203,7 +200,7 @@ public class InvoiceVATaxIdStamper
 			final TaxId lineTaxId = TaxId.ofRepoId(line.getC_Tax_ID());
 			if (isRequiresTaxCertificate(lineTaxId))
 			{
-				assertSameVATaxIds(line, lineResolver.resolve(line).getVatTaxIds(), stored);
+				assertSameVATaxIds(line, lineResolver.resolve(line), stored);
 			}
 
 			if (isReTaxedOnCompletion)
@@ -259,6 +256,10 @@ public class InvoiceVATaxIdStamper
 			@NonNull final InvoiceVATaxIds lineVATaxIds,
 			@NonNull final InvoiceVATaxIds stored)
 	{
+		if (stored.isNone() && lineVATaxIds.isNone())
+		{
+			return;
+		}
 		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getBuyerVATaxId);
 		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getSellerVATaxId);
 	}
@@ -279,8 +280,7 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * If any non-description line resolves a VAT ID of an address or a fiscal representation, all such lines must resolve to the same values, which are stored.
-	 * Otherwise (also: no line) no values are stored.
+	 * All non-description lines must resolve to the same values, which are stored; no line stores none.
 	 */
 	private void stampManualInvoice(
 			@NonNull final I_C_Invoice invoice,
@@ -288,19 +288,16 @@ public class InvoiceVATaxIdStamper
 			@NonNull final LineResolver lineResolver)
 	{
 		final Set<InvoiceVATaxIds> distinctVATaxIds = new LinkedHashSet<>();
-		boolean isAnyLineByAddressOrFiscalRepresentation = false;
 		for (final I_C_InvoiceLine line : lines)
 		{
 			if (line.isDescription())
 			{
 				continue;
 			}
-			final ResolvedLine resolvedLine = lineResolver.resolve(line);
-			distinctVATaxIds.add(resolvedLine.getVatTaxIds());
-			isAnyLineByAddressOrFiscalRepresentation = isAnyLineByAddressOrFiscalRepresentation || resolvedLine.isByAddressOrFiscalRepresentation();
+			distinctVATaxIds.add(lineResolver.resolve(line));
 		}
 
-		if (!isAnyLineByAddressOrFiscalRepresentation)
+		if (distinctVATaxIds.isEmpty())
 		{
 			setVATaxIds(invoice, InvoiceVATaxIds.NONE);
 			return;
@@ -368,17 +365,6 @@ public class InvoiceVATaxIdStamper
 	}
 
 	@Value
-	private static class ResolvedLine
-	{
-		@NonNull InvoiceVATaxIds vatTaxIds;
-
-		/**
-		 * {@code true} if the line's location has an own VAT ID or the line got a fiscal representation, i.e. the line uses VAT IDs by delivery
-		 */
-		boolean byAddressOrFiscalRepresentation;
-	}
-
-	@Value
 	private static class ResolveKey
 	{
 		@NonNull TaxLocation taxLocation;
@@ -394,23 +380,19 @@ public class InvoiceVATaxIdStamper
 		@Nullable private TaxLocation billToTaxLocation;
 		private final Map<InOutId, TaxLocation> shipmentTaxLocations = new HashMap<>();
 		private final Map<ResolveKey, InvoiceVATaxIds> resolvedVATaxIds = new HashMap<>();
-		private final Map<BPartnerLocationId, Boolean> locationsWithVATaxId = new HashMap<>();
 
 		private LineResolver(@NonNull final I_C_Invoice invoice)
 		{
 			this.invoice = invoice;
 		}
 
+		/**
+		 * @return the line's values, {@link InvoiceVATaxIds#NONE} if it does not use VAT IDs by delivery
+		 */
 		@NonNull
-		private ResolvedLine resolve(@NonNull final I_C_InvoiceLine line)
+		private InvoiceVATaxIds resolve(@NonNull final I_C_InvoiceLine line)
 		{
-			final TaxLocation taxLocation = getTaxLocation(line);
-			final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, TaxId.ofRepoId(line.getC_Tax_ID()));
-
-			final boolean byAddressOrFiscalRepresentation = vatTaxIds.getFiscalRepresentationId() != null
-					|| locationsWithVATaxId.computeIfAbsent(taxLocation.getBpartnerLocationId(), invoiceVATaxIdService::hasOwnVATaxId);
-
-			return new ResolvedLine(vatTaxIds, byAddressOrFiscalRepresentation);
+			return resolve(getTaxLocation(line), TaxId.ofRepoId(line.getC_Tax_ID()));
 		}
 
 		@NonNull
@@ -418,7 +400,7 @@ public class InvoiceVATaxIdStamper
 		{
 			return resolvedVATaxIds.computeIfAbsent(
 					new ResolveKey(taxLocation, taxId),
-					key -> invoiceVATaxIdService.resolve(key.getTaxLocation(), key.getTaxId()));
+					key -> invoiceVATaxIdService.resolveIfByDelivery(key.getTaxLocation(), key.getTaxId(), BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
 		}
 
 		/**

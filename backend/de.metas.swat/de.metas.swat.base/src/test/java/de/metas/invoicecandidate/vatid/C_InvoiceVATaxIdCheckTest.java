@@ -55,6 +55,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -411,6 +412,45 @@ class C_InvoiceVATaxIdCheckTest
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
 		assertThat(invoice.getBuyerVATaxID()).isNull();
+	}
+
+	/**
+	 * A delivery address that carries the partner's own VAT ID and one without VAT ID: both resolve the value the invoice shows without stored values,
+	 * so nothing is stored (as for candidates, which go on one invoice).
+	 */
+	@Test
+	void manualInvoice_addressVATaxIdEqualsPartnerVATaxId_isNotStamped()
+	{
+		final I_C_BPartner customer = load(billToDE.getC_BPartner_ID(), I_C_BPartner.class);
+		final I_C_BPartner_Location deliveryWithPartnerVAT = createLocation(customer, deId, DE_VAT);
+		final I_C_BPartner_Location deliveryWithoutVAT = createLocation(customer, deId, null);
+		final I_C_Invoice invoice = createInvoice(null);
+		createLineForShipment(invoice, deliveryWithPartnerVAT);
+		createLineForShipment(invoice, deliveryWithoutVAT);
+
+		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
+		assertThat(invoice.getBuyerVATaxID()).isNull();
+		assertThat(invoice.getSellerVATaxID()).isNull();
+		assertThat(invoice.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * A candidate invoice without stored values (its lines do not use VAT IDs by delivery) still gets the hand-added exempt line checked
+	 * when that line does use one: here it was shipped to the Dutch address with its own Dutch VAT ID.
+	 */
+	@Test
+	void invoiceWithoutStoredValues_handAddedExemptLineByDelivery_fails()
+	{
+		final I_C_Invoice invoice = createInvoice(null);
+		createCandidateLine(invoice, taxDEDE19);
+
+		final I_C_InvoiceLine handAddedLine = createLine(invoice, taxDENL0Exempt);
+		handAddedLine.setM_InOutLine_ID(createShipmentLine(deliveryNL).getM_InOutLine_ID());
+		save(handAddedLine);
+
+		assertThatThrownBy(() -> stamper.stampOrCheck(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_ExemptLineVATaxIdMismatch");
 	}
 
 	private I_C_Invoice createInvoice(@Nullable final String buyerVATaxId)

@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
@@ -45,7 +46,7 @@ import java.util.Map;
 /**
  * The VAT IDs of the invoice line that an invoice candidate (and one of its shipment lines) becomes:
  * the candidate's tax location and the tax its invoice line will get, resolved by {@link InvoiceVATaxIdService}
- * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByAddressOrFiscalRepresentation}).
+ * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByDelivery}).
  */
 @Component
 @RequiredArgsConstructor
@@ -82,13 +83,14 @@ public class InvoiceCandidateVATaxIdResolver
 
 		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(ic, shipmentLine);
 		final TaxId lineTax = lineTaxResolver.getLineTax(ic, shipmentLine);
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
 		return cache.resolved.computeIfAbsent(
-				new TaxLocationAndTax(taxLocation, lineTax),
-				key -> invoiceVATaxIdService.resolveIfByAddressOrFiscalRepresentation(key.getTaxLocation(), key.getTaxId()));
+				new ResolveKey(taxLocation, lineTax, billPartnerId),
+				key -> invoiceVATaxIdService.resolveIfByDelivery(key.getTaxLocation(), key.getTaxId(), key.getBillPartnerId()));
 	}
 
 	/**
-	 * @return a cache for one invoicing run: candidates with the same tax location and line tax are resolved once
+	 * @return a cache for one invoicing run: candidates with the same tax location, line tax and bill partner are resolved once
 	 */
 	@NonNull
 	public Cache newCache()
@@ -101,15 +103,16 @@ public class InvoiceCandidateVATaxIdResolver
 	 */
 	public static final class Cache
 	{
-		private final Map<TaxLocationAndTax, InvoiceVATaxIds> resolved = new HashMap<>();
+		private final Map<ResolveKey, InvoiceVATaxIds> resolved = new HashMap<>();
 
 		private Cache() {}
 	}
 
 	@Value
-	private static class TaxLocationAndTax
+	private static class ResolveKey
 	{
 		@NonNull TaxLocation taxLocation;
 		@NonNull TaxId taxId;
+		@NonNull BPartnerId billPartnerId;
 	}
 }

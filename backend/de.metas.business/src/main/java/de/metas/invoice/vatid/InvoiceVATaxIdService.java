@@ -43,6 +43,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -64,18 +65,30 @@ public class InvoiceVATaxIdService
 	}
 
 	/**
-	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery: its location has a VAT ID of its own, or a fiscal representation applies.
+	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery: a fiscal representation applies,
+	 * or its location has a VAT ID of its own that differs from the bill partner's VAT ID (the value the invoice's outputs show without stored values).
 	 * Otherwise {@link InvoiceVATaxIds#NONE}: the invoice is grouped and stores no values, so its outputs show the bill partner's VAT ID, as without per-address VAT IDs.
 	 */
 	@NonNull
-	public InvoiceVATaxIds resolveIfByAddressOrFiscalRepresentation(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
+	public InvoiceVATaxIds resolveIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
 	{
 		final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, lineTax);
-		if (vatTaxIds.getFiscalRepresentationId() != null || hasOwnVATaxId(taxLocation.getBpartnerLocationId()))
+		if (vatTaxIds.getFiscalRepresentationId() != null)
+		{
+			return vatTaxIds;
+		}
+		if (hasOwnVATaxId(taxLocation.getBpartnerLocationId())
+				&& !Objects.equals(vatTaxIds.getBuyerVATaxId(), getHeaderVATaxId(billPartnerId)))
 		{
 			return vatTaxIds;
 		}
 		return InvoiceVATaxIds.NONE;
+	}
+
+	@Nullable
+	private String getHeaderVATaxId(@NonNull final BPartnerId bpartnerId)
+	{
+		return VATIdentifier.toString(VATIdentifier.ofNullable(bpartnerDAO.getById(bpartnerId).getVATaxID()));
 	}
 
 	/**

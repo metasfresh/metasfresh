@@ -21,6 +21,7 @@
  */
 package de.metas.invoice.vatid;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.FiscalRepresentationId;
@@ -155,42 +156,71 @@ public class InvoiceVATaxIdServiceTest
 	 * so the invoice is grouped, stored and printed as without per-address VAT IDs (the bill partner's VAT ID is shown).
 	 */
 	@Test
-	public void byAddressOrFiscalRepresentation_partnerHeaderVATOnly_none()
+	public void byDelivery_partnerHeaderVATOnly_none()
 	{
 		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, null);
 
 		assertThat(service.resolve(taxLocation(location), createTax(false))).isEqualTo(new InvoiceVATaxIds("DE123456788", null, null));
-		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
 		assertThat(service.hasOwnVATaxId(location)).isFalse();
 	}
 
 	@Test
-	public void byAddressOrFiscalRepresentation_ownLocationVAT_resolved()
+	public void byDelivery_ownLocationVAT_resolved()
 	{
 		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), nl, "NL333333330B01");
 
-		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false)))
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location)))
 				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
 		assertThat(service.hasOwnVATaxId(location)).isTrue();
 	}
 
 	@Test
-	public void byAddressOrFiscalRepresentation_fiscalRepresentation_resolvedWithPartnerHeaderVAT()
+	public void byDelivery_fiscalRepresentation_resolvedWithPartnerHeaderVAT()
 	{
 		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
 		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
 
-		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(true)))
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(true), billPartnerOf(location)))
 				.isEqualTo(new InvoiceVATaxIds("EL111111111", "EL094259216", FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
 	}
 
 	@Test
-	public void byAddressOrFiscalRepresentation_registrationButLineTaxNotFiscalRep_none()
+	public void byDelivery_registrationButLineTaxNotFiscalRep_none()
 	{
 		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
 		createFiscalRepresentation(gr, "EL094259216", null);
 
-		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * The address carries the partner's own VAT ID: the resolved value is what the invoice shows anyway (the bill partner's VAT ID), so nothing by delivery applies.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATEqualsBillPartnerVAT_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, "DE123456788");
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * Drop-ship: the delivery partner is not the bill partner; its address VAT ID is compared with the bill partner's VAT ID.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATOfOtherPartner_equalToItsHeaderButNotToBillPartnerVAT_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("NL333333330B01"), nl, "NL333333330B01");
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(createBPartner("DE123456788").getC_BPartner_ID());
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerId))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+	}
+
+	private static BPartnerId billPartnerOf(final BPartnerLocationId location)
+	{
+		return location.getBpartnerId();
 	}
 
 	private TaxLocation taxLocation(final BPartnerLocationId location)
