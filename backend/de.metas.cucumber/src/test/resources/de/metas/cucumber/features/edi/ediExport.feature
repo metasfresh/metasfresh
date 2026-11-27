@@ -1468,10 +1468,10 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | M_PriceList_ID   |
       | salesPLVNL | salesPriceListNL |
     And metasfresh contains M_Products:
-      | Identifier         | Value              | Name               |
-      | product_S32533_NL_XML  | product_S32533_NL_XML  | product_S32533_NL_XML  |
+      | Identifier            | Value                 | Name                  |
+      | product_S32533_NL_XML | product_S32533_NL_XML | product_S32533_NL_XML |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | M_PriceList_Version_ID | M_Product_ID          | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLV               | product_S32533_NL_XML | 5.00     | PCE      | taxCategory      |
       | salesPLVNL             | product_S32533_NL_XML | 5.00     | PCE      | taxCategory      |
     And metasfresh contains C_Location:
@@ -1482,16 +1482,16 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier |
       | customerNL | Y          | N        | pricingSystem      | D           | DE123456788 | aggHeader                            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
-      | customerNL_billing  | 0123456789201 | customerNL    | N        | N               | Y        | Y               | location_billing             |
-      | customerNL_NL       | 0123456789204 | customerNL    | Y        | Y               | N        | N               | location_NL                  |
+      | Identifier         | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | customerNL_billing | 0123456789201 | customerNL    | N        | N               | Y        | Y               | location_billing             |
+      | customerNL_NL      | 0123456789204 | customerNL    | Y        | Y               | N        | N               | location_NL                  |
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customerNL_billing                | DE123456788    |
       | customerNL_NL                     | NL827764364B01 |
     And metasfresh contains C_BPartner_EDI_Setting:
       | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier  |
-      | customerNL | false                | true                 | 0123456789999         | edi_setting |
+      | customerNL    | false                | true                 | 0123456789999         | edi_setting |
     And metasfresh contains M_Warehouse:
       | Identifier | IsDropShipWarehouse |
       | wh_DE      | N                   |
@@ -1499,14 +1499,14 @@ Feature: EDI_cctop_invoic_v export format
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inventory                 | 2026-09-02   | wh_DE          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID      | QtyBook | QtyCount | UOM.X12DE355 |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID          | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | inventoryLine                 | product_S32533_NL_XML | 0       | 10       | PCE          |
     And the inventory identified by inventory is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerNL    | 2026-09-02  | customerNL_NL                         | customerNL_billing              | wh_DE                         | F            |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID          | QtyEntered |
       | orderLine  | order                 | product_S32533_NL_XML | 10         |
     And the order identified by order is completed
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1538,12 +1538,12 @@ Feature: EDI_cctop_invoic_v export format
       | EDI_cctop_invoic_v_ID.Identifier | OPT.VATaxID |
       | ic_1                             | DE136695976 |
     And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
-      | eancom_locationtype | OPT.VATaxID |
-      | SU | DE136695976 |
-      | BY | NL827764364B01 |
-      | IV | NL827764364B01 |
-      | DP | DE123456788 |
-      | SN | DE123456788 |
+      | eancom_locationtype | OPT.VATaxID    |
+      | SU                  | DE136695976    |
+      | BY                  | NL827764364B01 |
+      | IV                  | NL827764364B01 |
+      | DP                  | DE123456788    |
+      | SN                  | DE123456788    |
 
 
   @Id:S32533_TC9_GR_XML
@@ -1604,17 +1604,17 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | M_PriceList_ID   |
       | salesPLVGR | salesPriceListGR |
     And metasfresh contains M_Products:
-      | Identifier | Value      | Name       |
+      | Identifier                | Value                     | Name                      |
       | product_S32533_TC9_GR_XML | product_S32533_TC9_GR_XML | product_S32533_TC9_GR_XML |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | M_PriceList_Version_ID | M_Product_ID              | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | salesPLVGR             | product_S32533_TC9_GR_XML | 5.00     | PCE      | taxCategory      |
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City |
       | location_GR              | GR          | Odos 1       | 10431      | Athens   |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier |
-      | customerGR | Y          | N        | pricingSystem      | D           |             | aggHeader                            |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID | InvoiceRule | VATaxID | SO_Invoice_Aggregation_ID.Identifier |
+      | customerGR | Y          | N        | pricingSystem      | D           |         | aggHeader                            |
     And metasfresh contains C_BPartner_Locations:
       | Identifier    | GLN           | C_BPartner_ID | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
       | customerGR_GR | 0123456789301 | customerGR    | Y        | Y               | Y        | Y               | location_GR                  |
@@ -1626,7 +1626,7 @@ Feature: EDI_cctop_invoic_v export format
       | regGR      | GR                        | EL094259216 | 2026-05-11 | 2026-05-13 |
     And metasfresh contains C_BPartner_EDI_Setting:
       | C_BPartner_ID | IsEdiDesadvRecipient | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | Identifier  |
-      | customerGR | false                | true                 | 0123456789999         | edi_setting |
+      | customerGR    | false                | true                 | 0123456789999         | edi_setting |
     And metasfresh contains M_Warehouse:
       | Identifier | IsDropShipWarehouse |
       | wh_DE      | N                   |
@@ -1634,14 +1634,14 @@ Feature: EDI_cctop_invoic_v export format
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inventory                 | 2026-05-12   | wh_DE          |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID              | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | inventoryLine                 | product_S32533_TC9_GR_XML | 0       | 10       | PCE          |
     And the inventory identified by inventory is completed
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerGR    | 2026-05-12  | customerGR_GR                         | wh_DE                         | F            |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID              | QtyEntered |
       | orderLine  | order                 | product_S32533_TC9_GR_XML | 10         |
     And the order identified by order is completed
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -1661,7 +1661,7 @@ Feature: EDI_cctop_invoic_v export format
       | invoiceCandidate                  | invoice                 | invoice_ID   |
     And validate created invoices
       | Identifier | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoice    | EL111111114  | EL094259216 | regGR                      |
+      | invoice    | EL111111114  | EL094259216   | regGR                      |
 
     And invoice is EDI exported
       | C_Invoice_ID.Identifier |
@@ -1674,9 +1674,9 @@ Feature: EDI_cctop_invoic_v export format
       | ic_1                             | EL094259216 |
     And validate EDI_cctop_119_v within EDI_cctop_invoic_v ic_1 by location type
       | eancom_locationtype | OPT.VATaxID |
-      | SU | EL094259216 |
-      | BY | EL111111114 |
-      | IV | EL111111114 |
-      | DP | null |
-      | SN | null |
+      | SU                  | EL094259216 |
+      | BY                  | EL111111114 |
+      | IV                  | EL111111114 |
+      | DP                  | null        |
+      | SN                  | null        |
 
