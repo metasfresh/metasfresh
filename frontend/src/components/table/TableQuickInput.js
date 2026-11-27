@@ -24,6 +24,9 @@ class TableQuickInput extends PureComponent {
   // widgets refs
   rawWidgets = [];
   rawWidgetsByFieldName = {};
+  // quickInputId the first-field focus was decided for, and that decision (see shouldFocusFirstField)
+  firstFieldFocusDecidedFor;
+  isFirstFieldFocusWanted = false;
   // local state
   state = { hasFocus: true, isSubmitPending: false };
 
@@ -107,7 +110,7 @@ class TableQuickInput extends PureComponent {
       this.closeBatchEntry();
     });
 
-    if (this.isFirstFieldFocused()) {
+    if (this.shouldFocusFirstField()) {
       this.focusFirstFieldWithErrors();
     }
   };
@@ -258,21 +261,21 @@ class TableQuickInput extends PureComponent {
   };
 
   /**
-   * Whether the first field (or, after loading, the first field with errors) takes the cursor when this quick input
+   * Decides whether the first field (or, after loading, the first field with errors) takes the cursor when this quick input
    * is shown. Decided once per quick input (`quickInputId`: the opened one, then each new one after a line was
-   * added), when first asked. A quick input the tab opened by itself does not take the cursor from an element
+   * added), when first asked; later calls return that decision, not the current focus. A quick input the tab opened by itself does not take the cursor from an element
    * outside it.
    * @returns {boolean}
    */
-  isFirstFieldFocused = () => {
+  shouldFocusFirstField = () => {
     const { quickInputId, isOpenedAutomatically } = this.props;
 
     if (this.firstFieldFocusDecidedFor !== quickInputId) {
       this.firstFieldFocusDecidedFor = quickInputId;
-      this.firstFieldFocused =
+      this.isFirstFieldFocusWanted =
         !isOpenedAutomatically || !this.isCursorOutsideQuickInput();
     }
-    return this.firstFieldFocused;
+    return this.isFirstFieldFocusWanted;
   };
 
   /**
@@ -315,7 +318,7 @@ class TableQuickInput extends PureComponent {
 
     if (data && layout) {
       const readonly = isSubmitPending;
-      const isFirstFieldFocused = this.isFirstFieldFocused();
+      const shouldFocusFirstField = this.shouldFocusFirstField();
 
       return layout.map((item, idx) => {
         const fieldNames = item.fields.map((elem) => elem.field);
@@ -354,8 +357,8 @@ class TableQuickInput extends PureComponent {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             type="secondary"
-            autoFocus={idx === 0 && isFirstFieldFocused}
-            initialFocus={idx === 0 && isFirstFieldFocused}
+            autoFocus={idx === 0 && shouldFocusFirstField}
+            initialFocus={idx === 0 && shouldFocusFirstField}
           />
         );
       });
