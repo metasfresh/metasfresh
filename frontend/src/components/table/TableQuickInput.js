@@ -12,7 +12,7 @@ import {
 } from '../../actions/TableQuickInputActions';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
-import { isCursorHeldOutside } from '../../utils/focusHelpers';
+import { isUserWorkingInFieldOutside } from '../../utils/focusHelpers';
 
 class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
@@ -265,7 +265,8 @@ class TableQuickInput extends PureComponent {
    * Decides whether the first field (or, after loading, the first field with errors) takes the cursor when this
    * quick input is shown. Decided once per quick input (`quickInputId`: the opened one, then each new one after a
    * line was added), when first asked; later calls return that decision, not the current focus. A quick input the
-   * tab opened by itself does not take the cursor from an element outside it.
+   * tab opened by itself does not take the cursor from a field outside it the user works in (e.g. a header list the
+   * user opened); it does take it from the tab, the grid, or a field that got the cursor by itself.
    * @returns {boolean}
    */
   shouldFocusFirstField = () => {
@@ -274,15 +275,10 @@ class TableQuickInput extends PureComponent {
     if (this.firstFieldFocusDecidedFor !== quickInputId) {
       this.firstFieldFocusDecidedFor = quickInputId;
       this.isFirstFieldFocusWanted =
-        !isOpenedAutomatically || !this.isCursorOutsideQuickInput();
+        !isOpenedAutomatically || !isUserWorkingInFieldOutside(this.form);
     }
     return this.isFirstFieldFocusWanted;
   };
-
-  /**
-   * @returns {boolean} true if an element outside this quick input holds the cursor (not when nothing does)
-   */
-  isCursorOutsideQuickInput = () => isCursorHeldOutside(this.form);
 
   setRef = (refNode) => {
     this.form = refNode;
