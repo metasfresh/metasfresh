@@ -280,6 +280,7 @@ public class M_ShipperTransportation_StepDef
 	 *   {@code IShipperTransportationBL#setShipper}, which also copies the shipper's pickup time window<br>
 	 *   <b>Shipper_BPartner_ID</b> — (optional, identifier-ref) the forwarder business partner<br>
 	 *   <b>Shipper_Location_ID</b> — (optional, identifier-ref) the forwarder location<br>
+	 *   <b>IsManualOrder</b> — (optional) marks the transport order as a manual one (no lines required to complete)<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData, M_Shipper_StepDefData,
 	 * C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
@@ -318,6 +319,9 @@ public class M_ShipperTransportation_StepDef
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID)
 				.map(bPartnerLocationTable::getId)
 				.ifPresent(id -> shipperTransportationRecord.setShipper_Location_ID(id.getRepoId()));
+
+		row.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsManualOrder)
+				.ifPresent(shipperTransportationRecord::setIsManualOrder);
 
 		saveRecord(shipperTransportationRecord);
 
@@ -528,6 +532,7 @@ public class M_ShipperTransportation_StepDef
 	 *   <b>IsBLReceived</b> — (optional) new bill-of-lading-received flag<br>
 	 *   <b>IsBookingConfirmed</b> — (optional) new booking-confirmed flag<br>
 	 *   <b>IsWENotice</b> — (optional) new goods-receipt-notice flag<br>
+	 *   <b>IsManualOrder</b> — (optional) new manual-order flag<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -570,6 +575,9 @@ public class M_ShipperTransportation_StepDef
 
 		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsWENotice)
 				.ifPresent(record::setIsWENotice);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsManualOrder)
+				.ifPresent(record::setIsManualOrder);
 
 		saveRecord(record);
 
