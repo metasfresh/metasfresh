@@ -203,8 +203,8 @@ export async function awaitHeaderReload(
   }
 
   let resp;
-  const pathOk = (p) => p.endsWith(`/window/${windowId}/${recordId}`) || p.endsWith(`/window/${windowId}/${recordId}/`);
-  while (!(resp = recorder.responses.slice(mark.respIdx).find((r) => pathOk(r.path) && r.t >= frame.t))) {
+  const isDocumentPath = (p) => p.endsWith(`/window/${windowId}/${recordId}`) || p.endsWith(`/window/${windowId}/${recordId}/`);
+  while (!(resp = recorder.responses.slice(mark.respIdx).find((r) => isDocumentPath(r.path) && r.t >= frame.t))) {
     if (Date.now() > deadline) throw failWith(`stale event seen, but no GET /window/${windowId}/${recordId} after it; GETs recorded after the mark: ${recorder.responses.length - mark.respIdx}`);
     await page.waitForTimeout(100);
   }

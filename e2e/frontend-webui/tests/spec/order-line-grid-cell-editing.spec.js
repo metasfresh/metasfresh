@@ -468,7 +468,7 @@ listLanguages.forEach(({ language, label }) => {
   test.describe(`Sales order-line grid — list cell (${label})`, () => {
     const tag = (story) => {
       allure.epic('E0100: Sales');
-      allure.tag('F00100: Sales Order Window');
+      allure.tag('F00100: Sales Order');
       allure.tag('F00100');
       allure.tag('F50000: Frontend WebUI');
       allure.tag('F50000');
