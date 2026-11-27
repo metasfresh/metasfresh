@@ -59,11 +59,11 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
             )
 AS
 $$
--- Article lines (C_OrderLine). Line is declared numeric(10,4) (widened from numeric(10,0)) to document
--- that a text line's fractional position -- e.g. 10.5, which is how the text branch below interleaves
--- without renumbering an article line -- travels through this column. That declaration is documentation,
--- not a guard: PostgreSQL does not enforce a RETURNS TABLE typmod, so the decimals survive either way
--- (measured).
+    -- Article lines (C_OrderLine). Line is declared numeric(10,4) (widened from numeric(10,0)) to document
+    -- that a text line's fractional position -- e.g. 10.5, which is how the text branch below interleaves
+    -- without renumbering an article line -- travels through this column. That declaration is documentation,
+    -- not a guard: PostgreSQL does not enforce a RETURNS TABLE typmod, so the decimals survive either way
+    -- (measured).
 SELECT ol.line                                                AS line,
        COALESCE(pt.Name, p.name)                              AS Name,
        CASE
@@ -128,13 +128,15 @@ SELECT ol.line                                                AS line,
        'N'                                                    AS IsTextLine,
        CASE
            WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum ') = 'N'
-               THEN 'Y' ELSE 'N'
+               THEN 'Y'
+               ELSE 'N'
        END                                                    AS IsNetSumShown,
        CASE
            WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Tax_Rate') = 'N'
-               THEN 'Y' ELSE 'N'
+               THEN 'Y'
+               ELSE 'N'
        END                                                    AS IsTaxRateShown,
-       ol.C_OrderLine_ID                                       AS LineTieBreakId
+       ol.C_OrderLine_ID                                      AS LineTieBreakId
 FROM C_OrderLine ol
          INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
@@ -153,9 +155,9 @@ FROM C_OrderLine ol
          LEFT OUTER JOIN C_Tax t ON ol.C_Tax_ID = t.C_Tax_ID
 
     -- Get Attributes
-         LEFT OUTER JOIN (SELECT STRING_AGG(att.at_value ||': '||att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
-                          FROM Report.fresh_Attributes att
-                                   JOIN C_OrderLine ol ON att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+         LEFT OUTER JOIN (SELECT STRING_AGG(att.at_Name || ': ' || att.ai_value, ', ' ORDER BY LENGTH(att.ai_value)) AS Attributes, att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
+                          FROM C_OrderLine ol,
+                               Report.fresh_Attributes(ol.M_AttributeSetInstance_ID) att
                           WHERE att.IsPrintedInDocument = 'Y'
                             AND ol.C_Order_ID = p_record_id
                           GROUP BY att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
@@ -184,50 +186,52 @@ UNION ALL
 -- through, because they are as true of a text row as of an article row. Everything that describes an
 -- article is NULL. TextLine passes through untouched -- an empty text line is legal and prints as a
 -- blank line.
-SELECT tl.line                                                AS line,
-       NULL::character varying                                AS Name,
-       NULL::text                                              AS Attributes,
-       NULL::numeric                                           AS HUQty,
-       NULL::character varying                                 AS HUName,
-       NULL::numeric                                           AS QtyEnteredInPriceUOM,
-       NULL::numeric                                           AS PriceEntered,
-       NULL::character varying(10)                             AS UOMSymbol,
-       NULL::numeric(10, 0)                                    AS StdPrecision,
-       NULL::numeric                                           AS linenetamt,
-       NULL::numeric                                           AS discount,
+SELECT tl.line                                           AS line,
+       NULL::character varying                           AS Name,
+       NULL::text                                        AS Attributes,
+       NULL::numeric                                     AS HUQty,
+       NULL::character varying                           AS HUName,
+       NULL::numeric                                     AS QtyEnteredInPriceUOM,
+       NULL::numeric                                     AS PriceEntered,
+       NULL::character varying(10)                       AS UOMSymbol,
+       NULL::numeric(10, 0)                              AS StdPrecision,
+       NULL::numeric                                     AS linenetamt,
+       NULL::numeric                                     AS discount,
        bp.isDiscountPrinted,
-       NULL::character varying                                 AS rate,
+       NULL::character varying                           AS rate,
        bpg.isPrintTax,
-       tl.TextLine                                             AS description,
-       NULL::character varying                                 AS documentnote,
-       NULL::character varying                                 AS productdescription,
-       NULL::character varying(30)                             AS bp_product_no,
-       NULL::character varying(100)                            AS bp_product_name,
+       tl.TextLine                                       AS description,
+       NULL::character varying                           AS documentnote,
+       NULL::character varying                           AS productdescription,
+       NULL::character varying(30)                       AS bp_product_no,
+       NULL::character varying(100)                      AS bp_product_name,
        c.cursymbol,
-       NULL::character varying(40)                             AS p_value,
-       NULL::character varying(255)                            AS p_description,
-       o.description                                           AS order_description,
-       NULL::numeric                                           AS c_order_compensationgroup_id,
-       NULL::character(1)                                      AS isgroupcompensationline,
-       NULL::character varying(255)                            AS groupname,
+       NULL::character varying(40)                       AS p_value,
+       NULL::character varying(255)                      AS p_description,
+       o.description                                     AS order_description,
+       NULL::numeric                                     AS c_order_compensationgroup_id,
+       NULL::character(1)                                AS isgroupcompensationline,
+       NULL::character varying(255)                      AS groupname,
        c.iso_code,
-       NULL::character(1)                                      AS iscampaignprice,
-       NULL::numeric                                           AS weight,
-       report.getPricePatternForJasper(o.m_pricelist_id)      AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
-       NULL::text                                              AS QtyPattern,
-       NULL::character(1)                                      AS iswithoutcharge,
-       NULL::character(1)                                      AS reason,
-       'Y'                                                     AS IsTextLine,
+       NULL::character(1)                                AS iscampaignprice,
+       NULL::numeric                                     AS weight,
+       report.getPricePatternForJasper(o.m_pricelist_id) AS PricePattern,
+       report.getAmountPatternForJasper(c.c_currency_id) AS AmountPattern,
+       NULL::text                                        AS QtyPattern,
+       NULL::character(1)                                AS iswithoutcharge,
+       NULL::character(1)                                AS reason,
+       'Y'                                               AS IsTextLine,
        CASE
            WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum ') = 'N'
-               THEN 'Y' ELSE 'N'
-       END                                                    AS IsNetSumShown,
+               THEN 'Y'
+               ELSE 'N'
+       END                                               AS IsNetSumShown,
        CASE
            WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Tax_Rate') = 'N'
-               THEN 'Y' ELSE 'N'
-       END                                                    AS IsTaxRateShown,
-       tl.C_Doc_TextLine_ID                                    AS LineTieBreakId
+               THEN 'Y'
+               ELSE 'N'
+       END                                               AS IsTaxRateShown,
+       tl.C_Doc_TextLine_ID                              AS LineTieBreakId
 FROM C_Doc_TextLine tl
          INNER JOIN C_Order o ON tl.C_Order_ID = o.C_Order_ID
          LEFT JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID

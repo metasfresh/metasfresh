@@ -247,12 +247,12 @@ FROM C_InvoiceLine il
 
     -- Get Attributes
          LEFT OUTER JOIN
-     (SELECT STRING_AGG(att.at_value || ': ' || att.ai_value, ', '
+     (SELECT STRING_AGG(att.at_Name || ': ' || att.ai_value, ', '
                         ORDER BY LENGTH(ai_value)) AS Attributes,
              att.M_AttributeSetInstance_ID,
              il.C_InvoiceLine_ID
-      FROM report.fresh_Attributes att
-               JOIN C_InvoiceLine il ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+      FROM C_InvoiceLine il,
+           Report.fresh_Attributes(il.M_AttributeSetInstance_ID) att
       WHERE att.IsPrintedInDocument = 'Y'
         AND il.C_Invoice_ID = p_C_Invoice_ID
       GROUP BY att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID

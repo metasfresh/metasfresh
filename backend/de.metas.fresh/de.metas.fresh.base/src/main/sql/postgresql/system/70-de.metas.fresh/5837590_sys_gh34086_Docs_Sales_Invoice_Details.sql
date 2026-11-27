@@ -60,19 +60,19 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
             )
 AS
 $$
-SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
+SELECT io.DocType || ': ' || io.DocNo                              AS InOuts,
        io.docType,
        io.reference,
        io.shipLocation,
        io.Tour,
        io.week_year,
-       TO_CHAR(io.DateFrom, 'DD.MM.YYYY')                     AS InOuts_DateFrom,
-       TO_CHAR(io.DateTo, 'DD.MM.YYYY')                       AS InOuts_DateTo,
-       DateFrom :: date = DateTo :: Date                      AS InOuts_IsSameDate,
-       DocNo IS NOT NULL                                      AS InOuts_IsDataComplete,
-       COALESCE(pc.IsHU, FALSE)                               AS IsHU,
+       TO_CHAR(io.DateFrom, 'DD.MM.YYYY')                          AS InOuts_DateFrom,
+       TO_CHAR(io.DateTo, 'DD.MM.YYYY')                            AS InOuts_DateTo,
+       DateFrom :: date = DateTo :: Date                           AS InOuts_IsSameDate,
+       DocNo IS NOT NULL                                           AS InOuts_IsDataComplete,
+       COALESCE(pc.IsHU, FALSE)                                    AS IsHU,
        il.line,
-       COALESCE(pt.name, p.name)                              AS Name,
+       COALESCE(pt.name, p.name)                                   AS Name,
        COALESCE(
                CASE
                    WHEN LENGTH(att.Attributes) > 15
@@ -80,32 +80,32 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
                        ELSE att.Attributes
                END,
                ''
-       )                                                      AS Attributes,
-       il.QtyenteredTU                                        AS HUQty,
-       piip.name                                              AS HUName,
+       )                                                           AS Attributes,
+       il.QtyenteredTU                                             AS HUQty,
+       piip.name                                                   AS HUName,
 
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
                il.QtyInvoicedInPriceUOM
-       END                                                    AS QtyInvoicedInPriceUOM,
+       END                                                         AS QtyInvoicedInPriceUOM,
        CASE
            WHEN il.QtyEntered > 0
                THEN il.QtyEntered
                ELSE 0
-       END                                                    AS shipped,
+       END                                                         AS shipped,
        CASE
            WHEN il.QtyEntered < 0
                THEN il.QtyEntered * -1
                ELSE 0
-       END                                                    AS retour,
+       END                                                         AS retour,
        il.PriceActual,
        il.PriceEntered,
        il.Discount,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOM,
+       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                     AS UOM,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'UOMSymbol') = 'N' THEN
                COALESCE(puomt.UOMSymbol, puom.UOMSymbol)
-       END                                                    AS PriceUOM,
+       END                                                         AS PriceUOM,
 
        puom.StdPrecision,
        il.linenetamt,
@@ -115,25 +115,25 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        il.Description,
        il.ProductDescription,
        -- in case there is no C_BPartner_Product, fallback to the default ones
-       COALESCE(NULLIF(bpp.ProductNo, ''), p.value)           AS bp_product_no,
-       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS bp_product_name,
-       p.value                                                AS p_value,
-       p.description                                          AS p_description,
-       i.description                                          AS invoice_description,
+       COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                AS bp_product_no,
+       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)      AS bp_product_name,
+       p.value                                                     AS p_value,
+       p.description                                               AS p_description,
+       i.description                                               AS invoice_description,
        c.cursymbol,
        ol.iscampaignprice,
        p.IsPrintWhenPackingMaterial,
-       report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
-       report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
-       report.getQtyPattern(uom.StdPrecision)                 AS QtyPattern,
-       report.getQtyPattern(puom.StdPrecision)                AS PriceQtyPattern,
+       report.getPricePatternForJasper(i.m_pricelist_id)           AS PricePattern,
+       report.getAmountPatternForJasper(c.c_currency_id)           AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                      AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                     AS PriceQtyPattern,
        w.catchweight,
        w.weight_uom,
-       pcus.value || ' ' || COALESCE(pcus.name, '')           AS customs_number,
+       pcus.value || ' ' || COALESCE(pcus.name, '')                AS customs_number,
        il.iswithoutcharge,
        il.reason,
        report.IsHiddenReportElement(i.C_DocType_ID, 'TotalAmount') AS Is_TotalAmount_Hidden,
-       report.IsHiddenReportElement(i.C_DocType_ID, 'Weight') AS Is_Weight_Hidden,
+       report.IsHiddenReportElement(i.C_DocType_ID, 'Weight')      AS Is_Weight_Hidden,
        bp.IsShowCustomsTariffNumber
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
@@ -247,12 +247,12 @@ FROM C_InvoiceLine il
 
     -- Get Attributes
          LEFT OUTER JOIN
-     (SELECT STRING_AGG(att.at_value || ': ' || att.ai_value, ', '
+     (SELECT STRING_AGG(att.at_Name || ': ' || att.ai_value, ', '
                         ORDER BY LENGTH(ai_value)) AS Attributes,
              att.M_AttributeSetInstance_ID,
              il.C_InvoiceLine_ID
-      FROM report.fresh_Attributes att
-               JOIN C_InvoiceLine il ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+      FROM C_InvoiceLine il,
+           Report.fresh_Attributes(il.M_AttributeSetInstance_ID) att
       WHERE att.IsPrintedInDocument = 'Y'
         AND il.C_Invoice_ID = p_C_Invoice_ID
       GROUP BY att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
