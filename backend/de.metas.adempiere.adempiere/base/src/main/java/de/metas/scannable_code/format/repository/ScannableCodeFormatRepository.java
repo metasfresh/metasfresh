@@ -100,9 +100,9 @@ public class ScannableCodeFormatRepository
 		{
 			queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
 					.addOnlyActiveRecordsFilter()
+					.addNotInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, keepIds) // empty keepIds = all
 					.create()
 					.stream()
-					.filter(record -> !keepIds.contains(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID())))
 					.forEach(record -> {
 						record.setIsActive(false);
 						InterfaceWrapperHelper.saveRecord(record);
