@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -80,6 +82,70 @@ public class ScannableCodeFormatRepository
 				.addInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, formatIds)
 				.create()
 				.delete();
+	}
+
+	/**
+	 * Deactivates every active format that does not match the given query and returns the IDs of the formats it deactivated (for {@link #activate(Set)}).
+	 * Formats are global (a scan is tried against all active ones), so this lets a caller, e.g. a test, work with a known set of active formats.
+	 */
+	public ImmutableSet<ScannableCodeFormatId> deactivateAllExcept(@NonNull final ScannableCodeFormatQuery keepQuery)
+	{
+		// all clients, like getAll(): every active format takes part in a scan, so every active format not kept must be deactivated
+		final IQueryBuilder<I_C_ScannableCode_Format> keepSqlQuery = queryBL.createQueryBuilder(I_C_ScannableCode_Format.class).addOnlyActiveRecordsFilter();
+		if (keepQuery.getDescription() != null)
+		{
+			keepSqlQuery.addEqualsFilter(I_C_ScannableCode_Format.COLUMNNAME_Description, keepQuery.getDescription());
+		}
+		final ImmutableSet<ScannableCodeFormatId> keepIds = keepSqlQuery.create().idsAsSet(ScannableCodeFormatId::ofRepoId);
+
+		final ImmutableSet.Builder<ScannableCodeFormatId> deactivatedIds = ImmutableSet.builder();
+		try
+		{
+			queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.stream()
+					.filter(record -> !keepIds.contains(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID())))
+					.forEach(record -> {
+						record.setIsActive(false);
+						InterfaceWrapperHelper.saveRecord(record);
+						deactivatedIds.add(ScannableCodeFormatId.ofRepoId(record.getC_ScannableCode_Format_ID()));
+					});
+		}
+		catch (final RuntimeException e)
+		{
+			// the caller gets no IDs when this fails, so do not leave a half-done state behind
+			try
+			{
+				activate(deactivatedIds.build());
+			}
+			catch (final RuntimeException restoreEx)
+			{
+				e.addSuppressed(restoreEx);
+			}
+			throw e;
+		}
+		return deactivatedIds.build();
+	}
+
+	/**
+	 * Activates the given formats again (inverse of {@link #deactivateAllExcept(ScannableCodeFormatQuery)}).
+	 */
+	public void activate(@NonNull final Set<ScannableCodeFormatId> formatIds)
+	{
+		if (formatIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
+				.addInArrayFilter(I_C_ScannableCode_Format.COLUMNNAME_C_ScannableCode_Format_ID, formatIds)
+				.create()
+				.stream()
+				.forEach(record -> {
+					record.setIsActive(true);
+					InterfaceWrapperHelper.saveRecord(record);
+				});
 	}
 
 	private IQueryBuilder<I_C_ScannableCode_Format> toSqlQuery(final ScannableCodeFormatQuery query)

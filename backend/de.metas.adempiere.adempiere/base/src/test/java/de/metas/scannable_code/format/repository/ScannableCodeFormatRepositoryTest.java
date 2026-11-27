@@ -1,6 +1,7 @@
 package de.metas.scannable_code.format.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.error.IErrorManager;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
@@ -8,6 +9,7 @@ import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
 import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
+import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -250,6 +252,73 @@ class ScannableCodeFormatRepositoryTest
 			createLabelFormat();
 
 			assertThat(repository.getById(ScannableCodeFormatId.ofRepoId(999999))).isEmpty();
+		}
+	}
+
+	@Nested
+	class DeactivateAllExcept_and_Activate
+	{
+		private ScannableCodeFormatId create(final String name, final String description)
+		{
+			return repository.create(ScannableCodeFormatCreateRequest.builder()
+					.name(name)
+					.description(description)
+					.parts(ImmutableList.of(part(1, 4, ScannableCodeFormatPartType.ProductCode)))
+					.build()).getId();
+		}
+
+		private ImmutableList<String> activeNames()
+		{
+			return repository.getAll().toList().stream().map(ScannableCodeFormat::getName).collect(ImmutableList.toImmutableList());
+		}
+
+		@Test
+		void deactivatesTheFormatsThatDoNotMatchTheQuery_andReturnsTheirIds()
+		{
+			final ScannableCodeFormatId kept = create("kept", "mine");
+			final ScannableCodeFormatId other = create("other", "foreign");
+			final ScannableCodeFormatId noDescription = create("no description", null);
+
+			final ImmutableSet<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+
+			assertThat(deactivated).containsExactlyInAnyOrder(other, noDescription);
+			assertThat(activeNames()).containsExactly("kept");
+			assertThat(repository.getById(kept)).isPresent();
+			assertThat(repository.getById(other)).isEmpty();
+		}
+
+		@Test
+		void activate_restoresTheDeactivatedFormats()
+		{
+			create("kept", "mine");
+			create("other", "foreign");
+
+			final ImmutableSet<ScannableCodeFormatId> deactivated = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+			repository.activate(deactivated);
+
+			assertThat(activeNames()).containsExactlyInAnyOrder("kept", "other");
+		}
+
+		@Test
+		void alreadyInactiveFormats_areNotReturned_andNotActivatedByTheCaller()
+		{
+			create("mine1", "mine");
+			final ScannableCodeFormatId inactive = create("inactive", "foreign");
+			repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+
+			final ImmutableSet<ScannableCodeFormatId> secondRun = repository.deactivateAllExcept(ScannableCodeFormatQuery.builder().description("mine").build());
+
+			assertThat(secondRun).doesNotContain(inactive).isEmpty();
+		}
+
+		@Test
+		void activate_withNoIds_doesNothing()
+		{
+			create("kept", "mine");
+
+			repository.activate(ImmutableSet.of());
+
+			assertThat(activeNames()).containsExactly("kept");
 		}
 	}
 }

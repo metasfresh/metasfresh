@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.scannable_code;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
@@ -8,31 +9,26 @@ import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatQuery;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
-import de.metas.util.Services;
 import de.metas.util.time.PatternedDateTimeFormatter;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_ScannableCode_Format;
 import org.compiere.model.I_C_ScannableCode_Format_Part;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,7 +81,6 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private static final String DESCRIPTION_CUCUMBER_UNRELATED = "created by cucumber step C_ScannableCode_Format_StepDef (unrelated to the scenario)";
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final ScannableCodeFormatService formatService = SpringContextHolder.instance.getBean(ScannableCodeFormatService.class);
 
@@ -98,7 +93,7 @@ public class C_ScannableCode_Format_StepDef
 	/**
 	 * Formats deactivated by {@link #parseScannedCodeAndExpect(DataTable)} and not yet reactivated.
 	 */
-	private final List<I_C_ScannableCode_Format> deactivatedFormats = new ArrayList<>();
+	private ImmutableSet<ScannableCodeFormatId> deactivatedFormatIds = ImmutableSet.of();
 
 	/**
 	 * Declares the formats (identifier + {@code Name}); they are created by the parts step.
@@ -228,55 +223,16 @@ public class C_ScannableCode_Format_StepDef
 	 */
 	private void deactivateFormatsNotOfTheScenario()
 	{
-		queryBL.createQueryBuilder(I_C_ScannableCode_Format.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.filter(format -> !DESCRIPTION_CUCUMBER.equals(format.getDescription()))
-				.forEach(format -> {
-					format.setIsActive(false);
-					InterfaceWrapperHelper.save(format);
-					deactivatedFormats.add(format); // remembered only after the save, so that a failing save leaves nothing half-done unrecorded
-				});
+		deactivatedFormatIds = formatService.deactivateAllExcept(ScannableCodeFormatQuery.builder().description(DESCRIPTION_CUCUMBER).build());
 	}
 
 	/**
-	 * Reactivates every format that was deactivated; a format that fails does not stop the others; failed ones stay in the list (retried by the @After) and are named in the exception.
+	 * Reactivates the formats that were deactivated; if that fails they stay remembered, so that the {@code @After} retries.
 	 */
 	private void reactivateDeactivatedFormats()
 	{
-		final List<I_C_ScannableCode_Format> failed = new ArrayList<>();
-		RuntimeException firstError = null;
-		for (final I_C_ScannableCode_Format format : deactivatedFormats)
-		{
-			try
-			{
-				format.setIsActive(true);
-				InterfaceWrapperHelper.save(format);
-			}
-			catch (final RuntimeException e)
-			{
-				failed.add(format);
-				if (firstError == null)
-				{
-					firstError = e;
-				}
-				else
-				{
-					firstError.addSuppressed(e);
-				}
-			}
-		}
-		deactivatedFormats.clear();
-		deactivatedFormats.addAll(failed);
-
-		if (firstError != null)
-		{
-			final String names = failed.stream()
-					.map(f -> f.getName() + " (C_ScannableCode_Format_ID=" + f.getC_ScannableCode_Format_ID() + ")")
-					.collect(Collectors.joining(", "));
-			throw new AdempiereException("Failed to reactivate scannable code formats deactivated by the step; they stay inactive: " + names, firstError);
-		}
+		formatService.activate(deactivatedFormatIds);
+		deactivatedFormatIds = ImmutableSet.of();
 	}
 
 	private void parseAndExpect(@NonNull final DataTableRow row)
