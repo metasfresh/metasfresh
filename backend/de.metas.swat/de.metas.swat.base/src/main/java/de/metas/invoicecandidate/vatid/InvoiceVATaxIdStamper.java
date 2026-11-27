@@ -83,13 +83,14 @@ import java.util.stream.Collectors;
  * Stores or checks the buyer VAT ID, seller VAT ID and fiscal representation of a sales invoice before it is completed.
  * The first matching rule wins:
  * <ol>
- *     <li>a reversal, or a credit memo copied from an invoice with stored values, shows the values of the invoice it was copied from;
- *     its lines are never resolved again (see {@link #getCopiedFromInvoiceId(I_C_Invoice)})</li>
+ *     <li>a reversal, or a credit memo that references the invoice it was copied from, gets the values stored on that invoice, as they are (also when empty);
+ *     its lines are never resolved again (see {@link #getCopiedFromInvoiceId(I_C_Invoice)}). Any other copy starts without values ({@code IInvoiceBL#copyFrom})
+ *     and is handled like an invoice of its own by the next rules.</li>
  *     <li>an invoice with lines created from invoice candidates keeps the values stored at invoicing;
  *     a line added by hand whose tax requires a tax certificate (i.e. is exempt on a VAT ID) must resolve to the stored buyer and seller VAT ID
  *     (the fiscal representation is not compared: the seller VAT ID is what the invoice shows).
- *     If the invoice's doc type overwrites the invoice date on completion, the lines are re-taxed after this check
- *     ({@code MInvoice.setDefiniteDocumentNo}, then the re-tax on the {@code DateInvoiced} change), so the tax that re-tax will give such a line is checked as well.</li>
+ *     If the invoice's doc type overwrites the invoice date on completion, the lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
+ *     the date is overwritten at the start of the completion, before this check ({@code MInvoice.completeIt}), so normally the lines already carry that tax and the prediction finds the same one.</li>
  *     <li>a manual invoice gets the values its lines resolve to, and all lines must resolve to the same values -
  *     but only if at least one line resolves a VAT ID of an address or a fiscal representation; otherwise it stores none and completes as before</li>
  * </ol>
@@ -134,9 +135,11 @@ public class InvoiceVATaxIdStamper
 			return;
 		}
 
-		if (getCopiedFromInvoiceId(invoice) != null)
+		final InvoiceId copiedFromInvoiceId = getCopiedFromInvoiceId(invoice);
+		if (copiedFromInvoiceId != null)
 		{
 			// the copy's lines were resolved when the original was completed; re-resolving them from today's master data could block the copy or change its values
+			setVATaxIds(invoice, getStoredVATaxIds(invoiceBL.getById(copiedFromInvoiceId)));
 			return;
 		}
 
@@ -155,7 +158,7 @@ public class InvoiceVATaxIdStamper
 
 	/**
 	 * @return the invoice the given one was copied from, if its VAT IDs come from there: the reversed invoice of a reversal,
-	 * or the credited invoice of a credit memo if that invoice has stored values; {@code null} otherwise.
+	 * or the credited invoice of a credit memo that references it; {@code null} otherwise.
 	 */
 	@Nullable
 	private InvoiceId getCopiedFromInvoiceId(@NonNull final I_C_Invoice invoice)
@@ -169,8 +172,7 @@ public class InvoiceVATaxIdStamper
 		final InvoiceId creditedInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
 		if (creditedInvoiceId != null && invoiceBL.isCreditMemo(invoice))
 		{
-			final InvoiceVATaxIds creditedVATaxIds = getStoredVATaxIds(invoiceBL.getById(creditedInvoiceId));
-			return NO_VATAXIDS.equals(creditedVATaxIds) ? null : creditedInvoiceId;
+			return creditedInvoiceId;
 		}
 
 		return null;
@@ -225,7 +227,7 @@ public class InvoiceVATaxIdStamper
 	}
 
 	/**
-	 * @return {@code true} if completing the invoice sets {@code DateInvoiced} to now ({@code C_DocType.IsOverwriteDateOnComplete}), which re-taxes its lines after the completion checks.
+	 * @return {@code true} if completing the invoice sets {@code DateInvoiced} to now ({@code C_DocType.IsOverwriteDateOnComplete}), which re-taxes its lines.
 	 */
 	private boolean isDateOverwrittenOnCompletion(@NonNull final I_C_Invoice invoice)
 	{

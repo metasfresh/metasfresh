@@ -358,6 +358,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		Services.get(ICopyHandlerBL.class).copyPreliminaryValues(from, to);
 
+		// the VAT IDs are stored when the copy is completed: a reversal or credit memo gets the original's, any other copy those of its own lines
+		to.setBuyerVATaxID(null);
+		to.setSellerVATaxID(null);
+		to.setC_Fiscal_Representation_ID(-1);
+
 		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={}, to.AD_Client_ID={}", from.getAD_Client_ID(), to.getAD_Client_ID());
 		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={}, to.AD_Org_ID={}", from.getAD_Org_ID(), to.getAD_Org_ID());
 

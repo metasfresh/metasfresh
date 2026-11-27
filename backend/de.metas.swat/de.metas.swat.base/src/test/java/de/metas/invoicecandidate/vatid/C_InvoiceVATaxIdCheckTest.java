@@ -73,6 +73,8 @@ class C_InvoiceVATaxIdCheckTest
 	private static final String NL_VAT = "NL123456782B01";
 	private static final String OTHER_DE_VAT = "DE136695976";
 	private static final String AT_VAT = "ATU13585627";
+	private static final String SELLER_VAT = "EL094259216";
+	private static final int FISCAL_REPRESENTATION_ID = 540001;
 	private static final int TAX_CATEGORY_ID = 44;
 
 	private InvoiceVATaxIdStamper stamper;
@@ -281,38 +283,79 @@ class C_InvoiceVATaxIdCheckTest
 	}
 
 	/**
-	 * A reversal is completed right after its lines were copied; it must not be blocked or re-resolved, even if its lines resolve to different VAT IDs.
+	 * A reversal is completed right after its lines were copied; it is not resolved again (which could block it, its lines resolve to different VAT IDs),
+	 * it gets the stored values of the reversed invoice.
 	 */
 	@Test
-	void reversal_isNotResolved()
+	void reversal_getsOriginalVATaxIds()
 	{
-		final I_C_Invoice original = createInvoice(NL_VAT);
-		final I_C_Invoice reversal = createInvoice(null);
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_Invoice reversal = createInvoice(OTHER_DE_VAT);
 		reversal.setReversal_ID(original.getC_Invoice_ID());
 		save(reversal);
 		createLineForShipment(reversal, billToDE);
 		createLineForShipment(reversal, deliveryNL);
 
 		assertThatCode(() -> stamper.stampOrCheck(reversal)).doesNotThrowAnyException();
-		assertThat(reversal.getBuyerVATaxID()).isNull();
+		assertOriginalVATaxIds(reversal);
 	}
 
 	/**
-	 * A credit memo copied from an invoice with stored VAT IDs is not resolved again either.
+	 * A credit memo copied from an invoice gets the invoice's stored values; it is not resolved again either.
 	 */
 	@Test
-	void creditMemoOfStampedInvoice_isNotResolved()
+	void creditMemo_getsOriginalVATaxIds()
 	{
-		final I_C_Invoice original = createInvoice(NL_VAT);
-		final I_C_Invoice creditMemo = createInvoice(null);
-		creditMemo.setC_DocTypeTarget_ID(createDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo));
-		creditMemo.setRef_Invoice_ID(original.getC_Invoice_ID());
-		save(creditMemo);
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_Invoice creditMemo = createCreditMemo(original);
 		createLineForShipment(creditMemo, billToDE);
 		createLineForShipment(creditMemo, deliveryNL);
 
 		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
+		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * The stored values of the credited invoice are copied as they are, also when they are empty (e.g. the invoice was completed before they were stored),
+	 * although the credit memo's line would resolve the Dutch VAT ID of its delivery address.
+	 */
+	@Test
+	void creditMemoOfNotStampedInvoice_staysEmpty()
+	{
+		final I_C_Invoice original = createInvoice(null);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createLineForShipment(creditMemo, deliveryNL);
+
+		stamper.stampOrCheck(creditMemo);
+
 		assertThat(creditMemo.getBuyerVATaxID()).isNull();
+		assertThat(creditMemo.getSellerVATaxID()).isNull();
+		assertThat(creditMemo.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+	}
+
+	private I_C_Invoice createStampedInvoice()
+	{
+		final I_C_Invoice original = createInvoice(NL_VAT);
+		original.setSellerVATaxID(SELLER_VAT);
+		original.setC_Fiscal_Representation_ID(FISCAL_REPRESENTATION_ID);
+		save(original);
+		return original;
+	}
+
+	private I_C_Invoice createCreditMemo(final I_C_Invoice original)
+	{
+		final I_C_Invoice creditMemo = createInvoice(null);
+		creditMemo.setC_DocTypeTarget_ID(createDocType(X_C_DocType.DOCBASETYPE_ARCreditMemo));
+		creditMemo.setRef_Invoice_ID(original.getC_Invoice_ID());
+		save(creditMemo);
+		return creditMemo;
+	}
+
+	private static void assertOriginalVATaxIds(final I_C_Invoice invoice)
+	{
+		assertThat(invoice.getBuyerVATaxID()).isEqualTo(NL_VAT);
+		assertThat(invoice.getSellerVATaxID()).isEqualTo(SELLER_VAT);
+		assertThat(invoice.getC_Fiscal_Representation_ID()).isEqualTo(FISCAL_REPRESENTATION_ID);
 	}
 
 	/**
