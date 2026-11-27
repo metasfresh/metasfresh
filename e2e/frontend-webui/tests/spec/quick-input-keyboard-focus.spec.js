@@ -86,7 +86,7 @@ function tagAllure({ language, packingInstructionsField, story }) {
 
 /** Masterdata, login and a fresh sales order window (before "New"). Returns the recorder and the masterdata. */
 async function loginForSalesOrder({ language, packingInstructionsField, customers }) {
-  const recorder = installDocumentEventRecorder(global.currentPage);
+  const recorder = await installDocumentEventRecorder(global.currentPage);
   const masterdata = await createMasterdata(language, { packingInstructionsField, customers });
   allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 

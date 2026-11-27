@@ -456,7 +456,7 @@ test.describe('Sales order — keyboard-only order entry and Menge edit', () => 
       allure.tag(language);
       test.setTimeout(300000);
 
-      const recorder = installDocumentEventRecorder(page);
+      const recorder = await installDocumentEventRecorder(page);
       const masterdata = await createMasterdata(language, { valuePrefix: 'QTYEDITK' });
       await LoginPage.goto();
       await LoginPage.login(masterdata.login.user);

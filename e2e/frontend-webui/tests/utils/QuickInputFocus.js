@@ -16,10 +16,14 @@ const ORDER_LINE_GRID_ROWS = '.table-flex-wrapper table tbody tr';
 
 /**
  * Record every document websocket frame whose body has a top-level `stale === true` and every
- * GET /window/<windowId>/<recordId> response. Call it before LoginPage.goto() (the websocket is
+ * GET /window/<windowId>/<recordId> response. Await it before LoginPage.goto() (the websocket is
  * opened when the app boots).
+ *
+ * The frames are read whichever transport SockJS ends up with: WebSocket frames from Playwright, and the
+ * `xhr_streaming` fallback (SockJS falls back to it when the WebSocket handshake fails, e.g. through a busy
+ * dev-server proxy) from the page, where an init script hands each streamed message to the test.
  */
-export function installDocumentEventRecorder(page) {
+export async function installDocumentEventRecorder(page) {
   const recorder = { frames: [], responses: [], parseErrors: 0 };
 
   const handleStompFrame = (stompFrame) => {
@@ -52,22 +56,52 @@ export function installDocumentEventRecorder(page) {
     }
   };
 
+  // One SockJS message: `a[...]` carries STOMP frames; o, h, c[...] and others are ignored.
+  const handleSockJsMessage = (text) => {
+    if (!text.startsWith('a')) return;
+    let stompFrames;
+    try {
+      stompFrames = JSON.parse(text.slice(1));
+    } catch (error) {
+      recorder.parseErrors++;
+      console.error('[WARN] unparsable document frame', '(sockjs array)', error, text.slice(0, 200));
+      return;
+    }
+    if (!Array.isArray(stompFrames)) return;
+    stompFrames.forEach((f) => typeof f === 'string' && handleStompFrame(f));
+  };
+
   page.on('websocket', (ws) => {
     ws.on('framereceived', (frame) => {
       let text = frame.payload;
       if (typeof text !== 'string') text = text.toString('utf8');
-      if (!text.startsWith('a')) return; // o, h, c[...] and others are ignored
-      let stompFrames;
-      try {
-        stompFrames = JSON.parse(text.slice(1));
-      } catch (error) {
-        recorder.parseErrors++;
-        console.error('[WARN] unparsable document frame', '(sockjs array)', error, text.slice(0, 200));
-        return;
-      }
-      if (!Array.isArray(stompFrames)) return;
-      stompFrames.forEach((f) => typeof f === 'string' && handleStompFrame(f));
+      handleSockJsMessage(text);
     });
+  });
+
+  await page.exposeBinding('__qikfSockJsStreamedMessage', (_source, text) => handleSockJsMessage(String(text)));
+  await page.addInitScript(() => {
+    // xhr_streaming sends newline-separated SockJS messages over one long response.
+    const open = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+      if (/\/stomp\/.+\/xhr_streaming/.test(String(url))) {
+        let consumed = 0;
+        const forwardCompleteLines = () => {
+          const text = this.responseText || '';
+          const end = text.lastIndexOf('\n') + 1;
+          if (end <= consumed) return;
+          text
+            .slice(consumed, end)
+            .split('\n')
+            .filter((line) => line.length > 0)
+            .forEach((line) => window.__qikfSockJsStreamedMessage(line));
+          consumed = end;
+        };
+        this.addEventListener('progress', forwardCompleteLines);
+        this.addEventListener('load', forwardCompleteLines);
+      }
+      return open.call(this, method, url, ...rest);
+    };
   });
 
   page.on('response', (response) => {

@@ -179,7 +179,7 @@ testCases.forEach(({ language, label }) => {
     };
 
     const start = async (page) => {
-      const recorder = installDocumentEventRecorder(page);
+      const recorder = await installDocumentEventRecorder(page);
       const masterdata = await createMasterdata(language);
       allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
       await LoginPage.goto();
