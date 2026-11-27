@@ -20,29 +20,63 @@ export const isCursorHeldOutside = (...containers) => {
   return !containers.some((container) => container?.contains(activeElement));
 };
 
-// The element the user put the cursor in last (by mouse or keyboard), or typed or clicked in while it held the cursor.
-let elementInUseByUser = null;
+/**
+ * @param {?Element} element
+ * @returns {?Element} the widget's field container (`.form-group`, which holds all sub-fields of a lookup) the
+ *          element is in, else the element itself; null for no element or the body
+ */
+const fieldContainerOf = (element) => {
+  if (!element || element === document.body) {
+    return null;
+  }
+  return element.closest('.form-group') || element;
+};
+
+// The field (see fieldContainerOf) the user put the cursor in last, by mouse or keyboard, or typed or clicked in
+// while it held the cursor.
+let fieldInUseByUser = null;
 // True while the browser handles a user's key or mouse press: a focus change then is the user's.
 let isHandlingUserInput = false;
 
-const handleUserInput = () => {
+/** Forgets the user's last input, as if the user had not touched any field yet (e.g. between tests). */
+export const resetUserInputTracking = () => {
+  fieldInUseByUser = null;
+  isHandlingUserInput = false;
+};
+
+/** The browser moves the cursor (Tab, a click) within the task of the key or mouse press. */
+const startHandlingUserInput = () => {
   isHandlingUserInput = true;
-  elementInUseByUser = document.activeElement;
-  // the browser moves the cursor (Tab, a click) within the task of the key or mouse press
   setTimeout(() => {
     isHandlingUserInput = false;
   }, 0);
 };
 
+// A key goes to the field that has the cursor: the user types in it.
+const handleKeyDown = () => {
+  startHandlingUserInput();
+  fieldInUseByUser = fieldContainerOf(document.activeElement);
+};
+
+// A press inside the field that has the cursor is the user clicking in it. A press elsewhere is the user's only
+// if it moves the cursor (see handleFocusIn), not e.g. a press on the scrollbar.
+const handleMouseDown = (event) => {
+  startHandlingUserInput();
+  const activeField = fieldContainerOf(document.activeElement);
+  if (activeField && activeField.contains(event.target)) {
+    fieldInUseByUser = activeField;
+  }
+};
+
 const handleFocusIn = (event) => {
   if (isHandlingUserInput) {
-    elementInUseByUser = event.target;
+    fieldInUseByUser = fieldContainerOf(event.target);
   }
 };
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('keydown', handleUserInput, true);
-  document.addEventListener('mousedown', handleUserInput, true);
+  document.addEventListener('keydown', handleKeyDown, true);
+  document.addEventListener('mousedown', handleMouseDown, true);
   document.addEventListener('focusin', handleFocusIn, true);
 }
 
@@ -57,14 +91,26 @@ const isField = (element) =>
 
 /**
  * @param {...?{contains: function(Node): boolean}} containers as for {@link isCursorHeldOutside}
- * @returns {boolean} true if the cursor is in a field outside the given containers and the user works in it: the
- *          user put the cursor there, or typed or clicked in it. False for a field that got the cursor by itself
- *          (e.g. the first field of a loaded document) and for an element that is not a field (e.g. a tab or the grid).
+ * @returns {boolean} true if the cursor is in a field outside the given containers and the user works in that
+ *          field: the user put the cursor in it, or typed or clicked in it, and the cursor has stayed within that
+ *          widget's field container since (an app hand-over between a lookup's sub-fields, or a new input the widget
+ *          rendered, still counts). False for a field that got the cursor by itself (e.g. the first field of a loaded
+ *          document) unless the user typed or clicked in it, and for an element that is not a field (e.g. a tab or
+ *          the grid). Limits: a press that does not move the cursor counts only inside the field that has it; a
+ *          widget without a `.form-group` container counts only for the very element the user used.
  */
 export const isUserWorkingInFieldOutside = (...containers) => {
   if (!isCursorHeldOutside(...containers)) {
     return false;
   }
+  if (fieldInUseByUser && !fieldInUseByUser.isConnected) {
+    // the field is gone (e.g. another document was opened); don't keep it alive
+    fieldInUseByUser = null;
+  }
   const activeElement = document.activeElement;
-  return activeElement === elementInUseByUser && isField(activeElement);
+  return (
+    !!fieldInUseByUser &&
+    fieldInUseByUser.contains(activeElement) &&
+    isField(activeElement)
+  );
 };

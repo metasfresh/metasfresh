@@ -4,6 +4,7 @@ import {
   isCursorHeldByNothing,
   isCursorHeldOutside,
   isUserWorkingInFieldOutside,
+  resetUserInputTracking,
 } from '../../utils/focusHelpers';
 
 /** Lets the task of the previous user input end, so a later focus counts as not caused by it. */
@@ -89,7 +90,16 @@ describe('focusHelpers', () => {
   });
 
   describe('isUserWorkingInFieldOutside', () => {
-    beforeEach(endOfUserInputTask);
+    beforeEach(resetUserInputTracking);
+
+    /** A widget's field container (`.form-group`) with the given inputs, e.g. a lookup's sub-fields. */
+    const createFieldGroup = (...inputs) => {
+      const group = document.createElement('div');
+      group.className = 'form-group';
+      inputs.forEach((input) => group.appendChild(input));
+      document.body.appendChild(group);
+      return group;
+    };
 
     it('is true when the user clicked into a field outside the container', () => {
       clickInto(outside);
@@ -148,6 +158,97 @@ describe('focusHelpers', () => {
 
     it('is false when the user clicked into a field inside the container', () => {
       clickInto(inside);
+
+      expect(isUserWorkingInFieldOutside(container)).toBe(false);
+    });
+
+    // E.g. the user picked the business partner and the lookup hands the cursor on to its contact sub-field.
+    it('is true when the app moves the cursor on within the field the user works in', async () => {
+      const partner = document.createElement('input');
+      const contact = document.createElement('input');
+      const group = createFieldGroup(partner, contact);
+      try {
+        clickInto(partner);
+        await endOfUserInputTask();
+        contact.focus();
+
+        expect(isUserWorkingInFieldOutside(container)).toBe(true);
+      } finally {
+        group.remove();
+      }
+    });
+
+    // E.g. a widget renders a new input after a value update.
+    it('is true when the field the user works in replaced its input and the new one has the cursor', async () => {
+      const oldInput = document.createElement('input');
+      const group = createFieldGroup(oldInput);
+      try {
+        clickInto(oldInput);
+        await endOfUserInputTask();
+        oldInput.remove();
+        const newInput = document.createElement('input');
+        group.appendChild(newInput);
+        newInput.focus();
+
+        expect(isUserWorkingInFieldOutside(container)).toBe(true);
+      } finally {
+        group.remove();
+      }
+    });
+
+    it('is false when the app moves the cursor to another field than the one the user works in', async () => {
+      const userInput = document.createElement('input');
+      const otherInput = document.createElement('input');
+      const userGroup = createFieldGroup(userInput);
+      const otherGroup = createFieldGroup(otherInput);
+      try {
+        clickInto(userInput);
+        await endOfUserInputTask();
+        otherInput.focus();
+
+        expect(isUserWorkingInFieldOutside(container)).toBe(false);
+      } finally {
+        userGroup.remove();
+        otherGroup.remove();
+      }
+    });
+
+    // E.g. a press on the scrollbar while the first field of a loaded document has the cursor.
+    it('is false when the user presses the mouse outside the field that got the cursor by itself, and the cursor stays there', async () => {
+      const field = document.createElement('input');
+      const group = createFieldGroup(field);
+      const scrollArea = document.createElement('div');
+      document.body.appendChild(scrollArea);
+      try {
+        field.focus();
+        await endOfUserInputTask();
+        fireEvent.mouseDown(scrollArea);
+
+        expect(isUserWorkingInFieldOutside(container)).toBe(false);
+      } finally {
+        group.remove();
+        scrollArea.remove();
+      }
+    });
+
+    it('is true when the user presses the mouse inside the field that got the cursor by itself', async () => {
+      const field = document.createElement('input');
+      const label = document.createElement('label');
+      const group = createFieldGroup(label, field);
+      try {
+        field.focus();
+        await endOfUserInputTask();
+        fireEvent.mouseDown(label);
+
+        expect(isUserWorkingInFieldOutside(container)).toBe(true);
+      } finally {
+        group.remove();
+      }
+    });
+
+    it('is false for a field the user worked in before the tracking was reset', () => {
+      clickInto(outside);
+      resetUserInputTracking();
 
       expect(isUserWorkingInFieldOutside(container)).toBe(false);
     });

@@ -5,6 +5,7 @@ import { fireEvent } from '@testing-library/react';
 import quickInputData from '../../../../test_setup/fixtures/table/table_quickinput.json';
 import { TableQuickInput } from '../../../components/table/TableQuickInput';
 import WidgetWrapper from '../../../containers/WidgetWrapper';
+import { resetUserInputTracking } from '../../../utils/focusHelpers';
 
 const promiseMock = () => Promise.resolve(true);
 const baseProps = {
@@ -30,10 +31,6 @@ const firstFieldFocusProps = (wrapper) => {
   return { autoFocus, initialFocus };
 };
 
-/** Lets the task of the previous user input end, so a later focus counts as not caused by it. */
-const endOfUserInputTask = () =>
-  new Promise((resolve) => setTimeout(resolve, 0));
-
 /** The user puts the cursor in the element with the mouse: mousedown, and the browser focuses it in the same task. */
 const clickInto = (element) => {
   fireEvent.mouseDown(element);
@@ -43,10 +40,10 @@ const clickInto = (element) => {
 describe('TableQuickInput: focus of the first field when the quick input is shown', () => {
   let headerField;
 
-  beforeEach(async () => {
+  beforeEach(() => {
+    resetUserInputTracking();
     headerField = document.createElement('input');
     document.body.appendChild(headerField);
-    await endOfUserInputTask();
   });
 
   afterEach(() => {
