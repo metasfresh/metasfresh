@@ -29,6 +29,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductCreateRequest;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -71,6 +72,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -121,6 +123,31 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product getRecordById(@NonNull final HUPIItemProductId id)
 	{
 		return loadOutOfTrx(id, I_M_HU_PI_Item_Product.class);
+	}
+
+	@Override
+	public @NonNull I_M_HU_PI_Item_Product create(@NonNull final HUPIItemProductCreateRequest request)
+	{
+		final I_M_HU_PI_Item_Product record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		record.setM_HU_PI_Item_ID(request.getPiItemId().getRepoId());
+		record.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+		record.setIsAllowAnyProduct(false);
+		final BigDecimal qtyCUsPerTU = request.getQtyCUsPerTU();
+		if (qtyCUsPerTU != null)
+		{
+			record.setIsInfiniteCapacity(false);
+			record.setQty(qtyCUsPerTU);
+		}
+		else
+		{
+			record.setIsInfiniteCapacity(true);
+			record.setQty(BigDecimal.ZERO);
+		}
+		record.setC_UOM_ID(request.getUomId().getRepoId());
+		record.setValidFrom(Timestamp.from(request.getValidFrom()));
+		record.setEAN_TU(request.getEanTU());
+		InterfaceWrapperHelper.saveRecord(record);
+		return record;
 	}
 
 	@Override
