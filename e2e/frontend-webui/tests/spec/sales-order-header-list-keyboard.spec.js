@@ -20,9 +20,9 @@ import {
 } from '../utils/QuickInputFocus';
 
 /**
- * Header keyboard flow requirement test (reproduction of REQUIREMENTS section 3 and TC7): in the sales order
- * header, after the partner Enter the cursor moves on to the address list and, after Enter there, to the contact
- * list; Enter takes the highlighted entry, so partner, address and contact are all filled. Red before the fix.
+ * Header keyboard flow: in the sales order header, after the partner Enter the cursor moves on to the address list
+ * and, after Enter there, to the contact list; Enter takes the highlighted entry, so partner, address and contact
+ * are all filled. Red before the fix.
  */
 
 const ADDRESS_LIST = '#lookup_C_BPartner_Location_ID .input-dropdown-container';
@@ -99,15 +99,15 @@ async function expectReadyForEnter(page, list, description) {
 /**
  * The cursor is in the list, stays there 1000 ms, and, if the step triggered a header reload, is in the list and
  * stays there after that reload as well (a reload is not always emitted, so it is only awaited when it came).
- * requireReload: the step always saves a header change, so the reload is awaited in any case.
+ * isReloadRequired: the step always saves a header change, so the reload is awaited in any case.
  */
-async function expectListThroughReload(page, recorder, mark, doc, list, description, { requireReload = false } = {}) {
+async function expectListThroughReload(page, recorder, mark, doc, list, description, { isReloadRequired = false } = {}) {
   const locator = page.locator(list);
   await expectFocusOn(locator, description);
   await expectFocusHeld(locator, 1000, description);
   // hasReloadSince is read once, after the hold: a reload that comes later is not awaited here (the step's own
   // later checks and the next Enter cover it).
-  if (requireReload || hasReloadSince(recorder, mark, doc)) {
+  if (isReloadRequired || hasReloadSince(recorder, mark, doc)) {
     // A missing reload is not a cursor steal: awaitHeaderReload's own (non-focus) message is left as it is.
     await awaitHeaderReload(page, recorder, mark, { ...doc, step: description });
     await expectFocusOn(locator, `${description}, after the header reload`);
@@ -138,7 +138,7 @@ async function advanceToContactList(page, recorder, masterdata) {
     ADDRESS_LIST,
     'after partner Enter: cursor in the address list',
     {
-      requireReload: true,
+      isReloadRequired: true,
     }
   );
   await expectReadyForEnter(page, ADDRESS_LIST, 'after partner Enter');

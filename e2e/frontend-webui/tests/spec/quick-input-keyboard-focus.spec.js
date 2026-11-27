@@ -67,12 +67,6 @@ const testCases = [
   { language: 'de_DE', label: 'German' },
 ];
 
-/**
- * One quick entry case: new order, customer picked by keyboard or mouse, quick entry opened with
- * Alt+Q or the button, optionally closed and reopened with Alt+Q, three lines by keyboard only,
- * order completed, DB end state asserted. pickCustomer 'mouseOfSeveral': two customers share the typed
- * prefix, the first one is picked by mouse from the option list.
- */
 function tagAllure({ language, packingInstructionsField, story }) {
   allure.epic('E0100: Sales');
   allure.tag('F00101: Sales Order Quick Entry');
@@ -100,7 +94,13 @@ async function loginForSalesOrder({ language, packingInstructionsField, customer
   return { recorder, masterdata };
 }
 
-async function runQuickEntryCase(page, { language, packingInstructionsField, pickCustomer, openBy, reopen = false }) {
+/**
+ * One quick entry case: new order, customer picked by keyboard or mouse, quick entry opened with
+ * Alt+Q or the button, optionally closed and reopened with Alt+Q, three lines by keyboard only,
+ * order completed, DB end state asserted. pickCustomer 'mouseOfSeveral': two customers share the typed
+ * prefix, the first one is picked by mouse from the option list.
+ */
+async function runQuickEntryCase(page, { language, packingInstructionsField, pickCustomer, openBy, shouldReopen = false }) {
   tagAllure({
     language,
     packingInstructionsField,
@@ -144,7 +144,7 @@ async function runQuickEntryCase(page, { language, packingInstructionsField, pic
   await quickInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   const productInput = quickInput.locator('#lookup_M_Product_ID input.input-field');
   await expectFocusOn(productInput, openBy === 'altQ' ? 'opened: cursor in Produkt' : 'opened by button: cursor in Produkt');
-  if (reopen) {
+  if (shouldReopen) {
     await page.keyboard.press('Alt+Q');
     await quickInput.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
     await page.keyboard.press('Alt+Q');
@@ -206,14 +206,14 @@ async function startMultiCustomerOrder(page, { language, story }) {
   await SalesOrderPage.goto();
   await SalesOrderPage.clickNew();
   const recordId = await pickCustomerByKeyboard({ bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode });
-  const addressOpen = await waitForOpenDropdown(page, 'C_BPartner_Location_ID');
-  console.log(`[INFO] address dropdown opened by itself after keyboard pick: ${addressOpen ? 'yes' : 'no'}`);
-  return { recorder, masterdata, recordId, addressOpen };
+  const isAddressOpen = await waitForOpenDropdown(page, 'C_BPartner_Location_ID');
+  console.log(`[INFO] address dropdown opened by itself after keyboard pick: ${isAddressOpen ? 'yes' : 'no'}`);
+  return { recorder, masterdata, recordId, isAddressOpen };
 }
 
-/** The same open-address-dropdown setup for TC13 and the Tab test: open it with ArrowDown if it did not open by itself. */
-async function ensureAddressDropdownOpen(page, addressOpen) {
-  if (addressOpen) return;
+/** The same open-address-dropdown setup for the Alt+Q-with-open-address-dropdown test and the Tab test: open it with ArrowDown if it did not open by itself. */
+async function ensureAddressDropdownOpen(page, isAddressOpen) {
+  if (isAddressOpen) return;
   console.log('[WARN] address dropdown did not open after keyboard pick; opening with ArrowDown');
   await page.keyboard.press('ArrowDown');
   await page
@@ -237,7 +237,7 @@ async function readHeaderAddressKey(windowId, recordId) {
 
 async function expectHeaderAddress(page, windowId, recordId, before) {
   const after = await readHeaderAddressKey(windowId, recordId);
-  expect(after, `TC13 header address changed: before=${before} after=${after} (${await describeActiveElement(page)})`).toBe(before);
+  expect(after, `header address changed: before=${before} after=${after} (${await describeActiveElement(page)})`).toBe(before);
 }
 
 async function openQuickEntryByAltQ(page) {
@@ -260,7 +260,7 @@ const products = (masterdata) => PRODUCT_KEYS.map((k) => masterdata.products[k].
 
 testCases.forEach(({ language, label }) => {
   test.describe(`Quick entry keyboard focus (${label})`, () => {
-    test(`TC1 keyboard, no packing-instruction field (${label})`, async ({ page }) => {
+    test(`keyboard, no packing-instruction field (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'N',
@@ -269,7 +269,7 @@ testCases.forEach(({ language, label }) => {
       });
     });
 
-    test(`TC2 keyboard, packing-instruction field on (${label})`, async ({ page }) => {
+    test(`keyboard, packing-instruction field on (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'Y',
@@ -278,7 +278,7 @@ testCases.forEach(({ language, label }) => {
       });
     });
 
-    test(`TC3 mouse, button, PI off (${label})`, async ({ page }) => {
+    test(`mouse, button, PI off (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'N',
@@ -287,7 +287,7 @@ testCases.forEach(({ language, label }) => {
       });
     });
 
-    test(`TC4 mouse, button, PI on (${label})`, async ({ page }) => {
+    test(`mouse, button, PI on (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'Y',
@@ -296,17 +296,17 @@ testCases.forEach(({ language, label }) => {
       });
     });
 
-    test(`TC9 keyboard, Alt+Q, close and reopen with Alt+Q (${label})`, async ({ page }) => {
+    test(`keyboard, Alt+Q, close and reopen with Alt+Q (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'N',
         pickCustomer: 'keyboard',
         openBy: 'altQ',
-        reopen: true,
+        shouldReopen: true,
       });
     });
 
-    test(`TC12 keyboard partner, button, PI off (${label})`, async ({ page }) => {
+    test(`keyboard partner, button, PI off (${label})`, async ({ page }) => {
       await runQuickEntryCase(page, {
         language,
         packingInstructionsField: 'N',
@@ -315,21 +315,21 @@ testCases.forEach(({ language, label }) => {
       });
     });
 
-    test(`TC7 keyboard partner with two addresses and contacts, take what the header offers, Alt+Q (${label})`, async ({ page }) => {
-      const { recorder, masterdata, recordId, addressOpen } = await startMultiCustomerOrder(page, {
+    test(`keyboard partner with two addresses and contacts, take what the header offers, Alt+Q (${label})`, async ({ page }) => {
+      const { recorder, masterdata, recordId, isAddressOpen } = await startMultiCustomerOrder(page, {
         language,
         story: 'Quick entry opened with Alt+Q after a keyboard pick of a customer with two addresses and two contacts',
       });
       const windowId = SALES_ORDER_WINDOW_ID;
-      if (addressOpen) {
+      if (isAddressOpen) {
         await page.keyboard.press('Enter'); // takes the highlighted address
-        const contactOpen = await waitForOpenDropdown(page, 'AD_User_ID');
-        console.log(`[INFO] contact dropdown opened after the address Enter: ${contactOpen ? 'yes' : 'no'}`);
-        if (contactOpen) await page.keyboard.press('Enter');
+        const isContactOpen = await waitForOpenDropdown(page, 'AD_User_ID');
+        console.log(`[INFO] contact dropdown opened after the address Enter: ${isContactOpen ? 'yes' : 'no'}`);
+        if (isContactOpen) await page.keyboard.press('Enter');
       } else {
-        const contactOpen = await isDropdownOpen(page, 'AD_User_ID');
-        console.log(`[INFO] contact dropdown open without an address pick: ${contactOpen ? 'yes' : 'no'}`);
-        if (contactOpen) await page.keyboard.press('Enter');
+        const isContactOpen = await isDropdownOpen(page, 'AD_User_ID');
+        console.log(`[INFO] contact dropdown open without an address pick: ${isContactOpen ? 'yes' : 'no'}`);
+        if (isContactOpen) await page.keyboard.press('Enter');
       }
 
       const { productInput } = await openQuickEntryByAltQ(page);
@@ -346,21 +346,21 @@ testCases.forEach(({ language, label }) => {
       await expectRowsAndCompleted(windowId, recordId);
     });
 
-    test(`TC13 Alt+Q with the address dropdown open, the pick must not change (${label})`, async ({ page }) => {
-      const { recorder, masterdata, recordId, addressOpen } = await startMultiCustomerOrder(page, {
+    test(`Alt+Q with the address dropdown open, the pick must not change (${label})`, async ({ page }) => {
+      const { recorder, masterdata, recordId, isAddressOpen } = await startMultiCustomerOrder(page, {
         language,
         story: 'Alt+Q with the header address dropdown open keeps the address and the cursor in the quick entry',
       });
       const windowId = SALES_ORDER_WINDOW_ID;
-      await ensureAddressDropdownOpen(page, addressOpen);
+      await ensureAddressDropdownOpen(page, isAddressOpen);
       const before = await readHeaderAddressKey(windowId, recordId);
       const beforeCaption = (await getRecordData(windowId, recordId)).fieldsByName?.C_BPartner_Location_ID?.value?.caption;
-      expect(beforeCaption, `TC13 setup: header address before Alt+Q is not LOC1: ${beforeCaption}`).toContain('Bonn');
+      expect(beforeCaption, `setup: header address before Alt+Q is not LOC1: ${beforeCaption}`).toContain('Bonn');
       const highlighted = await page
         .locator('.input-dropdown-list .input-dropdown-list-option-key-on')
         .first()
         .innerText({ timeout: SLOW_ACTION_TIMEOUT });
-      expect(highlighted, `TC13 setup: highlighted option is not LOC1: ${highlighted}`).toContain('Bonn');
+      expect(highlighted, `setup: highlighted option is not LOC1: ${highlighted}`).toContain('Bonn');
 
       const { productInput } = await openQuickEntryByAltQ(page);
       await expectFocusOn(productInput, 'opened: cursor in Produkt');
@@ -374,17 +374,17 @@ testCases.forEach(({ language, label }) => {
       await expectRowsAndCompleted(windowId, recordId);
     });
 
-    test(`TC13 Tab after Alt+Q leaves the header, not swallowed (${label})`, async ({ page }) => {
-      const { addressOpen } = await startMultiCustomerOrder(page, {
+    test(`Tab after Alt+Q leaves the header, not swallowed (${label})`, async ({ page }) => {
+      const { isAddressOpen } = await startMultiCustomerOrder(page, {
         language,
         story: 'A Tab in the quick entry is not swallowed by a header dropdown left open',
       });
-      await ensureAddressDropdownOpen(page, addressOpen);
+      await ensureAddressDropdownOpen(page, isAddressOpen);
 
       const { productInput } = await openQuickEntryByAltQ(page);
       await expectFocusOn(productInput, 'opened: cursor in Produkt');
-      const open = await isDropdownOpen(page, 'C_BPartner_Location_ID');
-      console.log(`[INFO] address dropdown open at Tab: ${open ? 'yes' : 'no'}`);
+      const isAddressDropdownOpen = await isDropdownOpen(page, 'C_BPartner_Location_ID');
+      console.log(`[INFO] address dropdown open at Tab: ${isAddressDropdownOpen ? 'yes' : 'no'}`);
       await page.keyboard.press('Tab');
 
       const where = await page.evaluate(() => {
@@ -395,10 +395,10 @@ testCases.forEach(({ language, label }) => {
           inHeaderLookup: !!(lookup && !lookup.closest('form.quick-input-container')),
         };
       });
-      const stillProduct = await productInput.evaluate((el) => el === document.activeElement);
+      const isStillInProduct = await productInput.evaluate((el) => el === document.activeElement);
       const landed = await describeActiveElement(page);
       console.log(`[INFO] Tab landed on ${landed}`);
-      expect(stillProduct, `Tab after Alt+Q: ${landed}`).toBe(false);
+      expect(isStillInProduct, `Tab after Alt+Q: ${landed}`).toBe(false);
       expect(where.inContainer, `Tab after Alt+Q: ${landed}`).toBe(true);
       expect(where.inHeaderLookup, `Tab after Alt+Q: ${landed}`).toBe(false);
       await page.evaluate(() => document.activeElement.setAttribute('data-qikf-tab-landed', 'true'));
@@ -409,7 +409,7 @@ testCases.forEach(({ language, label }) => {
       { packingInstructionsField: 'N', piLabel: 'PI off' },
       { packingInstructionsField: 'Y', piLabel: 'PI on' },
     ].forEach(({ packingInstructionsField, piLabel }) => {
-      test(`TC10 mouse pick from several, Alt+Q, ${piLabel} (${label})`, async ({ page }) => {
+      test(`mouse pick from several, Alt+Q, ${piLabel} (${label})`, async ({ page }) => {
         await runQuickEntryCase(page, {
           language,
           packingInstructionsField,

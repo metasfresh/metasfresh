@@ -107,8 +107,9 @@ testCases.forEach(({ language, label }) => {
       // - the hold below: the cursor stays in the contact field for 500 ms, so a second late hop (the contact
       //   list re-taking the cursor on a re-render) would show here and not inside the pin that follows.
       // The race itself (a click during the walk steals the cursor) is an app defect that this pin does not
-      // cover; the nearest pins are in quick-input-keyboard-focus.spec.js (TC1/TC2/TC7: the cursor must survive
-      // the walk into the quick entry). No spec pins a list-field click during the walk: this is not covered.
+      // cover; the nearest pins are in quick-input-keyboard-focus.spec.js (the keyboard quick entry cases and the
+      // keyboard pick of a partner with two addresses: the cursor must survive the walk into the quick entry). No
+      // spec pins a list-field click during the walk: this is not covered.
       const recordId = await pickCustomerAndSettle(() =>
         pickCustomerByMouse({ searchText: bp.bpartnerCode, bpartnerCode: bp.bpartnerCode })
       );

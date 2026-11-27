@@ -429,11 +429,11 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
 });
 
 // ---------------------------------------------------------------------------
-// TC11: the same edit, with the customer typed and the batch entry driven by keyboard only
+// The same edit, with the customer typed and the batch entry driven by keyboard only
 // ---------------------------------------------------------------------------
 
 /**
- * TC11: the same Menge edit as above, but the whole order entry is keyboard only: the customer is typed
+ * The same Menge edit as above, but the whole order entry is keyboard only: the customer is typed
  * and picked with Enter (no mouse), Alt+Q opens the batch entry, and the empty Packvorschrift is left
  * with Enter (not Tab: Tab in the list field clears the stale flag and would hide the focus defect).
  * The cursor must stay in the batch entry after every step. Before the fix it fails at a focus check
@@ -445,7 +445,7 @@ test.describe('Sales order — keyboard-only order entry and Menge edit', () => 
     { language: 'de_DE', label: 'German' },
     { language: 'en_US', label: 'English' },
   ].forEach(({ language, label }) => {
-    test(`TC11 keyboard only: partner typed, Alt+Q, Enter on Packvorschrift, grid edit, Alt+U (${label})`, async ({
+    test(`keyboard only: partner typed, Alt+Q, Enter on Packvorschrift, grid edit, Alt+U (${label})`, async ({
       page,
     }) => {
       allure.epic('E0100: Sales');
@@ -468,7 +468,7 @@ test.describe('Sales order — keyboard-only order entry and Menge edit', () => 
       const recordId = await pickCustomerByKeyboard({
         bpartnerCode: masterdata.bpartners.CUSTOMER1.bpartnerCode,
       });
-      console.log(`[keyboard-only TC11] order ${recordId}`);
+      console.log(`[keyboard-only] order ${recordId}`);
 
       await test.step('Alt+Q, 3 lines with Menge 4 by keyboard only (Enter on Packvorschrift)', async () => {
         await page.keyboard.press('Alt+Q'); // TOGGLE_QUICK_INPUT
