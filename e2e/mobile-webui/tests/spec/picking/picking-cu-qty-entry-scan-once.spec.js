@@ -58,40 +58,32 @@ test('TU opened with "Next TU", label scanned, count 5 (needs two source TUs) bo
 test('Scan once field starts empty (not 0) with the zero-as-initial-value setting; a Manual line still shows 0', async ({ page }) => {
     allureMeta('Scan once count');
 
-    let sysconfigsBeforeTest = null;
-    try {
-        const masterdata = await createMasterdata({
-            formatName: uniqueFormatName(),
-            orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 12 }],
-            // line 1 (buyer A): profile mode Scan once; line 2 (buyer B): record with Manual
-            customers: [{ customer: 'custB', cuQtyEntryMode: MODE_MANUAL }],
-            sysconfigs: { 'mobileui.frontend.qtyInput.useZeroAsInitialValue': 'Y' },
-        });
-        sysconfigsBeforeTest = masterdata.previousSysconfigs;
-        await startJob(masterdata, { qtyToDeliver: 24 });
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),
+        orders: [{ key: 'A', qty: 12 }, { key: 'B', qty: 12 }],
+        // line 1 (buyer A): profile mode Scan once; line 2 (buyer B): record with Manual
+        customers: [{ customer: 'custB', cuQtyEntryMode: MODE_MANUAL }],
+        sysconfigs: { 'mobileui.frontend.qtyInput.useZeroAsInitialValue': 'Y' },
+    });
+    await startJob(masterdata, { qtyToDeliver: 24 });
 
-        await test.step('Scan once line: field empty after the label scan', async () => {
-            await openLine({ index: 1 });
-            await scanLabel(labelOf({ masterdata }));
-            await PickLineScanScreen.openTU();
-            await GetQuantityDialog.expectQtyEntered('');
-            await GetQuantityDialog.clickCancel();
-            await PickingJobScreen.waitForScreen();
-        });
+    await test.step('Scan once line: field empty after the label scan', async () => {
+        await openLine({ index: 1 });
+        await scanLabel(labelOf({ masterdata }));
+        await PickLineScanScreen.openTU();
+        await GetQuantityDialog.expectQtyEntered('');
+        await GetQuantityDialog.clickCancel();
+        await PickingJobScreen.waitForScreen();
+    });
 
-        await test.step('Manual line: field shows 0', async () => {
-            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
-            await PickingJobScreen.clickLineButton({ index: 2 });
-            await GetQuantityDialog.waitForDialog();
-            await GetQuantityDialog.expectQtyEntered(0);
-            await GetQuantityDialog.clickCancel();
-            await PickingJobScreen.waitForScreen();
-        });
-    } finally {
-        if (sysconfigsBeforeTest && Object.keys(sysconfigsBeforeTest).length > 0) {
-            await Backend.setSysconfigs(sysconfigsBeforeTest);
-        }
-    }
+    await test.step('Manual line: field shows 0', async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
+        await PickingJobScreen.clickLineButton({ index: 2 });
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyEntered(0);
+        await GetQuantityDialog.clickCancel();
+        await PickingJobScreen.waitForScreen();
+    });
 });
 
 // noinspection JSUnusedLocalSymbols

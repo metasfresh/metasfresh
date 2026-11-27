@@ -169,9 +169,13 @@ export const BarcodeScannerComponent = {
                     document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
                 }
                 const valueAfter = document.querySelector(selector)?.value;
-                // The reader shows a scan in progress either by writing the keys into the input or (without echoing them) by marking the panel.
+                // Where the reader shows a scan in progress depends on the branch line: it either writes the keys into the
+                // input, or (without echoing them) marks the visible panel with .scan-in-progress. An invisible scanner
+                // (offscreen input only, e.g. the "Next TU" button) shows neither: there the attached input is the only signal.
                 const echoedInInput = valueAfter !== valueBefore;
-                if (!echoedInInput && !document.querySelector('.hardware-mode-panel.scan-in-progress')) {
+                const panel = document.querySelector('.hardware-mode-panel');
+                const markedInProgress = !!panel?.classList.contains('scan-in-progress');
+                if (!echoedInInput && panel && !markedInProgress) {
                     return { sent: false }; // no listener saw the keys: nothing was collected
                 }
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
