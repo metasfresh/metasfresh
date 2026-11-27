@@ -195,6 +195,73 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" does not contain text "NL111111110B01"
     And the PDF archived for the record identified by "invoice" does not contain text "DE111111125"
 
+  @Id:S32533_TC3_CentralBilling
+  Scenario: central billing for two ship-to partners with VAT IDs on the partners only, domestic: one invoice without stored buyer VAT ID, printed with the bill partner's VAT ID as before
+    Given metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode |
+      | location_headOffice      | DE          |
+      | location_branch1         | DE          |
+      | location_branch2         | DE          |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | M_PricingSystem_ID.Identifier | IsCustomer | InvoiceRule | VATaxID     | SO_Invoice_Aggregation_ID.Identifier | SO_InvoiceLine_Aggregation_ID.Identifier |
+      | headOffice | ps_1                          | Y          | D           | DE222222220 | aggHeader                            | aggLinePerIC                             |
+      | branch1    | ps_1                          | Y          | D           | DE333333339 | aggHeader                            | aggLinePerIC                             |
+      | branch2    | ps_1                          | Y          | D           | DE444444443 | aggHeader                            | aggLinePerIC                             |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier    | GLN           | C_BPartner_ID.Identifier | IsShipTo | IsShipToDefault | IsBillTo | IsBillToDefault | OPT.C_Location_ID.Identifier |
+      | headOffice_DE | 0123456789208 | headOffice               | Y        | Y               | Y        | Y               | location_headOffice          |
+      | branch1_DE    | 0123456789209 | branch1                  | Y        | Y               | Y        | Y               | location_branch1             |
+      | branch2_DE    | 0123456789210 | branch2                  | Y        | Y               | Y        | Y               | location_branch2             |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order1     | true    | branch1                  | 2026-09-02  | branch1_DE                            | headOffice_DE                   | wh_DE                         | F            |
+      | order2     | true    | branch2                  | 2026-09-02  | branch2_DE                            | headOffice_DE                   | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine1 | order1                | product                 | 10         |
+      | orderLine2 | order2                | product                 | 5          |
+    And the order identified by order1 is completed
+    And the order identified by order2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule1 | orderLine1                | N             |
+      | shipmentSchedule2 | orderLine2                | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment1             | shipmentSchedule1                | D                 | Y                  |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment2             | shipmentSchedule2                | D                 | Y                  |
+    And validate the created shipments
+      | M_InOut_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | DocStatus |
+      | shipment1             | branch1_DE                        | true      | CO        |
+      | shipment2             | branch2_DE                        | true      | CO        |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate1                 | orderLine1                | 10           |
+      | invoiceCandidate2                 | orderLine2                | 5            |
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier      |
+      | invoiceCandidate1, invoiceCandidate2   |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCandidate1                 | invoice                 |
+    And validate created invoices
+      | Identifier | C_BPartner_Location_ID | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | headOffice_DE          |              |               |                            |
+    And validate invoice lines for invoice:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceLine1                | product                 | 10          | taxDEDE19 |
+      | invoiceLine2                | product                 | 5           | taxDEDE19 |
+
+    # no stored buyer VAT ID: the print falls back to the bill partner's VAT ID, as for invoices created before the VAT IDs were stored
+    When The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    Then the PDF archived for the record identified by "invoice" contains text "DE222222220"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE333333339"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE444444443"
+
   @Id:S32533_TC17_Print
   Scenario: own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID
     Given metasfresh has date and time 2026-05-12T10:00:00+02:00[Europe/Berlin]

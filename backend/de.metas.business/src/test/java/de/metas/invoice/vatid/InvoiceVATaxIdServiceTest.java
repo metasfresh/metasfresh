@@ -150,6 +150,49 @@ public class InvoiceVATaxIdServiceTest
 		assertThat(result).isEqualTo(new InvoiceVATaxIds(null, null, null));
 	}
 
+	/**
+	 * A delivery partner with only a header VAT ID and no fiscal representation: nothing by delivery applies,
+	 * so the invoice is grouped, stored and printed as without per-address VAT IDs (the bill partner's VAT ID is shown).
+	 */
+	@Test
+	public void byAddressOrFiscalRepresentation_partnerHeaderVATOnly_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, null);
+
+		assertThat(service.resolve(taxLocation(location), createTax(false))).isEqualTo(new InvoiceVATaxIds("DE123456788", null, null));
+		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.hasOwnVATaxId(location)).isFalse();
+	}
+
+	@Test
+	public void byAddressOrFiscalRepresentation_ownLocationVAT_resolved()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), nl, "NL333333330B01");
+
+		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false)))
+				.isEqualTo(new InvoiceVATaxIds("NL333333330B01", null, null));
+		assertThat(service.hasOwnVATaxId(location)).isTrue();
+	}
+
+	@Test
+	public void byAddressOrFiscalRepresentation_fiscalRepresentation_resolvedWithPartnerHeaderVAT()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
+		final I_C_Fiscal_Representation row = createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(true)))
+				.isEqualTo(new InvoiceVATaxIds("EL111111111", "EL094259216", FiscalRepresentationId.ofRepoId(row.getC_Fiscal_Representation_ID())));
+	}
+
+	@Test
+	public void byAddressOrFiscalRepresentation_registrationButLineTaxNotFiscalRep_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("EL111111111"), gr, null);
+		createFiscalRepresentation(gr, "EL094259216", null);
+
+		assertThat(service.resolveIfByAddressOrFiscalRepresentation(taxLocation(location), createTax(false))).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
 	private TaxLocation taxLocation(final BPartnerLocationId location)
 	{
 		return new TaxLocation(location, ORG, TAX_DATE, de);
@@ -178,8 +221,11 @@ public class InvoiceVATaxIdServiceTest
 
 	private static BPartnerLocationId createLocation(final CountryId countryId, @Nullable final String locationVATaxId)
 	{
-		final I_C_BPartner bpartner = createBPartner(null);
+		return createLocation(createBPartner(null), countryId, locationVATaxId);
+	}
 
+	private static BPartnerLocationId createLocation(final I_C_BPartner bpartner, final CountryId countryId, @Nullable final String locationVATaxId)
+	{
 		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 		location.setC_Country_ID(countryId.getRepoId());
 		saveRecord(location);

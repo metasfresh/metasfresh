@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
@@ -55,6 +56,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -63,6 +65,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * The seller VAT ID that goes onto the invoice header and the seller part of the header aggregation key come from the same resolution.
@@ -137,6 +140,49 @@ public class AggregationEngineVATaxIdsTest extends AbstractAggregationEngineTest
 		final List<String> headerAggregationKeys = engine.getHeaderAggregationKeyStrings();
 		assertThat(headerAggregationKeys).hasSize(1);
 		assertThat(headerAggregationKeys.get(0)).contains("SellerVAT=" + REGISTRATION_VAT_ID);
+	}
+
+	/**
+	 * Central billing: candidates of one bill partner whose lines do not use VAT IDs by delivery (no per-address VAT ID, no fiscal representation)
+	 * get no VAT ID part in their key, so they are grouped as without this feature; a candidate whose line does use one goes on an invoice of its own.
+	 */
+	@Test
+	public void noVATaxIdsByDelivery_noKeyPart_groupedAsBefore()
+	{
+		final I_C_BPartner billPartner = createBPartner();
+		final I_C_BPartner_Location billing = BusinessTestHelper.createBPartnerLocation(billPartner);
+		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoId(billPartner.getC_BPartner_ID(), billing.getC_BPartner_Location_ID());
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate().setBillBPartnerAndLocationId(billLocationId).setPriceEntered(1).setQtyOrdered(10).setSOTrx(true).build();
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate().setBillBPartnerAndLocationId(billLocationId).setPriceEntered(1).setQtyOrdered(10).setSOTrx(true).build();
+		final I_C_Invoice_Candidate icByAddress = createInvoiceCandidate().setBillBPartnerAndLocationId(billLocationId).setPriceEntered(1).setQtyOrdered(10).setSOTrx(true).build();
+		updateInvalidCandidates();
+
+		final InvoiceCandidateVATaxIdResolver resolver = Mockito.mock(InvoiceCandidateVATaxIdResolver.class);
+		Mockito.when(resolver.resolve(any(), any(), any()))
+				.thenAnswer(invocation -> invocation.<I_C_Invoice_Candidate>getArgument(0).getC_Invoice_Candidate_ID() == icByAddress.getC_Invoice_Candidate_ID()
+						? new InvoiceVATaxIds("NL333333330B01", null, null)
+						: InvoiceVATaxIds.NONE);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.vatTaxIdResolver(resolver)
+				.build();
+		for (final I_C_Invoice_Candidate ic : ImmutableList.of(ic1, ic2, icByAddress))
+		{
+			InterfaceWrapperHelper.refresh(ic);
+			engine.addInvoiceCandidate(ic);
+		}
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+
+		assertThat(invoices).hasSize(2);
+		assertThat(engine.getHeaderAggregationKeyStrings())
+				.filteredOn(key -> !key.contains("BuyerVAT="))
+				.hasSize(1)
+				.allSatisfy(key -> assertThat(key).doesNotContain("SellerVAT=").doesNotContain("FiscalRep="));
+		assertThat(engine.getHeaderAggregationKeyStrings())
+				.filteredOn(key -> key.contains("BuyerVAT=NL333333330B01"))
+				.hasSize(1);
+		assertThat(invoices).extracting(IInvoiceHeader::getInvoiceVATaxIds)
+				.containsExactlyInAnyOrder(InvoiceVATaxIds.NONE, new InvoiceVATaxIds("NL333333330B01", null, null));
 	}
 
 	private void createEUArea()

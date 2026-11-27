@@ -32,16 +32,20 @@ import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The VAT IDs of the invoice line that an invoice candidate (and one of its shipment lines) becomes:
- * the candidate's tax location and the tax its invoice line will get, resolved by {@link InvoiceVATaxIdService}.
+ * the candidate's tax location and the tax its invoice line will get, resolved by {@link InvoiceVATaxIdService}
+ * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByAddressOrFiscalRepresentation}).
  */
 @Component
 @RequiredArgsConstructor
@@ -62,10 +66,14 @@ public class InvoiceCandidateVATaxIdResolver
 
 	/**
 	 * @param shipmentLine the shipment line the invoice line is created for, if any
-	 * @return the resolved VAT IDs; {@code null} for a purchase candidate, whose invoice does not store any
+	 * @param cache        resolutions of the current invoicing run, see {@link #newCache()}
+	 * @return the resolved VAT IDs ({@link InvoiceVATaxIds#NONE} if the line does not use VAT IDs by delivery); {@code null} for a purchase candidate, whose invoice does not store any
 	 */
 	@Nullable
-	public InvoiceVATaxIds resolve(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOutLine shipmentLine)
+	public InvoiceVATaxIds resolve(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@Nullable final I_M_InOutLine shipmentLine,
+			@NonNull final Cache cache)
 	{
 		if (!ic.isSOTrx())
 		{
@@ -74,6 +82,34 @@ public class InvoiceCandidateVATaxIdResolver
 
 		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(ic, shipmentLine);
 		final TaxId lineTax = lineTaxResolver.getLineTax(ic, shipmentLine);
-		return invoiceVATaxIdService.resolve(taxLocation, lineTax);
+		return cache.resolved.computeIfAbsent(
+				new TaxLocationAndTax(taxLocation, lineTax),
+				key -> invoiceVATaxIdService.resolveIfByAddressOrFiscalRepresentation(key.getTaxLocation(), key.getTaxId()));
+	}
+
+	/**
+	 * @return a cache for one invoicing run: candidates with the same tax location and line tax are resolved once
+	 */
+	@NonNull
+	public Cache newCache()
+	{
+		return new Cache();
+	}
+
+	/**
+	 * The resolutions of one invoicing run. Not shared between runs, so master data changed meanwhile is seen by the next run.
+	 */
+	public static final class Cache
+	{
+		private final Map<TaxLocationAndTax, InvoiceVATaxIds> resolved = new HashMap<>();
+
+		private Cache() {}
+	}
+
+	@Value
+	private static class TaxLocationAndTax
+	{
+		@NonNull TaxLocation taxLocation;
+		@NonNull TaxId taxId;
 	}
 }

@@ -35,7 +35,17 @@ import javax.annotation.Nullable;
 @Value
 public class InvoiceVATaxIds
 {
+	/**
+	 * No values: the invoice's outputs show the bill partner's and the organization's main VAT ID.
+	 */
+	public static final InvoiceVATaxIds NONE = new InvoiceVATaxIds(null, null, null);
+
 	@Nullable String buyerVATaxId;
 	@Nullable String sellerVATaxId;
 	@Nullable FiscalRepresentationId fiscalRepresentationId;
+
+	public boolean isNone()
+	{
+		return buyerVATaxId == null && sellerVATaxId == null && fiscalRepresentationId == null;
+	}
 }

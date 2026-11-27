@@ -24,17 +24,18 @@ package de.metas.invoice.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.location.CountryId;
 import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VATIdentifier;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Fiscal_Representation;
@@ -48,20 +49,41 @@ import java.util.Optional;
  * Resolves the buyer and seller VAT IDs of an invoice from the {@link TaxLocation} of its lines.
  */
 @Service
-@RequiredArgsConstructor
 public class InvoiceVATaxIdService
 {
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
-	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 
 	@VisibleForTesting
 	public static InvoiceVATaxIdService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(InvoiceVATaxIdService.class, () -> new InvoiceVATaxIdService(BPartnerAddressEffectiveBL.newInstanceForUnitTesting()));
+		return SpringContextHolder.getBeanOrSupply(InvoiceVATaxIdService.class, InvoiceVATaxIdService::new);
+	}
+
+	/**
+	 * Like {@link #resolve(TaxLocation, TaxId)}, but only if the line uses VAT IDs by delivery: its location has a VAT ID of its own, or a fiscal representation applies.
+	 * Otherwise {@link InvoiceVATaxIds#NONE}: the invoice is grouped and stores no values, so its outputs show the bill partner's VAT ID, as without per-address VAT IDs.
+	 */
+	@NonNull
+	public InvoiceVATaxIds resolveIfByAddressOrFiscalRepresentation(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
+	{
+		final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, lineTax);
+		if (vatTaxIds.getFiscalRepresentationId() != null || hasOwnVATaxId(taxLocation.getBpartnerLocationId()))
+		{
+			return vatTaxIds;
+		}
+		return InvoiceVATaxIds.NONE;
+	}
+
+	/**
+	 * @return {@code true} if the given location has a VAT ID of its own (not only its partner's)
+	 */
+	public boolean hasOwnVATaxId(@NonNull final BPartnerLocationId locationId)
+	{
+		return Check.isNotBlank(bpartnerDAO.getBPartnerLocationByIdEvenInactive(locationId).getVATaxID());
 	}
 
 	/**
@@ -71,7 +93,7 @@ public class InvoiceVATaxIdService
 	@NonNull
 	public InvoiceVATaxIds resolve(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
 	{
-		final String buyerVATaxId = VATIdentifier.toString(bpartnerAddressEffectiveBL.getDeliveryEffective(null, taxLocation.getBpartnerLocationId()).getVatTaxId());
+		final String buyerVATaxId = VATIdentifier.toString(bpartnerBL.getVATTaxId(taxLocation.getBpartnerLocationId()).orElse(null));
 
 		if (!Boolean.TRUE.equals(taxDAO.getTaxById(lineTax).getIsFiscalRepresentation()))
 		{

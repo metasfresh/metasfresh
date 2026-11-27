@@ -43,9 +43,9 @@ public class NoVATaxIdsResolver
 	public static void register()
 	{
 		final InvoiceCandidateVATaxIdResolver resolver = Mockito.mock(InvoiceCandidateVATaxIdResolver.class);
-		Mockito.when(resolver.resolve(any(), any()))
+		Mockito.when(resolver.resolve(any(), any(), any()))
 				.thenAnswer(invocation -> invocation.<I_C_Invoice_Candidate>getArgument(0).isSOTrx()
-						? new InvoiceVATaxIds(null, null, null)
+						? InvoiceVATaxIds.NONE
 						: null);
 		SpringContextHolder.registerJUnitBean(InvoiceCandidateVATaxIdResolver.class, resolver);
 	}

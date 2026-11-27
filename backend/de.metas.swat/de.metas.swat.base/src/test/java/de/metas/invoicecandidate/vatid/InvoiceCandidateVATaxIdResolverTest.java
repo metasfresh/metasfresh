@@ -55,6 +55,6 @@ class InvoiceCandidateVATaxIdResolverTest
 		ic.setIsSOTrx(false);
 		save(ic);
 
-		assertThat(resolver.resolve(ic, null)).isNull();
+		assertThat(resolver.resolve(ic, null, resolver.newCache())).isNull();
 	}
 }

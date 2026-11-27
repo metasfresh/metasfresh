@@ -175,7 +175,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEDE19 |
 
   @Id:S32533_TC3
-  Scenario: delivery address without VAT ID: the invoice stores the partner's VAT ID
+  Scenario: delivery address without VAT ID: no buyer VAT ID is stored, so the invoice shows the partner's VAT ID as before
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_DE_noVAT                     | customer_billing                | wh_DE                         | F            |
@@ -198,9 +198,11 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate                  | invoice                 |
+    # the delivery address has no VAT ID of its own and there is no fiscal representation: the invoice is grouped and stores
+    # no values as without per-address VAT IDs; its outputs fall back to the partner's VAT ID (see the central billing print scenario)
     And validate created invoices
       | Identifier | BuyerVATaxID |
-      | invoice    | DE123456788  |
+      | invoice    |              |
 
   @Id:S32533_TC3b
   Scenario: partner VAT ID ignored by sys config and delivery address without VAT ID: no buyer VAT ID is stored

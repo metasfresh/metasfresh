@@ -155,6 +155,7 @@ public final class AggregationEngine
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
 	private final InvoiceCandidateVATaxIdResolver vatTaxIdResolver;
+	private final InvoiceCandidateVATaxIdResolver.Cache vatTaxIdResolverCache;
 	private final boolean deliveryDateAsInvoiceDate;
 	@Nullable private final Boolean partialInvoice;
 
@@ -217,6 +218,7 @@ public final class AggregationEngine
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
 		this.vatTaxIdResolver = coalesceSuppliersNotNull(() -> vatTaxIdResolver, () -> SpringContextHolder.instance.getBean(InvoiceCandidateVATaxIdResolver.class));
+		this.vatTaxIdResolverCache = this.vatTaxIdResolver.newCache();
 		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
 		this.partialInvoice = partialInvoice;
 	}
@@ -463,7 +465,7 @@ public final class AggregationEngine
 	{
 		try
 		{
-			return vatTaxIdResolver.resolve(icRecord, inOutLine);
+			return vatTaxIdResolver.resolve(icRecord, inOutLine, vatTaxIdResolverCache);
 		}
 		catch (final RuntimeException rte)
 		{
@@ -475,11 +477,12 @@ public final class AggregationEngine
 
 	/**
 	 * One invoice per buyer VAT ID and per seller VAT ID (with the fiscal representation it comes from), so the values stored on the invoice hold for all its lines.
+	 * Candidates that do not use VAT IDs by delivery ({@link InvoiceVATaxIds#isNone()}) keep their key as it is, so they are grouped as without this feature.
 	 */
 	@NonNull
 	private static AggregationKey appendVATaxIds(@NonNull final AggregationKey headerAggregationKey, @Nullable final InvoiceVATaxIds invoiceVATaxIds)
 	{
-		if (invoiceVATaxIds == null)
+		if (invoiceVATaxIds == null || invoiceVATaxIds.isNone())
 		{
 			return headerAggregationKey;
 		}

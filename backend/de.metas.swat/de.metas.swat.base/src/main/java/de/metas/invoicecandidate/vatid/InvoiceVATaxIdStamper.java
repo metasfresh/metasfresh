@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -54,7 +53,6 @@ import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
@@ -103,8 +101,7 @@ public class InvoiceVATaxIdStamper
 	private static final AdMessageKey MSG_MixedVATaxIds = AdMessageKey.of("C_Invoice_MixedVATaxIds");
 	private static final AdMessageKey MSG_ExemptLineVATaxIdMismatch = AdMessageKey.of("C_Invoice_ExemptLineVATaxIdMismatch");
 	private static final String NO_VALUE = "-";
-	private static final InvoiceVATaxIds NO_VATAXIDS = new InvoiceVATaxIds(null, null, null);
-
+	
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
@@ -112,7 +109,6 @@ public class InvoiceVATaxIdStamper
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
 
@@ -306,7 +302,7 @@ public class InvoiceVATaxIdStamper
 
 		if (!isAnyLineByAddressOrFiscalRepresentation)
 		{
-			setVATaxIds(invoice, NO_VATAXIDS);
+			setVATaxIds(invoice, InvoiceVATaxIds.NONE);
 			return;
 		}
 
@@ -412,7 +408,7 @@ public class InvoiceVATaxIdStamper
 			final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			final boolean byAddressOrFiscalRepresentation = vatTaxIds.getFiscalRepresentationId() != null
-					|| locationsWithVATaxId.computeIfAbsent(taxLocation.getBpartnerLocationId(), this::hasOwnVATaxId);
+					|| locationsWithVATaxId.computeIfAbsent(taxLocation.getBpartnerLocationId(), invoiceVATaxIdService::hasOwnVATaxId);
 
 			return new ResolvedLine(vatTaxIds, byAddressOrFiscalRepresentation);
 		}
@@ -484,11 +480,6 @@ public class InvoiceVATaxIdStamper
 				return toTaxLocation(reTaxInput);
 			}
 			return null;
-		}
-
-		private boolean hasOwnVATaxId(@NonNull final BPartnerLocationId locationId)
-		{
-			return Check.isNotBlank(bpartnerDAO.getBPartnerLocationByIdEvenInactive(locationId).getVATaxID());
 		}
 	}
 }
