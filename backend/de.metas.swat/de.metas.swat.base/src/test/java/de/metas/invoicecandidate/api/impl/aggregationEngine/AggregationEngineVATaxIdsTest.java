@@ -33,6 +33,7 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateLineTaxResolver;
 import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.MoneyService;
@@ -128,7 +129,7 @@ public class AggregationEngineVATaxIdsTest extends AbstractAggregationEngineTest
 
 		// the real resolver instead of the fixture's "no VAT IDs" one
 		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
-				.vatTaxIdResolver(new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting()))
+				.vatTaxIdResolver(new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting(), new InvoiceCandidateLineTaxResolver()))
 				.build();
 		engine.addInvoiceCandidate(ic);
 		final List<IInvoiceHeader> invoices = engine.aggregate();

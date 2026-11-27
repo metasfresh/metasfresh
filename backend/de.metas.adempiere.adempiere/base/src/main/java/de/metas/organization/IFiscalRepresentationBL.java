@@ -42,4 +42,12 @@ public interface IFiscalRepresentationBL extends ISingletonService
 	 * if several overlap, the one with the latest {@code ValidFrom}, then the highest ID.
 	 */
 	Optional<I_C_Fiscal_Representation> getFiscalRepresentation(@NonNull CountryId countryId, @NonNull OrgId orgId, @NonNull Timestamp date);
+
+	/**
+	 * @return true if the given org has any active registration, in whatever country and validity period
+	 */
+	boolean hasAnyActiveFiscalRepresentation(@NonNull OrgId orgId);
+
+	@NonNull
+	I_C_Fiscal_Representation getById(@NonNull FiscalRepresentationId fiscalRepresentationId);
 }

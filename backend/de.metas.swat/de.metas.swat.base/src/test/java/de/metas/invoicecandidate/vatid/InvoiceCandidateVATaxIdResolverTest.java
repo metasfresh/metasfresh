@@ -22,13 +22,26 @@
 
 package de.metas.invoicecandidate.vatid;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.invoice.vatid.InvoiceVATaxIdService;
+import de.metas.invoice.vatid.InvoiceVATaxIds;
+import de.metas.invoice.vatid.TaxLocation;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -56,5 +69,73 @@ class InvoiceCandidateVATaxIdResolverTest
 		save(ic);
 
 		assertThat(resolver.resolve(ic, null, resolver.newCache())).isNull();
+	}
+
+	/**
+	 * A customer who cannot use VAT IDs by delivery (no fiscal representation of the org, no partner location with a VAT ID of its own)
+	 * pays nothing per candidate: neither the candidate's tax location nor the tax of its line is looked up.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationVATaxId_noLocationOrTaxLookup()
+	{
+		final InvoiceCandidateVATaxIdResolver resolverWithFailingLookups = newResolverWithFailingLookups(null);
+
+		// a sales candidate without tax, location or handler: any tax or location lookup would fail on it
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setIsSOTrx(true);
+		save(ic);
+
+		assertThat(resolverWithFailingLookups.resolve(ic, null, resolverWithFailingLookups.newCache())).isEqualTo(InvoiceVATaxIds.NONE);
+	}
+
+	/**
+	 * Without a fiscal representation of the org no line tax can give a seller VAT ID: the buyer VAT ID of the delivery address is resolved without looking up the line's tax.
+	 */
+	@Test
+	void noFiscalRepresentation_locationVATaxId_buyerOnlyWithoutTaxLookup()
+	{
+		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setVATaxID("DE123456788");
+		save(customer);
+		final I_C_BPartner_Location delivery = newInstance(I_C_BPartner_Location.class);
+		delivery.setC_BPartner_ID(customer.getC_BPartner_ID());
+		delivery.setVATaxID("NL123456782B01");
+		save(delivery);
+		final BPartnerLocationId deliveryId = BPartnerLocationId.ofRepoId(customer.getC_BPartner_ID(), delivery.getC_BPartner_Location_ID());
+
+		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
+		ic.setIsSOTrx(true);
+		ic.setBill_BPartner_ID(customer.getC_BPartner_ID());
+		save(ic);
+
+		final TaxLocation taxLocation = new TaxLocation(deliveryId, OrgId.ofRepoId(ic.getAD_Org_ID()), TimeUtil.parseTimestamp("2026-09-02"), null);
+		final InvoiceCandidateVATaxIdResolver resolverWithFailingTaxLookup = newResolverWithFailingLookups(taxLocation);
+
+		final InvoiceVATaxIds vatTaxIds = resolverWithFailingTaxLookup.resolve(ic, null, resolverWithFailingTaxLookup.newCache());
+		assertThat(vatTaxIds).isEqualTo(new InvoiceVATaxIds("NL123456782B01", null, null));
+	}
+
+	/**
+	 * @param taxLocation the tax location the candidate handlers report; {@code null}: looking it up fails the test. Looking up the line's tax always fails the test.
+	 */
+	private static InvoiceCandidateVATaxIdResolver newResolverWithFailingLookups(@Nullable final TaxLocation taxLocation)
+	{
+		final IInvoiceCandidateHandlerBL handlerBL = Mockito.mock(
+				IInvoiceCandidateHandlerBL.class,
+				invocation -> {
+					if (taxLocation != null && "getTaxLocation".equals(invocation.getMethod().getName()))
+					{
+						return taxLocation;
+					}
+					throw new AssertionError("the candidate's tax location must not be looked up: " + invocation);
+				});
+		Services.registerService(IInvoiceCandidateHandlerBL.class, handlerBL);
+
+		final InvoiceCandidateLineTaxResolver lineTaxResolver = Mockito.mock(
+				InvoiceCandidateLineTaxResolver.class,
+				invocation -> {
+					throw new AssertionError("the line's tax must not be looked up: " + invocation);
+				});
+		return new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting(), lineTaxResolver);
 	}
 }

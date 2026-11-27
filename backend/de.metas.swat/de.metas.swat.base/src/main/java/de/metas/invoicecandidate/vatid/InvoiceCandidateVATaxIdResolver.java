@@ -24,11 +24,14 @@ package de.metas.invoicecandidate.vatid;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoice.vatid.InvoiceVATaxIdService;
 import de.metas.invoice.vatid.InvoiceVATaxIds;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.IFiscalRepresentationBL;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,14 +50,21 @@ import java.util.Map;
  * The VAT IDs of the invoice line that an invoice candidate (and one of its shipment lines) becomes:
  * the candidate's tax location and the tax its invoice line will get, resolved by {@link InvoiceVATaxIdService}
  * only if the line uses VAT IDs by delivery (see {@link InvoiceVATaxIdService#resolveIfByDelivery}).
+ * <p>
+ * Invoicing runs of customers who cannot use VAT IDs by delivery pay for none of this: if the candidate's org has no active fiscal representation
+ * and no partner location has a VAT ID of its own, the result is {@link InvoiceVATaxIds#NONE} without looking at the candidate's location or tax.
+ * If only the fiscal representation is missing, the line's tax cannot give a seller VAT ID, so it is not looked up.
+ * Both facts are looked up once per invoicing run ({@link Cache}).
  */
 @Component
 @RequiredArgsConstructor
 public class InvoiceCandidateVATaxIdResolver
 {
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	@NonNull private final InvoiceCandidateLineTaxResolver lineTaxResolver = new InvoiceCandidateLineTaxResolver();
+	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
+	@NonNull private final InvoiceCandidateLineTaxResolver lineTaxResolver;
 
 	@VisibleForTesting
 	public static InvoiceCandidateVATaxIdResolver newInstanceForUnitTesting()
@@ -62,7 +72,7 @@ public class InvoiceCandidateVATaxIdResolver
 		Adempiere.assertUnitTestMode();
 		return SpringContextHolder.getBeanOrSupply(
 				InvoiceCandidateVATaxIdResolver.class,
-				() -> new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting()));
+				() -> new InvoiceCandidateVATaxIdResolver(InvoiceVATaxIdService.newInstanceForUnitTesting(), new InvoiceCandidateLineTaxResolver()));
 	}
 
 	/**
@@ -81,12 +91,38 @@ public class InvoiceCandidateVATaxIdResolver
 			return null;
 		}
 
+		if (!hasFiscalRepresentation(OrgId.ofRepoId(ic.getAD_Org_ID()), cache) && !isAnyLocationWithVATaxId(cache))
+		{
+			return InvoiceVATaxIds.NONE;
+		}
+
 		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(ic, shipmentLine);
-		final TaxId lineTax = lineTaxResolver.getLineTax(ic, shipmentLine);
 		final BPartnerId billPartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
+		if (!hasFiscalRepresentation(taxLocation.getOrgId(), cache))
+		{
+			return cache.resolved.computeIfAbsent(
+					new ResolveKey(taxLocation, null, billPartnerId),
+					key -> invoiceVATaxIdService.resolveBuyerIfByDelivery(key.getTaxLocation(), key.getBillPartnerId()));
+		}
+
+		final TaxId lineTax = lineTaxResolver.getLineTax(ic, shipmentLine);
 		return cache.resolved.computeIfAbsent(
 				new ResolveKey(taxLocation, lineTax, billPartnerId),
-				key -> invoiceVATaxIdService.resolveIfByDelivery(key.getTaxLocation(), key.getTaxId(), key.getBillPartnerId()));
+				key -> invoiceVATaxIdService.resolveIfByDelivery(key.getTaxLocation(), lineTax, key.getBillPartnerId()));
+	}
+
+	private boolean hasFiscalRepresentation(@NonNull final OrgId orgId, @NonNull final Cache cache)
+	{
+		return cache.orgsWithFiscalRepresentation.computeIfAbsent(orgId, fiscalRepresentationBL::hasAnyActiveFiscalRepresentation);
+	}
+
+	private boolean isAnyLocationWithVATaxId(@NonNull final Cache cache)
+	{
+		if (cache.anyLocationWithVATaxId == null)
+		{
+			cache.anyLocationWithVATaxId = bpartnerDAO.isAnyLocationWithVATaxId();
+		}
+		return cache.anyLocationWithVATaxId;
 	}
 
 	/**
@@ -104,15 +140,20 @@ public class InvoiceCandidateVATaxIdResolver
 	public static final class Cache
 	{
 		private final Map<ResolveKey, InvoiceVATaxIds> resolved = new HashMap<>();
+		private final Map<OrgId, Boolean> orgsWithFiscalRepresentation = new HashMap<>();
+		@Nullable private Boolean anyLocationWithVATaxId;
 
 		private Cache() {}
 	}
 
+	/**
+	 * {@code taxId} is {@code null} for a buyer-only resolution (org without fiscal representation)
+	 */
 	@Value
 	private static class ResolveKey
 	{
 		@NonNull TaxLocation taxLocation;
-		@NonNull TaxId taxId;
+		@Nullable TaxId taxId;
 		@NonNull BPartnerId billPartnerId;
 	}
 }

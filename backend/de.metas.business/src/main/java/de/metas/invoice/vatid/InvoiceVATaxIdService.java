@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
 import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.tax.api.ITaxDAO;
@@ -56,6 +57,7 @@ public class InvoiceVATaxIdService
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@VisibleForTesting
 	public static InvoiceVATaxIdService newInstanceForUnitTesting()
@@ -72,7 +74,21 @@ public class InvoiceVATaxIdService
 	@NonNull
 	public InvoiceVATaxIds resolveIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax, @NonNull final BPartnerId billPartnerId)
 	{
-		final InvoiceVATaxIds vatTaxIds = resolve(taxLocation, lineTax);
+		return ifByDelivery(resolve(taxLocation, lineTax), taxLocation, billPartnerId);
+	}
+
+	/**
+	 * Like {@link #resolveIfByDelivery}, for an org without any fiscal representation: no line tax can give a seller VAT ID, so only the buyer VAT ID is resolved and the line tax is not needed.
+	 */
+	@NonNull
+	public InvoiceVATaxIds resolveBuyerIfByDelivery(@NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	{
+		return ifByDelivery(new InvoiceVATaxIds(getBuyerVATaxId(taxLocation), null, null), taxLocation, billPartnerId);
+	}
+
+	@NonNull
+	private InvoiceVATaxIds ifByDelivery(@NonNull final InvoiceVATaxIds vatTaxIds, @NonNull final TaxLocation taxLocation, @NonNull final BPartnerId billPartnerId)
+	{
 		if (vatTaxIds.getFiscalRepresentationId() != null)
 		{
 			return vatTaxIds;
@@ -106,14 +122,17 @@ public class InvoiceVATaxIdService
 	@NonNull
 	public InvoiceVATaxIds resolve(@NonNull final TaxLocation taxLocation, @NonNull final TaxId lineTax)
 	{
-		final String buyerVATaxId = VATIdentifier.toString(bpartnerBL.getVATTaxId(taxLocation.getBpartnerLocationId()).orElse(null));
+		final String buyerVATaxId = getBuyerVATaxId(taxLocation);
 
 		if (!Boolean.TRUE.equals(taxDAO.getTaxById(lineTax).getIsFiscalRepresentation()))
 		{
 			return new InvoiceVATaxIds(buyerVATaxId, null, null);
 		}
 
-		final CountryId destCountryId = bpartnerDAO.getCountryId(taxLocation.getBpartnerLocationId());
+		// the captured address the line's tax used, like TaxDAO; else the location's current address
+		final CountryId destCountryId = taxLocation.getLocationCaptureId() != null
+				? locationDAO.getCountryIdByLocationId(taxLocation.getLocationCaptureId())
+				: bpartnerDAO.getCountryId(taxLocation.getBpartnerLocationId());
 		final Optional<I_C_Fiscal_Representation> registration = fiscalRepresentationBL.getFiscalRepresentation(destCountryId, taxLocation.getOrgId(), TimeUtil.asTimestampNotNull(taxLocation.getTaxDate()));
 		if (!registration.isPresent())
 		{
@@ -124,6 +143,12 @@ public class InvoiceVATaxIdService
 				buyerVATaxId,
 				getSellerVATaxId(registration.get()),
 				FiscalRepresentationId.ofRepoId(registration.get().getC_Fiscal_Representation_ID()));
+	}
+
+	@Nullable
+	private String getBuyerVATaxId(@NonNull final TaxLocation taxLocation)
+	{
+		return VATIdentifier.toString(bpartnerBL.getVATTaxId(taxLocation.getBpartnerLocationId()).orElse(null));
 	}
 
 	/**

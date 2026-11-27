@@ -25,6 +25,7 @@ package de.metas.organization.impl;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
+import de.metas.organization.FiscalRepresentationId;
 import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -32,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Fiscal_Representation;
 import org.springframework.stereotype.Service;
 
@@ -98,5 +100,22 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 				.orderByDescending(I_C_Fiscal_Representation.COLUMNNAME_C_Fiscal_Representation_ID)
 				.create()
 				.firstOptional(I_C_Fiscal_Representation.class);
+	}
+
+	@Override
+	public boolean hasAnyActiveFiscalRepresentation(@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_Fiscal_Representation.class)
+				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	@NonNull
+	public I_C_Fiscal_Representation getById(@NonNull final FiscalRepresentationId fiscalRepresentationId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(fiscalRepresentationId, I_C_Fiscal_Representation.class);
 	}
 }

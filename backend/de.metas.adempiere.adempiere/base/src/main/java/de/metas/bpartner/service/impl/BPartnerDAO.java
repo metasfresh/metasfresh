@@ -537,6 +537,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public boolean isAnyLocationWithVATaxId()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addNotNull(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	@Nullable
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{

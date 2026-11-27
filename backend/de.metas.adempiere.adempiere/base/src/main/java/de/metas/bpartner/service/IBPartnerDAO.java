@@ -144,6 +144,11 @@ public interface IBPartnerDAO extends ISingletonService
 	@NonNull
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	/**
+	 * @return true if any partner location (also an inactive one) has a {@code VATaxID} of its own
+	 */
+	boolean isAnyLocationWithVATaxId();
+
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 

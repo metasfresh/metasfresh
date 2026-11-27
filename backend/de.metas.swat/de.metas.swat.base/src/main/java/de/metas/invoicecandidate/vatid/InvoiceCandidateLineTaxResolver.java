@@ -39,12 +39,14 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
 /**
  * Predicts, before the invoice exists, the tax the invoice line of an invoice candidate will get.
  */
+@Component
 public class InvoiceCandidateLineTaxResolver
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
