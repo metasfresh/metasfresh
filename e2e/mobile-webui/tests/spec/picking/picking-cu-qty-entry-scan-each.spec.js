@@ -4,7 +4,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
-import { allureMeta, MSG_NO_OPEN_TU, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setLUTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, createMasterdata, MSG_NO_OPEN_TU, uniqueFormatName, qtyPickedRow, restoreSysconfigsAfterEach, setLUTarget, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 import { buildCULabel, uniqueGTIN } from "../../utils/cuLabel";
 import { MESSAGES } from "../../utils/cuQtyEntryMessages";
 import { createScanEachMasterdata, MODE_SCAN_EACH, MSG_ALREADY_PICKED, MSG_FORMAT_MISMATCH, MSG_NO_PACK_ID, MSG_OVER_PICK, openScanEachLine, packLabelOf, scanPack } from "../../utils/cuQtyEntryScanEach";
@@ -228,6 +228,23 @@ test('lots A, A, B: 3 CUs, the TU has no lot (mixed), PackId on no TU, the first
             vhu3: { attributes: { 'Lot-Nummer': lotB, PackId: '3' } },
         },
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('buyer line (Scan each CU) with an EMPTY own format inherits the profile format: it has no pack-ID part, so every label is refused with the pack-ID text', async ({ page }) => {
+    allureMeta('Scan each CU needs a pack ID');
+
+    const masterdata = await createMasterdata({
+        formatName: uniqueFormatName(),                               // the profile's format: WITHOUT a pack-ID part
+        orders: [{ key: 'C', qty: 2 }],
+        profileMode: MODE_SCAN_EACH,
+        customers: [{ customer: 'custC', cuQtyEntryMode: MODE_SCAN_EACH }],   // no own format: the profile's applies
+    });
+    const { pickingJobId } = await startJob(masterdata, { qtyToDeliver: 2 });
+    await openScanEachLine({ index: 1 });
+    await PickLineScanScreen.scanCULabelRefused(packLabelOf({ masterdata, packId: 1 }), MSG_NO_PACK_ID);
+
+    await Backend.expect({ pickings: { [pickingJobId]: { shipmentSchedules: { P1: { qtyPicked: [] } } } } });
 });
 
 // noinspection JSUnusedLocalSymbols

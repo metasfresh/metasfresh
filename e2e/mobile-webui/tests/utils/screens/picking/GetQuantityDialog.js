@@ -32,8 +32,8 @@ export const GetQuantityDialog = {
 
     /** Asserts the open quantity shown by the dialog (`qty-target`, raw number) */
     expectQtyTarget: async (expected) => await test.step(`${NAME} - Expect qty target '${expected}'`, async () => {
-        await expect(page.getByTestId('qty-target')).toBeVisible();
-        await expect(page.getByTestId('qty-target')).toHaveAttribute('data-internalvalue', `${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(GetQuantityDialog.qtyTargetElement()).toBeVisible();
+        await expect(GetQuantityDialog.qtyTargetElement()).toHaveAttribute('data-internalvalue', `${expected}`, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /** Asserts that no rejected quantity / reject reason is shown (Scan once */
@@ -156,7 +156,7 @@ export const GetQuantityDialog = {
         // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
         const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
 
-        const field = page.locator('#catch-weight');
+        const field = GetQuantityDialog.catchWeightField();
         await clickAndType(field, correctedQty);
     }),
 
@@ -218,7 +218,7 @@ export const GetQuantityDialog = {
     qtyTargetElement: () => page.getByTestId('qty-target'),
 
     /** The first row of the dialog's table (the one with the target quantity) */
-    firstRow: () => page.locator('tr').filter({ has: page.getByTestId('qty-target') }).first(),
+    firstRow: () => page.locator('tr').filter({ has: GetQuantityDialog.qtyTargetElement() }).first(),
 
     /** The OK button, looked up inside the dialog; for layout checks (see utils/layout.js) */
     doneButton: () => containerElement().getByTestId('done-button'),
@@ -280,7 +280,7 @@ export const GetQuantityDialog = {
     }),
 
     clickDoneAndCloseTarget: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK und LU schließen`, async () => {
-        const doneAndCloseButton = page.getByTestId('confirmDoneAndCloseTarget-button');
+        const doneAndCloseButton = GetQuantityDialog.doneAndCloseTargetButton();
 
         await expectErrorToastIf(
             !!expectedError,
@@ -301,17 +301,15 @@ export const GetQuantityDialog = {
     }),
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
-        await page.getByTestId('switchToManualInput-button').tap();
+        await GetQuantityDialog.switchToManualInputButton().tap();
         await GetQuantityDialog.qtyInputField().waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
         await expectMissingOrDisabled(GetQuantityDialog.qtyInputField());
-        // await expectMissingOrDisabled(GetQuantityDialog.bestBeforeDateField());
-        // await expectMissingOrDisabled(GetQuantityDialog.lotNoField());
         await expectMissingOrDisabled(GetQuantityDialog.doneButton());
         await expectMissingOrDisabled(GetQuantityDialog.cancelButton());
-        await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
+        await expectMissingOrDisabled(GetQuantityDialog.doneAndCloseTargetButton());
     }),
 
     fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {

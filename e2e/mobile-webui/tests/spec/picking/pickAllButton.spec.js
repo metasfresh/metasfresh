@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { expect } from "@playwright/test";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
@@ -186,6 +187,24 @@ test('profile mode Scan once: no Quick Pack All button, job stays Drafted', asyn
     const masterdata = await createMasterdata({ allowQuickPackAll: true, cuQtyEntryMode: MODE_SCAN_ONCE });
     const { pickingJobId } = await openJob(masterdata);
     await expectNoQuickPackAllButton({ pickingJobId });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('profile mode Scan once: a direct REST call of Quick Pack All is refused and books nothing', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick All button with CU quantity entry modes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata({ allowQuickPackAll: true, cuQtyEntryMode: MODE_SCAN_ONCE });
+    const { pickingJobId } = await openJob(masterdata);
+
+    // the button is hidden; the endpoint refuses on its own, whoever calls it
+    const { status, body } = await Backend.postPickAll({ wfProcessId: `picking-${pickingJobId}` });
+    expect(status, `pickAll must be refused, body: ${body}`).toBeGreaterThanOrEqual(400);
+
+    await expectNoQuickPackAllButton({ pickingJobId });   // the job stays Drafted, nothing picked
 });
 
 // noinspection JSUnusedLocalSymbols

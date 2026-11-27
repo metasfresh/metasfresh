@@ -4,7 +4,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
 import { PickLineScanScreen } from "../../utils/screens/picking/PickLineScanScreen";
 import { GetQuantityDialog } from "../../utils/screens/picking/GetQuantityDialog";
-import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfterEach, labelOf, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot } from "../../utils/cuQtyEntryCommon";
+import { allureMeta, BEST_BEFORE, book, createMasterdata, restoreSysconfigsAfterEach, labelOf, uniqueFormatName, openLine, qtyPickedRow, scanLabel, startJob, uniqueLot, unpackFirstBooking } from "../../utils/cuQtyEntryCommon";
 
 restoreSysconfigsAfterEach(test);
 
@@ -202,4 +202,28 @@ test('Re-entry via "HU verpacken": nothing is remembered (scan a label, the coun
             vhu2: { storages: { P1: '4 PCE' }, attributes: { 'Lot-Nummer': lot } },
         },
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Re-entry by a line click on the job screen after every pick was undone: nothing is remembered (scan a label, the count starts empty)', async ({ page }) => {
+    allureMeta('Re-entry via job screen line click');
+
+    const masterdata = await createMasterdata({ formatName: uniqueFormatName(), orders: [{ key: 'A', qty: 10 }] });
+    const lot = uniqueLot();
+    await startJob(masterdata, { qtyToDeliver: 10 });
+    await openLine({ index: 1 });
+    await scanLabel(labelOf({ masterdata, lot }));
+    await PickLineScanScreen.openTU();
+    await book({ qty: 6, expectedQtyTarget: 4 });
+    await GetQuantityDialog.clickCancel();
+    await PickingJobScreen.waitForScreen();
+
+    await PickingJobScreen.clickLineButton({ index: 1 });      // the line has picks: the line screen
+    await unpackFirstBooking({ fromLineScreen: true });
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.clickLineButton({ index: 1 });      // nothing picked any more: straight into the scan screen
+    await PickLineScanScreen.waitForScreen();
+    await GetQuantityDialog.expectNotShown();                 // a new round: the label is scanned again
+    await scanLabel(labelOf({ masterdata, lot }));
+    await GetQuantityDialog.expectQtyEntered('');             // the count starts empty (not MIN(last typed 6, open 10))
 });
