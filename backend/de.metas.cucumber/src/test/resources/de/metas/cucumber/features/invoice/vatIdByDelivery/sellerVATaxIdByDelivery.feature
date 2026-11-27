@@ -452,3 +452,32 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID    |
       | invoiceLineDropShip         | invoiceDropShip         | productByTax            | 10          | byTaxGRGR24 |
       | invoiceLineDE               | invoiceDE               | productByTax            | 5           | byTaxDEGR0  |
+
+  @Id:S32533_TC17m
+  Scenario: manual invoice on a doc type that overwrites the invoice date on completion: the new date falls into the Greek registration, the line is re-taxed with the registration's tax and the invoice stores the Greek VAT ID
+    Given metasfresh has date and time 2026-09-22T10:00:00+02:00[Europe/Berlin]
+    And metasfresh contains C_Fiscal_Representation:
+      | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
+      | regGR      | GR                        | EL123456783 | 2026-09-22 | 2026-09-23 |
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
+      | invoice    | customerGR    | customerGR_GR          | pl_GR          | Ausgangsrechnung        | 2026-09-21   | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoiceLine | invoice      | product      | 10 PCE      |
+    # dated before the registration: the tax-free EU supply
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | invoiceLine                 | invoice                 | product                 | 10          | taxDEGR0 |
+    And the doc type of invoice "invoice" has IsOverwriteDateOnComplete true for this scenario
+
+    # completion sets the invoice date to today, inside the registration: the line gets the registration's tax,
+    # and the VAT IDs are stored from that tax, not from the one the line had before
+    When the invoice identified by invoice is completed
+
+    Then validate created invoices
+      | Identifier | DocStatus | DateInvoiced | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoice    | CO        | 2026-09-22   | EL111111114  | EL123456783   | regGR                      |
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | invoiceLine                 | invoice                 | product                 | 10          | taxDEGR24 |
