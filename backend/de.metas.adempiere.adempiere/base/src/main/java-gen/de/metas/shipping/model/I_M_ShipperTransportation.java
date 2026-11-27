@@ -410,7 +410,6 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -420,7 +419,6 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Description.
-	 * Optional short description of the record.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -433,7 +431,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -443,7 +441,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document.
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
