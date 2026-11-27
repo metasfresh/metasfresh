@@ -13,6 +13,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -51,6 +53,7 @@ public class NewRecordDescriptorsProvider
 	// services
 	private static final Logger logger = LogManager.getLogger(NewRecordDescriptorsProvider.class);
 	private final DocumentDescriptorFactory documentDescriptors;
+	private final BPartnerQuickInputService bpartnerQuickInputService;
 
 	private final ConcurrentHashMap<String, NewRecordDescriptor> newRecordDescriptorsByTableName = new ConcurrentHashMap<>();
 
@@ -59,7 +62,23 @@ public class NewRecordDescriptorsProvider
 			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
 	{
 		this.documentDescriptors = documentDescriptors;
+		this.bpartnerQuickInputService = bpartnerQuickInputService;
+	}
 
+	/**
+	 * Registers the built-in {@link I_C_BPartner} new-record descriptor.
+	 * <p>
+	 * Deferred to {@link ApplicationReadyEvent} on purpose: resolving the window id reaches {@code SpringContextHolder},
+	 * which {@code StartupListener} only configures on {@code ContextRefreshedEvent}. Doing this in the {@code @Component}
+	 * constructor makes webapi boot depend on bean-instantiation order and can fail with
+	 * {@code AdempiereException: SpringApplicationContext not configured yet}. {@code ApplicationReadyEvent} fires strictly
+	 * after all {@code ContextRefreshedEvent} processing, so the holder is guaranteed configured. The registry is only read
+	 * at runtime (on a user "new record quick input"), well after this, so deferring the registration changes nothing but
+	 * its timing.
+	 */
+	@EventListener(ApplicationReadyEvent.class)
+	public void registerBuiltInDescriptors()
+	{
 		final AdWindowId bpartnerQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerWindowId().orElse(null);
 		if (bpartnerQuickInputAdWindowId != null)
 		{
