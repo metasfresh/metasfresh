@@ -3311,6 +3311,45 @@ public class CiiMapperTest
 		xml.valueByXPath(BG11 + "/ram:SpecifiedTaxRegistration/ram:ID/@schemeID").as("BT-63 scheme").isEqualTo("VA");
 	}
 
+	/** BG-12: the address the fiscal representation links is the representative's address, as on the printed invoice. */
+	@Test
+	void bg11_representative_addressOfTheRegistration() throws Exception
+	{
+		final I_C_Invoice invoice = newInvoiceWithHeaderVatIds();
+		final I_C_BPartner representative = newBPartnerWithLocation("Vertreter SA", "EL000000000", "GR", "Athens");
+		final I_C_BPartner_Location registrationLocation = newBPartnerLocation(representative, "GR", "Thessaloniki");
+		final I_C_Fiscal_Representation registration = newInstance(I_C_Fiscal_Representation.class);
+		registration.setAD_Org_ID(invoice.getAD_Org_ID());
+		registration.setC_BPartner_Representative_ID(representative.getC_BPartner_ID());
+		registration.setC_BPartner_Location_ID(registrationLocation.getC_BPartner_Location_ID());
+		saveRecord(registration);
+		invoice.setC_Fiscal_Representation_ID(registration.getC_Fiscal_Representation_ID());
+		invoice.setSellerVATaxID("EL998877666");
+
+		final XmlAssert xml = mapVatIdInvoice(invoice);
+		xml.valueByXPath(BG11 + "/ram:PostalTradeAddress/ram:CityName").as("BG-12 city").isEqualTo("Thessaloniki");
+		xml.valueByXPath(BG11 + "/ram:PostalTradeAddress/ram:CountryID").as("BG-12 country").isEqualTo("GR");
+	}
+
+	private I_C_BPartner_Location newBPartnerLocation(final I_C_BPartner bpartner, final String countryCode, final String city)
+	{
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setCountryCode(countryCode);
+		saveRecord(country);
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setAddress1(city + " street 2");
+		location.setCity(city);
+		location.setPostal("20000");
+		location.setC_Country_ID(country.getC_Country_ID());
+		saveRecord(location);
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		bpLoc.setC_Location_ID(location.getC_Location_ID());
+		bpLoc.setIsBillTo(false);
+		saveRecord(bpLoc);
+		return bpLoc;
+	}
+
 	// ===== Shared helpers =====
 
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException

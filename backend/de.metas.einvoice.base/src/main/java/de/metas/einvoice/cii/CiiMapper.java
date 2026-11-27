@@ -561,13 +561,14 @@ public class CiiMapper
 		}
 
 		// BG-4/BG-5 Seller
-		final I_C_BPartner representative = retrieveRepresentative(invoice);
+		final I_C_Fiscal_Representation registration = retrieveFiscalRepresentation(invoice);
+		final I_C_BPartner representative = registration != null ? retrieveRepresentative(registration) : null;
 		agreement.setSellerTradeParty(buildSellerParty(invoice, representative));
 
 		// BG-11 Seller tax representative (only when the invoice's fiscal representation has a representative)
-		if (representative != null)
+		if (registration != null && representative != null)
 		{
-			agreement.setSellerTaxRepresentativeTradeParty(buildSellerTaxRepresentativeParty(invoice, representative));
+			agreement.setSellerTaxRepresentativeTradeParty(buildSellerTaxRepresentativeParty(invoice, registration, representative));
 		}
 
 		// BG-7/BG-8 Buyer
@@ -668,30 +669,42 @@ public class CiiMapper
 	}
 
 	@Nullable
-	private I_C_BPartner retrieveRepresentative(@NonNull final I_C_Invoice invoice)
+	private static I_C_Fiscal_Representation retrieveFiscalRepresentation(@NonNull final I_C_Invoice invoice)
 	{
 		if (invoice.getC_Fiscal_Representation_ID() <= 0)
 		{
 			return null;
 		}
-		final I_C_Fiscal_Representation registration = InterfaceWrapperHelper.loadOutOfTrx(invoice.getC_Fiscal_Representation_ID(), I_C_Fiscal_Representation.class);
+		return InterfaceWrapperHelper.loadOutOfTrx(invoice.getC_Fiscal_Representation_ID(), I_C_Fiscal_Representation.class);
+	}
+
+	@Nullable
+	private I_C_BPartner retrieveRepresentative(@NonNull final I_C_Fiscal_Representation registration)
+	{
 		final BPartnerId representativeId = BPartnerId.ofRepoIdOrNull(registration.getC_BPartner_Representative_ID());
 		return representativeId != null ? bPartnerDAO.getById(representativeId) : null;
 	}
 
 	/**
-	 * BG-11: BT-62 representative name, BG-12 representative address (country mandatory),
+	 * BG-11: BT-62 representative name, BG-12 representative address (country mandatory; the address the fiscal representation links, as on the printed invoice,
+	 * else the representative's bill-to address),
 	 * BT-63 representative VAT ID (scheme VA, mandatory per BR-56) = the VAT ID stored on the invoice;
 	 * a missing stored VAT ID is an error, not a silently invalid e-invoice.
 	 */
-	private TradePartyType buildSellerTaxRepresentativeParty(@NonNull final I_C_Invoice invoice, @NonNull final I_C_BPartner representative)
+	private TradePartyType buildSellerTaxRepresentativeParty(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final I_C_Fiscal_Representation registration,
+			@NonNull final I_C_BPartner representative)
 	{
 		final TradePartyType party = new TradePartyType();
 
 		final String companyName = representative.getCompanyName();
 		party.setName(text(companyName != null && !companyName.isEmpty() ? companyName : representative.getName()));
 
-		party.setPostalTradeAddress(buildSellerAddress(representative, "tax representative"));
+		// the same address as the printed footer: the location the registration links, by its ID
+		party.setPostalTradeAddress(registration.getC_BPartner_Location_ID() > 0
+				? buildAddress(repo.getLocation(InterfaceWrapperHelper.loadOutOfTrx(registration.getC_BPartner_Location_ID(), I_C_BPartner_Location.class).getC_Location_ID()))
+				: buildSellerAddress(representative, "tax representative"));
 
 		final String vatId = invoice.getSellerVATaxID();
 		if (vatId == null || vatId.trim().isEmpty())
