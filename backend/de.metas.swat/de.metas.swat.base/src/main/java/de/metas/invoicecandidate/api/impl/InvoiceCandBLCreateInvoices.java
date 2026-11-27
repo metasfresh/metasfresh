@@ -45,6 +45,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.vatid.InvoiceCandidateVATaxIdResolver;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -157,6 +158,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
+	private final transient InvoiceCandidateVATaxIdResolver vatTaxIdResolver = SpringContextHolder.instance.getBean(InvoiceCandidateVATaxIdResolver.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -987,6 +989,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.vatTaxIdResolver(vatTaxIdResolver)
 				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
 				.partialInvoice(invoicingParams != null ? invoicingParams.getIsPartialInvoice() : null)
 				.build();

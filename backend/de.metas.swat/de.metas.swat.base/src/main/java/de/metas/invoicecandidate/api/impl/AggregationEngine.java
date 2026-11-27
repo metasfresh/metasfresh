@@ -104,7 +104,6 @@ import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that is suitable to create invoices.
@@ -197,7 +196,7 @@ public final class AggregationEngine
 			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
-			@Nullable final InvoiceCandidateVATaxIdResolver vatTaxIdResolver,
+			@NonNull final InvoiceCandidateVATaxIdResolver vatTaxIdResolver,
 			final boolean deliveryDateAsInvoiceDate,
 			@Nullable final Boolean partialInvoice)
 	{
@@ -217,7 +216,7 @@ public final class AggregationEngine
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
-		this.vatTaxIdResolver = coalesceSuppliersNotNull(() -> vatTaxIdResolver, () -> SpringContextHolder.instance.getBean(InvoiceCandidateVATaxIdResolver.class));
+		this.vatTaxIdResolver = vatTaxIdResolver;
 		this.vatTaxIdResolverCache = this.vatTaxIdResolver.newCache();
 		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
 		this.partialInvoice = partialInvoice;
