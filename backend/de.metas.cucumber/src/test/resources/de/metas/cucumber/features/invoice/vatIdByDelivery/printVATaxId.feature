@@ -198,6 +198,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
   @Id:S32533_TC17_Print
   Scenario: TC17 (print) - own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID
     Given metasfresh has date and time 2026-05-12T10:00:00+02:00[Europe/Berlin]
+    And the org partner of organisation 1000000 has VATaxID "DE136695976" for this scenario
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
       | regGR      | GR                        | EL094259216 | 2026-05-11 | 2026-05-13 |
@@ -239,7 +240,9 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     When The jasper process is run
       | Value             | Record_ID |
       | Rechnung (Jasper) | invoice   |
+    # the Greek VAT ID replaces the organisation's main VAT ID in the footer
     Then the PDF archived for the record identified by "invoice" contains text "EL094259216"
+    And the PDF archived for the record identified by "invoice" does not contain text "DE136695976"
     And the PDF archived for the record identified by "invoice" does not contain text "Fiskalvertreter"
 
   @Id:S32533_TC18_Print
@@ -292,6 +295,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
   @Id:S32533_TC19_Print
   Scenario: TC19 (print) - no registration in Greece: the footer shows no Greek VAT ID
     Given metasfresh has date and time 2026-06-02T10:00:00+02:00[Europe/Berlin]
+    And the org partner of organisation 1000000 has VATaxID "DE136695976" for this scenario
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inventory                 | 2026-06-02   | wh_DE          |
@@ -330,7 +334,9 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     When The jasper process is run
       | Value             | Record_ID |
       | Rechnung (Jasper) | invoice   |
-    Then the PDF archived for the record identified by "invoice" does not contain text "EL094259216"
+    # the footer shows the organisation's main VAT ID, as without the feature
+    Then the PDF archived for the record identified by "invoice" contains text "DE136695976"
+    And the PDF archived for the record identified by "invoice" does not contain text "EL094259216"
     And the PDF archived for the record identified by "invoice" does not contain text "Fiskalvertreter"
 
   @Id:S32533_TC22b_Print

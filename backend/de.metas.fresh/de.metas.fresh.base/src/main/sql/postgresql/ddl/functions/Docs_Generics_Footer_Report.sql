@@ -10,8 +10,13 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_
 ;
 
 /*
- * p_c_invoice_id (optional): the sales invoice whose footer is printed. NULL (all other documents) prints the
- * organisation's VAT ID as before. With an invoice:
+ * Two overloads:
+ * - (p_org_id, p_isFactoringPartner, p_ad_language): every document except the sales invoice; unchanged result.
+ * - (p_org_id, p_isFactoringPartner, p_ad_language, p_c_invoice_id): the sales invoice footer. No parameter has a
+ *   default, so a call with 1 to 3 arguments can only resolve to the first overload.
+ *
+ * p_c_invoice_id: the sales invoice whose footer is printed. NULL prints the organisation's VAT ID like the
+ * 3-argument overload. With an invoice:
  * - the invoice's fiscal registration has no representative: vataxid = the stored SellerVATaxID, or the
  *   organisation's VAT ID when the invoice stores none;
  * - the invoice's fiscal registration has a representative: vataxid = the organisation's VAT ID, and the
@@ -19,9 +24,9 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_
  * The taxrep_* columns are NULL in every other case.
  */
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
-                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
-                                                                               IN p_ad_language     character varying DEFAULT 'de_DE',
-                                                                               IN p_c_invoice_id    numeric DEFAULT NULL)
+                                                                               p_isFactoringPartner character(1),
+                                                                               IN p_ad_language     character varying,
+                                                                               IN p_c_invoice_id    numeric)
     RETURNS TABLE
             (
                 org_name              character varying,
@@ -175,3 +180,60 @@ LIMIT 1
 $$
 ;
 
+
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
+                                                                               p_isFactoringPartner character(1) DEFAULT 'N',
+                                                                               IN p_ad_language     character varying DEFAULT 'de_DE')
+    RETURNS TABLE
+            (
+                org_name              character varying,
+                org_address1          character varying,
+                org_postal            character varying,
+                org_city              character varying,
+                org_country           character varying,
+                org_bank_acct         character varying,
+                org_bank_name         character varying,
+                org_bank_blz          character varying,
+                org_bank_iban         character varying,
+                org_bank_swift        character varying,
+                org_bank_currency     character varying,
+                org_addressline       character varying,
+                orgpartnerdescription character varying,
+                manager               character varying,
+                vataxid               character varying,
+                phone                 character varying,
+                phone2                character varying,
+                fax                   character varying,
+                email                 character varying,
+                url                   character varying
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
+SELECT f.org_name,
+       f.org_address1,
+       f.org_postal,
+       f.org_city,
+       f.org_country,
+       f.org_bank_acct,
+       f.org_bank_name,
+       f.org_bank_blz,
+       f.org_bank_iban,
+       f.org_bank_swift,
+       f.org_bank_currency,
+       f.org_addressline,
+       f.orgpartnerdescription,
+       f.manager,
+       f.vataxid,
+       f.phone,
+       f.phone2,
+       f.fax,
+       f.email,
+       f.url
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id,
+                                                                    p_isFactoringPartner,
+                                                                    p_ad_language,
+                                                                    NULL::numeric) f
+$$
+;
