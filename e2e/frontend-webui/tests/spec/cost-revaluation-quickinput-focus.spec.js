@@ -5,6 +5,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { CostRevaluationPage } from '../utils/pages/CostRevaluationPage';
 import { expectFocusHeld, expectFocusOn } from '../utils/QuickInputFocus';
+import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Cost Revaluation (Kosten Neubewertung, window 541568) lines tab: it adds lines by quick entry only, so the quick
@@ -54,11 +55,16 @@ async function holdNextQuickInputUntilLinesShown(page, lineCount) {
     }
     isHeld = true;
     const response = await route.fetch();
-    await page.waitForFunction((args) => document.querySelectorAll(args.selector).length >= args.lineCount, {
-      selector: GRID_ROWS,
-      lineCount,
-    });
-    await route.fulfill({ response });
+    try {
+      await page.waitForFunction(
+        (args) => document.querySelectorAll(args.selector).length >= args.lineCount,
+        { selector: GRID_ROWS, lineCount },
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+    } finally {
+      // if the grid never shows the line, the next quick input still arrives and the focus check reports it
+      await route.fulfill({ response });
+    }
   });
 }
 
@@ -78,7 +84,6 @@ const testCases = [
 ];
 
 testCases.forEach(({ language, label }) => {
-  // eslint-disable-next-line no-unused-vars
   test(`The quick entry that opens by itself gives Product the cursor for the next line and on a document with lines (${label})`, async ({
     page,
   }) => {
