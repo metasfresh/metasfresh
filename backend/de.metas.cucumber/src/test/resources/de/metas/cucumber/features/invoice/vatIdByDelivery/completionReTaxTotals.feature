@@ -71,7 +71,7 @@ Feature: When completion re-taxes an invoice line, the invoice's tax rows and to
       | customer_billing                  | DE123456788 |
 
   @Id:S32533_TC23a
-  Scenario: TC23 - completion re-taxes the only line of the old tax: the old tax row is removed, the new one is created processed and the totals include the new tax
+  Scenario: completion re-taxes the only line of the old tax: the old tax row is removed, the new one is created processed and the totals include the new tax
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | customer      | customer_billing       | pl_DE          | Ausgangsrechnung        | 2026-11-23   | true    | EUR                 |
@@ -104,7 +104,7 @@ Feature: When completion re-taxes an invoice line, the invoice's tax rows and to
       | T_Due_Acct            |             | 190 EUR     | invoice   | taxDEDE19 |
 
   @Id:S32533_TC23b
-  Scenario: TC23 - completion re-taxes one of two lines of the old tax: the old tax row covers the remaining line, the new one is created processed and the totals include both taxes
+  Scenario: completion re-taxes one of two lines of the old tax: the old tax row covers the remaining line, the new one is created processed and the totals include both taxes
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | customer      | customer_billing       | pl_DE          | Ausgangsrechnung        | 2026-11-23   | true    | EUR                 |
@@ -135,7 +135,7 @@ Feature: When completion re-taxes an invoice line, the invoice's tax rows and to
       | taxDEDE19 | 1000       | 190    | true      |
 
   @Id:S32533_TC23c
-  Scenario: TC23 - completion re-taxes the only line of a purchase invoice: the new tax row is created processed and the totals include the new tax
+  Scenario: completion re-taxes the only line of a purchase invoice: the new tax row is created processed and the totals include the new tax
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code |
       | invoice    | vendor        | vendor_billing         | plPO_DE        | Eingangsrechnung        | 2026-11-23   | false   | EUR                 |
@@ -158,7 +158,7 @@ Feature: When completion re-taxes an invoice line, the invoice's tax rows and to
       | taxDEDE19 | 1000       | 190    | true      |
 
   @Id:S32533_TC23d
-  Scenario: TC23 - completion re-taxes a line of an invoice of a project: the project's invoiced amount is the corrected grand total
+  Scenario: completion re-taxes a line of an invoice of a project: the project's invoiced amount is the corrected grand total
     Given metasfresh contains C_Projects:
       | Identifier |
       | project    |

@@ -116,7 +116,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | wh_dropship | Y                   |
 
   @Id:S32533_TC17
-  Scenario: TC17 - own Greek registration, goods shipped from the German warehouse with the registration's tax: the Greek VAT ID is the seller VAT ID
+  Scenario: own Greek registration, goods shipped from the German warehouse with the registration's tax: the Greek VAT ID is the seller VAT ID
     Given metasfresh has date and time 2026-03-02T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
@@ -158,7 +158,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR24 |
 
   @Id:S32533_TC18
-  Scenario: TC18 - Greek registration through a fiscal representative: the representative's VAT ID is the seller VAT ID
+  Scenario: Greek registration through a fiscal representative: the representative's VAT ID is the seller VAT ID
     Given metasfresh has date and time 2026-03-12T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | C_BPartner_Representative_ID | C_BPartner_Location_ID | ValidFrom  | ValidTo    |
@@ -200,7 +200,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR24 |
 
   @Id:S32533_TC19
-  Scenario: TC19 - no registration in Greece: tax-free EU supply and no seller VAT ID (the main one)
+  Scenario: no registration in Greece: tax-free EU supply and no seller VAT ID (the main one)
     Given metasfresh has date and time 2026-03-22T10:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -239,7 +239,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR0 |
 
   @Id:S32533_TC21
-  Scenario: TC21 - service to Greece invoiced immediately, registration and Greek tax rows: the registration's tax and the Greek VAT ID
+  Scenario: service to Greece invoiced immediately, registration and Greek tax rows: the registration's tax and the Greek VAT ID
     Given metasfresh has date and time 2026-04-02T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
@@ -271,7 +271,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | service                 | 10          | taxDEGR24 |
 
   @Id:S32533_TC22b
-  Scenario: TC22(b) - drop-ship warehouse to Greece with registration: line taxed GR->GR and the Greek VAT ID is the seller VAT ID
+  Scenario: drop-ship warehouse to Greece with registration: line taxed GR->GR and the Greek VAT ID is the seller VAT ID
     Given metasfresh has date and time 2026-04-12T10:00:00+02:00[Europe/Berlin]
     And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains C_Fiscal_Representation:
@@ -317,7 +317,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | product                 | 10          | taxGRGR24 |
 
   @Id:S32533_TC10c
-  Scenario: TC10(c) - one order with a line to the Greek and a line to the German address, same buyer VAT ID: two invoices, split by the seller VAT ID
+  Scenario: one order with a line to the Greek and a line to the German address, same buyer VAT ID: two invoices, split by the seller VAT ID
     Given metasfresh has date and time 2026-04-22T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
@@ -351,7 +351,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceLineGR               | invoiceGR               | service                 | 5           | taxDEGR24 |
 
   @Id:S32533_TC24
-  Scenario: TC24 - registration in Greece, but the German-stock line gets the tax-free EU supply rate: no seller VAT ID (the main one)
+  Scenario: registration in Greece, but the German-stock line gets the tax-free EU supply rate: no seller VAT ID (the main one)
     Given metasfresh has date and time 2026-05-02T10:00:00+02:00[Europe/Berlin]
     And metasfresh contains C_Fiscal_Representation:
       | Identifier | To_Country_ID.CountryCode | VATaxID     | ValidFrom  | ValidTo    |
@@ -393,7 +393,7 @@ Feature: The seller VAT ID of a sales invoice comes from the fiscal representati
       | invoiceL1                   | invoice                 | productByTax            | 10          | byTaxDEGR0 |
 
   @Id:S32533_TC22e
-  Scenario: TC22(e) - one Greek customer, one delivery from the drop-ship warehouse and one from German stock: two invoices, split by the seller VAT ID
+  Scenario: one Greek customer, one delivery from the drop-ship warehouse and one from German stock: two invoices, split by the seller VAT ID
     Given metasfresh has date and time 2026-08-12T10:00:00+02:00[Europe/Berlin]
     And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains C_Fiscal_Representation:

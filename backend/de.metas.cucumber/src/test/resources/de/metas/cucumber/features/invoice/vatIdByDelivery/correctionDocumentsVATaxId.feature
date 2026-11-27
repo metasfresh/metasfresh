@@ -82,7 +82,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | wh_DE      | N                   |
 
   @Id:S32533_TC12a
-  Scenario: TC12 - the reversal of an invoice for goods shipped to the Dutch address keeps the Dutch VAT ID, although the address got another VAT ID meanwhile
+  Scenario: the reversal of an invoice for goods shipped to the Dutch address keeps the Dutch VAT ID, although the address got another VAT ID meanwhile
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -122,7 +122,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | reversal   | RE        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12b
-  Scenario: TC12 - a credit memo of an invoice for goods shipped to the Dutch address keeps the Dutch VAT ID, although the address got another VAT ID meanwhile
+  Scenario: a credit memo of an invoice for goods shipped to the Dutch address keeps the Dutch VAT ID, although the address got another VAT ID meanwhile
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -162,7 +162,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | creditMemo | CO        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12c
-  Scenario: TC12 - reversal and credit memo of an invoice for a service to the Dutch address, invoiced immediately without shipment: the Dutch VAT ID
+  Scenario: reversal and credit memo of an invoice for a service to the Dutch address, invoiced immediately without shipment: the Dutch VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
       | order_1    | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | I           |
@@ -207,7 +207,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | creditMemo | CO        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC12d
-  Scenario: TC12 - reversal and credit memo of an invoice without stored VAT IDs (partner VAT ID ignored, delivery address without VAT ID) store none either
+  Scenario: reversal and credit memo of an invoice without stored VAT IDs (partner VAT ID ignored, delivery address without VAT ID) store none either
     Given temporarily set sys config boolean value true for sys config 'de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
@@ -261,7 +261,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | creditMemo | CO        |              |               |                            |
 
   @Id:S32533_TC12e
-  Scenario: TC12 - the reversal of an invoice whose lines would resolve to different VAT IDs (Dutch candidate line, German line added by hand) completes with the invoice's stored values
+  Scenario: the reversal of an invoice whose lines would resolve to different VAT IDs (Dutch candidate line, German line added by hand) completes with the invoice's stored values
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -307,7 +307,7 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | reversal   | RE        | NL333333330B01 |               |                            |
 
   @Id:S32533_TC15
-  Scenario: TC15 - the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines
+  Scenario: the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |

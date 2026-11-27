@@ -141,7 +141,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | wh_dropship | Y                   |
 
   @Id:S32533_TC1_Print
-  Scenario: TC1 + TC11 - the printed invoice shows the stored Dutch VAT ID, also after the address's VAT ID changed
+  Scenario: the printed invoice shows the stored Dutch VAT ID, also after the address's VAT ID changed
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL333333330B01 |
@@ -174,14 +174,14 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
       | Identifier | C_BPartner_Location_ID | BuyerVATaxID   |
       | invoice    | customer_billing       | NL333333330B01 |
 
-    # TC1: the print shows the stored Dutch VAT ID, not the billing partner's German one
+    # the print shows the stored Dutch VAT ID, not the billing partner's German one
     When The jasper process is run
       | Value             | Record_ID |
       | Rechnung (Jasper) | invoice   |
     Then the PDF archived for the record identified by "invoice" contains text "NL333333330B01"
     And the PDF archived for the record identified by "invoice" does not contain text "DE111111125"
 
-    # TC11: the VAT ID of the address changes later; the stored value and a reprint stay unchanged
+    # the VAT ID of the address changes later; the stored value and a reprint stay unchanged
     When update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL111111110B01 |
@@ -196,7 +196,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" does not contain text "DE111111125"
 
   @Id:S32533_TC17_Print
-  Scenario: TC17 (print) - own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID
+  Scenario: own Greek registration, goods shipped from the German warehouse with the registration's tax: the footer shows the Greek VAT ID
     Given metasfresh has date and time 2026-05-12T10:00:00+02:00[Europe/Berlin]
     And the org partner of organisation 1000000 has VATaxID "DE136695976" for this scenario
     And metasfresh contains C_Fiscal_Representation:
@@ -246,7 +246,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" does not contain text "Fiskalvertreter"
 
   @Id:S32533_TC18_Print
-  Scenario: TC18 (print) - Greek registration through a fiscal representative: the footer keeps the main VAT ID and adds the representative
+  Scenario: Greek registration through a fiscal representative: the footer keeps the main VAT ID and adds the representative
     Given metasfresh has date and time 2026-05-22T10:00:00+02:00[Europe/Berlin]
     And the org partner of organisation 1000000 has VATaxID "DE136695976" for this scenario
     And metasfresh contains C_Fiscal_Representation:
@@ -293,7 +293,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" has no overlapping text
 
   @Id:S32533_TC19_Print
-  Scenario: TC19 (print) - no registration in Greece: the footer shows no Greek VAT ID
+  Scenario: no registration in Greece: the footer shows no Greek VAT ID
     Given metasfresh has date and time 2026-06-02T10:00:00+02:00[Europe/Berlin]
     And the org partner of organisation 1000000 has VATaxID "DE136695976" for this scenario
     And metasfresh contains M_Inventories:
@@ -340,7 +340,7 @@ Feature: The printed sales invoice shows the stored buyer and seller VAT IDs
     And the PDF archived for the record identified by "invoice" does not contain text "Fiskalvertreter"
 
   @Id:S32533_TC22b_Print
-  Scenario: TC22(b) (print) - drop-ship warehouse to Greece with registration: the footer shows the Greek VAT ID
+  Scenario: drop-ship warehouse to Greece with registration: the footer shows the Greek VAT ID
     Given metasfresh has date and time 2026-06-12T10:00:00+02:00[Europe/Berlin]
     And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains C_Fiscal_Representation:

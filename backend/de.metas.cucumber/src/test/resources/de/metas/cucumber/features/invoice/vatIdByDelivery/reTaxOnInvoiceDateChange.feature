@@ -140,7 +140,7 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | wh_CH       | N                   | warehouseOwnerCH | warehouseOwner_CH      |
 
   @Id:S32533_TC7r1
-  Scenario: TC7 - service to the Dutch address, invoiced immediately without shipment: after the invoice date changes the line keeps the exempt Dutch rate and the invoice completes with the Dutch VAT ID
+  Scenario: service to the Dutch address, invoiced immediately without shipment: after the invoice date changes the line keeps the exempt Dutch rate and the invoice completes with the Dutch VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
       | order      | true    | customer                 | 2026-11-24  | customer_NL                           | customer_billing                | wh_DE                         | I           |
@@ -176,7 +176,7 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | invoice    | CO        | NL123456782B01 |
 
   @Id:S32533_TC7r2
-  Scenario: TC7 - two order lines to the Dutch address invoiced as one line without order line: after the invoice date changes the line keeps the exempt Dutch rate
+  Scenario: two order lines to the Dutch address invoiced as one line without order line: after the invoice date changes the line keeps the exempt Dutch rate
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
       | order      | true    | customer                 | 2026-11-24  | customer_NL                           | customer_billing                | wh_DE                         | I           |
@@ -208,7 +208,7 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | invoiceLine                 | invoice                 | service                 | 15          | taxDENL0 |
 
   @Id:S32533_TC7r3
-  Scenario: TC7 - doc type that overwrites the invoice date on completion: the line keeps the exempt Dutch rate and the invoice completes
+  Scenario: doc type that overwrites the invoice date on completion: the line keeps the exempt Dutch rate and the invoice completes
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | InvoiceRule |
       | order      | true    | customer                 | 2026-11-24  | customer_NL                           | customer_billing                | wh_DE                         | I           |
@@ -243,7 +243,7 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | invoiceLine                 | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC7r4
-  Scenario: TC7 - order candidate billed in Austria and drop-shipped to a Dutch third party, invoiced directly: after the invoice date changes the line keeps the exempt Dutch rate on the third party's VAT ID
+  Scenario: order candidate billed in Austria and drop-shipped to a Dutch third party, invoiced directly: after the invoice date changes the line keeps the exempt Dutch rate on the third party's VAT ID
     # order candidates whose data destination is invoicing are accepted by the v1 order candidate API;
     # each partner has one location, so it is found by the partner code alone
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v1/sales/order/candidates' and fulfills with '201' status code
@@ -308,7 +308,7 @@ Feature: A sales invoice line without shipment keeps the tax of its delivery add
       | invoice    | CO        | NL112233442B01 |
 
   @Id:S32533_TC22d
-  Scenario: TC22(d) - service from the drop-ship warehouse to Greece with registration, billed in Germany: after the invoice date changes the line keeps GR->GR
+  Scenario: service from the drop-ship warehouse to Greece with registration, billed in Germany: after the invoice date changes the line keeps GR->GR
     Given metasfresh has date and time 2026-08-02T10:00:00+02:00[Europe/Berlin]
     And the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     # the organisation's VAT registration in Greece, valid only around this scenario's date

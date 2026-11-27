@@ -89,7 +89,7 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
       | wh_DE       | N                   |
 
   @Id:S32533_TC25
-  Scenario: TC25 - drop-ship warehouse to Greece with registration: order line and invoice line from the shipment are taxed GR->GR
+  Scenario: drop-ship warehouse to Greece with registration: order line and invoice line from the shipment are taxed GR->GR
     Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -134,7 +134,7 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
       | invoiceL1                   | invoice                 | product                 | 10          | taxGRGR24 |
 
   @Id:S32533_TC25i
-  Scenario: TC25(i) - drop-ship warehouse to the Netherlands without registration there: DE->NL on order and invoice line
+  Scenario: drop-ship warehouse to the Netherlands without registration there: DE->NL on order and invoice line
     Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -179,7 +179,7 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC25ii
-  Scenario: TC25(ii) - normal German warehouse to Greece with registration: DE->GR 0 % on order and invoice line
+  Scenario: normal German warehouse to Greece with registration: DE->GR 0 % on order and invoice line
     Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -224,7 +224,7 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEGR0 |
 
   @Id:S32533_TC25v
-  Scenario: TC25(v) - switch off: drop-ship warehouse to Greece with registration keeps DE->GR 0 % on the order line
+  Scenario: switch off: drop-ship warehouse to Greece with registration keeps DE->GR 0 % on the order line
     Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'N' for this scenario
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier |
@@ -238,7 +238,7 @@ Feature: Warehouse drop-ship lines ship from the destination country where the o
       | orderLine                 | order                 | product                 | 10         | taxDEGR0                |
 
   @Id:S32533_TC25vi
-  Scenario: TC25(vi) - line added by hand to an invoice from the drop-ship warehouse to Greece with registration is taxed GR->GR
+  Scenario: line added by hand to an invoice from the drop-ship warehouse to Greece with registration is taxed GR->GR
     Given the organisation 1000000 has IsDropShipTaxFromDestCountry 'Y' for this scenario
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | M_Warehouse_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |

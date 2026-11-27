@@ -99,7 +99,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | wh_DE      | N                   |
 
   @Id:S32533_TC10d
-  Scenario: TC10(d) - a manual invoice with lines for a German and a Dutch shipment is rejected; with Dutch lines only it stores the Dutch VAT ID
+  Scenario: a manual invoice with lines for a German and a Dutch shipment is rejected; with Dutch lines only it stores the Dutch VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order_DE   | true    | customer                 | 2026-10-02  | customer_DE                           | customer_billing                | wh_DE                         | F            |
@@ -145,7 +145,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | invoice_NL | CO        | NL123456782B01 |               |                            |
 
   @Id:S32533_TC10d2
-  Scenario: TC10(d2) - a manual invoice for shipments to two partners with VAT IDs on the partners only (no address VAT ID, no fiscal representation) completes as before, without stored VAT IDs
+  Scenario: a manual invoice for shipments to two partners with VAT IDs on the partners only (no address VAT ID, no fiscal representation) completes as before, without stored VAT IDs
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode |
       | location_partner1        | DE          |
@@ -194,7 +194,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | invoice    | CO        |              |               |                            |
 
   @Id:S32533_TC10i
-  Scenario: TC10(i) - a line added by hand to a prepared Dutch candidate invoice gets the German domestic tax; the invoice completes with the Dutch VAT ID
+  Scenario: a line added by hand to a prepared Dutch candidate invoice gets the German domestic tax; the invoice completes with the Dutch VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-10-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -232,7 +232,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | invoice    | CO        | NL123456782B01 |               |                            |
 
   @Id:S32533_TC10ii
-  Scenario: TC10(ii) - a line added by hand to a prepared Dutch candidate invoice of a buyer billed in Austria is exempt on the Austrian VAT ID: completion is rejected
+  Scenario: a line added by hand to a prepared Dutch candidate invoice of a buyer billed in Austria is exempt on the Austrian VAT ID: completion is rejected
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |
@@ -266,7 +266,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10iii
-  Scenario: TC10(iii) - a line added by hand to a prepared Dutch candidate invoice with a forced exempt Dutch tax: completion is rejected
+  Scenario: a line added by hand to a prepared Dutch candidate invoice with a forced exempt Dutch tax: completion is rejected
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-10-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -297,7 +297,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10v
-  Scenario: TC10(v) - a prepared candidate invoice without stored VAT IDs (prepared before they were stored) completes with an exempt line added by hand, as before
+  Scenario: a prepared candidate invoice without stored VAT IDs (prepared before they were stored) completes with an exempt line added by hand, as before
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |
@@ -334,7 +334,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
       | invoice    | CO        |              |               |                            |
 
   @Id:S32533_TC10vi
-  Scenario: TC10(vi) - a doc type that overwrites the invoice date on completion would re-tax a line added by hand to an exempt rate on the Austrian VAT ID: completion is rejected
+  Scenario: a doc type that overwrites the invoice date on completion would re-tax a line added by hand to an exempt rate on the Austrian VAT ID: completion is rejected
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |
@@ -370,7 +370,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10vii
-  Scenario: TC10(vii) - a line added by hand that references the Dutch order line but is taxed from the Austrian billing address is exempt on the Austrian VAT ID: completion is rejected
+  Scenario: a line added by hand that references the Dutch order line but is taxed from the Austrian billing address is exempt on the Austrian VAT ID: completion is rejected
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |
@@ -404,7 +404,7 @@ Feature: The VAT IDs of a sales invoice are checked when it is completed
     Then the invoice identified by "invoice" cannot be completed with AD_Message "C_Invoice_ExemptLineVATaxIdMismatch"
 
   @Id:S32533_TC10vii2
-  Scenario: TC10(vii2) - a line added by hand that references the Dutch order line and has its exempt Dutch tax was taxed from the Dutch delivery address: the invoice completes with the Dutch VAT ID
+  Scenario: a line added by hand that references the Dutch order line and has its exempt Dutch tax was taxed from the Dutch delivery address: the invoice completes with the Dutch VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customerAT               | 2026-10-02  | customerAT_NL                         | customerAT_billing              | wh_DE                         | F            |

@@ -107,7 +107,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | wh_dropship | Y                   |
 
   @Id:S32533_TC1
-  Scenario: TC1 + TC16 - goods shipped to the Dutch address: the invoice stores the Dutch VAT ID that justifies the 0 % line
+  Scenario: goods shipped to the Dutch address: the invoice stores the Dutch VAT ID that justifies the 0 % line
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -144,7 +144,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC2
-  Scenario: TC2 - goods shipped to the German address: the invoice stores the German VAT ID
+  Scenario: goods shipped to the German address: the invoice stores the German VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_DE                           | customer_billing                | wh_DE                         | F            |
@@ -175,7 +175,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDEDE19 |
 
   @Id:S32533_TC3
-  Scenario: TC3 - delivery address without VAT ID: the invoice stores the partner's VAT ID
+  Scenario: delivery address without VAT ID: the invoice stores the partner's VAT ID
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_DE_noVAT                     | customer_billing                | wh_DE                         | F            |
@@ -203,7 +203,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoice    | DE123456788  |
 
   @Id:S32533_TC3b
-  Scenario: TC3(b) - partner VAT ID ignored by sys config and delivery address without VAT ID: no buyer VAT ID is stored
+  Scenario: partner VAT ID ignored by sys config and delivery address without VAT ID: no buyer VAT ID is stored
     Given temporarily set sys config boolean value true for sys config 'de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID'
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
@@ -232,7 +232,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoice    |              |
 
   @Id:S32533_TC4
-  Scenario: TC4 - service invoiced immediately, without shipment, to the Dutch address: the invoice stores the Dutch VAT ID
+  Scenario: service invoiced immediately, without shipment, to the Dutch address: the invoice stores the Dutch VAT ID
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -260,7 +260,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC6_Valid
-  Scenario: TC6 + TC16 - Dutch VAT ID checked Valid: 0 % line and the Dutch VAT ID on the invoice
+  Scenario: Dutch VAT ID checked Valid: 0 % line and the Dutch VAT ID on the invoice
     Given no VATaxID_CheckLog records exist for VATaxID 'NL123456782B01'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
@@ -299,7 +299,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC6_NotChecked
-  Scenario: TC6 - Dutch VAT ID never checked: 0 % line and the Dutch VAT ID on the invoice
+  Scenario: Dutch VAT ID never checked: 0 % line and the Dutch VAT ID on the invoice
     Given metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
       | true                 | false              | 30               | ServiceUnavailable   |
@@ -333,7 +333,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC6_Invalid
-  Scenario: TC6 - Dutch VAT ID checked Invalid: no 0 % line
+  Scenario: Dutch VAT ID checked Invalid: no 0 % line
     Given no VATaxID_CheckLog records exist for VATaxID 'NL123456782B01'
     And metasfresh contains VATaxID_Config:
       | IsFormatCheckEnabled | IsVIESCheckEnabled | RecheckAfterDays | OnServiceUnavailable |
@@ -373,7 +373,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
 
   # characterization of today's behaviour: GREEN without this feature's code
   @Id:S32533_TC7
-  Scenario: TC7 - billed in Germany, delivered to the Netherlands: order line and invoice line get the intra-EU rate of the delivery address
+  Scenario: billed in Germany, delivered to the Netherlands: order line and invoice line get the intra-EU rate of the delivery address
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -407,7 +407,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC10a
-  Scenario: TC10(a) - one order with a line to the German and a line to the Dutch address: two invoices, one per buyer VAT ID
+  Scenario: one order with a line to the German and a line to the Dutch address: two invoices, one per buyer VAT ID
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -440,7 +440,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceLineNL               | invoiceNL               | service                 | 5           | taxDENL0  |
 
   @Id:S32533_TC10b
-  Scenario: TC10(b) - the German line is put into the Dutch line's invoicing group by hand: still two invoices
+  Scenario: the German line is put into the Dutch line's invoicing group by hand: still two invoices
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -476,7 +476,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceLineNL               | invoiceNL               | service                 | 5           | taxDENL0  |
 
   @Id:S32533_TC13
-  Scenario: TC13 + TC16 - order drop-shipped to a Dutch third party: the invoice stores the third party's VAT ID
+  Scenario: order drop-shipped to a Dutch third party: the invoice stores the third party's VAT ID
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | thirdParty_NL                     | NL112233442B01 |
@@ -513,7 +513,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC14
-  Scenario: TC14 - one order line shipped to the Dutch address in two shipments, invoiced as one line: the Dutch VAT ID
+  Scenario: one order line shipped to the Dutch address in two shipments, invoiced as one line: the Dutch VAT ID
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -575,7 +575,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | product                 | 10          | taxDENL0 |
 
   @Id:S32533_TC20
-  Scenario: TC20 - order header to the German address, order line to the Dutch address, no shipment: the Dutch VAT ID
+  Scenario: order header to the German address, order line to the Dutch address, no shipment: the Dutch VAT ID
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -603,7 +603,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC22a
-  Scenario: TC22(a) - service from the drop-ship warehouse to the Dutch address: the Dutch VAT ID, line tax DE->NL unchanged
+  Scenario: service from the drop-ship warehouse to the Dutch address: the Dutch VAT ID, line tax DE->NL unchanged
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
@@ -631,7 +631,7 @@ Feature: The buyer VAT ID of a sales invoice comes from the delivery address of 
       | invoiceL1                   | invoice                 | service                 | 10          | taxDENL0 |
 
   @Id:S32533_TC22c
-  Scenario: TC22(c) - one line from the German warehouse and one from the drop-ship warehouse to the Dutch address: one invoice
+  Scenario: one line from the German warehouse and one from the drop-ship warehouse to the Dutch address: one invoice
     Given update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | VATaxID        |
       | customer_NL                       | NL123456782B01 |
