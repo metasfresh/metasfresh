@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { waitForOrderSaved } from '../utils/QuickInputFocus';
+import { pickCustomerAndSettle, pickCustomerByMouse } from '../utils/QuickInputFocus';
 
 /**
  * Email (Alt+K) & Letter (Alt+R) dialog E2E test suite.
@@ -477,13 +477,15 @@ toggles the dropdown instead of racing click-outside (mirrors the email picker).
       // === CREATE SALES ORDER WITH CUSTOMER ===
       await SalesOrderPage.goto();
       await SalesOrderPage.clickNew();
-      await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
-      await waitForOrderSaved(page);
-      // the partner's lookup has closed its dropdowns (the hand-over to address and contact is done)
-      await expect(page.locator('.input-dropdown-list')).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+      const { bpartnerCode } = masterdata.bpartners.CUSTOMER1;
+      await pickCustomerAndSettle(() => pickCustomerByMouse({ searchText: bpartnerCode, bpartnerCode }));
+      // the header's walk partner -> address -> contact ends with the cursor in the contact
+      await page.waitForFunction(() => !!document.activeElement?.closest('#lookup_AD_User_ID'), null, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       // === OPEN LETTER DIALOG (Alt+R) ===
-      // from no field: a click on the page leaves the cursor on the body
+      // from no field: a click on the page takes the cursor out of the contact, which closes its list
       await page.locator('body').click();
       await expect
         .poll(() => page.evaluate(() => document.activeElement === document.body), {
@@ -491,6 +493,7 @@ toggles the dropdown instead of racing click-outside (mirrors the email picker).
           message: 'the click on the page leaves the cursor on the body',
         })
         .toBe(true);
+      await expect(page.locator('.input-dropdown-list'), 'no list is open').toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
       await page.keyboard.press('Alt+R');
       await expect(page.locator('.panel-letter').first()).toBeVisible({
         timeout: SLOW_ACTION_TIMEOUT,
