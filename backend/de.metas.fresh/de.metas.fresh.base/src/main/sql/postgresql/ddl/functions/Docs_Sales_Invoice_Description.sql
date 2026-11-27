@@ -46,7 +46,7 @@ SELECT i.description                                                            
        i.DueDate::timestamp WITH TIME ZONE                                              AS DueDate,
        CASE
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'VATaxID') = 'N' THEN
-               bp.VATaxID
+               COALESCE(i.BuyerVATaxID, bp.VATaxID)
        END                                                                              AS VATaxID,
        bp.value                                                                         AS bp_value,
        bp.eori                                                                          AS eori,
