@@ -31,7 +31,8 @@ import java.util.Optional;
  * Extension point for {@link IInvoiceBL#getReTaxInput}: tells where a sales invoice line without shipment line and without order line was taxed
  * when it was created (e.g. from the invoice candidates it was created from), so that a re-tax keeps that tax.
  * <p>
- * Implementations are spring beans; the first non-empty result wins.
+ * Implementations are spring beans. They are asked in no particular order and any non-empty result is used,
+ * so at most one provider should know a given line.
  */
 public interface InvoiceLineTaxLocationProvider
 {

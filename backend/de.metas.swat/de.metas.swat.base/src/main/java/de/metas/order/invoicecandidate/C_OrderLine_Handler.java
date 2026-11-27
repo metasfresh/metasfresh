@@ -22,6 +22,7 @@
 
 package de.metas.order.invoicecandidate;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -554,13 +555,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
+		final BPartnerLocationAndCaptureId location = OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId();
 
 		return Optional.of(new TaxLocation(
-				OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+				location.getBpartnerLocationId(),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 				orderLine.getDatePromised(),
 				Services.get(IWarehouseBL.class).getCountryId(warehouseId),
-				warehouseId));
+				warehouseId)
+				.withLocationCaptureId(location.getLocationCaptureId()));
 	}
 
 	@Override

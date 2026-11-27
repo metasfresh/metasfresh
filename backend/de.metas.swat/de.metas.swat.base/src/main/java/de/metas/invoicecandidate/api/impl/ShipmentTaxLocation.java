@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api.impl;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.organization.OrgId;
@@ -41,11 +42,13 @@ public class ShipmentTaxLocation
 	public static TaxLocation of(@NonNull final I_M_InOut inOut, @NonNull final OrgId orgId)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inOut.getM_Warehouse_ID());
+		final BPartnerLocationAndCaptureId location = InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId();
 		return new TaxLocation(
-				InOutDocumentLocationAdapterFactory.locationAdapter(inOut).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+				location.getBpartnerLocationId(),
 				orgId,
 				inOut.getMovementDate(),
 				warehouseId != null ? Services.get(IWarehouseBL.class).getCountryId(warehouseId) : null,
-				warehouseId);
+				warehouseId)
+				.withLocationCaptureId(location.getLocationCaptureId());
 	}
 }

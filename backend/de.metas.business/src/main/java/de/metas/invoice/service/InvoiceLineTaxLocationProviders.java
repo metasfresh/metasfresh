@@ -22,8 +22,11 @@
 
 package de.metas.invoice.service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +35,7 @@ import java.util.Optional;
 
 /**
  * All {@link InvoiceLineTaxLocationProvider}s; a plain JUnit test without spring context gets none unless it registers this bean itself.
+ * The providers are asked in no particular order; any non-empty result is used.
  */
 @Component
 public class InvoiceLineTaxLocationProviders
@@ -46,6 +50,23 @@ public class InvoiceLineTaxLocationProviders
 	public static InvoiceLineTaxLocationProviders of(@NonNull final List<InvoiceLineTaxLocationProvider> providers)
 	{
 		return new InvoiceLineTaxLocationProviders(Optional.of(providers));
+	}
+
+	/**
+	 * @return the spring bean; before the spring context is up (or in a plain JUnit test without registered instance) an instance without providers
+	 */
+	public static InvoiceLineTaxLocationProviders get()
+	{
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(InvoiceLineTaxLocationProviders.class, () -> new InvoiceLineTaxLocationProviders(Optional.empty()));
+	}
+
+	@VisibleForTesting
+	public static InvoiceLineTaxLocationProviders newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(InvoiceLineTaxLocationProviders.class, () -> new InvoiceLineTaxLocationProviders(Optional.empty()));
 	}
 
 	public Optional<TaxLocationAndFromCountry> getTaxLocation(@NonNull final I_C_InvoiceLine invoiceLine)

@@ -289,7 +289,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				shipToPartnerInfo.getBpartnerLocationId(),
 				orgId,
 				getTaxDate(olCand),
-				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId)));
+				Services.get(IBPartnerOrgBL.class).getOrgCountryId(orgId))
+				.withLocationCaptureId(shipToPartnerInfo.toBPartnerLocationAndCaptureId().getLocationCaptureId()));
 	}
 
 	private BPartnerInfo getShipToPartnerInfo(@NonNull final I_C_OLCand olCand)

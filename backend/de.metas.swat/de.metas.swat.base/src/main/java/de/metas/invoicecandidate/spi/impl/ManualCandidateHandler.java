@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.invoice.vatid.TaxLocation;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -131,12 +132,14 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		final WarehouseId warehouseId = ic.isSOTrx() ? orgDAO.getOrgWarehouseId(icOrgId) : orgDAO.getOrgPOWarehouseId(icOrgId);
 
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final BPartnerLocationAndCaptureId billLocation = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId();
 		return Optional.of(new TaxLocation(
-				InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).getBPartnerLocationAndCaptureId().getBpartnerLocationId(),
+				billLocation.getBpartnerLocationId(),
 				warehouseId != null ? warehouseBL.getWarehouseOrgId(warehouseId) : icOrgId,
 				ic.getDateOrdered(),
 				warehouseId != null ? warehouseBL.getCountryId(warehouseId) : null,
-				warehouseId));
+				warehouseId)
+				.withLocationCaptureId(billLocation.getLocationCaptureId()));
 	}
 
 	@Override

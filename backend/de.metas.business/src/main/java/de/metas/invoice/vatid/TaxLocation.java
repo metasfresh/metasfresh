@@ -22,11 +22,14 @@
 
 package de.metas.invoice.vatid;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -53,6 +56,12 @@ public class TaxLocation
 	 */
 	@Nullable WarehouseId warehouseId;
 
+	/**
+	 * The captured address ({@code C_Location_ID}) the line's tax code used; {@code null} = not known (the partner location's current address is used).
+	 */
+	@With
+	@Nullable LocationId locationCaptureId;
+
 	public TaxLocation(
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@NonNull final OrgId orgId,
@@ -74,5 +83,27 @@ public class TaxLocation
 		this.taxDate = taxDate;
 		this.fromCountryId = fromCountryId;
 		this.warehouseId = warehouseId;
+		this.locationCaptureId = null;
+	}
+
+	private TaxLocation(
+			@NonNull final BPartnerLocationId bpartnerLocationId,
+			@NonNull final OrgId orgId,
+			@NonNull final Timestamp taxDate,
+			@Nullable final CountryId fromCountryId,
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final LocationId locationCaptureId)
+	{
+		this.bpartnerLocationId = bpartnerLocationId;
+		this.orgId = orgId;
+		this.taxDate = taxDate;
+		this.fromCountryId = fromCountryId;
+		this.warehouseId = warehouseId;
+		this.locationCaptureId = locationCaptureId;
+	}
+
+	public BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
+	{
+		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationCaptureId);
 	}
 }

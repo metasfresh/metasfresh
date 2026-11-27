@@ -1590,8 +1590,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					warehouseId));
 		}
 
-		return SpringContextHolder.getBeanOrSupply(InvoiceLineTaxLocationProviders.class, () -> InvoiceLineTaxLocationProviders.of(ImmutableList.of()))
-				.getTaxLocation(invoiceLine);
+		return InvoiceLineTaxLocationProviders.get().getTaxLocation(invoiceLine);
 	}
 
 	@Override

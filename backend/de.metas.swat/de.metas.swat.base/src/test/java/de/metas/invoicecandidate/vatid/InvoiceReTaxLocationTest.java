@@ -32,6 +32,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.location.CountryId;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.util.Services;
@@ -145,17 +146,18 @@ class InvoiceReTaxLocationTest
 	}
 
 	/**
-	 * A line created from order candidates (no order line) uses the tax location of its candidate with the lowest ID:
-	 * the drop-ship location, the org country as ship-from country and no warehouse, as the candidate's tax code did.
+	 * A line created from invoice candidates without order line (e.g. order candidates) uses the tax location of its candidate with the lowest ID,
+	 * as the candidate's handler reports it (here mocked like an order candidate: drop-ship location with its captured address, org country, no warehouse).
 	 */
 	@Test
-	void olCandCandidate_usesCandidateTaxLocationAndOrgCountry()
+	void olCandCandidate_usesLowestCandidateTaxLocation()
 	{
 		final I_C_Invoice_Candidate firstCandidate = createCandidate();
 		final I_C_Invoice_Candidate secondCandidate = createCandidate();
 		final IInvoiceCandidateHandlerBL handlerBL = Mockito.mock(IInvoiceCandidateHandlerBL.class);
 		Mockito.when(handlerBL.getTaxLocation(argThat(ic -> ic != null && ic.getC_Invoice_Candidate_ID() == firstCandidate.getC_Invoice_Candidate_ID()), isNull()))
-				.thenReturn(new TaxLocation(toBPartnerLocationId(dropShipNL), OrgId.ofRepoId(ORG_ID), DATE, CountryId.ofRepoId(deId)));
+				.thenReturn(new TaxLocation(toBPartnerLocationId(dropShipNL), OrgId.ofRepoId(ORG_ID), DATE, CountryId.ofRepoId(deId))
+						.withLocationCaptureId(LocationId.ofRepoId(dropShipNL.getC_Location_ID())));
 		Mockito.when(handlerBL.getTaxLocation(argThat(ic -> ic != null && ic.getC_Invoice_Candidate_ID() == secondCandidate.getC_Invoice_Candidate_ID()), isNull()))
 				.thenReturn(new TaxLocation(toBPartnerLocationId(deliveryNL), OrgId.ofRepoId(ORG_ID), DATE, CountryId.ofRepoId(chId), warehouseCH));
 		Services.registerService(IInvoiceCandidateHandlerBL.class, handlerBL);
@@ -169,6 +171,7 @@ class InvoiceReTaxLocationTest
 		final InvoiceLineReTaxInput reTaxInput = invoiceBL.getReTaxInput(invoice, line, null);
 
 		assertThat(reTaxInput.getTaxLocation().getBpartnerLocationId()).isEqualTo(toBPartnerLocationId(dropShipNL));
+		assertThat(reTaxInput.getTaxLocation().getLocationCaptureId()).isEqualTo(LocationId.ofRepoId(dropShipNL.getC_Location_ID()));
 		assertThat(reTaxInput.getCountryFromId()).isEqualTo(CountryId.ofRepoId(deId));
 		assertThat(reTaxInput.getWarehouseId()).isNull();
 	}

@@ -22,7 +22,6 @@
 
 package de.metas.invoicecandidate.vatid;
 
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.invoice.service.InvoiceLineTaxLocationProvider;
 import de.metas.invoice.service.TaxLocationAndFromCountry;
 import de.metas.invoice.vatid.TaxLocation;
@@ -41,7 +40,7 @@ import java.util.Optional;
  * A sales invoice line created from invoice candidates (with {@code C_Invoice_Line_Alloc} rows) was taxed from the tax location of its candidates:
  * that of the allocated candidate with the lowest {@code C_Invoice_Candidate_ID} (all candidates of one line share the stored VAT IDs).
  * For an order-line candidate that is the order line's delivery location, for an order candidate its drop-ship / buyer location;
- * see {@link IInvoiceCandidateHandlerBL#getTaxLocation}.
+ * see {@link IInvoiceCandidateHandlerBL#getTaxLocation}. The captured address is kept where the candidate's handler reports it.
  */
 @Component
 public class InvoiceCandidateInvoiceLineTaxLocationProvider implements InvoiceLineTaxLocationProvider
@@ -61,7 +60,7 @@ public class InvoiceCandidateInvoiceLineTaxLocationProvider implements InvoiceLi
 
 		final TaxLocation taxLocation = invoiceCandidateHandlerBL.getTaxLocation(invoiceCandidates.get(0), null);
 		return Optional.of(new TaxLocationAndFromCountry(
-				BPartnerLocationAndCaptureId.of(taxLocation.getBpartnerLocationId()),
+				taxLocation.getBPartnerLocationAndCaptureId(),
 				taxLocation.getFromCountryId(),
 				taxLocation.getWarehouseId()));
 	}
