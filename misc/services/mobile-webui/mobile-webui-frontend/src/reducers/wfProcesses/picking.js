@@ -1,7 +1,12 @@
 import { current, isDraft } from 'immer';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
-import { FORGET_CU_ENTRY, REMEMBER_CU_ENTRY } from '../../apps/picking/redux/PickingActionTypes';
+import {
+  FORGET_CU_ENTRY,
+  FORGET_PENDING_SCAN,
+  REMEMBER_CU_ENTRY,
+  REMEMBER_PENDING_SCAN,
+} from '../../apps/picking/redux/PickingActionTypes';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 
@@ -12,6 +17,24 @@ export const pickingReducer = ({ draftState, action }) => {
       const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
       if (draftActivity?.dataStored) {
         draftActivity.dataStored.cuEntry = { lineId, lastTypedQty };
+      }
+      return draftState;
+    }
+    case REMEMBER_PENDING_SCAN: {
+      const { wfProcessId, activityId, lineId, scannedBarcode, qtyEntered } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored) {
+        const previous = draftActivity.dataStored.cuEntry;
+        const lastTypedQty = previous?.lineId === lineId ? previous.lastTypedQty : undefined;
+        draftActivity.dataStored.cuEntry = { lineId, lastTypedQty, pendingScan: { scannedBarcode, qtyEntered } };
+      }
+      return draftState;
+    }
+    case FORGET_PENDING_SCAN: {
+      const { wfProcessId, activityId } = action.payload;
+      const draftActivity = draftState[wfProcessId]?.activities?.[activityId];
+      if (draftActivity?.dataStored?.cuEntry) {
+        delete draftActivity.dataStored.cuEntry.pendingScan;
       }
       return draftState;
     }

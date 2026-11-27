@@ -798,7 +798,9 @@ const GetQuantityDialog = ({
                 onClick={onCloseDialog}
                 testId="cancel-button"
               />
-              {nextTUActions}
+              {typeof nextTUActions === 'function'
+                ? nextTUActions({ qtyEntered: qtyInfos.toNumberOrString(qtyInfo) })
+                : nextTUActions}
             </div>
           </form>
         )}
@@ -904,7 +906,8 @@ GetQuantityDialog.propTypes = {
   // { [attributeCode]: value } pre-filled into the editable-attribute rows; see EditableAttributesSection
   editableAttributesInitialValues: PropTypes.object,
   isShowCloseTargetButton: PropTypes.bool,
-  nextTUActions: PropTypes.node,
+  /** the node as is, or a function `({ qtyEntered }) => node` for a button that needs the count typed so far */
+  nextTUActions: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
   customQRCodeFormats: PropTypes.array,
   // Catch-weight only: an L&M QR code must be scanned; the scan fills the fields for review instead of confirming.
   // With catchWeightUom the scan also fills the weight; without it only Lot-Nr and MHD.

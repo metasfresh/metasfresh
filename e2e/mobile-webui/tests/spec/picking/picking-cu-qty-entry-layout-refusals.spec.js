@@ -101,20 +101,12 @@ for (const viewport of PHONE_VIEWPORTS) {
                 await SelectPickTargetTUScreen.waitForScreen();
                 await layout('Once "Gebinde" list opened by Next TU (line without TU type)');
                 await SelectPickTargetTUScreen.clickTUButton({ tu: tuName });
-                await PickingJobLineScreen.waitForScreen();
-                await layout('Once line screen after the TU type was chosen');
-                await PickingJobLineScreen.tapPickHUButton();
-                await PickLineScanScreen.waitForScreen();
-                await layout('Once scan step after the TU type was chosen');
-                await GetQuantityDialog.expectNotShown(); // nothing was booked on the line: no remembered label, the scan step stays
-                await scanLabel(labelOf({ masterdata }));
-                await layout('Once quantity block, TU open (opened without GRAI)', DIALOG_SCOPE);
-                await GetQuantityDialog.typeQtyEntered(4);
+                await PickLineScanScreen.waitForScreen(); // the choice leads back to the scan screen: the scanned label and the entered count are kept
+                await GetQuantityDialog.waitForDialog();
+                await GetQuantityDialog.expectQtyEntered(4);
+                await layout('Once quantity block, TU open (opened without GRAI), label and count kept', DIALOG_SCOPE);
                 await GetQuantityDialog.clickDoneStayOpen();
-                await PickingJobLineScreen.waitForScreen(); // entered from the line screen: the done line leads back there
-                await layout('Once line screen, line done');
-                await PickingJobLineScreen.goBack();
-                await PickingJobScreen.waitForScreen();
+                await PickingJobScreen.waitForScreen(); // the scan screen was entered from the job screen: the done line leads back there
                 await layout('Once job screen, line done, TU without GRAI');
                 await PickingJobScreen.completeRefused({ expectedError: txt(lang, 'graiCount'), whileToastShown: async () => await layout('Once "Fertigstellen" refused: every TU needs a GRAI (job screen + toast)') });
             });

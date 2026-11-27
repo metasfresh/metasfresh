@@ -1,6 +1,11 @@
 import reducer, { getActivityById } from '../../../../reducers/wfProcesses';
 import { getCUEntry } from '../../../../reducers/wfProcesses/picking';
-import { forgetCUEntry, rememberCUEntry } from '../../../../apps/picking/redux/PickingActions';
+import {
+  forgetCUEntry,
+  forgetPendingScan,
+  rememberCUEntry,
+  rememberPendingScan,
+} from '../../../../apps/picking/redux/PickingActions';
 import { updateWFProcess } from '../../../../actions/WorkflowActions';
 
 const wfProcessId = 'wf1';
@@ -81,5 +86,56 @@ describe('picking reducer: count remembered per line', () => {
       })
     );
     expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' })?.lastTypedQty).toBe(5);
+  });
+});
+
+describe('picking reducer: scan kept while the picker chooses the TU type ("Weiteres TU" on a line without TU type)', () => {
+  const pending = { wfProcessId, activityId, lineId: 'L1', scannedBarcode: 'LABEL#1', qtyEntered: 4 };
+
+  it('keeps the scanned label and the entered count of the line, and the last typed count next to them', () => {
+    let state = reducer(state0(), rememberCUEntry({ wfProcessId, activityId, lineId: 'L1', lastTypedQty: 5 }));
+    state = reducer(state, rememberPendingScan(pending));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' })).toEqual({
+      lineId: 'L1',
+      lastTypedQty: 5,
+      pendingScan: { scannedBarcode: 'LABEL#1', qtyEntered: 4 },
+    });
+  });
+
+  it('works without any earlier memory', () => {
+    const state = reducer(state0(), rememberPendingScan(pending));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' }).pendingScan).toEqual({
+      scannedBarcode: 'LABEL#1',
+      qtyEntered: 4,
+    });
+  });
+
+  it('another line sees nothing', () => {
+    const state = reducer(state0(), rememberPendingScan(pending));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L2' })).toBeNull();
+  });
+
+  it('forgetting it keeps the last typed count', () => {
+    let state = reducer(state0(), rememberCUEntry({ wfProcessId, activityId, lineId: 'L1', lastTypedQty: 5 }));
+    state = reducer(state, rememberPendingScan(pending));
+    state = reducer(state, forgetPendingScan({ wfProcessId, activityId }));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' })).toEqual({ lineId: 'L1', lastTypedQty: 5 });
+  });
+
+  it('a booking (remembering the count) drops the kept scan', () => {
+    let state = reducer(state0(), rememberPendingScan(pending));
+    state = reducer(state, rememberCUEntry({ wfProcessId, activityId, lineId: 'L1', lastTypedQty: 4 }));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' }).pendingScan).toBeUndefined();
+  });
+
+  it('a new round ("HU verpacken") drops the kept scan', () => {
+    let state = reducer(state0(), rememberPendingScan(pending));
+    state = reducer(state, forgetCUEntry({ wfProcessId, activityId }));
+    expect(getCUEntry({ activity: activityOf(state), lineId: 'L1' })).toBeNull();
+  });
+
+  it('ignores an unknown process, and forgetting with nothing kept changes nothing', () => {
+    expect(reducer(state0(), rememberPendingScan({ ...pending, wfProcessId: 'other' }))).toEqual(state0());
+    expect(reducer(state0(), forgetPendingScan({ wfProcessId, activityId }))).toEqual(state0());
   });
 });
