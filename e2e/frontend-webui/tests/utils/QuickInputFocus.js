@@ -19,9 +19,10 @@ const ORDER_LINE_GRID_ROWS = '.table-flex-wrapper table tbody tr';
  * GET /window/<windowId>/<recordId> response. Await it before LoginPage.goto() (the websocket is
  * opened when the app boots).
  *
- * The frames are read whichever transport SockJS ends up with: WebSocket frames from Playwright, and the
- * `xhr_streaming` fallback (SockJS falls back to it when the WebSocket handshake fails, e.g. through a busy
- * dev-server proxy) from the page, where an init script hands each streamed message to the test.
+ * The frames are read whichever transport SockJS ends up with: WebSocket frames from Playwright, and its
+ * fallbacks (xhr_streaming, eventsource, htmlfile, xhr and jsonp polling; SockJS falls back when the WebSocket
+ * handshake fails, e.g. through a busy dev-server proxy) from the page, where an init script hands each received
+ * SockJS message to the test.
  */
 export async function installDocumentEventRecorder(page) {
   const recorder = { frames: [], responses: [], parseErrors: 0 };
@@ -81,10 +82,13 @@ export async function installDocumentEventRecorder(page) {
 
   await page.exposeBinding('__qikfSockJsStreamedMessage', (_source, text) => handleSockJsMessage(String(text)));
   await page.addInitScript(() => {
-    // xhr_streaming sends newline-separated SockJS messages over one long response.
+    const forward = (message) => window.__qikfSockJsStreamedMessage(message);
+    const isStompUrl = (url) => /\/stomp\/[^/]+\/[^/]+\//.test(String(url));
+
+    // xhr_streaming and xhr (polling) send newline-separated SockJS messages in the response.
     const open = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-      if (/\/stomp\/.+\/xhr_streaming/.test(String(url))) {
+      if (isStompUrl(url) && /\/(xhr_streaming|xhr)(\?|$)/.test(String(url))) {
         let consumed = 0;
         const forwardCompleteLines = () => {
           const text = this.responseText || '';
@@ -94,7 +98,7 @@ export async function installDocumentEventRecorder(page) {
             .slice(consumed, end)
             .split('\n')
             .filter((line) => line.length > 0)
-            .forEach((line) => window.__qikfSockJsStreamedMessage(line));
+            .forEach(forward);
           consumed = end;
         };
         this.addEventListener('progress', forwardCompleteLines);
@@ -102,6 +106,45 @@ export async function installDocumentEventRecorder(page) {
       }
       return open.call(this, method, url, ...rest);
     };
+
+    // eventsource: one URI-encoded SockJS message per event.
+    const NativeEventSource = window.EventSource;
+    if (NativeEventSource) {
+      window.EventSource = function (url, ...rest) {
+        const eventSource = new NativeEventSource(url, ...rest);
+        if (isStompUrl(url)) eventSource.addEventListener('message', (e) => forward(decodeURI(e.data)));
+        return eventSource;
+      };
+      window.EventSource.prototype = NativeEventSource.prototype;
+    }
+
+    // htmlfile and jsonp: the response calls the receiver SockJS registers in window._jp (htmlfile:
+    // `_jp[id].message(message)`, jsonp: `_jp[id](message)`). SockJS creates `_jp` only if it is missing.
+    window._jp = new Proxy(
+      {},
+      {
+        set(target, id, receiver) {
+          if (typeof receiver === 'function') {
+            target[id] = function (message, ...rest) {
+              typeof message === 'string' && forward(message);
+              return receiver.call(this, message, ...rest);
+            };
+          } else if (receiver && typeof receiver.message === 'function') {
+            const message = receiver.message;
+            target[id] = {
+              ...receiver,
+              message: (data) => {
+                typeof data === 'string' && forward(data);
+                return message(data);
+              },
+            };
+          } else {
+            target[id] = receiver;
+          }
+          return true;
+        },
+      }
+    );
   });
 
   page.on('response', (response) => {
