@@ -109,6 +109,11 @@ const measureLayout = ({ scope, minTapSize }) => {
 
     // 6. error toasts: whole toast and its close button on the screen
     for (const toast of document.querySelectorAll('.Toastify__toast')) {
+        // the enter / exit animation (Bounce) moves the toast past the screen edge on purpose: judge it only when the animation is over
+        if (toast.getAnimations().length > 0) {
+            issues.push(`toast still animating: ${describe(toast)}`);
+            continue;
+        }
         const r = toast.getBoundingClientRect();
         if (r.width > 0 && (r.left < -0.5 || r.right > vw + 0.5 || r.top < -0.5 || r.bottom > vh + 0.5)) {
             issues.push(`toast off the screen: ${describe(toast)} (box ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.right)},${Math.round(r.bottom)}, screen ${vw}x${vh})`);
@@ -152,14 +157,18 @@ export const removeNextTUIconForReference = async (root) => {
 };
 
 export const expectLayoutSound = async (label, viewport, scope = ROOT_SCOPE) => {
-    let issues = await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });
-    // a toast slides in (and out): re-measure until it has settled or is gone; a toast that stays off the screen is reported after the timeout
-    if (issues.some((issue) => issue.startsWith('toast '))) {
+    const measure = async () => await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });
+    const isToastIssue = (issue) => issue.startsWith('toast ');
+    let issues = await measure();
+    // a toast slides in (and out): measure again until its animation is over or it is gone; that settled measurement is the one reported (a toast that stays off the screen or never settles is reported after the timeout)
+    if (issues.some(isToastIssue)) {
         await expect.poll(
-            async () => (await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE })).filter((issue) => issue.startsWith('toast ')),
+            async () => {
+                issues = await measure();
+                return issues.filter(isToastIssue).filter((issue) => issue.startsWith('toast still animating'));
+            },
             { timeout: SLOW_ACTION_TIMEOUT }
-        ).toEqual([]).catch(() => {}); // the final measurement below reports what is still wrong
-        issues = await page.evaluate(measureLayout, { scope, minTapSize: MIN_TAP_SIZE });
+        ).toEqual([]).catch(() => {}); // `issues` holds the last measurement: it reports what is still wrong
     }
     // one line per checked state, for the screen inventory: LAYOUT <size> | <label> | OK or the problems
     console.log(`LAYOUT ${viewport.width}x${viewport.height} | ${label} | ${issues.length === 0 ? 'OK' : issues.join(' ; ')}`);

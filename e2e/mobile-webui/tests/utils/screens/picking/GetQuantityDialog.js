@@ -119,8 +119,7 @@ export const GetQuantityDialog = {
 
     /** Box (Playwright boundingBox) and the styles that decide the look of the buttons OK, Cancel and Next TU of the dialog */
     measureButtons: async () => await test.step(`${NAME} - Measure OK, Cancel and Next TU buttons`, async () => {
-        const read = async (testId) => {
-            const button = containerElement().getByTestId(testId);
+        const read = async (button) => {
             const box = await button.boundingBox();
             const style = await button.evaluate((el) => {
                 const cs = getComputedStyle(el);
@@ -128,7 +127,7 @@ export const GetQuantityDialog = {
             });
             return { ...box, ...style };
         };
-        return { ok: await read('done-button'), cancel: await read('cancel-button'), nextTU: await read('next-tu-button') };
+        return { ok: await read(GetQuantityDialog.doneButton()), cancel: await read(GetQuantityDialog.cancelButton()), nextTU: await read(GetQuantityDialog.nextTUButton()) };
     }),
 
     expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
@@ -256,8 +255,7 @@ export const GetQuantityDialog = {
         await page.setViewportSize(smaller);
         const qtyInput = GetQuantityDialog.qtyInputField();
         await qtyInput.tap();
-        for (const [testId, name] of [['done-button', 'OK'], ['cancel-button', 'Cancel']]) {
-            const button = containerElement().getByTestId(testId);
+        for (const [button, name] of [[GetQuantityDialog.doneButton(), 'OK'], [GetQuantityDialog.cancelButton(), 'Cancel']]) {
             await button.evaluate((el) => el.scrollIntoView({ block: 'center' }));
             await expectInsideScreen(button, `${label} ${name} button with keyboard`, smaller);
         }

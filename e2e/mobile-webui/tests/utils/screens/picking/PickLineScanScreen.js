@@ -177,7 +177,7 @@ export const PickLineScanScreen = {
 
     /** Asserts that "Weiteres TU" / "Next TU" sits in the quantity block's button row, next to OK */
     expectNextTUButtonInQuantityBlock: async () => await step(`${NAME} - Expect Next TU button in the quantity block`, async () => {
-        await expect(page.locator('.get-qty-dialog').getByTestId('next-tu-button')).toBeVisible();
+        await expect(GetQuantityDialog.nextTUButton()).toBeVisible();
     }),
 
     /** Scans a GRAI on the scan step (before the label) */
