@@ -27,6 +27,7 @@ package de.metas.invoicecandidate.spi.impl;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.invoice.vatid.TaxLocation;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -124,7 +125,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Location and date as the manual candidate's tax code uses them ({@code ManualCandidateService}): the bill location and {@code DateOrdered}.
+	 * Location and date as the manual candidate's tax code uses them ({@code ManualCandidateService}): the bill location and {@code DateOrdered}
+	 * (which that code always sets; on a candidate created otherwise it may be empty, then the fallback date of {@link InvoiceCandidateHandlerBL#getFallbackTaxDate} applies).
 	 * That tax code passes the org's default warehouse, and the tax lookup then switches to the warehouse's org and takes the warehouse's country as the ship-from country.
 	 */
 	@Override
@@ -137,7 +139,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		return Optional.of(new TaxLocation(
 				billLocation.getBpartnerLocationId(),
 				warehouseId != null ? warehouseBL.getWarehouseOrgId(warehouseId) : icOrgId,
-				ic.getDateOrdered(),
+				InvoiceCandidateHandlerBL.getFallbackTaxDate(ic), // DateOrdered is not mandatory
 				warehouseId != null ? warehouseBL.getCountryId(warehouseId) : null,
 				warehouseId)
 				.withLocationCaptureId(billLocation.getLocationCaptureId()));

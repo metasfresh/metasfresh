@@ -206,6 +206,42 @@ public class InvoiceVATaxIdServiceTest
 	}
 
 	/**
+	 * The address carries the partner's own VAT ID written another way (lower case, spaces): it is the same VAT ID, so nothing by delivery applies.
+	 */
+	@Test
+	public void byDelivery_ownLocationVATEqualsBillPartnerVATWrittenOtherwise_none()
+	{
+		final BPartnerLocationId location = createLocation(createBPartner("DE123456788"), de, "de 123 456 788");
+
+		assertThat(service.resolveIfByDelivery(taxLocation(location), createTax(false), billPartnerOf(location))).isEqualTo(InvoiceVATaxIds.NONE);
+		assertThat(service.isLineTaxNeededForBuyer(taxLocation(createLocation(createBPartner(" de123456788 "), de, null)), billPartnerOf(location))).isFalse();
+	}
+
+	@Test
+	public void isSameVATaxId_ignoresCaseAndSpaces()
+	{
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", " de 123456 788 ")).isTrue();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId(null, " ")).isTrue();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", "DE123456789")).isFalse();
+		assertThat(InvoiceVATaxIdService.isSameVATaxId("DE123456788", null)).isFalse();
+	}
+
+	/**
+	 * An exempt tax to NL: a location in NL may have justified it, a German one did not.
+	 */
+	@Test
+	public void getExemptTaxDestinationCountryIfLocationNotThere()
+	{
+		final TaxId exemptToNL = createExemptTax(nl);
+		final TaxId notExemptToNL = createTax(false);
+
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(nl, null)), exemptToNL)).isEmpty();
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), exemptToNL)).contains(nl);
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), notExemptToNL)).isEmpty();
+		assertThat(service.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation(createLocation(de, null)), createExemptTax())).as("exempt tax without destination country").isEmpty();
+	}
+
+	/**
 	 * Drop-ship: the delivery partner is not the bill partner; its address VAT ID is compared with the bill partner's VAT ID.
 	 */
 	@Test
@@ -359,7 +395,16 @@ public class InvoiceVATaxIdServiceTest
 
 	private static TaxId createExemptTax()
 	{
+		return createExemptTax(null);
+	}
+
+	private static TaxId createExemptTax(@Nullable final CountryId toCountryId)
+	{
 		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		if (toCountryId != null)
+		{
+			tax.setTo_Country_ID(toCountryId.getRepoId());
+		}
 		tax.setName("test-exempt-tax");
 		tax.setAD_Org_ID(ORG.getRepoId());
 		tax.setValidFrom(Timestamp.valueOf("2026-01-01 00:00:00"));

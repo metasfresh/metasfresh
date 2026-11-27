@@ -537,6 +537,140 @@ class C_InvoiceVATaxIdCheckTest
 		assertThat(adjustmentCharge.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
 	}
 
+	/**
+	 * A line added by hand to a credit memo that is exempt on the same buyer VAT ID, but without the credited invoice's fiscal representation:
+	 * the seller VAT ID differs, which the seller message says (not the buyer one).
+	 */
+	@Test
+	void creditMemo_handAddedExemptLineWithOtherSellerVATaxId_failsWithSellerMessage()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		final I_C_InvoiceLine originalLine = createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createCreditMemoLine(creditMemo, originalLine, taxDENL0Exempt);
+		createLineForShipment(creditMemo, deliveryNL);
+
+		assertThatThrownBy(() -> stamper.stampOrCheck(creditMemo))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_SellerVATaxIdMismatch");
+	}
+
+	/**
+	 * The mismatch error shows the VAT ID the line's exemption rests on: here the bill partner's (the line resolves to none), not "-".
+	 */
+	@Test
+	void handAddedExemptLineOnBillPartnerVATaxId_errorShowsIt()
+	{
+		final I_C_Invoice invoice = createInvoice(NL_VAT);
+		createCandidateLine(invoice, taxDENL0Exempt, deliveryNL);
+		createLine(invoice, createTax(true, deId, deId));
+
+		assertThatThrownBy(() -> stamper.stampOrCheck(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_ExemptLineVATaxIdMismatch")
+				.hasMessageContaining(DE_VAT)
+				.hasMessageContaining(NL_VAT);
+	}
+
+	/**
+	 * A credit memo that references the invoice in its header only (made by hand: its lines credit no line) and whose line still has the invoice's exempt tax
+	 * was taxed where the invoice was: it gets the invoice's stored values, although the line itself would resolve from the German bill-to.
+	 */
+	@Test
+	void creditMemoReferencingInvoiceInHeaderOnly_lineWithCreditedTax_getsOriginalVATaxIds()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createLine(creditMemo, taxDENL0Exempt);
+
+		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
+		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * A credit memo that references the invoice in its header only, with a line that still has the invoice's exempt tax and a not exempt line added by hand (e.g. a fee):
+	 * the fee is checked like a line added by hand, i.e. not at all, and the credit memo gets the invoice's stored values.
+	 */
+	@Test
+	void creditMemoReferencingInvoiceInHeaderOnly_handAddedNotExemptLine_isAccepted()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createLine(creditMemo, taxDENL0Exempt);
+		createLine(creditMemo, taxDEDE19);
+
+		assertThatCode(() -> stamper.stampOrCheck(creditMemo)).doesNotThrowAnyException();
+		assertOriginalVATaxIds(creditMemo);
+	}
+
+	/**
+	 * A credit memo that references the invoice in its header only and none of whose lines has a tax of the invoice (its lines were re-taxed)
+	 * gets the values of its own lines' taxes, like any invoice: here a line shipped to the Dutch address.
+	 */
+	@Test
+	void creditMemoReferencingInvoiceInHeaderOnly_reTaxedLines_getItsOwnVATaxIds()
+	{
+		final I_C_Invoice original = createStampedInvoice();
+		createLine(original, taxDENL0Exempt);
+		final I_C_Invoice creditMemo = createCreditMemo(original);
+		createLineForShipment(creditMemo, deliveryNL, taxDEDE19);
+
+		stamper.stampOrCheck(creditMemo);
+
+		assertThat(creditMemo.getBuyerVATaxID()).isEqualTo(NL_VAT);
+		assertThat(creditMemo.getSellerVATaxID()).isNull();
+		assertThat(creditMemo.getC_Fiscal_Representation_ID()).isLessThanOrEqualTo(0);
+	}
+
+	/**
+	 * A copy (or manual invoice) whose line kept an exempt Dutch tax but has neither shipment line nor order line: the only location found for it is the German bill-to,
+	 * which is not in the tax's destination country, so the VAT ID that justified the exemption is unknown and the completion is rejected
+	 * (instead of silently showing the bill partner's German VAT ID).
+	 */
+	@Test
+	void manualInvoice_exemptLineWithoutDeliveryToTaxDestinationCountry_fails()
+	{
+		final I_C_Invoice invoice = createInvoice(null);
+		createLine(invoice, taxDENL0Exempt);
+
+		assertThatThrownBy(() -> stamper.stampOrCheck(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Invoice_ExemptLineNoDeliveryToTaxCountry");
+	}
+
+	/**
+	 * Counterpart of {@link #manualInvoice_exemptLineWithoutDeliveryToTaxDestinationCountry_fails()}: with the shipment to the Dutch address the line resolves the Dutch VAT ID.
+	 */
+	@Test
+	void manualInvoice_exemptLineWithDeliveryToTaxDestinationCountry_storesItsVATaxId()
+	{
+		final I_C_Invoice invoice = createInvoice(null);
+		createLineForShipment(invoice, deliveryNL);
+
+		stamper.stampOrCheck(invoice);
+
+		assertThat(invoice.getBuyerVATaxID()).isEqualTo(NL_VAT);
+	}
+
+	/**
+	 * Without fiscal representations and location VAT IDs (VAT IDs by delivery are not used) such a line completes as before and the invoice stores none.
+	 */
+	@Test
+	void noFiscalRepresentationAndNoLocationWithVATaxId_exemptLineWithoutDeliveryToTaxDestinationCountry_storesNone()
+	{
+		deliveryNL.setVATaxID(null);
+		save(deliveryNL);
+		billToDE.setVATaxID(null);
+		save(billToDE);
+		final I_C_Invoice invoice = createInvoice(null);
+		createLine(invoice, taxDENL0Exempt);
+
+		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
+		assertThat(invoice.getBuyerVATaxID()).isNull();
+	}
+
 	private I_C_Invoice createStampedInvoice()
 	{
 		final I_C_Invoice original = createInvoice(NL_VAT);
@@ -597,9 +731,11 @@ class C_InvoiceVATaxIdCheckTest
 		final I_C_BPartner customer = load(billToDE.getC_BPartner_ID(), I_C_BPartner.class);
 		final I_C_BPartner_Location deliveryWithPartnerVAT = createLocation(customer, deId, DE_VAT);
 		final I_C_BPartner_Location deliveryWithoutVAT = createLocation(customer, deId, null);
+		// an exempt tax of the delivery country, so the exemption could rest on the addresses' VAT IDs
+		final I_C_Tax taxDEDE0Exempt = createTax(true, deId, deId);
 		final I_C_Invoice invoice = createInvoice(null);
-		createLineForShipment(invoice, deliveryWithPartnerVAT);
-		createLineForShipment(invoice, deliveryWithoutVAT);
+		createLineForShipment(invoice, deliveryWithPartnerVAT, taxDEDE0Exempt);
+		createLineForShipment(invoice, deliveryWithoutVAT, taxDEDE0Exempt);
 
 		assertThatCode(() -> stamper.stampOrCheck(invoice)).doesNotThrowAnyException();
 		assertThat(invoice.getBuyerVATaxID()).isNull();

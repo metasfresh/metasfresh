@@ -348,6 +348,7 @@ public class C_Invoice_StepDef
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
 	 *   <li>{@code C_Project_ID} — project identifier ({@code metasfresh contains C_Projects:})</li>
+	 *   <li>{@code Ref_Invoice_ID} — identifier of the referenced invoice, e.g. the one a credit memo credits</li>
 	 *   <li>{@code DateAcct} — accounting date; defaults to today</li>
 	 *   <li>{@code DocumentNo} — the document number; a {@code @name@} placeholder is replaced with the {@link TestContext} variable of that name,
 	 *   e.g. {@code INV-@runId@}, any other value is taken literally. The validation steps (e.g. {@code validate created invoices}) resolve it the same way.</li>
@@ -1005,6 +1006,11 @@ public class C_Invoice_StepDef
 					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
 					invoice.setExternalSystem_ID(externalSystemId.getRepoId());
 				});
+
+		// e.g. a credit memo made by hand that references the credited invoice in its header only
+		row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID)
+				.map(invoiceTable::get)
+				.ifPresent(referencedInvoice -> invoice.setRef_Invoice_ID(referencedInvoice.getC_Invoice_ID()));
 
 		invoiceDAO.save(invoice);
 

@@ -34,6 +34,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.util.StringUtils;
+import org.compiere.model.I_C_BPartner;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
@@ -85,6 +91,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -100,8 +108,11 @@ import java.util.stream.Collectors;
  *     If the invoice's doc type overwrites the invoice date on completion, the hand-added lines are also checked with the tax the re-tax on that {@code DateInvoiced} change gives them;
  *     the date is overwritten at the start of the completion, before this check ({@code MInvoice.completeIt}), so normally the lines already carry that tax and the prediction finds the same one.</li>
  *     <li>any other invoice (manual invoices, copies, credit memos) gets the values its lines resolve to. A line of a credit memo that still has the tax of the sales invoice line it credits
- *     was taxed where that line was, so it resolves to the values stored on the credited invoice (also when empty); a re-taxed one resolves from its own tax location;
- *     a line of such a credit memo that credits no line was added by hand and is only checked like one on a candidate invoice.
+ *     (or, if no line references a line of the credited invoice, one of that invoice's line taxes) was taxed where that line was,
+ *     so it resolves to the values stored on the credited invoice (also when empty); a re-taxed one resolves from its own tax location;
+ *     a line of such a credit memo that credits nothing was added by hand and is only checked like one on a candidate invoice.
+ *     An exempt line whose tax location is not in its tax's destination country blocks the completion (the VAT ID that justified the exemption is unknown),
+ *     if VAT IDs by delivery are used at all (see {@link #stampManualInvoice}).
  *     Lines that do not use VAT IDs by delivery resolve to none, so an invoice of only such lines stores none and completes as before.</li>
  * </ol>
  * In each case, lines that resolve different values block the completion.
@@ -114,6 +125,8 @@ public class InvoiceVATaxIdStamper
 {
 	private static final AdMessageKey MSG_MixedVATaxIds = AdMessageKey.of("C_Invoice_MixedVATaxIds");
 	private static final AdMessageKey MSG_ExemptLineVATaxIdMismatch = AdMessageKey.of("C_Invoice_ExemptLineVATaxIdMismatch");
+	private static final AdMessageKey MSG_SellerVATaxIdMismatch = AdMessageKey.of("C_Invoice_SellerVATaxIdMismatch");
+	private static final AdMessageKey MSG_ExemptLineNoDeliveryToTaxCountry = AdMessageKey.of("C_Invoice_ExemptLineNoDeliveryToTaxCountry");
 	private static final String NO_VALUE = "-";
 
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -126,6 +139,9 @@ public class InvoiceVATaxIdStamper
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	@NonNull private final InvoiceVATaxIdService invoiceVATaxIdService;
 
 	@VisibleForTesting
@@ -282,7 +298,7 @@ public class InvoiceVATaxIdStamper
 			final TaxId lineTaxId = TaxId.ofRepoId(line.getC_Tax_ID());
 			if (isRequiresTaxCertificate(lineTaxId))
 			{
-				assertSameVATaxIds(line, lineResolver.resolve(line), stored);
+				assertSameVATaxIds(invoice, line, lineResolver.resolve(line), stored);
 			}
 
 			if (isReTaxedOnCompletion)
@@ -291,7 +307,7 @@ public class InvoiceVATaxIdStamper
 				final TaxId reTaxTaxId = predictReTaxTax(line, reTaxInput);
 				if (reTaxTaxId != null && !reTaxTaxId.equals(lineTaxId) && isRequiresTaxCertificate(reTaxTaxId))
 				{
-					assertSameVATaxIds(line, lineResolver.resolve(toTaxLocation(reTaxInput), reTaxTaxId), stored);
+					assertSameVATaxIds(invoice, line, lineResolver.resolve(toTaxLocation(reTaxInput), reTaxTaxId), stored);
 				}
 			}
 		}
@@ -333,7 +349,12 @@ public class InvoiceVATaxIdStamper
 				.withLocationCaptureId(location.getLocationCaptureId());
 	}
 
-	private static void assertSameVATaxIds(
+	/**
+	 * The given line's values must be the stored ones; the error shows the VAT IDs the line and the invoice show,
+	 * i.e. for an empty value the bill partner's VAT ID (buyer) or the organisation's main VAT ID (seller).
+	 */
+	private void assertSameVATaxIds(
+			@NonNull final I_C_Invoice invoice,
 			@NonNull final I_C_InvoiceLine line,
 			@NonNull final InvoiceVATaxIds lineVATaxIds,
 			@NonNull final InvoiceVATaxIds stored)
@@ -342,30 +363,48 @@ public class InvoiceVATaxIdStamper
 		{
 			return;
 		}
-		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getBuyerVATaxId);
-		assertSameVATaxId(line, lineVATaxIds, stored, InvoiceVATaxIds::getSellerVATaxId);
-	}
-
-	private static void assertSameVATaxId(
-			@NonNull final I_C_InvoiceLine line,
-			@NonNull final InvoiceVATaxIds lineVATaxIds,
-			@NonNull final InvoiceVATaxIds stored,
-			@NonNull final Function<InvoiceVATaxIds, String> vatTaxIdGetter)
-	{
-		final String lineVATaxId = vatTaxIdGetter.apply(lineVATaxIds);
-		final String storedVATaxId = vatTaxIdGetter.apply(stored);
-		if (!Objects.equals(lineVATaxId, storedVATaxId))
+		if (!InvoiceVATaxIdService.isSameVATaxId(lineVATaxIds.getBuyerVATaxId(), stored.getBuyerVATaxId()))
 		{
-			throw new AdempiereException(MSG_ExemptLineVATaxIdMismatch, line.getLine(), toDisplayString(lineVATaxId), toDisplayString(storedVATaxId))
+			final Supplier<String> billPartnerVATaxId = () -> bpartnerDAO.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).getVATaxID();
+			throw new AdempiereException(MSG_ExemptLineVATaxIdMismatch,
+					line.getLine(),
+					toDisplayString(lineVATaxIds.getBuyerVATaxId(), billPartnerVATaxId),
+					toDisplayString(stored.getBuyerVATaxId(), billPartnerVATaxId))
+					.markAsUserValidationError();
+		}
+		if (!InvoiceVATaxIdService.isSameVATaxId(lineVATaxIds.getSellerVATaxId(), stored.getSellerVATaxId()))
+		{
+			final Supplier<String> mainVATaxId = () -> getMainVATaxId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+			throw new AdempiereException(MSG_SellerVATaxIdMismatch,
+					line.getLine(),
+					toDisplayString(lineVATaxIds.getSellerVATaxId(), mainVATaxId),
+					toDisplayString(stored.getSellerVATaxId(), mainVATaxId))
 					.markAsUserValidationError();
 		}
 	}
 
+	@Nullable
+	private String getMainVATaxId(@NonNull final OrgId orgId)
+	{
+		return bpartnerOrgBL.retrieveLinkedBPartnerId(orgId)
+				.map(bpartnerDAO::getById)
+				.map(I_C_BPartner::getVATaxID)
+				.orElse(null);
+	}
+
 	/**
 	 * All non-description lines must resolve to the same values, which are stored; an invoice without such lines stores none.
+	 * A line whose tax is exempt on the buyer's VAT ID, but whose tax location (see {@link LineResolver#getTaxLocation(I_C_InvoiceLine)}) is not in that tax's destination country,
+	 * blocks the completion if VAT IDs by delivery are used (see {@link LineResolver#resolveManualLine}): the VAT ID that justified the exemption is not known
+	 * (e.g. a copy whose line kept the exempt tax of a delivery but lost its shipment line).
 	 * <p>
-	 * A credit memo of a sales invoice resolves only its lines that credit a line of that invoice ({@code Ref_InvoiceLine_ID}):
-	 * a line that still has the tax of the line it credits resolves to that invoice's stored values (also when empty), a re-taxed one from its own tax location.
+	 * A credit memo of a sales invoice resolves only its lines that credit that invoice:
+	 * <ul>
+	 *     <li>if any line credits a line of it ({@code Ref_InvoiceLine_ID}), those lines: a line that still has the tax of the line it credits resolves to that invoice's stored values (also when empty),
+	 *     a re-taxed one from its own tax location;</li>
+	 *     <li>else (the credit memo references the invoice in its header only) the lines that have one of that invoice's line taxes: they resolve to its stored values.
+	 *     If no line has one, its lines were re-taxed, and the credit memo is resolved like any manual invoice.</li>
+	 * </ul>
 	 * Its other lines (e.g. a fee) were added by hand, so they are checked like a line added by hand to a candidate invoice:
 	 * only if their tax is exempt on a VAT ID, it must be the one the credit memo stores.
 	 *
@@ -380,11 +419,12 @@ public class InvoiceVATaxIdStamper
 		final List<I_C_InvoiceLine> nonDescriptionLines = lines.stream()
 				.filter(line -> !line.isDescription())
 				.collect(ImmutableList.toImmutableList());
-		final boolean isCreditingLines = creditedInvoice != null && nonDescriptionLines.stream().anyMatch(line -> line.getRef_InvoiceLine_ID() > 0);
-		if (!isCreditingLines)
+
+		final CreditingLines creditingLines = creditedInvoice != null ? getCreditingLines(nonDescriptionLines, creditedInvoice) : null;
+		if (creditingLines == null || creditingLines.isEmpty())
 		{
 			final Set<InvoiceVATaxIds> distinctVATaxIds = nonDescriptionLines.stream()
-					.map(lineResolver::resolve)
+					.map(lineResolver::resolveManualLine)
 					.collect(Collectors.toCollection(LinkedHashSet::new));
 			if (distinctVATaxIds.isEmpty())
 			{
@@ -395,28 +435,63 @@ public class InvoiceVATaxIdStamper
 			return;
 		}
 
-		final Map<InvoiceLineId, TaxId> creditedLineTaxIds = getLineTaxIds(creditedInvoice);
 		final Set<InvoiceVATaxIds> distinctVATaxIds = new LinkedHashSet<>();
 		for (final I_C_InvoiceLine line : nonDescriptionLines)
 		{
-			final InvoiceLineId creditedLineId = InvoiceLineId.ofRepoIdOrNull(line.getRef_InvoiceLine_ID());
-			if (creditedLineId == null)
+			if (!creditingLines.isCrediting(line))
 			{
 				continue;
 			}
-			final boolean isTaxedLikeCreditedLine = TaxId.ofRepoId(line.getC_Tax_ID()).equals(creditedLineTaxIds.get(creditedLineId));
-			distinctVATaxIds.add(isTaxedLikeCreditedLine ? getStoredVATaxIds(creditedInvoice) : lineResolver.resolve(line));
+			distinctVATaxIds.add(creditingLines.isTaxedLikeCreditedLine(line) ? getStoredVATaxIds(creditedInvoice) : lineResolver.resolveManualLine(line));
 		}
 		setUniqueVATaxIds(invoice, distinctVATaxIds);
 
 		final InvoiceVATaxIds stored = getStoredVATaxIds(invoice);
 		for (final I_C_InvoiceLine line : nonDescriptionLines)
 		{
-			if (line.getRef_InvoiceLine_ID() <= 0 && isRequiresTaxCertificate(TaxId.ofRepoId(line.getC_Tax_ID())))
+			if (!creditingLines.isCrediting(line) && isRequiresTaxCertificate(TaxId.ofRepoId(line.getC_Tax_ID())))
 			{
-				assertSameVATaxIds(line, lineResolver.resolve(line), stored);
+				assertSameVATaxIds(invoice, line, lineResolver.resolve(line), stored);
 			}
 		}
+	}
+
+	/**
+	 * @return the lines of a credit memo that credit the given invoice: the ones that reference one of its lines, or, if none does, the ones that have one of its line taxes
+	 */
+	@NonNull
+	private CreditingLines getCreditingLines(@NonNull final List<I_C_InvoiceLine> lines, @NonNull final I_C_Invoice creditedInvoice)
+	{
+		final Map<InvoiceLineId, TaxId> creditedLineTaxIds = getLineTaxIds(creditedInvoice);
+		final boolean isReferencingLines = lines.stream().anyMatch(line -> line.getRef_InvoiceLine_ID() > 0);
+		if (isReferencingLines)
+		{
+			return new CreditingLines(
+					line -> line.getRef_InvoiceLine_ID() > 0,
+					line -> TaxId.ofRepoId(line.getC_Tax_ID()).equals(creditedLineTaxIds.get(InvoiceLineId.ofRepoId(line.getRef_InvoiceLine_ID()))),
+					true);
+		}
+
+		final ImmutableSet<TaxId> creditedTaxIds = ImmutableSet.copyOf(creditedLineTaxIds.values());
+		final Predicate<I_C_InvoiceLine> hasCreditedTax = line -> line.getC_Tax_ID() > 0 && creditedTaxIds.contains(TaxId.ofRepoId(line.getC_Tax_ID()));
+		return new CreditingLines(hasCreditedTax, hasCreditedTax, lines.stream().anyMatch(hasCreditedTax));
+	}
+
+	@Value
+	private static class CreditingLines
+	{
+		@NonNull Predicate<I_C_InvoiceLine> creditingPredicate;
+		@NonNull Predicate<I_C_InvoiceLine> taxedLikeCreditedLinePredicate;
+		boolean anyCrediting;
+
+		boolean isEmpty() {return !anyCrediting;}
+
+		boolean isCrediting(@NonNull final I_C_InvoiceLine line) {return creditingPredicate.test(line);}
+
+		/**
+		 * Only for a crediting line.
+		 */
+		boolean isTaxedLikeCreditedLine(@NonNull final I_C_InvoiceLine line) {return taxedLikeCreditedLinePredicate.test(line);}
 	}
 
 	@NonNull
@@ -479,6 +554,15 @@ public class InvoiceVATaxIdStamper
 		return vatTaxId != null ? vatTaxId : NO_VALUE;
 	}
 
+	/**
+	 * @param shownIfEmpty the VAT ID the outputs show if the value is empty
+	 */
+	@NonNull
+	private static String toDisplayString(@Nullable final String vatTaxId, @NonNull final Supplier<String> shownIfEmpty)
+	{
+		return toDisplayString(vatTaxId != null ? vatTaxId : StringUtils.trimBlankToNull(shownIfEmpty.get()));
+	}
+
 	@Value
 	private static class ResolveKey
 	{
@@ -516,6 +600,29 @@ public class InvoiceVATaxIdStamper
 		private InvoiceVATaxIds resolve(@NonNull final I_C_InvoiceLine line)
 		{
 			return resolve(getTaxLocation(line), TaxId.ofRepoId(line.getC_Tax_ID()));
+		}
+
+		/**
+		 * Like {@link #resolve(I_C_InvoiceLine)}, for a line of a manual invoice (incl. copies and credit memos): if VAT IDs by delivery are used
+		 * ({@link InvoiceVATaxIdService#isVATaxIdByDeliveryPossible}) and the line's tax is exempt on the buyer's VAT ID, its tax location must be in the tax's destination country.
+		 * Else that location's VAT ID did not justify the exemption, and the one that did is unknown: the completion fails instead of declaring another VAT ID.
+		 * Without VAT IDs by delivery such a line resolves as before.
+		 */
+		@NonNull
+		private InvoiceVATaxIds resolveManualLine(@NonNull final I_C_InvoiceLine line)
+		{
+			final TaxLocation taxLocation = getTaxLocation(line);
+			final TaxId taxId = TaxId.ofRepoId(line.getC_Tax_ID());
+			if (invoiceVATaxIdService.isVATaxIdByDeliveryPossible())
+			{
+				final CountryId taxCountryId = invoiceVATaxIdService.getExemptTaxDestinationCountryIfLocationNotThere(taxLocation, taxId).orElse(null);
+				if (taxCountryId != null)
+				{
+					throw new AdempiereException(MSG_ExemptLineNoDeliveryToTaxCountry, line.getLine(), countryDAO.getCountryNameById(taxCountryId))
+							.markAsUserValidationError();
+				}
+			}
+			return resolve(taxLocation, taxId);
 		}
 
 		@NonNull

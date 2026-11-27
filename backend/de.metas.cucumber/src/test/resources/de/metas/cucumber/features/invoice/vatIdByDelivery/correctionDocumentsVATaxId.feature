@@ -7,7 +7,9 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
   fiscal representation stored on that invoice, as they are (also when they are empty), even if their lines
   would resolve other VAT IDs from today's master data and even without shipment lines. A credit memo whose
   lines are re-taxed gets the VAT IDs of its new taxes instead (see reTaxOnInvoiceDateChange.feature).
-  A plain copy of an invoice does not carry the stored values; it gets its own when it is completed.
+  A credit memo made by hand that references the invoice in its header only keeps them too, for its lines that still have one of the
+  invoice's taxes. A plain copy of an invoice does not carry the stored values; it gets its own when it is completed, and it is not
+  completed while an exempt line has no delivery to its tax's destination country (the VAT ID that justified the exemption is unknown).
 
   A German customer is billed at its German head office (VAT ID on the partner and the billing address) and
   receives goods and services at a Dutch address with its own Dutch VAT ID, and goods at a German address without
@@ -307,8 +309,57 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
       | reversal   | RE        | NL333333330B01 |               |                            |
 
+  @Id:S32533_TC12f
+  Scenario: a credit memo made by hand that references the invoice in its header only and has its exempt Dutch tax keeps the Dutch VAT ID
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
+      | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    And the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+    And shipment is generated for the following shipment schedule
+      | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
+      | shipment              | shipmentSchedule                 | D                 | Y                  |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCandidate                  |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCandidate                  | invoice                 |
+    And validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   |
+      | invoice    | CO        | NL333333330B01 |
+
+    # the credit memo is entered by hand: it references the invoice in its header, its line references no invoice line and no shipment;
+    # the line gets the invoice's exempt Dutch tax, a fee line added to it is taxed from the German billing address
+    When metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency.ISO_Code | Ref_Invoice_ID |
+      | creditMemo | customer      | customer_billing       | pl_DE          | Gutschrift              | 2026-09-02   | true    | EUR                 | invoice        |
+    And metasfresh contains C_InvoiceLines
+      | Identifier     | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID$set |
+      | creditMemoLine | creditMemo   | product      | 10 PCE      | taxDENL0     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | feeLine    | creditMemo   | service      | 1 PCE       |
+    And the invoice identified by creditMemo is completed
+
+    Then validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID  |
+      | creditMemoLine              | creditMemo              | product                 | 10          | taxDENL0  |
+      | feeLine                     | creditMemo              | service                 | 1           | taxDEDE19 |
+    And validate created invoices
+      | Identifier | DocStatus | BuyerVATaxID   | SellerVATaxID | C_Fiscal_Representation_ID |
+      | creditMemo | CO        | NL333333330B01 |               |                            |
+
   @Id:S32533_TC15
-  Scenario: the copy of an invoice for goods shipped to the Dutch address has no VAT IDs until it is completed; then it gets the ones of its own lines, here none
+  Scenario: the copy of an invoice for goods shipped to the Dutch address has no VAT IDs; its exempt line lost the shipment that justified the exemption, so it cannot be completed
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DeliveryRule |
       | order      | true    | customer                 | 2026-09-02  | customer_NL                           | customer_billing                | wh_DE                         | F            |
@@ -340,17 +391,13 @@ Feature: Reversals and credit memos keep the VAT IDs of their invoice, copies do
       | Identifier  | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
       | invoiceCopy | DR        |              |               |                            |
 
-    # the copied line has neither shipment line nor order line, so it was taxed from the German billing address,
-    # whose VAT ID is the partner's own: nothing is stored and the copy shows the partner's VAT ID
-    When the invoice identified by invoiceCopy is completed
-    Then validate created invoices
-      | Identifier  | DocStatus | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
-      | invoiceCopy | CO        |              |               |                            |
-    When temporarily set sys config boolean value false for sys config 'de.metas.report.jasper.IsMockReportService'
-    And update AD_Client
-      | Identifier | StoreArchiveOnFileSystem |
-      | 1000000    | false                    |
-    And The jasper process is run
-      | Value             | Record_ID   |
-      | Rechnung (Jasper) | invoiceCopy |
-    Then the PDF archived for the record identified by "invoiceCopy" contains text "DE123456788"
+    # the copied line keeps the exempt Dutch tax, but has neither shipment line nor order line: the only address found for it is the
+    # German billing address, whose VAT ID did not justify the exemption. The VAT ID that did is unknown, so the copy is not completed
+    # (it would show the partner's German VAT ID on a line exempt for a delivery to the Netherlands)
+    And validate created invoice lines
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_Tax_ID |
+      | copyLine                    | invoiceCopy             | product                 | 10          | taxDENL0 |
+    Then the invoice identified by "invoiceCopy" cannot be completed with AD_Message "C_Invoice_ExemptLineNoDeliveryToTaxCountry"
+    And validate created invoices
+      | Identifier  | BuyerVATaxID | SellerVATaxID | C_Fiscal_Representation_ID |
+      | invoiceCopy |              |               |                            |

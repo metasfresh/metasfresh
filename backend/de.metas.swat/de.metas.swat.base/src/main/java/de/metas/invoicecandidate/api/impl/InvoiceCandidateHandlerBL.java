@@ -597,9 +597,10 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 	/**
 	 * {@code DateOrdered}, else {@code PresetDateInvoiced}, else {@code DateInvoiced}; fails if the candidate has none of them.
+	 * Also used by handlers whose candidates' {@code DateOrdered} may be empty.
 	 */
 	@NonNull
-	private static Timestamp getFallbackTaxDate(@NonNull final I_C_Invoice_Candidate ic)
+	public static Timestamp getFallbackTaxDate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp taxDate = CoalesceUtil.coalesce(ic.getDateOrdered(), ic.getPresetDateInvoiced(), ic.getDateInvoiced());
 		if (taxDate == null)
