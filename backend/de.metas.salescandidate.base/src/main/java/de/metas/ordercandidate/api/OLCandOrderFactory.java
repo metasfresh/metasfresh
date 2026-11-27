@@ -248,7 +248,8 @@ class OLCandOrderFactory
 				.locationAdapter(order)
 				.setFrom(candidateOfGroup.getBPartnerInfo());
 
-		// without a bill partner/location of its own, the effective bill info falls back to the buyer's effective location, preferring a bill-to location
+		// without a bill partner/location of its own, the effective bill info falls back to the buyer's override location, else the buyer's location;
+		// only a candidate without any buyer location falls back to the buyer partner's master data, preferring a bill-to location
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
