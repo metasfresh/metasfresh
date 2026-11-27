@@ -278,8 +278,10 @@ const GetQuantityDialog = ({
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
         catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
-        // undefined = the value stays as it is: best-before when its field is not shown, lot when it is neither editable nor shown read-only (e.g. from a scanned label).
-        // Otherwise the field's value is sent ('' when cleared).
+        // undefined = the value stays as it is. Best-before: sent only when its field is shown.
+        // Lot: sent when it is editable (isLotNoEditable) or lot and best-before are shown read-only from outside (isLotAndBestBeforeShownReadOnly);
+        // not sent when the lot is only previewed read-only via readOnlyAttributes (the receipt generates it).
+        // A sent field carries its value ('' when cleared).
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : undefined,
         lotNo: isLotNoSent ? lotNo : undefined,
         serialNos: isShowSerialNo ? serialNos : null,
