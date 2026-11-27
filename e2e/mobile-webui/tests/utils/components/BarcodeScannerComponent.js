@@ -163,19 +163,28 @@ export const BarcodeScannerComponent = {
         const deadline = Date.now() + SLOW_ACTION_TIMEOUT;
         for (; ;) {
             const result = await page.evaluate(({ code, selector }) => {
-                const valueBefore = document.querySelector(selector)?.value;
+                const input = document.querySelector(selector);
+                const valueBefore = input?.value;
+                // A change of the marker during the keys also shows a reader that finished the code by itself (HU QR, JSON):
+                // it resets the marker on the last character, so only the recorded change tells that it listened.
+                const observer = input ? new MutationObserver(() => {}) : null;
+                observer?.observe(input, { attributes: true, attributeFilter: ['data-scan-in-progress'] });
                 for (const char of code) {
                     document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
                     document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
                 }
-                const valueAfter = document.querySelector(selector)?.value;
+                const markerChanged = (observer?.takeRecords().length ?? 0) > 0;
+                observer?.disconnect();
+                const valueAfter = input?.value;
                 // The reader either echoes the keys into the input (hotfix line) or, without echoing them, marks the
                 // scanner's own input with data-scan-in-progress (release line; set for visible and invisible scanners).
-                const input = document.querySelector(selector);
                 const echoedInInput = valueAfter !== valueBefore;
                 const markedInProgress = input?.dataset.scanInProgress === 'true';
-                if (!echoedInInput && !markedInProgress) {
+                if (!echoedInInput && !markerChanged) {
                     return { sent: false }; // no listener saw the keys: nothing was collected
+                }
+                if (!echoedInInput && !markedInProgress) {
+                    return { sent: true, collected: null }; // the reader completed the code by itself: already delivered
                 }
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
                 document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));

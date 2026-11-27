@@ -84,3 +84,31 @@ test('a non-echoing reader (invisible scanner, other scanner panel present) gets
     await expect.poll(() => page.evaluate(() => window.__scanned)).toEqual(['ABCDEFGHIJ12']);
     expect(await page.evaluate(() => window.__keysSeen)).toBe('ABCDEFGHIJ12'.length + 1);
 });
+
+// a self-completing code (HU QR, JSON) is finished by the reader on its last character, which resets the in-progress marker
+// before the helper looks at it: the scan is delivered already and must not be sent again
+test('a non-echoing reader that completes the code on its last character gets it delivered exactly once', async ({ page }) => {
+    await page.setContent(`
+<input id="input-text" data-testid="qrCode-input" data-scan-in-progress="false" />
+<script>
+    window.__scanned = [];
+    setTimeout(() => {
+        let buffer = '';
+        const input = document.getElementById('input-text');
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') return;
+            buffer += event.key;
+            input.dataset.scanInProgress = 'true';
+            if (buffer.endsWith('}')) {
+                window.__scanned.push(buffer);
+                buffer = '';
+                input.dataset.scanInProgress = 'false';
+            }
+        });
+    }, 300);
+</script>`);
+
+    await BarcodeScannerComponent.typeWhenScannerListens({ scannedCode: '{"a":1}', testId: 'qrCode-input' });
+
+    await expect.poll(() => page.evaluate(() => window.__scanned)).toEqual(['{"a":1}']);
+});
