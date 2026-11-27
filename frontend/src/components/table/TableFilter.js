@@ -26,6 +26,7 @@ const TableFilter = ({
   fullScreen,
   wrapperHeight,
   isBatchEntry: isBatchEntryActive,
+  isBatchEntryOpenedAutomatically,
   handleBatchEntryToggle,
   quickInputSupport,
   newRecordInputMode,
@@ -73,7 +74,7 @@ const TableFilter = ({
       allowCreateNew &&
       !isBatchEntryActive
     ) {
-      handleBatchEntryToggle();
+      handleBatchEntryToggle({ isAutomatic: true });
     }
     //
     // Close batch entry if open but creating new entries is no longer allowed
@@ -231,6 +232,7 @@ const TableFilter = ({
             tabId={tabId}
             forceHeight={wrapperHeight ? wrapperHeight : null}
             closeBatchEntry={handleBatchEntryToggle}
+            isOpenedAutomatically={isBatchEntryOpenedAutomatically}
             addNotification={(...args) => dispatch(addNotification(...args))}
           />
         )}
@@ -278,6 +280,7 @@ TableFilter.propTypes = {
   wrapperHeight: PropTypes.number,
   isBatchEntry: PropTypes.bool,
   handleBatchEntryToggle: PropTypes.func,
+  isBatchEntryOpenedAutomatically: PropTypes.bool,
   quickInputSupport: PropTypes.object,
   newRecordInputMode: PropTypes.string,
   allowCreateNew: PropTypes.bool,

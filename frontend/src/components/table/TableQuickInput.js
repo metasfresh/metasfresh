@@ -107,7 +107,9 @@ class TableQuickInput extends PureComponent {
       this.closeBatchEntry();
     });
 
-    this.focusFirstFieldWithErrors();
+    if (this.isFirstFieldFocused()) {
+      this.focusFirstFieldWithErrors();
+    }
   };
 
   handleChange = (field, value) => {
@@ -255,6 +257,32 @@ class TableQuickInput extends PureComponent {
     this.rawWidgets.forEach((widget) => widget.resetCachedValue());
   };
 
+  /**
+   * Whether the first field (or, after loading, the first field with errors) takes the cursor when this quick input
+   * is shown. Decided once per quick input (`quickInputId`: the opened one, then each new one after a line was
+   * added), when first asked. A quick input the tab opened by itself does not take the cursor from an element
+   * outside it.
+   * @returns {boolean}
+   */
+  isFirstFieldFocused = () => {
+    const { quickInputId, isOpenedAutomatically } = this.props;
+
+    if (this.firstFieldFocusDecidedFor !== quickInputId) {
+      this.firstFieldFocusDecidedFor = quickInputId;
+      this.firstFieldFocused =
+        !isOpenedAutomatically || !this.isCursorOutsideQuickInput();
+    }
+    return this.firstFieldFocused;
+  };
+
+  /**
+   * @returns {boolean} true if an element outside this quick input holds the cursor (not when nothing does)
+   */
+  isCursorOutsideQuickInput = () => {
+    const active = document.activeElement;
+    return !!active && active !== document.body && !this.form?.contains(active);
+  };
+
   setRef = (refNode) => {
     this.form = refNode;
   };
@@ -287,6 +315,7 @@ class TableQuickInput extends PureComponent {
 
     if (data && layout) {
       const readonly = isSubmitPending;
+      const isFirstFieldFocused = this.isFirstFieldFocused();
 
       return layout.map((item, idx) => {
         const fieldNames = item.fields.map((elem) => elem.field);
@@ -325,8 +354,8 @@ class TableQuickInput extends PureComponent {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             type="secondary"
-            autoFocus={idx === 0}
-            initialFocus={idx === 0}
+            autoFocus={idx === 0 && isFirstFieldFocused}
+            initialFocus={idx === 0 && isFirstFieldFocused}
           />
         );
       });
@@ -408,6 +437,7 @@ TableQuickInput.propTypes = {
   tabId: PropTypes.string.isRequired,
   forceHeight: PropTypes.number,
   closeBatchEntry: PropTypes.func,
+  isOpenedAutomatically: PropTypes.bool,
   addNotification: PropTypes.func.isRequired,
 
   //
