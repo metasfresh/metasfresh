@@ -27,7 +27,7 @@ Wichtig: Die neuen Rechnungen erhalten die Rechnungsadresse und den Rechnungskon
 
 Achtung: Rechnungskandidaten mit Rechnungsstellung „Manuell“ oder mit leerem bzw. zukünftigem Datum „Abrechnung ab“ werden nicht neu fakturiert; die neue Rechnung entsteht ohne sie. Hat ein Rechnungskandidat einen Fehler oder wird keiner fakturiert, bleibt die Rechnung storniert, ohne dass eine neue Rechnung entsteht, und die Verarbeitung im Hintergrund bricht ab. Die Rechnungskandidaten daher vorher prüfen.
 
-Rechnungen, die mit etwas anderem als einer Zahlung verrechnet sind (z. B. mit einer Gutschrift), und Rechnungen mit Provision werden übersprungen; dazu erscheint eine Meldung.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND AD_Language IN ('de_DE','de_CH');
+Rechnungen, die mit etwas anderem als einer Zahlung verrechnet sind (z. B. mit einer Gutschrift), und Rechnungen mit Provision werden übersprungen; dazu erscheint eine Meldung.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-28 12:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND AD_Language IN ('de_DE','de_CH');
 
 UPDATE AD_Process_Trl SET Description='The selected completed invoices are reversed, and their invoice candidates are invoiced again. Invoices without invoice candidates stay unchanged.
 
@@ -41,7 +41,7 @@ Important: the new invoices get the invoice address and invoice contact that are
 
 Caution: invoice candidates with invoice rule "Manual" or with an empty or future "Date Invoice from" are not invoiced again; the new invoice is created without them. If an invoice candidate has an error or none is invoiced, the invoice stays reversed without a new invoice, and the background processing stops. So check the invoice candidates beforehand.
 
-Invoices allocated to anything other than a payment (e.g. a credit memo) and invoices with commission are skipped; a notification is shown for each.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND AD_Language='en_US';
+Invoices allocated to anything other than a payment (e.g. a credit memo) and invoices with commission are skipped; a notification is shown for each.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-11-28 12:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND AD_Language='en_US';
 
 UPDATE AD_Process_Trl SET Description='The selected completed invoices are reversed, and their invoice candidates are invoiced again. Invoices without invoice candidates stay unchanged.
 
@@ -55,13 +55,13 @@ Important: the new invoices get the invoice address and invoice contact that are
 
 Caution: invoice candidates with invoice rule "Manual" or with an empty or future "Date Invoice from" are not invoiced again; the new invoice is created without them. If an invoice candidate has an error or none is invoiced, the invoice stays reversed without a new invoice, and the background processing stops. So check the invoice candidates beforehand.
 
-Invoices allocated to anything other than a payment (e.g. a credit memo) and invoices with commission are skipped; a notification is shown for each.', Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND IsTranslated='N' AND AD_Language NOT IN ('de_DE','de_CH','en_US');
+Invoices allocated to anything other than a payment (e.g. a credit memo) and invoices with commission are skipped; a notification is shown for each.', Updated=TO_TIMESTAMP('2026-11-28 12:00:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Process_ID=584906 AND IsTranslated='N' AND AD_Language NOT IN ('de_DE','de_CH','en_US');
 
 UPDATE ad_column SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -69,7 +69,7 @@ WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
 UPDATE ad_column_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
 
@@ -86,7 +86,7 @@ UPDATE ad_element SET
     webui_namebrowse=regexp_replace(webui_namebrowse, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenew=regexp_replace(webui_namenew, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenewbreadcrumb=regexp_replace(webui_namenewbreadcrumb, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE commitwarning ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -113,7 +113,7 @@ UPDATE ad_element_trl SET
     webui_namebrowse=regexp_replace(webui_namebrowse, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenew=regexp_replace(webui_namenew, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenewbreadcrumb=regexp_replace(webui_namenewbreadcrumb, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE commitwarning ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -131,7 +131,7 @@ UPDATE ad_field SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -140,7 +140,7 @@ UPDATE ad_field_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:09','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -151,7 +151,7 @@ UPDATE ad_menu SET
     webui_namebrowse=regexp_replace(webui_namebrowse, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenew=regexp_replace(webui_namenew, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenewbreadcrumb=regexp_replace(webui_namenewbreadcrumb, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:10','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR webui_namebrowse ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -164,7 +164,7 @@ UPDATE ad_menu_trl SET
     webui_namebrowse=regexp_replace(webui_namebrowse, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenew=regexp_replace(webui_namenew, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     webui_namenewbreadcrumb=regexp_replace(webui_namenewbreadcrumb, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR webui_namebrowse ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -174,14 +174,14 @@ WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
 UPDATE ad_message SET
     msgtext=regexp_replace(msgtext, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     msgtip=regexp_replace(msgtip, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE msgtext ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR msgtip ~* '(\mrechung|abrechung|[^bp]rechung)';
 
 UPDATE ad_message_trl SET
     msgtext=regexp_replace(msgtext, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     msgtip=regexp_replace(msgtip, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE msgtext ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR msgtip ~* '(\mrechung|abrechung|[^bp]rechung)';
 
@@ -189,7 +189,7 @@ UPDATE ad_process SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -198,7 +198,7 @@ UPDATE ad_process_para SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:15','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -207,7 +207,7 @@ UPDATE ad_process_para_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -216,7 +216,7 @@ UPDATE ad_process_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:17','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -224,14 +224,14 @@ WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
 UPDATE ad_ref_list SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
 
 UPDATE ad_ref_list_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:19','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
 
@@ -239,7 +239,7 @@ UPDATE ad_reference SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -248,7 +248,7 @@ UPDATE ad_reference_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -262,7 +262,7 @@ UPDATE ad_tab SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE quickinput_openbutton_caption ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR quickinput_closebutton_caption ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR notfound_message ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -281,7 +281,7 @@ UPDATE ad_tab_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:23','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE quickinput_openbutton_caption ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR quickinput_closebutton_caption ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR notfound_message ~* '(\mrechung|abrechung|[^bp]rechung)'
@@ -295,7 +295,7 @@ UPDATE ad_table SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -303,7 +303,7 @@ WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
 UPDATE ad_table_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:25','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
 
@@ -311,7 +311,7 @@ UPDATE ad_window SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:26','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
@@ -320,7 +320,7 @@ UPDATE ad_window_trl SET
     description=regexp_replace(description, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     help=regexp_replace(help, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
     name=regexp_replace(name, '(\m|ab|[^bp])(rech)ung', '\1\2nung', 'gi'),
-    Updated=TO_TIMESTAMP('2026-11-28 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+    Updated=TO_TIMESTAMP('2026-11-28 12:00:27','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE description ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR help ~* '(\mrechung|abrechung|[^bp]rechung)'
     OR name ~* '(\mrechung|abrechung|[^bp]rechung)';
