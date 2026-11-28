@@ -211,6 +211,14 @@ public final class OLCand implements IProductPriceAware
 		return MoreObjects.toStringHelper(this).addValue(olCandRecord).toString();
 	}
 
+	/**
+	 * @return true if the candidate's own {@code Bill_BPartner_ID} and {@code Bill_Location_ID} are both set; reads the candidate's own columns, not the effective bill info (which falls back to the buyer).
+	 */
+	public boolean isBillLocationExplicit()
+	{
+		return olCandRecord.getBill_BPartner_ID() > 0 && olCandRecord.getBill_Location_ID() > 0;
+	}
+
 	public I_C_OLCand unbox()
 	{
 		return olCandRecord;
