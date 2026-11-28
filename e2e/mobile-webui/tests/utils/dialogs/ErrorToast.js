@@ -20,6 +20,12 @@ const containerElement = () => page.locator('.Toastify .Toastify__toast--error d
 export const ErrorToast = {
     /** @returns {import('@playwright/test').Locator} */
     locator: () => containerElement(),
+    /** The first error toast; for layout checks (see utils/layout.js) */
+    toastElement: () => page.locator('.Toastify__toast--error').first(),
+
+    /** The close button of the first error toast; for layout checks */
+    closeButtonElement: () => page.locator('.Toastify__close-button--error').first(),
+
     /** Waits until the error toast finished its enter animation and is fully in the viewport (e.g. before a screenshot). */
     expectFullyShown: async () => {
         const toast = page.locator('.Toastify__toast--error').first();
@@ -96,6 +102,11 @@ export const ErrorToast = {
     // Assert no success toast without the given text is shown (e.g. only an earlier message is left).
     expectNoSuccessToastWithoutText: async (text) => {
         await expect(page.locator('.Toastify__toast--success').filter({ hasNotText: text })).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    },
+
+    // Assert no toast of any kind (red, green, ...) is shown.
+    expectNoToastOfAnyKind: async ({ timeout } = {}) => {
+        await expect(page.locator('.Toastify__toast')).toHaveCount(0, timeout != null ? { timeout } : undefined);
     },
 
     // Assert no blocking (red) error toast is shown.

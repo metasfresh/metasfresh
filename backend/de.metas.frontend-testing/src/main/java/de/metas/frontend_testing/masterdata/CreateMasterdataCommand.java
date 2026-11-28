@@ -190,6 +190,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		createHULabelConfigs();
+		createCustomQRCodeFormats(); // before mobileConfig: the CU label format names of the mobile config refer to these formats
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		// Post-pass: needs every warehouse (the replenishment source is named by identifier) and the shippers
@@ -217,7 +218,6 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrdersFromCandidates = createDistributionOrdersFromCandidates();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
-		createCustomQRCodeFormats();
 
 		// Late pass: flip already-created products to a life-cycle status (e.g. G=Gesperrt). Runs after
 		// order creation so a product can be blocked only once its order/picking-job setup exists (a
@@ -668,6 +668,7 @@ public class CreateMasterdataCommand
 				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
 				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
+				.scannableCodeFormatService(services.scannableCodeFormatService)
 				//
 				.context(context)
 				.request(request.getMobileConfig())
@@ -931,7 +932,6 @@ public class CreateMasterdataCommand
 				.requests(request.getCustomQRCodeFormats())
 				.build()
 				.execute();
-
 	}
 
 	private void applySysconfigs()

@@ -115,7 +115,7 @@ public class PickingJobGraiTargetService
 		final List<I_M_HU_PI_Item_Product> allPiips = huService.retrievePIMaterialItemProducts(miItem);
 
 		final ImmutableList<I_M_HU_PI_Item_Product> matching = allPiips.stream()
-				.filter(piip -> piip.isAllowAnyProduct() || ProductId.ofRepoId(piip.getM_Product_ID()).equals(productId))
+				.filter(piip -> piip.isAllowAnyProduct() || ProductId.equals(ProductId.ofRepoIdOrNull(piip.getM_Product_ID()), productId)) // a row may have no product (M_Product_ID null)
 				.collect(ImmutableList.toImmutableList());
 
 		if (matching.isEmpty())

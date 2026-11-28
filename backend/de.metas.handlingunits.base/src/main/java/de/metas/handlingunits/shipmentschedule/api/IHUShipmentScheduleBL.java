@@ -179,6 +179,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 			@NonNull HuId pickToTuId,
 			@NonNull Quantity qtyToReduce);
 
+	/** Deletes the QtyPicked records of the given VHUs for this shipment schedule (one query); refuses if one of them is already shipped. */
+	void deleteByVHUsAndShipmentScheduleId(@NonNull Collection<HuId> vhuIds, @NonNull ShipmentScheduleId shipmentScheduleId);
+
 	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);
 
 	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);

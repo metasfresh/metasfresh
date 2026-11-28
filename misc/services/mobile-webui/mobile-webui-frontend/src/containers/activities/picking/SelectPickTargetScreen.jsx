@@ -16,8 +16,22 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import { parseGraiFromRawInput } from '../../../utils/grai';
 import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
 import * as uiTrace from '../../../utils/ui_trace';
+import { useSearchParams } from '../../../hooks/useSearchParams';
 
 const GRAI_DEBOUNCE_MILLIS = 1500;
+
+/**
+ * Leaves the screen once the target is chosen (or closed): back to where the picker came from ("Weiteres TU" on the scan screen:
+ * `returnTo` is that screen, so the scan and the count kept there are still in front of him), else the screen's back location.
+ */
+// @VisibleForTesting
+export const leaveSelectTargetScreen = ({ history, returnTo }) => {
+  if (returnTo) {
+    history.goTo(returnTo);
+  } else {
+    history.goBack();
+  }
+};
 
 export const SelectPickTargetScreen = () => {
   const { history, url, wfProcessId, activityId, lineId, type } = useScreenDefinition({
@@ -25,16 +39,19 @@ export const SelectPickTargetScreen = () => {
     back: pickingJobOrLineLocation,
   });
 
+  const [urlParams] = useSearchParams();
+  const returnTo = urlParams.get('returnTo');
+
   const { currentTarget, closePickingTarget } = useCurrentTarget({ wfProcessId, activityId, lineId, type });
 
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    // On success navigate back; on a server rejection (e.g. the carrier-advise consistency guard rejecting a
+    // On success leave the screen; on a server rejection (e.g. the carrier-advise consistency guard rejecting a
     // parcel with two distinct manual carriers) stay on the screen and surface the error, instead of swallowing
     // it — the same way completing the job surfaces it. See mobile-webui CLAUDE.md "API Error Surfacing".
     closePickingTarget()
-      .then(() => history.goBack())
+      .then(() => leaveSelectTargetScreen({ history, returnTo }))
       .catch((axiosError) => {
         uiTrace.trace({
           eventName: 'closePickingTargetFailed',
@@ -52,7 +69,7 @@ export const SelectPickTargetScreen = () => {
       {currentTarget && (
         <ButtonWithIndicator captionKey="activities.picking.pickingTarget.CloseTarget" onClick={onCloseTargetClicked} />
       )}
-      {!currentTarget && <NewTargets wfProcessId={wfProcessId} lineId={lineId} type={type} />}
+      {!currentTarget && <NewTargets wfProcessId={wfProcessId} lineId={lineId} type={type} returnTo={returnTo} />}
     </div>
   );
 };
@@ -63,7 +80,7 @@ export const SelectPickTargetScreen = () => {
 //
 //
 
-const NewTargets = ({ wfProcessId, lineId, type }) => {
+const NewTargets = ({ wfProcessId, lineId, type, returnTo }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
@@ -76,10 +93,10 @@ const NewTargets = ({ wfProcessId, lineId, type }) => {
   const onSelectTargetClicked = async (target) => {
     setPickingTarget({ target })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => history.goBack()); // go back to Picking Job
+      .then(() => leaveSelectTargetScreen({ history, returnTo })); // go back to Picking Job, or to the scan screen
   };
 
-  const onGraiScanned = useGraiScanner({ wfProcessId, lineId, dispatch, history });
+  const onGraiScanned = useGraiScanner({ wfProcessId, lineId, dispatch, history, returnTo });
 
   return (
     <>
@@ -102,6 +119,7 @@ NewTargets.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   lineId: PropTypes.string,
   type: PropTypes.string.isRequired,
+  returnTo: PropTypes.string,
 };
 
 //
@@ -120,7 +138,7 @@ NewTargets.propTypes = {
  *   - two or more distinct GRAIs → toast error (i18n key: activities.picking.graiScan.multipleScanned), no list
  * Identical repeated scans are deduplicated (count as one distinct value).
  */
-const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
+const useGraiScanner = ({ wfProcessId, lineId, dispatch, history, returnTo }) => {
   const pendingGraisRef = useRef(new Set());
   const debounceTimerRef = useRef(null);
 
@@ -140,9 +158,9 @@ const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
     const graiString = distinctGrais[0];
     setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => history.goBack())
+      .then(() => leaveSelectTargetScreen({ history, returnTo }))
       .catch((axiosError) => toastError({ axiosError }));
-  }, [wfProcessId, lineId, dispatch, history]);
+  }, [wfProcessId, lineId, dispatch, history, returnTo]);
 
   const fireDebouncedRef = useRef(fireDebounced);
   useEffect(() => {

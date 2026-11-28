@@ -65,6 +65,17 @@ const translations = {
       buttonCaption: 'Wagen freigeben',
     },
   },
+  picking: {
+    cuLabel: {
+      formatMismatch: 'Das Etikett passt nicht zum Etikettenformat des Kommissionierprofils. Es wurde nichts gebucht.',
+      noFormat: 'Kein Etikettenformat im Kommissionierprofil hinterlegt.',
+      noPackId: 'Das Etikett enthält keine Packungs-ID. Es wurde nichts gebucht.',
+    },
+    pickFromRequired: "Bitte zuerst 'Kommissionieren aus' scannen.",
+    nextTU: 'Weiteres TU',
+    nextTUOpened: 'Neues TU geöffnet',
+    nextTUBusy: 'Es wird gerade ein TU geöffnet. Bitte gleich nochmal scannen.',
+  },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
@@ -186,16 +197,16 @@ const translations = {
       tuPickingTarget: {
         New: 'Neues TU',
         Select: 'Select Target',
-        Current: 'Current',
+        Current: 'Offenes TU',
         CloseTarget: 'Schließen',
       },
       graiScan: {
         multipleScanned:
-          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an ein einzelnes TU und scannen Sie erneut.',
         count: '%(scanned)s / %(total)s GRAIs gescannt',
         countExtra: '(%(extra)s extra)',
         countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
-        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
+        skippedNotice: '%(count)s TU(s) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
         save: {
           buttonCaption: 'Speichern',
         },

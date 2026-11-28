@@ -134,12 +134,19 @@ const getScreenIdFromHeaders = (state) => {
   return headersEntries.length > 0 ? headersEntries[headersEntries.length - 1]?.screenId : null;
 };
 
+// data-* attributes the current screen wants on its root element (the one with id = screenId)
+const getRootDataAttributesFromHeaders = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries.length > 0 ? headersEntries[headersEntries.length - 1]?.rootDataAttributes : undefined;
+};
+
 export const useNavigationInfoFromHeaders = () => {
   const { url: currentLocation } = useRouteMatch();
 
   return useSelector(
     (state) => ({
       screenId: getScreenIdFromHeaders(state),
+      rootDataAttributes: getRootDataAttributesFromHeaders(state),
       caption: getCaptionFromHeaders(state),
       homeLocation: getHomeLocation({ state, currentLocation }),
     }),

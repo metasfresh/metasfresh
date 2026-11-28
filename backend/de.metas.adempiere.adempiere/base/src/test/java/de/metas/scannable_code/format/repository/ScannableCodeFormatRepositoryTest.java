@@ -6,6 +6,7 @@ import de.metas.scannable_code.ScannedCode;
 import de.metas.scannable_code.format.ParsedScannedCode;
 import de.metas.scannable_code.format.ScannableCodeFormat;
 import de.metas.scannable_code.format.ScannableCodeFormatCreateRequest;
+import de.metas.scannable_code.format.ScannableCodeFormatId;
 import de.metas.scannable_code.format.ScannableCodeFormatPartType;
 import de.metas.scannable_code.format.ScannableCodeFormatsCollection;
 import de.metas.util.time.PatternedDateTimeFormatter;
@@ -229,6 +230,26 @@ class ScannableCodeFormatRepositoryTest
 			final ScannableCodeFormatsCollection all = repository.getAll();
 
 			assertThat(all.toList()).extracting(ScannableCodeFormat::getName).containsExactly("valid format");
+		}
+	}
+
+	@Nested
+	class GetById
+	{
+		@Test
+		void returnsTheFormat()
+		{
+			final ScannableCodeFormat format = createLabelFormat();
+
+			assertThat(repository.getById(format.getId())).contains(format);
+		}
+
+		@Test
+		void unknownId_returnsEmpty()
+		{
+			createLabelFormat();
+
+			assertThat(repository.getById(ScannableCodeFormatId.ofRepoId(999999))).isEmpty();
 		}
 	}
 }

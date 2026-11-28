@@ -1,15 +1,21 @@
 package de.metas.handlingunits.picking.job.service;
 
+import java.util.Set;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.DummyGRAIProvider;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.handlingunits.grai.HUGraiSnapshotsCollection;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -30,31 +36,34 @@ import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributesTestHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -217,7 +226,7 @@ class PickingJobGraiScanPickEndToEndTest
 	 * TC1 (scan→pick→validate seam): after scanning a valid GRAI (which stores a new-TU target carrying the GRAI) and
 	 * then <b>picking</b> the line, the scanned GRAI must end up on the materialised picked HU <b>at exactly the HU
 	 * the completion-time GRAI validator reads it from</b> — i.e. {@code PickingJobGRAIValidator} resolves
-	 * {@code line.getPickedHUIds()}, loads their GRAI snapshots via {@code PickingJobHUService#getGraiSnapshots} and
+	 * {@code line.getPickedHUIds()}, loads their GRAI snapshots via {@code PickingJobHUService#getGraiSnapshotsOfPicked} and
 	 * calls {@code assertAllGraisAssigned()}. This drives the real {@code PickingJobPickCommand#stampGraiIfPresent}
 	 * path end-to-end through {@link PickingJobService#processStepEvent} and asserts the validator's own check, closing
 	 * the gap the sibling stamp test below leaves (which stamps a hand-materialised TU rather than a picked one).
@@ -256,7 +265,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		line = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(line.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(line.getPickedHUIds())
+		helper.huService.getGraiSnapshotsOfPicked(pickingJob.getLines())
 				.assertAllGraisAssigned();
 	}
 
@@ -288,7 +297,7 @@ class PickingJobGraiScanPickEndToEndTest
 		});
 
 		final HUGraiSnapshot snapshot = CollectionUtils.singleElement(
-				ImmutableList.copyOf(helper.huService.getGraiSnapshots(ImmutableSet.of(tuId))));
+				ImmutableList.copyOf(helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(tuId), ImmutableSet.of())));
 		assertThat(snapshot.getAllGrais().toSet())
 				.as("the scanned GRAI must be stamped on the TU and readable back")
 				.containsExactly(grai);
@@ -408,7 +417,7 @@ class PickingJobGraiScanPickEndToEndTest
 		// The completion-time GRAI validator reads exactly these picked HU ids and calls assertAllGraisAssigned().
 		final PickingJobLine pickedLine = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(pickedLine.getPickedHUIds()).as("the pick must have produced picked HU(s)").isNotEmpty();
-		helper.huService.getGraiSnapshots(pickedLine.getPickedHUIds())
+		helper.huService.getGraiSnapshotsOfPicked(ImmutableList.of(pickedLine))
 				.assertAllGraisAssigned();
 	}
 
@@ -544,5 +553,116 @@ class PickingJobGraiScanPickEndToEndTest
 				.as("scanning a GRAI for a TU type that lacks the GRAI attribute slot must fail loud at scan time")
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("de.metas.handlingunits.picking.GRAIAttributeNotSupportedByTUType");
+	}
+
+	private static final String GRAI_COUNT_MISMATCH_KEY = HUGraiSnapshot.GRAI_COUNT_MISMATCH.toAD_Message();
+
+	@Nested
+	class GetGraiSnapshots
+	{
+		@Test
+		void labelRequiredMode_pickedCUInsideTU_tuWithoutGrai_isRefused()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId cuId = createTUWithCU(productId).getCuId();
+
+			assertThatThrownBy(() -> graiSnapshotsOfTUs(ImmutableSet.of(cuId)).assertAllGraisAssigned())
+					.as("a CU in a TU without GRAI must fail the GRAI count check")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+		}
+
+		@Test
+		void labelRequiredMode_pickedCUInsideTU_tuWithGrai_isAccepted()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final TUWithCU tu = createTUWithCU(productId);
+			setGraiOnTU(tu.getTuId(), GRAI.parse(GRAI_CANONICAL));
+
+			graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId())).assertAllGraisAssigned();
+		}
+
+		@Test
+		void labelRequiredMode_severalCUsInSameTU_tuCheckedOnce()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final TUWithCU tu = createTUWithCU(productId);
+
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId(), tu.getTuId()));
+
+			assertThat(snapshots).hasSize(1);
+		}
+
+		@Test
+		void pickedTUWithoutGrai_isRefused()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId tuId = createTUWithCU(productId).getTuId();
+
+			assertThatThrownBy(() -> helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(tuId), ImmutableSet.of()).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+			assertThatThrownBy(() -> graiSnapshotsOfTUs(ImmutableSet.of(tuId)).assertAllGraisAssigned())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(GRAI_COUNT_MISMATCH_KEY);
+		}
+
+		@Test
+		void manualMode_pickedCUInsideTU_isNotMappedToTU()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final HuId cuId = createTUWithCU(productId).getCuId();
+
+			final HUGraiSnapshotsCollection snapshots = helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(ImmutableSet.of(cuId), ImmutableSet.of());
+
+			assertThat(snapshots).isEmpty();
+			snapshots.assertAllGraisAssigned();
+		}
+
+		@Test
+		void labelRequiredMode_dummyGRAIs_writtenOnTheTUOfThePickedCU()
+		{
+			final ProductId productId = BusinessTestHelper.createProductId("P-GRAI-CU", helper.uomEach);
+			final TUWithCU tu = createTUWithCU(productId);
+			final DummyGRAIProvider dummyGRAIProvider = new DummyGRAIProvider(DummyGRAITemplate.migros("1234567890"), 1);
+			final GRAI expectedGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1);
+
+			final HUGraiSnapshotsCollection snapshots = graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId()));
+			Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> helper.huService.generateMissingGRAIs(snapshots, dummyGRAIProvider));
+
+			assertThat(helper.huService.getGrais(tu.getTuId())).isEqualTo(GRAISet.of(expectedGrai));
+			graiSnapshotsOfTUs(ImmutableSet.of(tu.getCuId())).assertAllGraisAssigned();
+		}
+	}
+
+	private void setGraiOnTU(final HuId tuId, final GRAI grai)
+	{
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			try (final IAutoCloseable ignored = helper.huService.temporarySetNewHContextForProcessing())
+			{
+				helper.huService.setGrais(tuId, GRAISet.of(grai));
+			}
+		});
+	}
+
+	@Value
+	private static class TUWithCU
+	{
+		@NonNull HuId tuId;
+		@NonNull HuId cuId;
+	}
+
+	private TUWithCU createTUWithCU(final ProductId productId)
+	{
+		createGraiTuPI(productId, true);
+		final HuPackingInstructionsId tuPIId = helper.huService.resolveHuPackingInstructionsId(GRAI.parse(GRAI_CANONICAL));
+		final HuId tuId = helper.createHU(tuPIId, productId, helper.qty("5", productId));
+		final I_M_HU cu = CollectionUtils.singleElement(Services.get(IHandlingUnitsDAO.class).retrieveIncludedHUs(tuId));
+		return new TUWithCU(tuId, HuId.ofRepoId(cu.getM_HU_ID()));
+	}
+
+	private HUGraiSnapshotsCollection graiSnapshotsOfTUs(final Set<HuId> huIds)
+	{
+		return helper.huService.getGraiSnapshotsReplacingCUsBookedWithLabelByTheirTU(huIds, helper.huService.filterCUsInTU(huIds));
 	}
 }
