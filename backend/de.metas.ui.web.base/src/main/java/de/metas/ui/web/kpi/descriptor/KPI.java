@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
-import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceDescriptor;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -64,7 +63,6 @@ public class KPI
 	@NonNull KPITimeRangeDefaults timeRangeDefaults;
 
 	@NonNull KPIDatasourceType datasourceType;
-	@Nullable ElasticsearchDatasourceDescriptor elasticsearchDatasource;
 	@Nullable SQLDatasourceDescriptor sqlDatasource;
 
 	// Performance tuning
@@ -80,7 +78,6 @@ public class KPI
 			@NonNull final List<KPIField> fields,
 			@NonNull final KPITimeRangeDefaults timeRangeDefaults,
 			@NonNull final KPIDatasourceType datasourceType,
-			@Nullable final ElasticsearchDatasourceDescriptor elasticsearchDatasource,
 			@Nullable final SQLDatasourceDescriptor sqlDatasource,
 			@NonNull final Duration allowedStaleDuration)
 	{
@@ -103,16 +100,9 @@ public class KPI
 		groupByField = extractGroupByField(fields);
 
 		this.datasourceType = datasourceType;
-		if (datasourceType == KPIDatasourceType.ELASTICSEARCH)
-		{
-			Check.assumeNotNull(elasticsearchDatasource, "elasticsearchDatasource shall be set");
-			this.elasticsearchDatasource = elasticsearchDatasource;
-			this.sqlDatasource = null;
-		}
-		else if (datasourceType == KPIDatasourceType.SQL)
+		if (datasourceType == KPIDatasourceType.SQL)
 		{
 			Check.assumeNotNull(sqlDatasource, "sqlDatasource shall be set");
-			this.elasticsearchDatasource = null;
 			this.sqlDatasource = sqlDatasource;
 		}
 		else
@@ -184,11 +174,7 @@ public class KPI
 
 	public Set<CtxName> getRequiredContextParameters()
 	{
-		if (elasticsearchDatasource != null)
-		{
-			return elasticsearchDatasource.getRequiredContextParameters();
-		}
-		else if (sqlDatasource != null)
+		if (sqlDatasource != null)
 		{
 			return sqlDatasource.getRequiredContextParameters();
 		}

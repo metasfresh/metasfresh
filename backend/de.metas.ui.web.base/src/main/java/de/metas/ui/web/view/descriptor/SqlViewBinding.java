@@ -31,7 +31,6 @@ import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import de.metas.ui.web.bpartner.filter.BPartnerExportFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter;
 import de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
@@ -337,7 +336,6 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private Builder()
 		{
-			filterConverters.converter(FTSDocumentFilterConverter.instance);
 			filterConverters.converter(PostgresFTSDocumentFilterConverter.instance);
 			filterConverters.converter(GeoLocationFilterConverter.instance);
 			filterConverters.converter(FactAcctFilterConverter.instance);
