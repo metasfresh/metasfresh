@@ -72,6 +72,7 @@ import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.compensationGroup.calibration.CompensationGroupCalibrationService;
+import de.metas.order.location.OrderBillLocationProvidedMarker;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -110,6 +111,7 @@ import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -259,7 +261,8 @@ class OLCandOrderFactory
 				.locationAdapter(order)
 				.setFrom(candidateOfGroup.getBPartnerInfo());
 
-		// if the olc has no value set, we are not falling back here!
+		// without a bill partner/location of its own, the effective bill info falls back to the buyer's override location, else the buyer's location;
+		// only a candidate without any buyer location falls back to the buyer partner's master data, preferring a bill-to location
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
@@ -391,7 +394,10 @@ class OLCandOrderFactory
 
 		customColumnService.copyCustomColumns(candidateOfGroup.unbox(), I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
 
-		save(order);
+		try (final IAutoCloseable ignored = candidateOfGroup.isBillLocationExplicit() ? OrderBillLocationProvidedMarker.temporaryMark(order) : IAutoCloseable.NOP)
+		{
+			save(order);
+		}
 		return order;
 	}
 

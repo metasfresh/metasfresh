@@ -54,6 +54,7 @@ public class C_BP_Relation_StepDef
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
 	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) the source business partner<br>
 	 *   <b>C_BPartnerRelation_ID</b> — (required, identifier-ref) the related (target) business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) the source location of the relation; absent = partner-wide relation<br>
 	 *   <b>C_BPartnerRelation_Location_ID</b> — (optional, identifier-ref) the location of the related partner<br>
 	 *   <b>IsBillTo</b> — (optional, default false) whether the relation is used for bill-to<br>
 	 *   <b>Name</b> — (optional) relation name; auto-generated from the partner IDs when omitted<br>
@@ -85,6 +86,10 @@ public class C_BP_Relation_StepDef
 		bpRelation.setName(row.getAsOptionalString(I_C_BP_Relation.COLUMNNAME_Name)
 				.orElseGet(() -> "BP relation " + sourceBPartnerId.getRepoId() + "-" + relationBPartnerId.getRepoId()));
 		bpRelation.setIsActive(true);
+
+		row.getAsOptionalIdentifier(I_C_BP_Relation.COLUMNNAME_C_BPartner_Location_ID)
+				.map(bpartnerLocationTable::get)
+				.ifPresent(loc -> bpRelation.setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID()));
 
 		row.getAsOptionalIdentifier(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_Location_ID)
 				.map(bpartnerLocationTable::get)
