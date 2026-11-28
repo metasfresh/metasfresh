@@ -241,6 +241,21 @@ public class DocumentCollection
 		}
 	}
 
+	/**
+	 * Asserts that the current user is allowed to view the given root document,
+	 * i.e. has read access to its window and view access to its underlying record (client, org and record level).
+	 * <p>
+	 * To be used by endpoints which address a document's related data (e.g. attachments, comments) by the document's path,
+	 * without going through this collection to fetch the document itself.
+	 *
+	 * @throws DocumentNotFoundException if the document does not exist
+	 * @throws de.metas.ui.web.window.exceptions.DocumentPermissionException if the user is not allowed to view the document
+	 */
+	public void assertCanViewRootDocument(@NonNull final DocumentPath documentPath)
+	{
+		forRootDocumentReadonly(documentPath, rootDocument -> null);
+	}
+
 	public <R> R forDocumentWritable(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IDocumentChangesCollector changesCollector,

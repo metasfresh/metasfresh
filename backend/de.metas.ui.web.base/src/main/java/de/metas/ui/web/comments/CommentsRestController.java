@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.ui.web.window.model.DocumentCollection;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,14 +49,18 @@ public class CommentsRestController
 	private final UserSession userSession;
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
+	private final DocumentCollection documentCollection;
 	private final CommentsService commentsService;
 
 	public CommentsRestController(
 			final UserSession userSession,
-			final DocumentDescriptorFactory documentDescriptorFactory, final CommentsService commentsService)
+			final DocumentDescriptorFactory documentDescriptorFactory,
+			final DocumentCollection documentCollection,
+			final CommentsService commentsService)
 	{
 		this.userSession = userSession;
 		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.documentCollection = documentCollection;
 		this.commentsService = commentsService;
 	}
 
@@ -68,6 +73,7 @@ public class CommentsRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
+		documentCollection.assertCanViewRootDocument(documentPath);
 
 		final ZoneId zoneId = JSONOptions.of(userSession).getZoneId();
 		return commentsService.getRowCommentsAsJson(documentPath, zoneId);
@@ -83,6 +89,7 @@ public class CommentsRestController
 		userSession.assertLoggedIn();
 
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
+		documentCollection.assertCanViewRootDocument(documentPath);
 
 		commentsService.addComment(documentPath, jsonCommentCreateRequest);
 	}
