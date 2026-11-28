@@ -33,6 +33,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.order.location.OrderBillLocationProvidedMarker;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
@@ -40,6 +41,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BP_Relation;
@@ -496,6 +498,162 @@ public class OrderTest
 
 		Assertions.assertEquals(providedBillPartnerZ.getC_BPartner_ID(), order.getBill_BPartner_ID());
 		Assertions.assertEquals(providedBillLocZ1.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * An invoice address of the order's own partner that is marked as explicitly provided is kept,
+	 * even though a bill-to relation of the order location points elsewhere.
+	 */
+	@Test
+	public void setBillBPartner_keepsSameBPartnerBillLocation_whenMarkedAsProvided()
+	{
+		final I_C_BPartner member = createMemberInPlainGroup();
+		final I_C_BPartner_Location market = createBPartnerLocation(member);
+		final I_C_BPartner_Location regional = createBPartnerLocation(member);
+		final I_C_BPartner_Location central = createBPartnerLocation(member);
+		createBillToRelation(market, regional);
+		createPartnerWideBillToRelation(member, central);
+
+		final I_C_Order order = createSalesOrder(member, market, member, market);
+		try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
+		{
+			save(order);
+		}
+
+		Assertions.assertEquals(member.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(market.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * A marked invoice location of the order's own partner is kept
+	 * when the bill-to relation of the order location points to the location itself.
+	 */
+	@Test
+	public void setBillBPartner_keepsMarkedBillLocation_whenOrderLocationHasSelfRelation()
+	{
+		final I_C_BPartner member = createMemberInPlainGroup();
+		final I_C_BPartner_Location market = createBPartnerLocation(member);
+		final I_C_BPartner_Location regional = createBPartnerLocation(member);
+		final I_C_BPartner_Location central = createBPartnerLocation(member);
+		createBillToRelation(market, market);
+		createPartnerWideBillToRelation(member, central);
+
+		final I_C_Order order = createSalesOrder(member, market, member, regional);
+		try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
+		{
+			save(order);
+		}
+
+		Assertions.assertEquals(member.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(regional.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * Without the marker, an invoice location of the order's own partner is not treated as provided:
+	 * the bill-to relation of the order location applies.
+	 */
+	@Test
+	public void setBillBPartner_appliesBillToRelation_whenSameBPartnerBillLocationNotMarked()
+	{
+		final I_C_BPartner member = createMemberInPlainGroup();
+		final I_C_BPartner_Location market = createBPartnerLocation(member);
+		final I_C_BPartner_Location regional = createBPartnerLocation(member);
+		final I_C_BPartner_Location central = createBPartnerLocation(member);
+		createBillToRelation(market, regional);
+		createPartnerWideBillToRelation(member, central);
+
+		final I_C_Order order = createSalesOrder(member, market, member, market);
+		save(order);
+
+		Assertions.assertEquals(regional.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * A marked invoice address naming the order's own partner is kept although the partner's group has a different deviating bill partner;
+	 * without the marker the group applies.
+	 */
+	@Test
+	public void setBillBPartner_keepsMarkedOwnBillLocation_overGroupBillBPartner()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("member", deviatingGroup);
+		final I_C_BPartner_Location memberLoc = createBPartnerLocation(member);
+
+		final I_C_Order order = createSalesOrder(member, memberLoc, member, memberLoc);
+		try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
+		{
+			save(order);
+		}
+
+		Assertions.assertEquals(member.getC_BPartner_ID(), order.getBill_BPartner_ID());
+		Assertions.assertEquals(memberLoc.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	/**
+	 * The marker applies to the save it wraps only: a later unmarked save that changes the order location
+	 * re-derives the invoice location from the new location's bill-to relation.
+	 */
+	@Test
+	public void setBillBPartner_reResolvesBillLocation_onUnmarkedSaveAfterMarkedSave()
+	{
+		final I_C_BPartner member = createMemberInPlainGroup();
+		final I_C_BPartner_Location locA = createBPartnerLocation(member);
+		final I_C_BPartner_Location regionalA = createBPartnerLocation(member);
+		final I_C_BPartner_Location locB = createBPartnerLocation(member);
+		final I_C_BPartner_Location regionalB = createBPartnerLocation(member);
+		createBillToRelation(locA, regionalA);
+		createBillToRelation(locB, regionalB);
+
+		final I_C_Order order = createSalesOrder(member, locA, member, locA);
+		try (final IAutoCloseable ignored = OrderBillLocationProvidedMarker.temporaryMark(order))
+		{
+			save(order);
+		}
+		Assertions.assertEquals(locA.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+
+		order.setC_BPartner_Location_ID(locB.getC_BPartner_Location_ID());
+		save(order);
+
+		Assertions.assertEquals(regionalB.getC_BPartner_Location_ID(), order.getBill_Location_ID());
+	}
+
+	private I_C_BPartner createMemberInPlainGroup()
+	{
+		return createBPartnerInGroup("member", createPlainBPGroup());
+	}
+
+	private I_C_Order createSalesOrder(
+			final I_C_BPartner bpartner,
+			final I_C_BPartner_Location location,
+			final I_C_BPartner billBPartner,
+			final I_C_BPartner_Location billLocation)
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(location.getC_BPartner_Location_ID());
+		order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
+		order.setBill_Location_ID(billLocation.getC_BPartner_Location_ID());
+		order.setIsSOTrx(true);
+		return order;
+	}
+
+	private void createPartnerWideBillToRelation(final I_C_BPartner partner, final I_C_BPartner_Location billLocation)
+	{
+		final I_C_BP_Relation relation = newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(partner.getC_BPartner_ID());
+		relation.setC_BPartnerRelation_ID(billLocation.getC_BPartner_ID());
+		relation.setC_BPartnerRelation_Location_ID(billLocation.getC_BPartner_Location_ID());
+		relation.setIsBillTo(true);
+		save(relation);
 	}
 
 	private I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
