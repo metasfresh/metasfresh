@@ -2057,6 +2057,10 @@ public class TimeUtil
 		{
 			return ((ZonedDateTime)obj).toInstant();
 		}
+		else if (obj instanceof String)
+		{
+			return Instant.parse(((String)obj).trim());
+		}
 		else if (obj instanceof Integer)
 		{
 			final int millis = (Integer)obj;
